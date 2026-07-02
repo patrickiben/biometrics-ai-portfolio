@@ -1,0 +1,1 @@
+These are de-identified, aggregate numbers, so they run on cloud Claude — with any participant-level drill-down dropping back to the on-device model.

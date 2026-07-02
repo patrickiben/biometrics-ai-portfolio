@@ -1,0 +1,1 @@
+A participant's safety signal.

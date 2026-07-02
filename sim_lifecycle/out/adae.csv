@@ -1,0 +1,51 @@
+"USUBJID","TRT01A","APERIOD","APERIODC","TRTA","TRTAN","AESOC","AEDECOD","AESEVN","AREL","AESER","AEACN","AESDTH","TRTEMFL","SAFFL","ASTDY"
+"CP-SIM-101-001","Test",1,"Period 1","Test",1,"Nervous system disorders","Somnolence",1,"RELATED","N","NONE","N","Y","Y",1
+"CP-SIM-101-001","Test",1,"Period 1","Test",1,"Nervous system disorders","Headache",1,"NOT RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-002","Reference",1,"Period 1","Reference",2,"Nervous system disorders","Somnolence",1,"RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-002","Reference",1,"Period 1","Reference",2,"General disorders and administration site conditions","Fatigue",1,"RELATED","N","NONE","N","Y","Y",1
+"CP-SIM-101-003","Test",1,"Period 1","Test",1,"General disorders and administration site conditions","Fatigue",1,"NOT RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-003","Test",1,"Period 1","Test",1,"Nervous system disorders","Somnolence",2,"NOT RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-009","Test",1,"Period 1","Test",1,"Gastrointestinal disorders","Diarrhoea",1,"RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-011","Test",1,"Period 1","Test",1,"Skin and subcutaneous tissue disorders","Pruritus",1,"RELATED","N","NONE","N","Y","Y",1
+"CP-SIM-101-012","Reference",1,"Period 1","Reference",2,"Skin and subcutaneous tissue disorders","Pruritus",1,"NOT RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-012","Reference",1,"Period 1","Reference",2,"Gastrointestinal disorders","Nausea",1,"NOT RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-012","Reference",1,"Period 1","Reference",2,"General disorders and administration site conditions","Fatigue",1,"NOT RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-012","Reference",1,"Period 1","Reference",2,"General disorders and administration site conditions","Feeling hot",1,"RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-020","Reference",1,"Period 1","Reference",2,"Nervous system disorders","Dizziness",1,"NOT RELATED","N","NONE","N","Y","Y",1
+"CP-SIM-101-020","Reference",1,"Period 1","Reference",2,"Nervous system disorders","Headache",1,"NOT RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-020","Reference",1,"Period 1","Reference",2,"Skin and subcutaneous tissue disorders","Pruritus",1,"NOT RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-022","Reference",1,"Period 1","Reference",2,"Skin and subcutaneous tissue disorders","Pruritus",1,"RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-022","Reference",1,"Period 1","Reference",2,"Nervous system disorders","Dizziness",1,"RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-025","Test",1,"Period 1","Test",1,"Gastrointestinal disorders","Vomiting",2,"RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-033","Test",1,"Period 1","Test",1,"Skin and subcutaneous tissue disorders","Pruritus",1,"RELATED","N","NONE","N","Y","Y",1
+"CP-SIM-101-033","Test",1,"Period 1","Test",1,"Gastrointestinal disorders","Dry mouth",1,"RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-034","Reference",1,"Period 1","Reference",2,"Nervous system disorders","Somnolence",1,"NOT RELATED","N","NONE","N","Y","Y",2
+"CP-SIM-101-034","Reference",1,"Period 1","Reference",2,"Metabolism and nutrition disorders","Decreased appetite",1,"RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-036","Reference",1,"Period 1","Reference",2,"Skin and subcutaneous tissue disorders","Pruritus",3,"NOT RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-036","Reference",1,"Period 1","Reference",2,"Nervous system disorders","Somnolence",1,"NOT RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-037","Test",1,"Period 1","Test",1,"Gastrointestinal disorders","Dry mouth",1,"NOT RELATED","N","NONE","N","Y","Y",1
+"CP-SIM-101-038","Reference",1,"Period 1","Reference",2,"Nervous system disorders","Headache",2,"RELATED","N","NONE","N","Y","Y",3
+"CP-SIM-101-001","Test",2,"Period 2","Reference",2,"General disorders and administration site conditions","Fatigue",1,"RELATED","N","NONE","N","Y","Y",17
+"CP-SIM-101-001","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Diarrhoea",1,"NOT RELATED","N","NONE","N","Y","Y",15
+"CP-SIM-101-003","Test",2,"Period 2","Reference",2,"Metabolism and nutrition disorders","Decreased appetite",1,"RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-003","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Abdominal pain",1,"NOT RELATED","N","NONE","N","Y","Y",17
+"CP-SIM-101-003","Test",2,"Period 2","Reference",2,"Nervous system disorders","Somnolence",2,"NOT RELATED","N","NONE","N","Y","Y",15
+"CP-SIM-101-004","Reference",2,"Period 2","Test",1,"Nervous system disorders","Dizziness",1,"RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-005","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Diarrhoea",1,"NOT RELATED","N","NONE","N","Y","Y",17
+"CP-SIM-101-007","Test",2,"Period 2","Reference",2,"Nervous system disorders","Somnolence",1,"RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-007","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Diarrhoea",1,"NOT RELATED","N","NONE","N","Y","Y",17
+"CP-SIM-101-007","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Abdominal pain",1,"NOT RELATED","N","NONE","N","Y","Y",15
+"CP-SIM-101-011","Test",2,"Period 2","Reference",2,"General disorders and administration site conditions","Fatigue",1,"RELATED","N","NONE","N","Y","Y",15
+"CP-SIM-101-015","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Nausea",1,"RELATED","N","NONE","N","Y","Y",15
+"CP-SIM-101-019","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Nausea",1,"RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-019","Test",2,"Period 2","Reference",2,"Nervous system disorders","Headache",1,"NOT RELATED","N","NONE","N","Y","Y",17
+"CP-SIM-101-019","Test",2,"Period 2","Reference",2,"Nervous system disorders","Somnolence",1,"NOT RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-022","Reference",2,"Period 2","Test",1,"Nervous system disorders","Dizziness",1,"NOT RELATED","N","NONE","N","Y","Y",15
+"CP-SIM-101-023","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Nausea",2,"NOT RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-023","Test",2,"Period 2","Reference",2,"General disorders and administration site conditions","Fatigue",1,"RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-025","Test",2,"Period 2","Reference",2,"Metabolism and nutrition disorders","Decreased appetite",1,"NOT RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-025","Test",2,"Period 2","Reference",2,"General disorders and administration site conditions","Fatigue",2,"NOT RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-029","Test",2,"Period 2","Reference",2,"Gastrointestinal disorders","Dry mouth",1,"NOT RELATED","N","NONE","N","Y","Y",17
+"CP-SIM-101-031","Test",2,"Period 2","Reference",2,"Nervous system disorders","Headache",1,"NOT RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-031","Test",2,"Period 2","Reference",2,"Skin and subcutaneous tissue disorders","Pruritus",1,"NOT RELATED","N","NONE","N","Y","Y",16
+"CP-SIM-101-039","Test",2,"Period 2","Reference",2,"Skin and subcutaneous tissue disorders","Pruritus",2,"NOT RELATED","N","NONE","N","Y","Y",16

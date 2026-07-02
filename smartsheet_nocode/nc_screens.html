@@ -1,0 +1,251 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smartsheet no-code screens — fidelity preview</title>
+<style>
+  :root{ --ss:#0E73BE; --ssd:#0a5a96; --ink:#222b35; --sub:#5b6573; --line:#dfe3e8; --hd:#f4f6f8; --sel:#eaf3fb;
+         --green:#3aa76d; --greenbg:#e6f4ec; --amber:#c98a14; --amberbg:#fbf1da; --red:#cf4b3e; --redbg:#fbe9e7; }
+  *{box-sizing:border-box}
+  body{margin:0;background:#0E1124;font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;color:#e7ecf8;padding:30px}
+  h2{font:600 15px 'Segoe UI',Arial;color:#9fb4dd;margin:34px 0 10px;letter-spacing:.3px}
+  /* ---------- generic app frame (a light Smartsheet "screenshot" on the dark page) ---------- */
+  .ssapp{width:1180px;max-width:100%;background:#fff;border:1px solid #11151f;border-radius:9px;overflow:hidden;
+         box-shadow:0 14px 40px rgba(0,0,0,.45);color:var(--ink);font-size:13.5px}
+  /* top app bar */
+  .ssbar{display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;background:#fff;border-bottom:1px solid var(--line)}
+  .sslogo{width:22px;height:22px;border-radius:5px;background:linear-gradient(135deg,#1f8ce0,#0E73BE);position:relative;flex:0 0 auto}
+  .sslogo:before{content:"";position:absolute;inset:5px;border-radius:2px;
+     background:repeating-linear-gradient(0deg,#fff 0 2px,transparent 2px 4px),repeating-linear-gradient(90deg,#fff 0 2px,transparent 2px 4px);opacity:.85}
+  .sstitle{font-weight:700;font-size:13.5px;color:#1b2733}
+  .sstitle small{font-weight:600;color:var(--sub);font-size:11.5px;margin-left:8px}
+  .ssbar .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .ssbar .av{width:24px;height:24px;border-radius:50%;background:#0E73BE;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+  /* menu row */
+  .ssmenu{display:flex;align-items:center;gap:2px;height:34px;padding:0 8px;background:#fafbfc;border-bottom:1px solid var(--line);font-size:13px;color:#3c4654}
+  .ssmenu .mi{padding:6px 10px;border-radius:5px;display:flex;align-items:center;gap:6px;cursor:default}
+  .ssmenu .mi.on{background:var(--sel);color:var(--ss);font-weight:600;box-shadow:inset 0 0 0 1px #cfe3f6}
+  .ssmenu .ic{font-size:13px}
+  .ssmenu .sep{width:1px;height:18px;background:var(--line);margin:0 6px}
+  /* dropdown */
+  .ssdrop{position:absolute;margin-top:2px;background:#fff;border:1px solid #cdd3da;border-radius:7px;box-shadow:0 10px 26px rgba(20,30,50,.22);
+          padding:5px;width:248px;z-index:5;font-size:13px}
+  .ssdrop .di{padding:8px 10px;border-radius:5px;display:flex;align-items:center;gap:9px;color:#2c3540}
+  .ssdrop .di.on{background:var(--sel);color:var(--ss);font-weight:600}
+  .ssdrop .di small{color:var(--sub);font-weight:400;display:block;font-size:11px}
+  .ssdrop .dsep{height:1px;background:var(--line);margin:4px 6px}
+  /* ---------- grid ---------- */
+  .grid{width:100%;border-collapse:collapse;font-size:13px}
+  .grid th,.grid td{border:1px solid var(--line);padding:0 10px;height:38px;text-align:left;vertical-align:middle;white-space:nowrap}
+  .grid thead th{background:var(--hd);color:#41505f;font-weight:600;font-size:12px;height:32px}
+  .grid .rn{width:34px;background:#fafbfc;color:#9aa3ae;text-align:center;font-size:11px;padding:0}
+  .grid td.prim{font-weight:600;color:#1b2733}
+  .grid .barwrap{display:inline-flex;align-items:center;gap:8px}
+  .grid .bar{width:74px;height:7px;border-radius:4px;background:#e8ebef;overflow:hidden}
+  .grid .bar i{display:block;height:100%;background:var(--ss)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:11px;font-size:11.5px;font-weight:600;line-height:1.5}
+  .pill.g{background:var(--greenbg);color:#1f7a4d}.pill.a{background:var(--amberbg);color:#9a6a0f}.pill.r{background:var(--redbg);color:#b23a2e}
+  .who{display:inline-flex;align-items:center;gap:7px}
+  .who .av{width:21px;height:21px;border-radius:50%;color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center}
+  .gridscroll{max-height:none}
+  /* ---------- workflow builder ---------- */
+  .wbtop{display:flex;align-items:center;gap:10px;height:46px;padding:0 14px;background:#fff;border-bottom:1px solid var(--line)}
+  .wbname{font-weight:700;font-size:14.5px;color:#1b2733;display:flex;align-items:center;gap:8px}
+  .wbname .pencil{color:#9aa3ae;font-size:12px}
+  .wbtop .right{margin-left:auto;display:flex;gap:8px}
+  .btn{border:1px solid var(--line);background:#fff;color:#3c4654;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600}
+  .btn.pri{background:var(--ss);border-color:var(--ss);color:#fff}
+  .wbcanvas{background:#eef1f5;padding:26px 0 30px;display:flex;flex-direction:column;align-items:center;
+            background-image:radial-gradient(#d8dde4 1px,transparent 1px);background-size:18px 18px}
+  .wbblock{width:560px;background:#fff;border:1px solid #d4dae1;border-radius:10px;box-shadow:0 3px 10px rgba(30,40,60,.08);overflow:hidden}
+  .wbblock .bh{display:flex;align-items:center;gap:11px;padding:12px 16px}
+  .wbblock .tag{font-size:10.5px;font-weight:800;letter-spacing:.8px;padding:3px 8px;border-radius:5px}
+  .wbblock.when .tag{background:#e7f0fb;color:var(--ss)} .wbblock.when{border-top:none}
+  .wbblock.when .bh{border-left:5px solid var(--ss)}
+  .wbblock.act .bh{border-left:5px solid var(--green)}
+  .wbblock.act .tag{background:var(--greenbg);color:#1f7a4d}
+  .wbico{width:30px;height:30px;border-radius:7px;display:grid;place-items:center;font-size:15px;color:#fff;flex:0 0 auto}
+  .wbblock.when .wbico{background:var(--ss)} .wbblock.act .wbico{background:var(--green)}
+  .wbblock .ttl{font-weight:700;font-size:14px;color:#1b2733}
+  .wbblock .sub{color:var(--sub);font-size:12px;margin-top:1px}
+  .wbblock .cfg{border-top:1px solid var(--line);padding:11px 16px 13px;background:#fcfdfe;font-size:12.5px;color:#33414f}
+  .wbblock .cfg .row{display:flex;gap:8px;padding:3px 0}
+  .wbblock .cfg .k{color:var(--sub);min-width:96px}
+  .wbblock .cfg .v{font-weight:600;color:#22303d}
+  .chip{display:inline-block;background:#eef1f5;border:1px solid #dce1e7;border-radius:13px;padding:2px 9px;font-size:11.5px;margin:2px 4px 2px 0;color:#33414f}
+  .chip.on{background:#e7f0fb;border-color:#bcd9f3;color:var(--ss);font-weight:600}
+  .chip.off{color:#9aa3ae;background:#f5f6f8}
+  .wbline{width:2px;height:26px;background:#b9c2cc}
+  .wbplus{width:24px;height:24px;border-radius:50%;background:#fff;border:1.5px solid var(--ss);color:var(--ss);display:grid;place-items:center;font-size:15px;font-weight:700;margin:-1px 0}
+  /* ---------- update form ---------- */
+  .uwrap{background:#eef1f5;padding:26px;display:flex;justify-content:center}
+  .ucard{width:560px;background:#fff;border:1px solid #d4dae1;border-radius:10px;box-shadow:0 8px 26px rgba(20,30,50,.14);overflow:hidden}
+  .uhead{background:var(--ss);color:#fff;padding:14px 18px}
+  .uhead .k{font-size:10.5px;font-weight:800;letter-spacing:1px;opacity:.85}
+  .uhead .t{font-size:16px;font-weight:700;margin-top:3px}
+  .ubody{padding:16px 18px 6px}
+  .urow{margin-bottom:13px}
+  .ulab{font-size:11.5px;color:var(--sub);font-weight:600;margin-bottom:4px}
+  .ufield{border:1px solid #cdd3da;border-radius:6px;padding:8px 11px;font-size:13.5px;color:#22303d;display:flex;align-items:center;justify-content:space-between}
+  .ufield.foc{border-color:var(--ss);box-shadow:0 0 0 3px #e2f0fb}
+  .ufield .car{color:#9aa3ae;font-size:11px}
+  .ulock{font-size:11px;color:#9aa3ae}
+  .ufoot{display:flex;align-items:center;gap:12px;padding:6px 18px 18px}
+  .note{font-size:11.5px;color:var(--sub)}
+  /* email */
+  .email{width:560px;background:#fff;border:1px solid #d4dae1;border-radius:10px;box-shadow:0 8px 26px rgba(20,30,50,.14);overflow:hidden}
+  .email .eh{padding:14px 18px;border-bottom:1px solid var(--line)}
+  .email .efrom{display:flex;align-items:center;gap:9px;font-size:12.5px;color:#33414f}
+  .email .efrom .av{width:26px;height:26px;border-radius:50%;background:var(--ss);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+  .email .esubj{font-weight:700;font-size:15px;color:#1b2733;margin-top:9px}
+  .email .eb{padding:16px 18px;font-size:13px;color:#3c4654;line-height:1.5}
+  .email .ebtn{display:inline-block;background:var(--ss);color:#fff;font-weight:700;font-size:13.5px;padding:10px 20px;border-radius:7px;margin-top:6px}
+  /* gallery card */
+  .gal{background:#f4f6f8;padding:18px;display:flex;gap:16px}
+  .galc{width:250px;background:#fff;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+  .galc.on{border-color:var(--ss);box-shadow:0 0 0 2px #cfe3f6}
+  .galc .ph{height:96px;background:linear-gradient(135deg,#eaf3fb,#dbeafa);display:grid;place-items:center;color:var(--ss);font-size:30px}
+  .galc .gt{padding:11px 12px;font-weight:700;font-size:13px;color:#1b2733}
+  .galc .gd{padding:0 12px 12px;color:var(--sub);font-size:11.5px}
+  .cap{width:1180px;max-width:100%;color:#aab4cc;font-size:12.5px;margin:8px 2px 0}
+</style></head>
+<body>
+
+<h2>1 · The tracker, in Smartsheet</h2>
+<div class="ssapp">
+  <div class="ssbar"><span class="sslogo"></span><span class="sstitle">CP-101 Program Tracker <small>Grid view</small></span>
+    <span class="right"><span class="av">PI</span></span></div>
+  <div class="ssmenu">
+    <span class="mi"><span class="ic">📁</span>File</span>
+    <span class="mi"><span class="ic">⟲</span>Automation</span>
+    <span class="mi"><span class="ic">▦</span>Forms</span>
+    <span class="sep"></span>
+    <span class="mi"><span class="ic">＋</span>Insert</span>
+    <span class="mi"><span class="ic">⚲</span>Filter</span>
+    <span class="right" style="margin-left:auto"><span class="mi" style="color:var(--ss);font-weight:600">▦ Share</span></span>
+  </div>
+  <table class="grid">
+    <thead><tr><th class="rn"></th><th style="width:230px">Task</th><th style="width:120px">Status</th><th style="width:150px">% Complete</th><th style="width:150px">Owner</th><th style="width:120px">Due</th></tr></thead>
+    <tbody>
+      <tr><td class="rn">1</td><td class="prim">Enrollment vs plan</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:45%"></i></span>45%</span></td><td><span class="who"><span class="av" style="background:#6a5acd">MR</span>M. Reyes</span></td><td>—</td></tr>
+      <tr><td class="rn">2</td><td class="prim">ADaM spec — finalize</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:60%"></i></span>60%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>15 Jun</td></tr>
+      <tr><td class="rn">3</td><td class="prim">Database soft-lock / data cut</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:40%"></i></span>40%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>17 Jun</td></tr>
+      <tr><td class="rn">4</td><td class="prim">Dry-run TLFs</td><td><span class="pill a">Watch</span></td><td><span class="barwrap"><span class="bar"><i style="width:10%"></i></span>10%</span></td><td><span class="who"><span class="av" style="background:#b8860b">JK</span>J. Kim</span></td><td>24 Jun</td></tr>
+      <tr><td class="rn">5</td><td class="prim">DSMB pack</td><td><span class="pill r">At Risk</span></td><td><span class="barwrap"><span class="bar"><i style="width:0%"></i></span>0%</span></td><td><span class="who"><span class="av" style="background:#475569">B</span>Biostat</span></td><td>30 Jun</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="cap">The ops tracker your team already keeps. Every column here is operational — status, % complete, owner, due — never participant data.</div>
+
+<h2>2 · Automation ▸ Create from template → the gallery</h2>
+<div class="ssapp">
+  <div class="ssmenu" style="border-top:none">
+    <span class="mi"><span class="ic">📁</span>File</span>
+    <span class="mi on"><span class="ic">⟲</span>Automation</span>
+    <span class="mi"><span class="ic">▦</span>Forms</span>
+  </div>
+  <div style="position:relative;height:132px"><div class="ssdrop" style="left:54px;top:4px">
+    <div class="di on">＋ Create from template…<small>Start from a pre-built workflow</small></div>
+    <div class="di">✎ Create from scratch…</div>
+    <div class="dsep"></div>
+    <div class="di">≣ Manage workflows</div>
+  </div></div>
+  <div class="gal">
+    <div class="galc on"><div class="ph">🔁</div><div class="gt">Request an update every week</div><div class="gd">Email each row's owner to update their own cells on a recurring schedule.</div></div>
+    <div class="galc"><div class="ph">🔔</div><div class="gt">Alert someone when…</div><div class="gd">Notify a person when a value changes.</div></div>
+    <div class="galc"><div class="ph">📅</div><div class="gt">Record a date when…</div><div class="gd">Stamp a date column on a change.</div></div>
+  </div>
+</div>
+<div class="cap">Smartsheet ships the template we want — <b>Request an update every week</b> — under Automation ▸ Create from template.</div>
+
+<h2>3 · The visual workflow builder (the whole setup)</h2>
+<div class="ssapp">
+  <div class="wbtop"><span class="wbname">Weekly status request <span class="pencil">✎</span></span>
+    <span class="right"><span class="btn">Cancel</span><span class="btn pri">Save</span></span></div>
+  <div class="wbcanvas">
+    <div class="wbblock when">
+      <div class="bh"><span class="wbico">📅</span><div><div style="display:flex;gap:8px;align-items:center"><span class="tag">WHEN</span></div><div class="ttl">When a date is reached</div><div class="sub">Trigger — runs the workflow on a schedule</div></div></div>
+      <div class="cfg">
+        <div class="row"><span class="k">Run</span><span class="v">Custom recurrence</span></div>
+        <div class="row"><span class="k">Frequency</span><span class="v">Weekly · every Monday</span></div>
+        <div class="row"><span class="k">At</span><span class="v">8:00 AM (sheet owner's time zone)</span></div>
+      </div>
+    </div>
+    <div class="wbline"></div><div class="wbplus">+</div><div class="wbline"></div>
+    <div class="wbblock act">
+      <div class="bh"><span class="wbico">✉</span><div><div style="display:flex;gap:8px;align-items:center"><span class="tag">THEN</span></div><div class="ttl">Request an update</div><div class="sub">Action — email each owner a form for their row</div></div></div>
+      <div class="cfg">
+        <div class="row"><span class="k">Send to</span><span class="v">Owner (contact in row)</span></div>
+        <div class="row" style="align-items:flex-start"><span class="k">Include fields</span><span class="v" style="font-weight:400">
+          <span class="chip on">Status ✓</span><span class="chip on">% Complete ✓</span><span class="chip on">Next action ✓</span><span class="chip on">Due ✓</span><br>
+          <span class="chip off">Task ID</span><span class="chip off">Owner</span><span class="chip off">Notes</span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="cap">One trigger, one action, then <b>Save</b>. No scripting, no add-on. The owner can only touch the four cells you included.</div>
+
+<h2>4 · What the owner gets — email → update form → written back</h2>
+<div style="display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start">
+  <div class="email">
+    <div class="eh"><div class="efrom"><span class="av">⟲</span> Smartsheet Automation &lt;automation@smartsheet.com&gt;</div>
+      <div class="esubj">CP-101 — please update your row</div></div>
+    <div class="eb">Hi A. Patel — your weekly update for <b>Database soft-lock / data cut</b> is ready. It takes ten seconds, and you don't need a Smartsheet login.
+      <br><span class="ebtn">Open update form →</span></div>
+  </div>
+  <div class="ucard">
+    <div class="uhead"><div class="k">SMARTSHEET · UPDATE REQUEST</div><div class="t">Database soft-lock / data cut</div></div>
+    <div class="ubody">
+      <div class="urow"><div class="ulab">Status</div><div class="ufield">On Track <span class="car">▾</span></div></div>
+      <div class="urow"><div class="ulab">% Complete</div><div class="ufield foc">75%</div></div>
+      <div class="urow"><div class="ulab">Next action</div><div class="ufield" style="color:#22303d">Soft-lock complete; running data-cut QC</div></div>
+      <div class="urow"><div class="ulab">Due</div><div class="ufield">19 Jun 2026 <span class="car">📅</span></div></div>
+    </div>
+    <div class="ufoot"><span class="btn pri">Submit update</span><span class="note">🔒 Only your row's cells are shown · writes back in place</span></div>
+  </div>
+</div>
+<div class="cap">The owner edits only their four cells and submits — Smartsheet writes the values straight back into that one row, in place. No duplicate, no copy-paste, no code.</div>
+
+<h2>5 · …written back into the same row, in place</h2>
+<div class="ssapp">
+  <div class="ssbar"><span class="sslogo"></span><span class="sstitle">CP-101 Program Tracker <small>Grid view</small></span>
+    <span class="right"><span class="av">PI</span></span></div>
+  <table class="grid">
+    <thead><tr><th class="rn"></th><th style="width:230px">Task</th><th style="width:120px">Status</th><th style="width:150px">% Complete</th><th style="width:150px">Owner</th><th style="width:120px">Due</th></tr></thead>
+    <tbody>
+      <tr><td class="rn">1</td><td class="prim">Enrollment vs plan</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:45%"></i></span>45%</span></td><td><span class="who"><span class="av" style="background:#6a5acd">MR</span>M. Reyes</span></td><td>—</td></tr>
+      <tr><td class="rn">2</td><td class="prim">ADaM spec — finalize</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:60%"></i></span>60%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>15 Jun</td></tr>
+      <tr style="background:#fffaf0"><td class="rn" style="background:#fff6e0">3</td><td class="prim">Database soft-lock / data cut <span style="font-size:10.5px;font-weight:700;color:#9a6a0f;background:#fbf1da;border-radius:9px;padding:1px 7px;margin-left:6px">updated just now</span></td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:75%"></i></span>75%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>19 Jun</td></tr>
+      <tr><td class="rn">4</td><td class="prim">Dry-run TLFs</td><td><span class="pill a">Watch</span></td><td><span class="barwrap"><span class="bar"><i style="width:10%"></i></span>10%</span></td><td><span class="who"><span class="av" style="background:#b8860b">JK</span>J. Kim</span></td><td>24 Jun</td></tr>
+      <tr><td class="rn">5</td><td class="prim">DSMB pack</td><td><span class="pill r">At Risk</span></td><td><span class="barwrap"><span class="bar"><i style="width:0%"></i></span>0%</span></td><td><span class="who"><span class="av" style="background:#475569">B</span>Biostat</span></td><td>30 Jun</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="cap">Still five rows — the data-cut row moved to <b>75%</b> with the new date, updated in place. No code ran, nobody opened the sheet, and the tracker is current.</div>
+
+<h2>SASR · the nightly job's effect (before → after)</h2>
+<div class="ssapp" id="sasrbefore">
+  <div class="ssbar"><span class="sslogo"></span><span class="sstitle">CP-101 Program Tracker <small>before tonight's run</small></span><span class="right"><span class="av">PI</span></span></div>
+  <table class="grid">
+    <thead><tr><th class="rn"></th><th style="width:236px">Task</th><th style="width:108px">Status</th><th style="width:140px">% Complete</th><th style="width:130px">Owner</th><th style="width:96px">Due</th></tr></thead>
+    <tbody>
+      <tr><td class="rn">1</td><td class="prim">Enrollment vs plan</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:45%"></i></span>45%</span></td><td><span class="who"><span class="av" style="background:#6a5acd">MR</span>M. Reyes</span></td><td>—</td></tr>
+      <tr><td class="rn">2</td><td class="prim">ADaM spec — finalize</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:60%"></i></span>60%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>15 Jun</td></tr>
+      <tr><td class="rn">3</td><td class="prim">Database soft-lock / data cut</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:40%"></i></span>40%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>17 Jun</td></tr>
+      <tr><td class="rn">4</td><td class="prim">Dry-run TLFs</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:10%"></i></span>10%</span></td><td><span class="who"><span class="av" style="background:#b8860b">JK</span>J. Kim</span></td><td>24 Jun</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="ssapp" id="sasrafter" style="margin-top:18px">
+  <div class="ssbar"><span class="sslogo"></span><span class="sstitle">CP-101 Program Tracker <small>after the scheduled SAS/R upsert</small></span><span class="right"><span class="av">PI</span></span></div>
+  <table class="grid">
+    <thead><tr><th class="rn"></th><th style="width:236px">Task</th><th style="width:108px">Status</th><th style="width:140px">% Complete</th><th style="width:130px">Owner</th><th style="width:96px">Due</th></tr></thead>
+    <tbody>
+      <tr><td class="rn">1</td><td class="prim">Enrollment vs plan</td><td><span class="pill r">At Risk</span></td><td><span class="barwrap"><span class="bar"><i style="width:45%"></i></span>45%</span></td><td><span class="who"><span class="av" style="background:#6a5acd">MR</span>M. Reyes</span></td><td>—</td></tr>
+      <tr><td class="rn">2</td><td class="prim">ADaM spec — finalize</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:85%"></i></span>85%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>15 Jun</td></tr>
+      <tr style="background:#fffaf0"><td class="rn" style="background:#fff6e0">3</td><td class="prim">Database soft-lock / data cut</td><td><span class="pill a">Watch</span></td><td><span class="barwrap"><span class="bar"><i style="width:40%"></i></span>40%</span></td><td><span class="who"><span class="av" style="background:#2e8b57">AP</span>A. Patel</span></td><td>19 Jun</td></tr>
+      <tr><td class="rn">4</td><td class="prim">Dry-run TLFs</td><td><span class="pill g">On Track</span></td><td><span class="barwrap"><span class="bar"><i style="width:10%"></i></span>10%</span></td><td><span class="who"><span class="av" style="background:#b8860b">JK</span>J. Kim</span></td><td>26 Jun</td></tr>
+      <tr style="background:#f0f9f2"><td class="rn" style="background:#e6f4ec">5</td><td class="prim">CSR shell — build <span style="font-size:10.5px;font-weight:700;color:#1f7a4d;background:#e6f4ec;border-radius:9px;padding:1px 7px;margin-left:6px">new row</span></td><td><span class="pill" style="background:#eef1f5;color:#5b6573">Planned</span></td><td><span class="barwrap"><span class="bar"><i style="width:0%"></i></span>0%</span></td><td><span class="who"><span class="av" style="background:#475569">B</span>Biostat</span></td><td>10 Jul</td></tr>
+    </tbody>
+  </table>
+</div>
+<div class="cap">Same sheet, by key: the scheduled SAS/R wrote tonight's truthful status — Enrollment to <b>At&nbsp;Risk</b>, the data cut to <b>Watch</b> (date slipped), the spec to <b>85%</b>, and appended one new row — updating in place, never duplicating. Smartsheet then sent the alert.</div>
+
+</body></html>

@@ -1,0 +1,1 @@
+Every flag triggers a human review and a logged disposition, and nothing is paused or terminated by the system itself.

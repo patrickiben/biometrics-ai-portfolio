@@ -1,0 +1,1 @@
+Participant-level safety and unblinded data go to the on-device model, and never leave the validated environment.

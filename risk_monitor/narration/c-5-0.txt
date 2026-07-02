@@ -1,0 +1,1 @@
+The study tier watches the trial's trajectory against its own rules: the cohort toxicity rate against the stopping rule, enrollment and screen-failure limits, the safety quality-tolerance limits from I-C-H, and central data-quality signals.

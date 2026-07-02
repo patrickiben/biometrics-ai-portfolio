@@ -1,0 +1,520 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAS/R Monitoring &amp; On-Leave Coverage - a dedicated wiki</title><style>
+:root{--steel:#6FA0DC;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--green:#35C07E;--amber:#D9A94F;--red:#E0857A;--bg:#0E1124}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+#wrap{display:flex;min-height:100vh}
+#side{width:288px;flex:0 0 288px;background:#142433;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #2a2f52}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #294056;margin-bottom:10px}
+#side .brand b{font-family:Georgia,serif;font-size:16.5px;line-height:1.25;display:block}#side .brand span{display:block;color:#9fb6cc;font-size:11px;margin-top:5px}
+#side .brand .tag{display:inline-block;margin-top:9px;background:var(--green);color:#fff;font-size:10px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:20px}
+#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #2f4a63;background:#1d3346;color:#fff;font-size:13px}
+#side a{display:block;color:#c4d4e2;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}
+#side a:hover{background:#1d3346}#side a.active{color:#fff;border-left-color:var(--green);background:#1d3346;font-weight:600}
+#main{flex:1;max-width:990px;margin:0 auto;padding:34px 50px 90px}
+section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.35}to{opacity:1}}
+h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.16}
+h2{font-family:Georgia,serif;color:var(--steel);font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:17px;color:#C3CCE4}
+p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
+a{color:var(--steel)}
+code{background:#20284a;color:#A9C6F2;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
+.muted{color:var(--muted);font-size:13px}
+.callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14.5px}
+.callout.rule{background:#2A1614;border-left:4px solid var(--red)}
+.callout.honest{background:#2A2412;border-left:4px solid var(--amber)}.callout.honest b,.callout.honest strong{color:#D9A94F}
+.callout.win{background:#11261C;border-left:4px solid var(--green)}
+.callout.key{background:#141E2E;border-left:4px solid var(--steel)}
+.callout.tip{background:#0F262A;border-left:4px solid #2CAEB8}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+.comp{border:1px solid var(--line);border-top:5px solid var(--steel);border-radius:10px;padding:13px 15px;background:var(--panel);box-shadow:0 2px 7px rgba(0,0,0,.25)}
+.comp.tm{border-top-color:var(--steel)}.comp.ss{border-top-color:var(--green)}.comp.slm{border-top-color:var(--amber)}
+.comp b{font-size:15px}.comp b span{font-weight:400;color:var(--muted);font-size:12px}.comp p{font-size:13px;color:#C3CCE4;margin:6px 0 0}
+.flow{margin:16px 0}
+.node{background:var(--panel);border:1px solid var(--line);border-left:5px solid var(--steel);border-radius:9px;padding:10px 14px;font-size:14px;display:flex;gap:11px;align-items:center}
+.node.amb{border-left-color:var(--amber)}.node.red{border-left-color:var(--red)}
+.node .n{flex:0 0 22px;height:22px;border-radius:50%;background:var(--steel);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.node.amb .n{background:var(--amber)}.node.red .n{background:var(--red)}
+.arr{text-align:center;color:#a9b6c4;font-size:17px;margin:2px 0}
+table.cat{border-collapse:collapse;width:100%;margin:13px 0;font-size:14px}
+table.cat th,table.cat td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+table.cat th{background:#142433;color:#fff;font-weight:600}table.cat tr:nth-child(even) td{background:var(--panel)}
+.dl{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}
+.btn{display:inline-block;background:var(--steel);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px}
+.btn.ghost{background:transparent;color:var(--steel);border:1.5px solid var(--steel)}.btn:hover{opacity:.92}
+.blurb{color:var(--muted);font-size:14px;margin:4px 0 12px}
+.gal{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.gv{display:block;border:1px solid var(--line);border-left:4px solid var(--steel);border-radius:10px;padding:13px 16px;background:var(--panel);text-decoration:none;color:inherit}
+.gv:hover{background:var(--panel)}
+.gv b{display:block;color:var(--steel);font-size:15px;margin-bottom:4px}
+.gv span{font-size:13px;color:#C3CCE4}
+@media(max-width:760px){.gal{grid-template-columns:1fr}}
+.footer{margin-top:42px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+@media(max-width:760px){.grid3{grid-template-columns:1fr}}
+
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
+
+
+figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid var(--line);border-radius:10px}figure.diagram figcaption{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.5}figure.diagram figcaption b{color:var(--ink)}
+@media (prefers-reduced-motion:reduce){section.show{animation:none}}
+@media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
+</style></head>
+<body><a href="#main" class="skip">Skip to content</a><div id="wrap">
+<nav id="side" aria-label="Wiki sections"><div class="brand"><b>SAS/R Monitoring<br>&amp; On-Leave Coverage</b><span>Deterministic scheduled SAS/R that watches the trial &amp; keeps the tracker current &mdash; so nothing slips while you&rsquo;re out</span><span class="tag">FOR BIOSTATISTICIANS</span></div>
+<label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off">
+<a href="#start" data-t="start">Start here</a>
+<a href="#watch" data-t="watch">&#9654; Watch it work</a>
+<a href="#dashboard" data-t="dashboard">Interactive dashboard</a>
+<a href="#arch" data-t="arch">Architecture</a>
+<a href="#checks" data-t="checks">The checks</a>
+<a href="#alerts" data-t="alerts">Alerts &amp; escalation</a>
+<a href="#onleave" data-t="onleave">&#9992; Covering while on leave</a>
+<a href="#tracker" data-t="tracker">Keeping the tracker current</a>
+<a href="#language" data-t="language">Optional language layer</a>
+<a href="#macros" data-t="macros">The macro libraries</a>
+<a href="#gov" data-t="gov">&#9888; Safeguards &amp; governance</a>
+<a href="#itready" data-t="itready">&#128268; IT readiness</a>
+<a href="#faq" data-t="faq">Maintenance &amp; FAQ</a></nav>
+<main id="main" tabindex="-1"><section id="start" aria-label="Start here">
+    <h1>SAS/R Monitoring &amp; On-Leave Coverage</h1>
+    <p class="lede">Turn your already-validated monitoring programs into a <strong>scheduled, self-escalating loop</strong> so the trial keeps being watched, the tracker keeps being current, and nothing falls through the cracks &mdash; <strong>especially while you&rsquo;re out on leave</strong>. The monitoring itself is <strong>deterministic SAS/R, no AI required</strong> &mdash; the lowest-risk, ship-today pipeline in this whole program.</p>
+    <figure class="diagram" role="img" aria-labelledby="d-arch-title">
+      <svg viewBox="0 0 860 320" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <title id="d-arch-title">Three components share one scheduled SAS/R job: TRIALMON the deterministic backbone, SHEETLINK the tracker, and the optional LOCALMIND language layer; all output routes to humans who decide.</title>
+        <defs>
+          <marker id="ah-steel" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--steel)"/></marker>
+        </defs>
+        <!-- data sources -->
+        <rect x="14" y="120" width="120" height="80" rx="9" fill="var(--panel)" stroke="var(--line)"/>
+        <text x="74" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Validated data</text>
+        <text x="74" y="170" text-anchor="middle" font-size="11" fill="var(--muted)">EDC / labs / ECG</text>
+        <text x="74" y="186" text-anchor="middle" font-size="11" fill="var(--muted)">dated exports</text>
+        <!-- scheduled job container -->
+        <rect x="170" y="22" width="430" height="276" rx="10" fill="none" stroke="var(--steel)" stroke-dasharray="5 4"/>
+        <text x="385" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="var(--steel)">ONE SCHEDULED JOB &middot; service account SVC-BIOSTAT &middot; deterministic SAS/R</text>
+        <!-- TRIALMON -->
+        <rect x="190" y="58" width="390" height="86" rx="9" fill="var(--panel)" stroke="var(--steel)" stroke-width="2"/>
+        <text x="206" y="80" font-size="14" font-weight="700" fill="var(--steel)">TRIALMON &middot; the backbone</text>
+        <text x="206" y="98" font-size="11" fill="var(--muted)">%tm_*  &mdash;  freshness gate &rarr; checks &rarr; roll-up &rarr; digest &rarr; tier-2 alert</text>
+        <text x="206" y="114" font-size="11" fill="var(--muted)">&rarr; heartbeat   (watched by an independent dead-man's switch)</text>
+        <text x="206" y="132" font-size="11" font-weight="700" fill="var(--green)">no AI in the loop</text>
+        <!-- SHEETLINK -->
+        <rect x="190" y="156" width="188" height="74" rx="9" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/>
+        <text x="206" y="178" font-size="13" font-weight="700" fill="var(--green)">SHEETLINK</text>
+        <text x="206" y="196" font-size="11" fill="var(--muted)">%ss_*  &mdash;  idempotent</text>
+        <text x="206" y="211" font-size="11" fill="var(--muted)">upsert into Smartsheet</text>
+        <text x="206" y="225" font-size="11" fill="var(--muted)">ops-only allowlist</text>
+        <!-- LOCALMIND -->
+        <rect x="392" y="156" width="188" height="74" rx="9" fill="var(--panel)" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="408" y="178" font-size="13" font-weight="700" fill="var(--amber)">LOCALMIND</text>
+        <text x="408" y="196" font-size="11" fill="var(--muted)">%slm_*  &mdash;  optional</text>
+        <text x="408" y="211" font-size="11" fill="var(--muted)">on-device drafting only</text>
+        <text x="408" y="225" font-size="11" fill="var(--muted)">never a number / decision</text>
+        <text x="385" y="252" text-anchor="middle" font-size="11" fill="var(--muted)">SHEETLINK + LOCALMIND branch off the same job &mdash; LOCALMIND is convenience, not a dependency</text>
+        <!-- humans -->
+        <rect x="636" y="100" width="208" height="120" rx="9" fill="var(--panel)" stroke="var(--line)"/>
+        <text x="740" y="128" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Humans decide</text>
+        <text x="740" y="150" text-anchor="middle" font-size="11" fill="var(--muted)">covering biostatistician</text>
+        <text x="740" y="166" text-anchor="middle" font-size="11" fill="var(--muted)">+ medical monitor</text>
+        <text x="740" y="190" text-anchor="middle" font-size="11" fill="var(--muted)">a flag is a prompt,</text>
+        <text x="740" y="205" text-anchor="middle" font-size="11" fill="var(--muted)">never a determination</text>
+        <!-- connectors -->
+        <line x1="134" y1="160" x2="186" y2="101" stroke="var(--line)" stroke-width="1.5" marker-end="url(#ah-steel)"/>
+        <line x1="600" y1="120" x2="632" y2="150" stroke="var(--steel)" stroke-width="1.5" marker-end="url(#ah-steel)"/>
+      </svg>
+      <figcaption><b>Three components, one scheduled job.</b> The deterministic <b>TRIALMON</b> backbone does the watching; <b>SHEETLINK</b> keeps the tracker current and <b>LOCALMIND</b> is an optional language convenience &mdash; every path routes to humans, who decide.</figcaption>
+    </figure>
+    <div class="callout rule"><strong>The one rule.</strong> These macros <strong>detect, package, and email pre-specified deterministic flags</strong>. They <strong>do not triage, interpret, or adjudicate</strong>, and they <strong>never auto-act on safety</strong>. A flag is a <em>prompt for a human</em> &mdash; the medical monitor and the covering biostatistician make every call. Validate the threshold logic + scheduling wrapper as study programs (GxP); keep anything <em>reported</em> independently double-programmed; reported numbers come from validated tools, never from a flag and never from the optional language model.</div>
+    <h2>Three components, one scheduled job</h2>
+    <div class="grid3">
+      <div class="comp tm"><b>TRIALMON <span>&middot; the backbone</span></b><p>Deterministic SAS/R that ingests the latest data, gates on <em>freshness</em>, runs the pre-specified safety + operational <em>checks</em>, rolls up severity, emails a <em>digest</em>, fires a <em>tier-2 urgent alert</em> on any RED, and closes with a <em>heartbeat</em> &mdash; watched by an independent <em>dead-man&rsquo;s switch</em>. The <code>%tm_*</code> library.</p></div>
+      <div class="comp ss"><b>SHEETLINK <span>&middot; the tracker</span></b><p>The same scheduled job keeps your Smartsheet program tracker <em>current</em> &mdash; idempotent upsert-by-key behind an ops-only allowlist guard &mdash; so the PM dashboard is live while you&rsquo;re away. The <code>%ss_*</code> library. No AI.</p></div>
+      <div class="comp slm"><b>LOCALMIND <span>&middot; optional language</span></b><p>An <em>optional</em> on-device SLM drafts the digest prose or triages free-text the deterministic code can&rsquo;t &mdash; ops-only, behind the loopback + validator + human-gate guardrails. The monitoring needs <strong>none</strong> of this; it is a convenience, not a dependency. The <code>%slm_*</code> library.</p></div>
+    </div>
+    <div class="callout win"><strong>Why this is the lowest-risk piece.</strong> The detection is pre-specified, deterministic SAS/R &mdash; the same logic you already validate, just scheduled and self-escalating. No cloud, no AI in the loop, no model to qualify. It <em>detects, packages, and pages</em>; humans decide. That is exactly the property a regulated shop wants from unattended automation.</div>
+    <p>Below: the architecture, the checks, the alerting + escalation, the <a href="#onleave">covering-while-on-leave runbook</a> (the headline), the tracker, the optional language layer, the macro libraries, the safeguards, and IT readiness.</p>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="watch" aria-label="Watch it work">
+    <h1>Watch it work &mdash; written in SAS, then a month of coverage</h1>
+    <p class="lede">First, the monitoring backbone <em>written line by line and run</em> in SAS Enterprise Guide &mdash; in the Azure session where the study data actually lives. Then the on-leave scenario end to end: the daily job runs under a service account, a RED finding pages the covering biostatistician with an evidence packet, the tracker stays current, and the dead-man&rsquo;s switch guarantees you&rsquo;d know if it ever went quiet.</p>
+    <div class="dl">
+      <a class="btn" href="../sas_r_automation/SAS_R_Monitor_Screencast_narrated.mp4">&#9654;&nbsp; The monitor, written &amp; run in SAS &mdash; live screencast</a>
+      <a class="btn" href="../sas_r_automation/SAS_R_OnLeave_Screencast_narrated.mp4">&#9654;&nbsp; Covering while on leave &mdash; live screencast</a>
+      <a class="btn ghost" href="../sas_r_automation/SAS_R_OnLeave_Example_StepGuide.pdf">&#10515;&nbsp; Picture guide (PDF)</a>
+    </div>
+    <p>And the two companions in action:</p>
+    <div class="dl">
+      <a class="btn ghost" href="../smartsheet_sasr/SAS_R_Smartsheet_Screencast_narrated.mp4">&#9654;&nbsp; Smartsheet keeps itself current &mdash; live screencast</a>
+      <a class="btn ghost" href="../slm_wiki/SLM_OnDevice_Example_narrated.mp4">&#9654;&nbsp; On-device language triage (optional)</a>
+    </div>
+    <h2>Every section, demonstrated on screen</h2>
+    <p class="blurb">Each part of this wiki has its own live screencast &mdash; the actual SAS (or R) code written line by line in SAS Enterprise Guide 8.3 on the Azure desktop, and every icon clicked. No slides.</p>
+    <div class="gal">
+      <a class="gv" href="../sas_r_automation/SAS_R_Arch_Screencast_narrated.mp4"><b>&#9654; Architecture</b><span>The daily job wired in <code>tm_config.sas</code> &mdash; libraries, thresholds, recipients, schedule.</span></a>
+      <a class="gv" href="../sas_r_automation/SAS_R_Macros_Screencast_narrated.mp4"><b>&#9654; The %tm_* library</b><span>Inside <code>tm_macros.sas</code>: the freshness gate, the roll-up, written line by line.</span></a>
+      <a class="gv" href="../sas_r_automation/SAS_R_Checks_Screencast_narrated.mp4"><b>&#9654; The safety checks</b><span>The Hy&rsquo;s-Law AND-gate discipline and the CTCAE labs band &mdash; thresholds, not diagnoses.</span></a>
+      <a class="gv" href="../sas_r_automation/SAS_R_Alerts_Screencast_narrated.mp4"><b>&#9654; Alerts &amp; escalation</b><span>The escalation matrix written, then the tier-2 route shown in the log.</span></a>
+      <a class="gv" href="../sas_r_automation/SAS_R_RCompanion_Screencast_narrated.mp4"><b>&#9654; The R companion</b><span>Prototyping in RStudio on the laptop &mdash; synthetic, aggregate, never study data.</span></a>
+      <a class="gv" href="../sas_r_automation/SAS_R_Language_Screencast_narrated.mp4"><b>&#9654; The optional language layer</b><span>The on-device SLM boxed in: loopback, a string-only schema, a human gate.</span></a>
+      <a class="gv" href="../sas_r_automation/SAS_R_ITReady_Screencast_narrated.mp4"><b>&#9654; IT readiness</b><span>Scheduling the job under a service account in Windows Task Scheduler + the watchdog.</span></a>
+    </div>
+    <div class="callout tip"><b>The scenario:</b> you are out for three weeks. Each morning the job ingests the overnight EDC/lab/ECG exports, checks freshness first, runs the safety flags, and emails a digest to the support alias. On day 9 an eDISH point trips Hy&rsquo;s-Law screening &mdash; a tier-2 alert pages the covering biostatistician with a one-page evidence packet; they loop in the medical monitor, who makes the call. The tracker reflects it within the hour. You return to a complete trail, not a backlog.</div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="dashboard" aria-label="Interactive dashboard">
+    <h1>The interactive dashboard &mdash; the backbone made visible</h1>
+    <p class="lede">A self-contained, click-through dashboard on a <strong>synthetic, longitudinal</strong> CP-101 run (22 participants &times; 8 visits), presented as a <strong>dark operations console</strong> (status pill, a what-if <em>scenario simulator</em>, cohort <em>ranking bars</em>, a freshness strip, and a network view). It is a <em>teaching view</em> of what the deterministic loop produces &mdash; not a production console, not a record. Open it in any browser; nothing leaves the file.</p>
+    <div class="dl">
+      <a class="btn" href="TRIALMON_Dashboard.html">&#9656;&nbsp; Open the TRIALMON dashboard</a>
+      <a class="btn ghost" href="TRIALMON_Dashboard_Wiki.html">&#128214;&nbsp; The Field Guide (how to read it)</a>
+    </div>
+    <div class="callout rule"><strong>What it is and isn&rsquo;t.</strong> It runs on <strong>synthetic data</strong> &mdash; no PHI, no real participants, no unblinding. Every flag is a <em>screening prompt</em>, never a determination and never a reportable number; reported numbers (incidence tables, the ICH&nbsp;E14 table, central reads, MTD, final disposition) come only from validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21). It is an <em>illustration</em> of the backbone, not the validated job itself.</div>
+    <div class="callout honest"><strong>One tab is fenced off as exploratory.</strong> An <em>&ldquo;Exploratory &#9656; structure&rdquo;</em> section adds unsupervised <b>persistence-homology</b> trial-structure analytics &mdash; H₀ clustering of participants in safety-feature space (the &beta;₀ curve + barcode + a PCA embedding) and a site network &mdash; for hypothesis generation only. It is <b>explicitly NOT part of the validated safety backbone</b>: it never produces a flag, a determination, or a number, and nothing there escalates study status. The deterministic-flag participants happen to surface as topological outliers there too &mdash; an independent structural cross-check, not a second opinion that decides anything.</div>
+    <h2>What it shows &mdash; seven validated sections + one exploratory, per-visit detail</h2>
+    <p>A section sub-nav (Overview &middot; Hepatic &middot; Cardiac &middot; Labs&nbsp;&amp;&nbsp;Vitals &middot; AE&nbsp;&amp;&nbsp;DLT &middot; Disposition &middot; Participants) with a KPI tile strip and a standing governance ribbon. Every per-visit series is built so its worst on-treatment value equals the original summary &mdash; nothing contradicts the headline plots.</p>
+    <figure class="diagram" role="img" aria-labelledby="d-dash-title">
+      <svg viewBox="0 0 860 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <title id="d-dash-title">Seven validated dashboard sections sit inside a governed safety backbone; one exploratory persistence-homology tab is fenced off outside it and never produces a flag, number, or status change.</title>
+        <!-- validated zone -->
+        <rect x="14" y="46" width="600" height="240" rx="10" fill="none" stroke="var(--green)" stroke-dasharray="5 4"/>
+        <text x="30" y="68" font-size="12" font-weight="700" fill="var(--green)">VALIDATED SAFETY BACKBONE &middot; synthetic CP-101 &middot; flags = screening prompts only</text>
+        <!-- seven section tiles -->
+        <g font-size="12.5" font-weight="700">
+          <rect x="30" y="82" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="44" y="106" fill="var(--ink)">Overview</text><text x="44" y="124" font-size="10.5" font-weight="400" fill="var(--muted)">KPIs &middot; worklist &middot; freshness &middot; heatmap</text>
+          <rect x="218" y="82" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="232" y="106" fill="var(--ink)">Hepatic</text><text x="232" y="124" font-size="10.5" font-weight="400" fill="var(--muted)">eDISH trails &middot; LFT &middot; AND-gate</text>
+          <rect x="406" y="82" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="420" y="106" fill="var(--ink)">Cardiac</text><text x="420" y="124" font-size="10.5" font-weight="400" fill="var(--muted)">QTcF trajectory &middot; E14 census</text>
+          <rect x="30" y="148" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="44" y="172" fill="var(--ink)">Labs &amp; Vitals</text><text x="44" y="190" font-size="10.5" font-weight="400" fill="var(--muted)">shift grid &middot; heme &middot; renal &middot; PCS</text>
+          <rect x="218" y="148" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="232" y="172" fill="var(--ink)">AE &amp; DLT</text><text x="232" y="190" font-size="10.5" font-weight="400" fill="var(--muted)">3+3 ladder &middot; SOC&times;grade &middot; swimlane</text>
+          <rect x="406" y="148" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="420" y="172" fill="var(--ink)">Disposition</text><text x="420" y="190" font-size="10.5" font-weight="400" fill="var(--muted)">funnel &middot; RBQM KRIs &middot; deviations</text>
+          <rect x="124" y="214" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="138" y="238" fill="var(--ink)">Participants</text><text x="138" y="256" font-size="10.5" font-weight="400" fill="var(--muted)">sortable roster &middot; evidence modal</text>
+        </g>
+        <!-- exploratory fenced off -->
+        <rect x="636" y="82" width="208" height="188" rx="10" fill="var(--panel)" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 3"/>
+        <text x="740" y="106" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--amber)">Exploratory</text>
+        <text x="740" y="123" text-anchor="middle" font-size="11" fill="var(--muted)">persistence-homology</text>
+        <text x="740" y="139" text-anchor="middle" font-size="11" fill="var(--muted)">&beta;&#8320; curve &middot; barcode</text>
+        <text x="740" y="155" text-anchor="middle" font-size="11" fill="var(--muted)">PCA &middot; site network</text>
+        <line x1="660" y1="172" x2="820" y2="172" stroke="var(--line)"/>
+        <text x="740" y="194" text-anchor="middle" font-size="11" font-weight="700" fill="var(--red)">NOT the backbone</text>
+        <text x="740" y="212" text-anchor="middle" font-size="10.5" fill="var(--muted)">no flag &middot; no number</text>
+        <text x="740" y="227" text-anchor="middle" font-size="10.5" fill="var(--muted)">no status change</text>
+        <text x="740" y="252" text-anchor="middle" font-size="10.5" fill="var(--muted)">hypothesis-generation</text>
+        <text x="740" y="266" text-anchor="middle" font-size="10.5" fill="var(--muted)">cross-check only</text>
+      </svg>
+      <figcaption><b>Seven validated sections, one fenced-off tab.</b> Everything inside the green zone is the governed teaching view of the deterministic backbone; the <b>exploratory</b> persistence-homology tab sits deliberately outside it and never produces a flag, number, or status change.</figcaption>
+    </figure>
+    <ul>
+      <li><b>Overview</b> &mdash; KPI tiles; a prioritized <em>attention worklist</em> (every open AMBER/RED screening flag, click-to-open); a first-class <em>data-freshness/SLA</em> panel (stale-green &rarr; RED); and a <em>study heatmap</em> (participant &times; visit, worst flag &mdash; the &ldquo;when did it start&rdquo; view).</li>
+      <li><b>Hepatic</b> &mdash; the eDISH scatter now with per-visit <em>history trails</em> (where a participant has been, not a prediction); per-visit <em>LFT trajectories</em>; an <em>R-ratio pattern</em> strip; and a peak/baseline/trend table. The near-miss (high ALT, bilirubin under 2&times;) is correctly kept GREEN by the AND-gate at every visit.</li>
+      <li><b>Cardiac</b> &mdash; per-visit QTcF (Fridericia) trajectory with a cohort-median band, and an ICH&nbsp;E14 categorical outlier <em>census</em> (clearly labelled &ldquo;screening census &mdash; not the E14 table&rdquo;; baseline-watch shown distinctly).</li>
+      <li><b>Labs &amp; Vitals</b> &mdash; a baseline&rarr;worst <em>lab-shift grid</em> (CTCAE-style screening bands, not adjudicated grades), hematology trajectories, a renal fold-rise panel (eGFR an estimate), and a vitals/orthostatic PCS board (operational context).</li>
+      <li><b>AE &amp; DLT</b> &mdash; a 3+3 escalation <em>state ladder</em> (trigger / decision-pending only &mdash; the SRC decides, never the dashboard), an AE SOC&times;CTCAE-grade matrix (severity and seriousness kept separate), and an AE onset swimlane vs study day.</li>
+      <li><b>Disposition</b> &mdash; an enrollment/disposition funnel, RBQM KRI tiles + a protocol-deviation log, and a visit-compliance matrix (a missed visit is routed to a human, never read as &ldquo;fine&rdquo;).</li>
+      <li><b>Participants</b> &mdash; a sortable/filterable/searchable roster; and on <b>click anywhere</b>, an evidence-packet modal with per-visit sparkline trajectories.</li>
+    </ul>
+    <div class="callout tip"><strong>A full field guide ships with it.</strong> The dashboard comes with a dedicated, operating-depth <a href="TRIALMON_Dashboard_Wiki.html">Field Guide</a> &mdash; a 15-section reference that documents every section, panel, threshold and governance rule, the synthetic data model, and a guided tour of the planted teaching cases. Read it next to the dashboard the first time through.</div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="arch" aria-label="Architecture">
+    <h1>Architecture &mdash; the daily job</h1>
+    <p class="lede">One orchestrated batch job (<code>monitor_driver.sas</code>), scheduled under a <strong>service account</strong>, runs the loop. Order matters: <strong>freshness gates everything</strong>, and every fragile step is wrapped to <strong>fail loud</strong>.</p>
+    <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Arch_Screencast_narrated.mp4">&#9654;&nbsp; Watch it wired in config (tm_config.sas) &mdash; live screencast</a></div>
+    <div class="flow">
+      <div class="node"><span class="n">1</span>Ingest &mdash; resolve the newest dated exports (<code>%tm_latest</code>)</div><div class="arr">&darr;</div><div class="node amb"><span class="n">2</span>Freshness gate &mdash; is each feed fresh? <b>a dead feed flags loudest; stale-green is worse than red</b> (<code>%tm_freshness</code>)</div><div class="arr">&darr;</div><div class="node"><span class="n">3</span>Guard &mdash; assert expected columns exist, are numeric, pass a range-sanity check (<code>%tm_guard</code>)</div><div class="arr">&darr;</div><div class="node"><span class="n">4</span>Checks &mdash; the pre-specified deterministic safety + operational flags (<code>%tm_chk_*</code>)</div><div class="arr">&darr;</div><div class="node red"><span class="n">5</span>Roll-up &mdash; worst severity GREEN&lt;AMBER&lt;RED (<code>%tm_status</code>)</div><div class="arr">&darr;</div><div class="node"><span class="n">6</span>Digest &mdash; email the daily summary to the support alias (<code>%tm_digest</code>)</div><div class="arr">&darr;</div><div class="node red"><span class="n">7</span>Tier-2 alert &mdash; on any <em>de-duplicated</em> RED, page with an evidence packet (<code>%tm_alert</code>)</div><div class="arr">&darr;</div><div class="node"><span class="n">8</span>Heartbeat &mdash; write a run record, always, even on failure (<code>%tm_heartbeat</code>)</div>
+    </div>
+    <div class="callout key"><strong>The independent dead-man&rsquo;s switch.</strong> <code>tm_watchdog.sh</code> runs on a <em>different host and account</em>, reads the heartbeat, and screams if the job didn&rsquo;t run, ran late, or ran on stale data. The thing most likely to fail silently is the scheduler itself &mdash; so the watchdog is the control that makes &ldquo;no news&rdquo; trustworthy. <strong>No email is itself a signal.</strong></div>
+    <h2>The two branches off the same job</h2>
+    <ul>
+      <li><b>Tracker (SHEETLINK):</b> after the checks, <code>%ss_*</code> upserts the run status + open flags into the Smartsheet tracker &mdash; idempotent by key, ops-only columns allowlisted &mdash; so the PM view is live. See <a href="#tracker">Keeping the tracker current</a>.</li>
+      <li><b>Language (LOCALMIND, optional):</b> if enabled, an on-device SLM drafts the digest prose from the already-structured rows &mdash; never deciding what to include. See <a href="#language">The optional language layer</a>.</li>
+    </ul>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="checks" aria-label="The checks">
+    <h1>The monitoring checks &mdash; deterministic flags</h1>
+    <p class="lede">Each check reads validated analysis data and writes a flagged dataset with a <code>sev</code> column (GREEN / AMBER / RED) against <strong>pre-specified thresholds</strong>. They are <strong>screening flags, not diagnoses</strong> &mdash; a RED is a prompt for a human, not a finding.</p>
+    <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Checks_Screencast_narrated.mp4">&#9654;&nbsp; Watch the AND-gate discipline &amp; the CTCAE band &mdash; live screencast</a></div>
+    <table class="cat"><thead><tr><th>Check</th><th>What it flags</th><th>Default thresholds</th></tr></thead><tbody>
+      <tr><td><code>%tm_chk_hyslaw</code></td><td>eDISH / Hy&rsquo;s-Law screening: ALT or AST &gt;&times;ULN <b>and</b> TBili &gt;&times;ULN</td><td>ALT/AST 3&times;, TBili 2&times;, ALP 2&times; &mdash; <i>screening flag, not a diagnosis</i></td></tr>
+      <tr><td><code>%tm_chk_qtcf</code></td><td>QTcF absolute &amp; change-from-baseline tiers (ICH E14)</td><td>RED abs 500 / &Delta;60; AMBER abs 480 / &Delta;30</td></tr>
+      <tr><td><code>%tm_chk_ae</code></td><td>AE/SAE running tally by cohort &mdash; participant-incidence + event counts</td><td>study-specified</td></tr>
+      <tr><td><code>%tm_chk_dlt</code></td><td>Candidate-DLT tally vs the 3+3 rule (against an <b>adjudicated</b> DLT flag + completed window)</td><td><i>does not make the escalation decision</i></td></tr>
+      <tr><td><code>%tm_chk_labs</code></td><td>Out-of-range / potentially-clinically-significant / shift flags</td><td>study-specified</td></tr>
+    </tbody></table>
+    <figure class="diagram" role="img" aria-labelledby="d-checks-title">
+      <svg viewBox="0 0 860 286" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <title id="d-checks-title">Validated analysis data fans out to five deterministic tm_chk checks; each writes a severity column, and the worst severity rolls up to a single study status.</title>
+        <defs>
+          <marker id="ah-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--line)"/></marker>
+        </defs>
+        <!-- source -->
+        <rect x="14" y="108" width="116" height="70" rx="9" fill="var(--panel)" stroke="var(--steel)" stroke-width="2"/>
+        <text x="72" y="138" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">Validated</text>
+        <text x="72" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">analysis data</text>
+        <!-- five checks -->
+        <g>
+          <rect x="190" y="12" width="248" height="42" rx="8" fill="var(--panel)" stroke="var(--line)"/><text x="204" y="32" font-size="12.5" font-weight="700" fill="var(--steel)">%tm_chk_hyslaw</text><text x="204" y="47" font-size="10.5" fill="var(--muted)">ALT/AST &amp; TBili AND-gate (eDISH)</text>
+          <rect x="190" y="62" width="248" height="42" rx="8" fill="var(--panel)" stroke="var(--line)"/><text x="204" y="82" font-size="12.5" font-weight="700" fill="var(--steel)">%tm_chk_qtcf</text><text x="204" y="97" font-size="10.5" fill="var(--muted)">QTcF abs &amp; &Delta;-baseline tiers (E14)</text>
+          <rect x="190" y="112" width="248" height="42" rx="8" fill="var(--panel)" stroke="var(--line)"/><text x="204" y="132" font-size="12.5" font-weight="700" fill="var(--steel)">%tm_chk_ae</text><text x="204" y="147" font-size="10.5" fill="var(--muted)">AE/SAE tally by cohort</text>
+          <rect x="190" y="162" width="248" height="42" rx="8" fill="var(--panel)" stroke="var(--line)"/><text x="204" y="182" font-size="12.5" font-weight="700" fill="var(--steel)">%tm_chk_dlt</text><text x="204" y="197" font-size="10.5" fill="var(--muted)">candidate-DLT vs 3+3 (no decision)</text>
+          <rect x="190" y="212" width="248" height="42" rx="8" fill="var(--panel)" stroke="var(--line)"/><text x="204" y="232" font-size="12.5" font-weight="700" fill="var(--steel)">%tm_chk_labs</text><text x="204" y="247" font-size="10.5" fill="var(--muted)">out-of-range / PCS / shift</text>
+        </g>
+        <!-- sev column -->
+        <rect x="496" y="92" width="132" height="100" rx="9" fill="var(--panel)" stroke="var(--line)"/>
+        <text x="562" y="116" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">sev column</text>
+        <rect x="514" y="126" width="96" height="18" rx="4" fill="none" stroke="var(--green)"/><text x="562" y="139" text-anchor="middle" font-size="11" fill="var(--green)">GREEN</text>
+        <rect x="514" y="148" width="96" height="18" rx="4" fill="none" stroke="var(--amber)"/><text x="562" y="161" text-anchor="middle" font-size="11" fill="var(--amber)">AMBER</text>
+        <rect x="514" y="170" width="96" height="18" rx="4" fill="none" stroke="var(--red)"/><text x="562" y="183" text-anchor="middle" font-size="11" fill="var(--red)">RED</text>
+        <!-- roll-up -->
+        <rect x="688" y="100" width="156" height="84" rx="9" fill="var(--panel)" stroke="var(--red)" stroke-width="2"/>
+        <text x="766" y="128" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">%tm_status</text>
+        <text x="766" y="148" text-anchor="middle" font-size="11" fill="var(--muted)">worst severity wins</text>
+        <text x="766" y="166" text-anchor="middle" font-size="11" fill="var(--muted)">GREEN &lt; AMBER &lt; RED</text>
+        <!-- connectors fan-out -->
+        <g stroke="var(--line)" stroke-width="1.5" fill="none">
+          <path d="M130 134 C160 134 160 33 188 33" marker-end="url(#ah-c)"/>
+          <path d="M130 138 C160 138 160 83 188 83" marker-end="url(#ah-c)"/>
+          <path d="M130 143 L188 143" marker-end="url(#ah-c)"/>
+          <path d="M130 148 C160 148 160 183 188 183" marker-end="url(#ah-c)"/>
+          <path d="M130 152 C160 152 160 233 188 233" marker-end="url(#ah-c)"/>
+        </g>
+        <line x1="438" y1="133" x2="494" y2="138" stroke="var(--line)" stroke-width="1.5" marker-end="url(#ah-c)"/>
+        <line x1="628" y1="142" x2="686" y2="142" stroke="var(--line)" stroke-width="1.5" marker-end="url(#ah-c)"/>
+      </svg>
+      <figcaption><b>Five deterministic checks, one rolled-up status.</b> Each <b>%tm_chk_*</b> reads validated data and writes a <code>sev</code> column against pre-specified thresholds; <b>%tm_status</b> takes the worst severity &mdash; a RED is a screening prompt for a human, never a diagnosis.</figcaption>
+    </figure>
+    <div class="callout honest"><strong>Two disciplines that make unattended checks safe.</strong> <b>Fail loud</b> &mdash; <code>%tm_assert</code> wraps every fragile step; on a false condition it sets the return code, forces status to ERROR, emails the backup, and writes a FAILED heartbeat, so a broken run is never a silent green. <b>Guard the inputs</b> &mdash; <code>%tm_guard</code> asserts the expected columns exist, are numeric, and pass a range-sanity check before any threshold runs, catching a unit change or a renamed variable that would otherwise sail through. And the <b>freshness gate runs first</b>: a missing or dead feed flags <em>loudest</em>, because <strong>stale-green is the most dangerous state</strong> &mdash; it looks fine and isn&rsquo;t.</div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="alerts" aria-label="Alerts  escalation">
+    <h1>Alerting, paging &amp; escalation</h1>
+    <p class="lede">Two tiers, de-duplicated so a standing RED pages <em>once</em>, plus a heartbeat that makes silence meaningful.</p>
+    <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Alerts_Screencast_narrated.mp4">&#9654;&nbsp; Watch the escalation matrix written &amp; routed &mdash; live screencast</a></div>
+    <ul>
+      <li><b>Tier 1 &mdash; the daily digest</b> (<code>%tm_digest</code>): every run emails a summary to the support alias, RED/AMBER/GREEN by section. Routine awareness.</li>
+      <li><b>Tier 2 &mdash; the urgent alert</b> (<code>%tm_alert</code>): on any <em>new</em> de-duplicated RED, page the support alias + a named backup with a one-page <b>evidence packet</b> (<code>%tm_evidence</code> &mdash; the eDISH scatter with reference lines + the participant&rsquo;s lab trajectory) and the medical monitor&rsquo;s name + phone. Enough to act, not to decide.</li>
+      <li><b>The heartbeat</b> (<code>%tm_heartbeat</code>): a run record written <em>always</em>, success or failure &mdash; the input to the watchdog.</li>
+    </ul>
+    <figure class="diagram" role="img" aria-labelledby="d-alerts-title">
+      <svg viewBox="0 0 860 250" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <title id="d-alerts-title">Every run emits a tier-1 daily digest; a new de-duplicated RED escalates to a tier-2 paged evidence packet; an always-written heartbeat feeds an independent watchdog so that no email is itself a signal.</title>
+        <defs>
+          <marker id="ah-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--line)"/></marker>
+        </defs>
+        <!-- run -->
+        <rect x="14" y="92" width="116" height="62" rx="9" fill="var(--panel)" stroke="var(--steel)" stroke-width="2"/>
+        <text x="72" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="var(--ink)">Each run</text>
+        <text x="72" y="138" text-anchor="middle" font-size="11" fill="var(--muted)">rolled-up status</text>
+        <!-- tier 1 -->
+        <rect x="200" y="14" width="270" height="60" rx="9" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/>
+        <text x="216" y="36" font-size="13" font-weight="700" fill="var(--green)">Tier 1 &middot; daily digest</text>
+        <text x="216" y="54" font-size="11" fill="var(--muted)">%tm_digest &mdash; every run, to support alias</text>
+        <text x="216" y="68" font-size="11" fill="var(--muted)">RED/AMBER/GREEN by section &middot; awareness</text>
+        <!-- tier 2 -->
+        <rect x="200" y="92" width="270" height="62" rx="9" fill="var(--panel)" stroke="var(--red)" stroke-width="2"/>
+        <text x="216" y="114" font-size="13" font-weight="700" fill="var(--red)">Tier 2 &middot; urgent page</text>
+        <text x="216" y="132" font-size="11" fill="var(--muted)">%tm_alert &mdash; on any NEW de-duped RED</text>
+        <text x="216" y="146" font-size="11" fill="var(--muted)">alias + named backup &middot; once per standing RED</text>
+        <!-- heartbeat -->
+        <rect x="200" y="172" width="270" height="62" rx="9" fill="var(--panel)" stroke="var(--amber)" stroke-width="2"/>
+        <text x="216" y="194" font-size="13" font-weight="700" fill="var(--amber)">Heartbeat</text>
+        <text x="216" y="212" font-size="11" fill="var(--muted)">%tm_heartbeat &mdash; written ALWAYS</text>
+        <text x="216" y="226" font-size="11" fill="var(--muted)">success or failure</text>
+        <!-- evidence packet -->
+        <rect x="528" y="92" width="150" height="62" rx="9" fill="var(--panel)" stroke="var(--line)"/>
+        <text x="603" y="114" text-anchor="middle" font-size="12" font-weight="700" fill="var(--ink)">Evidence packet</text>
+        <text x="603" y="132" text-anchor="middle" font-size="10.5" fill="var(--muted)">eDISH + trajectory</text>
+        <text x="603" y="146" text-anchor="middle" font-size="10.5" fill="var(--muted)">+ monitor contact</text>
+        <!-- watchdog -->
+        <rect x="528" y="172" width="150" height="62" rx="9" fill="var(--panel)" stroke="var(--amber)" stroke-width="2"/>
+        <text x="603" y="194" text-anchor="middle" font-size="12" font-weight="700" fill="var(--amber)">Watchdog</text>
+        <text x="603" y="212" text-anchor="middle" font-size="10.5" fill="var(--muted)">different host</text>
+        <text x="603" y="226" text-anchor="middle" font-size="10.5" fill="var(--muted)">no email = a signal</text>
+        <!-- humans -->
+        <rect x="722" y="92" width="124" height="62" rx="9" fill="var(--panel)" stroke="var(--steel)"/>
+        <text x="784" y="120" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--ink)">Humans</text>
+        <text x="784" y="138" text-anchor="middle" font-size="10.5" fill="var(--muted)">act, not the macro</text>
+        <!-- connectors -->
+        <g stroke="var(--line)" stroke-width="1.5" fill="none">
+          <path d="M130 116 C165 116 165 44 198 44" marker-end="url(#ah-a)"/>
+          <path d="M130 122 L198 122" marker-end="url(#ah-a)"/>
+          <path d="M130 128 C165 128 165 200 198 200" marker-end="url(#ah-a)"/>
+          <path d="M470 123 L526 123" marker-end="url(#ah-a)"/>
+          <path d="M470 203 L526 203" marker-end="url(#ah-a)"/>
+          <path d="M678 123 L720 123" marker-end="url(#ah-a)"/>
+          <path d="M603 172 C603 163 760 163 760 154" marker-end="url(#ah-a)"/>
+        </g>
+      </svg>
+      <figcaption><b>Two tiers plus a heartbeat that makes silence mean something.</b> Tier&nbsp;1 is routine awareness; tier&nbsp;2 pages a named backup with an evidence packet on a new RED; the always-written heartbeat feeds an independent watchdog so <b>no email is itself a signal</b>.</figcaption>
+    </figure>
+    <h2>Escalation matrix</h2>
+    <table class="cat"><thead><tr><th>Colour</th><th>Means</th><th>Who acts</th></tr></thead><tbody>
+      <tr><td><b style="color:#35C07E">GREEN</b></td><td>Checks ran, fresh data, nothing tripped</td><td>No action &mdash; the digest is the record</td></tr>
+      <tr><td><b style="color:#D9A94F">AMBER</b></td><td>A tier threshold crossed, or a feed is ageing</td><td>Covering biostatistician reviews same day</td></tr>
+      <tr><td><b style="color:#E0857A">RED</b></td><td>A safety screen tripped, or a feed is dead/stale</td><td>Page &rarr; covering biostatistician loops in the medical monitor, who makes the call</td></tr>
+      <tr><td><b>NO EMAIL</b></td><td>The job didn&rsquo;t run (the worst case)</td><td>The watchdog pages the backup &mdash; treat as RED until proven otherwise</td></tr>
+    </tbody></table>
+    <div class="callout key"><strong>Reportable vs signal-only.</strong> A flag is an internal <em>signal</em> to look &mdash; it is not a reportable safety determination. Reportability (expedited SAE, DSUR, etc.) is the medical monitor&rsquo;s and sponsor&rsquo;s decision through the validated process; the automation accelerates <em>awareness</em>, never the regulatory call.</div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="onleave" aria-label="Covering while on leave">
+    <h1>Covering while out on leave &mdash; the runbook</h1>
+    <p class="lede">The headline use case. Hand the covering biostatistician one page: what runs and when, what the colours mean, who they call, and what to do if the email ever stops. Everything runs under the service account <code>SVC-BIOSTAT</code>, never a personal login &mdash; so it does not break the day you turn off your laptop.</p>
+    <div class="callout key"><strong>What runs, and when.</strong> The daily monitoring job at a fixed time (e.g. 06:00, weekdays) under <code>SVC-BIOSTAT</code>; the watchdog ~30&nbsp;min later on a <em>different</em> host; the tracker upsert in the same job. The covering biostatistician is the named <code>backup</code> on every tier-2 alert and every watchdog page for the leave window &mdash; one line in <code>tm_config.sas</code>, not a code change.</div>
+    <h2>A worked three-week leave</h2>
+    <ol>
+      <li><b>Before you go:</b> set <code>backup=</code> to the covering biostatistician and confirm the medical monitor&rsquo;s contact in <code>tm_config.sas</code>; send them this runbook + the picture guide; run the job once and confirm the digest, a test alert, and a heartbeat all arrive.</li>
+      <li><b>Days 1&ndash;8:</b> GREEN digests each morning; the tracker stays current; the covering biostatistician does nothing but glance.</li>
+      <li><b>Day 9:</b> an eDISH point trips Hy&rsquo;s-Law screening &mdash; a tier-2 alert pages the covering biostatistician with the evidence packet; they review, loop in the medical monitor, who makes the call; the tracker reflects the open flag within the hour.</li>
+      <li><b>Day 14:</b> an overnight feed fails to land &mdash; the freshness gate flags it RED and the watchdog confirms the job ran but on a dead feed; IT restores the export; no silent gap.</li>
+      <li><b>On return:</b> a complete, dated trail of digests, the one alert, the resolution, and the tracker history &mdash; not a backlog to reconstruct.</li>
+    </ol>
+    <div class="callout honest"><strong>Accountability does not go on leave.</strong> The automation covers <em>vigilance and logistics</em> &mdash; it never covers the <em>decision</em>. A named covering biostatistician and the medical monitor own every call while you are out; the runbook makes the hand-off explicit so there is never an ambiguous &ldquo;who&rsquo;s watching&rdquo; gap. Tune thresholds before leave to avoid alert fatigue, but never widen a safety threshold to silence a page.</div>
+    <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Coverage_Runbook.pdf">&#10515;&nbsp; The Coverage Runbook (PDF) &mdash; hand this to your cover</a></div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="tracker" aria-label="Keeping the tracker current">
+    <h1>Keeping the Smartsheet tracker current &mdash; SHEETLINK</h1>
+    <p class="lede">So the PM&rsquo;s program dashboard is live while you&rsquo;re away, the same scheduled job upserts status into Smartsheet &mdash; deterministically, no AI.</p>
+    <ul>
+      <li><b>Idempotent upsert-by-key:</b> <code>%ss_*</code> matches each row by a stable key and updates-or-inserts, so re-runs never duplicate and a re-processed day is a no-op.</li>
+      <li><b>Ops-only allowlist guard:</b> only an allowlisted set of operational columns can be written &mdash; the automation can never touch a column it shouldn&rsquo;t, by construction.</li>
+      <li><b>Token from a secret, never logged:</b> the Smartsheet token comes from an environment variable / secret store, never hard-coded and never written to a log.</li>
+    </ul>
+    <div class="callout win">Independently SAS-reviewed (three defects found and fixed). The tracker shows <em>operational</em> status only &mdash; never a reported number, never patient-level data.</div>
+    <div class="dl"><a class="btn ghost" href="../smartsheet_sasr/Smartsheet_SASR.html">Open the SHEETLINK wiki</a><a class="btn ghost" href="../smartsheet_sasr/macro_library/README.pdf">Macro README (PDF)</a></div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="language" aria-label="Optional language layer">
+    <h1>The optional on-device language layer &mdash; LOCALMIND</h1>
+    <div class="callout honest"><strong>Optional, and ops-only.</strong> The monitoring needs <strong>no AI</strong> &mdash; the checks, the digest structure, the tracker, and every number are deterministic SAS/R. The on-device SLM is a <em>convenience</em> for the language tasks code can&rsquo;t do (re-phrasing a digest, triaging a free-text comment), and it runs behind the same guardrails as the rest of the program: an <strong>on-prem frozen model on loopback</strong>, schema-constrained output, an allowlist validator, and a <strong>human-gated parse-guard</strong>. It never produces a number and never decides what the digest includes.</div>
+    <p>If you enable it, the <code>%slm_*</code> library (loopback-guard <code>%slm_init</code>, schema-constrained <code>%slm_chat</code>, allowlist <code>%slm_validate</code>, <code>%slm_classify</code>) is the engine, and the standard honesty applies: a small local model hallucinates, so its trustworthiness comes from the discipline around it, not from being local. See the dedicated on-device wiki for the full treatment.</p>
+    <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Language_Screencast_narrated.mp4">&#9654;&nbsp; Watch it boxed in (loopback + string-only schema + human gate) &mdash; live screencast</a></div>
+    <div class="dl"><a class="btn ghost" href="../slm_wiki/SLM_SASR_TrialOps.html">On-device SLM &times; SAS/R wiki</a><a class="btn ghost" href="../slm_wiki/IT_SLM_Enablement_Runbook.pdf">IT enablement runbook</a></div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="macros" aria-label="The macro libraries">
+    <h1>The macro libraries</h1>
+    <p class="lede">Three deterministic SAS libraries (each with an R companion), copy-paste ready, each with a per-study config so a second study or a rotating monitor is one file, not a code edit. Base SAS 9.4; no third-party packages.</p>
+    <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Macros_Screencast_narrated.mp4">&#9654;&nbsp; Watch inside the %tm_* library &mdash; live screencast</a><a class="btn ghost" href="../sas_r_automation/SAS_R_RCompanion_Screencast_narrated.mp4">&#9654;&nbsp; The R companion on the laptop (RStudio)</a></div>
+    <table class="cat"><thead><tr><th>Library</th><th>Driver + key files</th><th>What it does</th></tr></thead><tbody>
+      <tr><td><b>TRIALMON</b> <code>%tm_*</code></td><td><code>tm_macros.sas</code> &middot; <code>monitor_driver.sas</code> &middot; <code>tm_config.sas</code> &middot; <code>tm_watchdog.sh</code> &middot; <code>tm_companion.R</code></td><td>The monitoring loop: init, latest, freshness, guard, the safety checks, status, digest, alert, evidence, heartbeat &mdash; plus the independent watchdog.</td></tr>
+      <tr><td><b>SHEETLINK</b> <code>%ss_*</code></td><td><code>ss_macros.sas</code> &middot; <code>tracker_update.sas</code> &middot; <code>ss_config.sas</code> &middot; <code>ss_companion.R</code></td><td>Idempotent upsert-by-key into Smartsheet behind an ops-only allowlist guard; token from a secret.</td></tr>
+      <tr><td><b>LOCALMIND</b> <code>%slm_*</code></td><td><code>slm_macros.sas</code> &middot; <code>triage_driver.sas</code> &middot; <code>slm_config.sas</code> &middot; <code>slm_companion.R</code></td><td>(Optional) the on-device language layer: loopback guard, schema-constrained call, allowlist validator, classify.</td></tr>
+    </tbody></table>
+    <div class="callout key"><b>Config, not code.</b> <code>tm_config.sas</code> holds the per-study constants &mdash; paths, recipients, the medical monitor, feeds, thresholds &mdash; <code>%include</code>d before the driver. A new study, a rotating medical monitor, or a leave-coverage backup is a one-line change, change-controlled like any study program.</div>
+    <div class="dl"><a class="btn ghost" href="../sas_r_automation/macro_library/TRIALMON_Macro_Library_README.pdf">TRIALMON README</a><a class="btn ghost" href="../smartsheet_sasr/macro_library/README.pdf">SHEETLINK README</a><a class="btn ghost" href="../slm_wiki/macro_library/README.pdf">LOCALMIND README</a></div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="gov" aria-label="Safeguards  governance">
+    <h1>Safeguards &amp; governance</h1>
+    <div class="callout rule"><strong>Detect, package, page &mdash; never decide.</strong> The automation surfaces pre-specified deterministic flags and routes them to people. It does <strong>not</strong> triage, interpret, adjudicate, or auto-act on safety. The medical monitor and the covering biostatistician make every call; reportability is the validated regulatory process, not a flag.</div>
+    <h2>The controls that make unattended automation defensible</h2>
+    <ul>
+      <li><b>Deterministic, validated logic.</b> The checks are the same threshold logic you already validate &mdash; just scheduled. Validate the threshold programs <em>and</em> the scheduling wrapper as study programs (GxP, risk-based CSV); version-control the config and any threshold change.</li>
+      <li><b>Fail loud + guard the inputs.</b> <code>%tm_assert</code> turns any broken step into a loud ERROR + a backup email + a FAILED heartbeat; <code>%tm_guard</code> catches a unit change or renamed variable before a threshold runs. A broken run is never a silent green.</li>
+      <li><b>Freshness first.</b> Stale-green is the most dangerous state; a dead feed flags loudest.</li>
+      <li><b>The independent watchdog.</b> A dead-man&rsquo;s switch on a different host/account makes &ldquo;no email&rdquo; a signal, not a guess.</li>
+      <li><b>Service account, not a person.</b> The job runs under <code>SVC-BIOSTAT</code> so coverage doesn&rsquo;t depend on anyone&rsquo;s laptop; the backup is named per leave window.</li>
+      <li><b>Numbers stay validated.</b> Anything <em>reported</em> is independently double-programmed and comes from validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, the validated pipeline). A flag is never a reported value; the optional SLM never produces one.</li>
+    </ul>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="itready" aria-label="IT readiness">
+    <h1>IT readiness &mdash; the lowest-friction path in the program</h1>
+    <p class="lede">For the deterministic monitoring + tracker, the asks are small and entirely on-prem &mdash; no cloud, no AI to qualify. Hand IT this list.</p>
+    <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_ITReady_Screencast_narrated.mp4">&#9654;&nbsp; Watch it scheduled under a service account (Task Scheduler) &mdash; live screencast</a></div>
+    <figure class="diagram" role="img" aria-labelledby="d-it-title">
+      <svg viewBox="0 0 860 234" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <title id="d-it-title">The deterministic monitoring core needs only small on-prem asks with no AI to qualify; the optional language layer adds heavier asks including model qualification, so the two requests are kept separate.</title>
+        <!-- core column -->
+        <rect x="14" y="14" width="408" height="206" rx="10" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/>
+        <text x="30" y="40" font-size="14" font-weight="700" fill="var(--green)">Deterministic core &mdash; ship today</text>
+        <text x="30" y="58" font-size="11" fill="var(--muted)">entirely on-prem &middot; no cloud &middot; no AI to qualify</text>
+        <g font-size="12">
+          <text x="30" y="84" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="84" fill="var(--ink)">Service account SVC-BIOSTAT (no PTO orphaning)</text>
+          <text x="30" y="108" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="108" fill="var(--ink)">Batch schedule + a 2nd host for the watchdog</text>
+          <text x="30" y="132" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="132" fill="var(--ink)">Internal SMTP relay (no external mail)</text>
+          <text x="30" y="156" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="156" fill="var(--ink)">Read access to exports + a state directory</text>
+          <text x="30" y="180" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="180" fill="var(--ink)">Smartsheet token in a secret store (tracker)</text>
+        </g>
+        <text x="30" y="206" font-size="11" font-weight="700" fill="var(--green)">no licences beyond what you have</text>
+        <!-- optional column -->
+        <rect x="438" y="14" width="408" height="206" rx="10" fill="var(--panel)" stroke="var(--amber)" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="454" y="40" font-size="14" font-weight="700" fill="var(--amber)">Optional language layer only</text>
+        <text x="454" y="58" font-size="11" fill="var(--muted)">heavier asks &mdash; keep this request separate</text>
+        <g font-size="12">
+          <text x="454" y="84" fill="var(--amber)" font-weight="700">+</text><text x="474" y="84" fill="var(--ink)">On-prem workstation / VM</text>
+          <text x="454" y="108" fill="var(--amber)" font-weight="700">+</text><text x="474" y="108" fill="var(--ink)">Signed runtime + a frozen open-weight model</text>
+          <text x="454" y="132" fill="var(--amber)" font-weight="700">+</text><text x="474" y="132" fill="var(--ink)">Licence review</text>
+          <text x="454" y="156" fill="var(--amber)" font-weight="700">+</text><text x="474" y="156" fill="var(--ink)">GAMP-5 qualification of a non-deterministic part</text>
+        </g>
+        <text x="454" y="196" font-size="11" font-weight="700" fill="var(--red)">the core needs NONE of this</text>
+        <text x="454" y="212" font-size="11" fill="var(--muted)">don't let the AI ask hold up the low-risk piece</text>
+      </svg>
+      <figcaption><b>Two separate requests.</b> The deterministic monitoring + tracker core is small, on-prem, and has nothing to qualify; only the <b>optional</b> language layer adds a model to validate &mdash; keep the asks separate so the low-risk piece ships now.</figcaption>
+    </figure>
+    <div class="callout win"><b>What to ask IT for (deterministic core):</b>
+      <ul style="margin:6px 0 0">
+        <li>A <b>service / group account</b> (<code>SVC-BIOSTAT</code>) to own the scheduled job and read the analysis libraries &mdash; so the automation never orphans on PTO.</li>
+        <li><b>Batch scheduling</b> (Windows Task Scheduler / cron) for the daily job, and a <b>second host/account</b> for the watchdog dead-man&rsquo;s switch.</li>
+        <li>An <b>internal SMTP relay</b> for the digest + alerts (no external mail).</li>
+        <li>Read access to the data exports + a state directory for de-duplication and heartbeats.</li>
+        <li>For the tracker: a <b>Smartsheet API token in a secret store</b> (never hard-coded).</li>
+      </ul>
+    </div>
+    <div class="callout honest"><b>Only if you enable the optional language layer</b> do the heavier asks apply &mdash; an on-prem workstation/VM, a signed runtime + a frozen open-weight model, a licence review, and the GAMP-5 qualification of a non-deterministic component (see the <a href="../slm_wiki/IT_SLM_Enablement_Runbook.pdf">SLM enablement runbook</a>). The monitoring core needs none of it; keep the two requests separate so the low-risk piece isn&rsquo;t held up by the AI one.</div>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
+<section id="faq" aria-label="Maintenance  FAQ">
+    <h1>Maintenance &amp; FAQ</h1>
+    <h2>Monthly upkeep (~15 min)</h2>
+    <ul>
+      <li>Skim the heartbeat log for missed/late runs; confirm the watchdog fired in any test.</li>
+      <li>Review alert volume &mdash; persistent AMBER noise means a threshold needs a (change-controlled) review, not silencing.</li>
+      <li>Confirm <code>tm_config.sas</code> recipients + the medical monitor + the current leave backup are correct.</li>
+    </ul>
+    <h2>FAQ</h2>
+    <p><b>Does it make safety decisions?</b> No. It detects, packages, and pages pre-specified deterministic flags; humans decide. It never auto-acts on safety and never adjudicates.</p>
+    <p><b>Is there AI in the loop?</b> Not in the monitoring &mdash; it is deterministic SAS/R. The on-device SLM is an optional, ops-only language convenience behind guardrails; the numbers and the flags never depend on it.</p>
+    <p><b>What if the job silently dies?</b> The independent watchdog pages the backup &mdash; <em>no email is itself a signal</em>. That is the whole point of the heartbeat + dead-man&rsquo;s switch.</p>
+    <p><b>Does it cost anything?</b> The deterministic core is just scheduled SAS/R on a service account + internal SMTP &mdash; no licences beyond what you have. Only the optional SLM adds a real (validation + ownership) cost.</p>
+    <p><b>Is it validated?</b> Validate the threshold logic + the scheduling wrapper as study programs, risk-based; version-control thresholds; double-program anything reported. The automation is decision-support and a logistics aid, not a record generator.</p>
+    <p><b>How does coverage actually work while I&rsquo;m out?</b> See the <a href="#onleave">coverage runbook</a> &mdash; service-account scheduling, a named backup per leave window, the escalation matrix, and the dead-man&rsquo;s switch, all on one page you hand to your cover.</p>
+  <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section></main></div>
+<script>const secs=[...document.querySelectorAll('section')],links=[...document.querySelectorAll('#side a[data-t]')];
+function show(id){secs.forEach(s=>{const on=s.id===id;s.classList.toggle('show',on);s.hidden=!on;});links.forEach(a=>{const on=a.dataset.t===id;a.classList.toggle('active',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});window.scrollTo(0,0);const m=document.getElementById('main');if(m)m.focus();if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}
+links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.t);}));
+document.querySelectorAll('#main a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href').slice(1);if(document.getElementById(id)){e.preventDefault();show(id);}}));
+const q=document.getElementById('search');if(q)q.addEventListener('input',()=>{const v=q.value.toLowerCase().trim();links.forEach(a=>{const s=document.getElementById(a.dataset.t);a.style.display=(!v||s.textContent.toLowerCase().includes(v))?'block':'none';});});
+
+show((location.hash||'#start').slice(1)||'start');
+window.addEventListener('beforeprint',()=>secs.forEach(s=>s.hidden=false));
+window.addEventListener('afterprint',()=>show((location.hash||'#start').slice(1)||'start'));</script><script>(function(){
+var secs=[].slice.call(document.querySelectorAll('section')),links=[].slice.call(document.querySelectorAll('#side a[data-t]'));
+function sync(){var act=links.filter(function(a){return a.classList.contains('active');})[0];var id=act?act.dataset.t:null;secs.forEach(function(s){s.hidden=!(s.id===id);});links.forEach(function(a){if(a.classList.contains('active'))a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});}
+/* wrap the wiki's existing show() so EVERY navigation (click, hash, or programmatic) keeps the
+   hidden attribute + aria-current in sync and moves focus to main -- no desync for screen readers */
+if(typeof window.show==='function'){var _os=window.show;window.show=function(id){_os(id);sync();var m=document.getElementById('main');if(m&&document.hasFocus())m.focus();};}
+
+window.addEventListener('beforeprint',function(){secs.forEach(function(s){s.hidden=false;});});
+window.addEventListener('afterprint',sync);sync();
+})();</script><script>
+/* portable reproducibility kit: copy-buttons on code + Print/PDF + print stylesheet (theme-agnostic) */
+(function(){
+  var css=''
+   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
+   +'.repro-copybtn:hover{opacity:1;background:#4a5680} .repro-copybtn.ok{background:#1f9d55}'
+   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#4338CA;color:#fff;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
+   +'.repro-print:hover{background:#312C8A}'
+   +'@media print{nav,aside,#side,.sidebar,.skip,.repro-copybtn,.repro-print,[role=\'navigation\']{display:none!important}'
+   +' #wrap,#main,main,article,.content,section,body{display:block!important;width:auto!important;max-width:100%!important;margin:0!important;float:none!important}'
+   +' *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+  var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+  document.querySelectorAll('pre').forEach(function(pre){
+    if(pre.querySelector('.repro-copybtn'))return;
+    var code=pre.querySelector('code');var t=(code?code.innerText:pre.innerText).trim();if(!t)return;
+    if(getComputedStyle(pre).position==='static')pre.style.position='relative';
+    var b=document.createElement('button');b.className='repro-copybtn';b.type='button';b.textContent='Copy';
+    b.addEventListener('click',function(e){e.preventDefault();
+      var done=function(){b.textContent='Copied \u2713';b.classList.add('ok');setTimeout(function(){b.textContent='Copy';b.classList.remove('ok');},1400);};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){b.textContent='Ctrl-C';});}
+      else{try{var r=document.createRange();r.selectNodeContents(code||pre);var s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();done();}catch(_){b.textContent='Ctrl-C';}}
+    });
+    pre.appendChild(b);
+  });
+  var p=document.createElement('button');p.className='repro-print';p.type='button';p.textContent='\uD83D\uDDA8 Print / PDF';
+  p.addEventListener('click',function(){window.print();});document.body.appendChild(p);
+})();
+</script>
+</body></html>

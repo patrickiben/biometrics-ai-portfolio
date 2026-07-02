@@ -1,0 +1,641 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TRIALMON — Interactive Monitoring Dashboard (SYNTHETIC)</title>
+<style>
+:root{
+  --bg:#eef2f8;--bg-2:#f6f8fc;--surface:#ffffff;--ink:#0f1722;--ink-2:#3a4757;--muted:#6b7888;
+  --line:#e6ebf2;--line-2:#eef2f7;
+  --brand:#2563a8;--brand-2:#1d4e85;--brand-ink:#16344f;
+  --green:#1f8a5b;--green-bg:#e9f6ef;--green-bd:#c4e6d4;
+  --amber:#c2871a;--amber-bg:#fbf2e0;--amber-bd:#ecd5a3;
+  --red:#c4544a;--red-bg:#fbecea;--red-bd:#eec3bd;
+  --watch:#5f8aa8;--watch-bg:#eaf2f8;
+  --ops:#7a8696;--ops-bg:#eef1f5;
+  --shadow:0 1px 2px rgba(16,23,34,.04),0 4px 14px rgba(16,23,34,.06);
+  --shadow-md:0 2px 6px rgba(16,23,34,.06),0 10px 28px rgba(16,23,34,.09);
+  --shadow-lg:0 18px 50px rgba(16,23,34,.22);
+  --radius:14px;--radius-sm:9px;
+  --fs:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--fs);color:var(--ink);background:
+  radial-gradient(1200px 480px at 78% -8%,#e3ecfa 0%,rgba(227,236,250,0) 60%),
+  linear-gradient(180deg,#eef2f8 0%,#f6f8fc 240px) no-repeat;
+  line-height:1.5;font-variant-numeric:tabular-nums;letter-spacing:.005em}
+h1,h2,h3{letter-spacing:-.01em}
+header{background:linear-gradient(120deg,#101d2e 0%,#16293f 55%,#1c3450 100%);color:#fff;padding:18px 4% 16px;position:relative;overflow:hidden}
+header::after{content:"";position:absolute;right:-60px;top:-80px;width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,rgba(76,129,196,.28),transparent 65%)}
+header .row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;position:relative;z-index:1}
+header h1{font-family:Georgia,"Times New Roman",serif;font-size:21px;margin:0;font-weight:600;letter-spacing:0}
+header .mark{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#3f7fc4,#2a5e96);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25);flex:0 0 auto}
+header .sy{display:inline-flex;align-items:center;gap:5px;background:#e7c34d;color:#3a2c00;font-size:10px;font-weight:800;letter-spacing:.6px;padding:3px 9px;border-radius:20px;vertical-align:middle}
+header .sy::before{content:"";width:6px;height:6px;border-radius:50%;background:#7a5e00}
+header .tag{display:block;font-size:12.5px;color:#a9c0d8;margin-top:6px;position:relative;z-index:1}
+.ribbon{display:flex;gap:10px;align-items:flex-start;background:rgba(255,255,255,.7);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:12px;padding:10px 15px;font-size:12.5px;color:var(--ink-2);margin:14px 4% 0;box-shadow:var(--shadow)}
+.ribbon .ic{flex:0 0 auto;color:var(--red);font-size:14px}.ribbon b{color:#9a3d34}
+/* summary bar */
+.statusband{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:center;padding:14px 4% 2px}
+.statuscard{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 15px 8px 11px;box-shadow:var(--shadow)}
+.pill{display:inline-flex;align-items:center;gap:7px;font-weight:800;font-size:14px;letter-spacing:.3px;border-radius:9px;padding:6px 13px;color:#fff}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.9);box-shadow:0 0 0 3px rgba(255,255,255,.28)}
+.pill.RED{background:linear-gradient(135deg,#cf5b50,#b3463d)}.pill.AMBER{background:linear-gradient(135deg,#cf932a,#b07914)}.pill.GREEN{background:linear-gradient(135deg,#27996a,#1c7a52)}.pill.ERROR{background:#7a2e26}
+.statuscard .lbl{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.3px;text-transform:uppercase;line-height:1.15}
+.statuscard .val{font-size:13px;color:var(--ink);font-weight:600}
+.meta{font-size:12.5px;color:var(--muted)}.meta b{color:var(--ink);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;border-radius:20px;padding:4px 11px;font-weight:600;border:1px solid;background:var(--surface)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%}
+.chip.fresh{color:#1c6b3f;border-color:var(--green-bd);background:var(--green-bg)}.chip.fresh::before{background:#27996a}
+.chip.stale{color:#8a5a00;border-color:#e6b955;background:#fbeecb;box-shadow:0 0 0 3px rgba(231,195,77,.28)}.chip.stale::before{background:#c2871a}
+.chip.missing{color:#9a3d34;border-color:var(--red-bd);background:var(--red-bg)}.chip.missing::before{background:#c4544a}
+.chip.beat{color:#274b73;border-color:#cdddf0;background:#eef4fc}.chip.beat::before{background:#3f7fc4}
+.freshnote{flex-basis:100%;font-size:12px;color:#8a5a00;display:flex;align-items:center;gap:7px}
+/* section nav */
+.subnav{position:sticky;top:0;z-index:30;display:flex;gap:4px;flex-wrap:wrap;padding:9px 4%;margin-top:12px;background:rgba(244,247,251,.92);backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid var(--line)}
+.subnav button{font-family:var(--fs);font-size:12.5px;font-weight:650;color:var(--ink-2);background:transparent;border:1px solid transparent;border-radius:9px;padding:7px 13px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:background .12s,color .12s,border-color .12s}
+.subnav button:hover{background:#fff;border-color:var(--line)}
+.subnav button.on{background:#16293f;color:#fff}
+.subnav button .ct{font-size:10.5px;font-weight:800;border-radius:20px;padding:1px 7px;background:#e6ebf2;color:var(--ink-2)}
+.subnav button.on .ct{background:rgba(255,255,255,.2);color:#fff}
+.subnav button .ct.red{background:var(--red);color:#fff}.subnav button .ct.amber{background:var(--amber);color:#fff}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;padding:16px 4% 4px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);cursor:default;transition:transform .15s,box-shadow .15s}
+.kpi.click{cursor:pointer}.kpi.click:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.kpi .n{font-size:24px;font-weight:750;line-height:1.05;letter-spacing:-.02em}
+.kpi .k{font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;margin-top:3px}
+.kpi .s{font-size:10.5px;margin-top:4px;font-weight:600}
+.kpi.red .n{color:var(--red)}.kpi.amber .n{color:var(--amber)}.kpi.green .n{color:var(--green)}.kpi.watch .n{color:var(--watch)}
+/* zones / cards */
+.zone{padding:8px 4% 46px}
+.zone.hide{display:none}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .18s,border-color .18s}
+.card:hover{box-shadow:var(--shadow-md);border-color:#d7e0ec}
+.card.wide{grid-column:1 / -1}
+.ch{display:flex;align-items:center;gap:10px;margin:0 0 8px;padding-bottom:9px;border-bottom:1px solid var(--line-2)}
+.ch h3{margin:0;font-size:15.5px;font-weight:650;flex:1 1 auto}
+.ch .sevtag,.ch .tagged{flex:0 0 auto}
+.card .cap{font-size:11.5px;color:var(--muted);margin:0 0 10px;line-height:1.45}
+.gov{font-size:11px;color:#8a6a3a;background:#fdf6e8;border:1px solid #f0e0bd;border-radius:7px;padding:6px 9px;margin:8px 0 0;display:flex;gap:6px}
+.gov::before{content:"\26A0";color:#b07914}
+.sevtag{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;border-radius:6px;padding:2px 9px;color:#fff;letter-spacing:.4px}
+.sevtag::before{content:"";width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.92)}
+.sevtag.RED{background:var(--red)}.sevtag.AMBER{background:var(--amber)}.sevtag.GREEN{background:var(--green)}.sevtag.watch{background:var(--watch)}.sevtag.ops{background:var(--ops)}
+.sevtag.plain{background:#e9eef5;color:var(--ink-2)}.sevtag.plain::before{display:none}
+svg{max-width:100%;display:block}.card.wide svg.tall{max-height:520px;margin:0 auto}
+.lead{font-size:12.5px;color:var(--ink-2)}
+table.mx{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px;border-radius:10px;border:1px solid var(--line);overflow:hidden}
+table.mx th,table.mx td{padding:7px 10px;text-align:left;vertical-align:middle;border-bottom:1px solid var(--line-2)}
+table.mx th{background:#f3f6fa;color:var(--brand-ink);font-weight:650;font-size:11px;letter-spacing:.3px;text-transform:uppercase;cursor:default}
+table.mx th.sortable{cursor:pointer;user-select:none}table.mx th.sortable:hover{background:#e9eff6}
+table.mx tr:last-child td{border-bottom:none}
+table.mx tbody tr{transition:background .12s}table.mx tbody tr:hover{background:#f7fafd}
+table.mx tr.click{cursor:pointer}
+.legend{display:flex;flex-wrap:wrap;gap:10px 14px;font-size:11px;color:var(--muted);margin:2px 0 8px}
+.legend i{display:inline-flex;align-items:center;gap:5px}.legend i b{width:9px;height:9px;border-radius:50%;display:inline-block}.legend i s{width:11px;height:11px;border-radius:3px;display:inline-block;text-decoration:none}
+.subj{cursor:pointer;transition:stroke .12s,stroke-width .12s,opacity .12s}
+circle.subj:hover{stroke:#0f1722;stroke-width:2.4}
+/* small-multiples */
+.sm{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.smc{border:1px solid var(--line-2);border-radius:9px;padding:7px 8px 5px;cursor:pointer;transition:border-color .12s,box-shadow .12s,transform .12s;background:#fcfdff}
+.smc:hover{border-color:#cdd8e6;box-shadow:var(--shadow);transform:translateY(-1px)}
+.smc .t{font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.smc .t .mini{font-size:9.5px;font-weight:800;border-radius:5px;padding:0 5px;color:#fff}
+/* heatmap / grids */
+.heatwrap{overflow-x:auto}
+.heat{border-collapse:separate;border-spacing:2px;font-size:11px}
+.heat th{font-weight:600;color:var(--muted);font-size:10px;padding:2px 4px;text-align:center;white-space:nowrap}
+.heat th.rh{text-align:right;position:sticky;left:0;background:var(--surface);z-index:1}
+.heat td{width:30px;height:22px;text-align:center;border-radius:5px;cursor:pointer;color:#fff;font-weight:700;font-size:10px}
+.heat td.gap{background:repeating-linear-gradient(45deg,#eef1f5,#eef1f5 4px,#e2e7ee 4px,#e2e7ee 8px);color:#7a8696;cursor:default}
+.heat td.bl{box-shadow:inset 0 0 0 2px #b9c6d6}
+.heat td.empty{background:#f1f4f8;color:#aeb8c4;cursor:default}
+.gc0{background:#e8f6ef;color:#1c6b3f}.gc1{background:#cdeedd;color:#1c6b3f}.gcW{background:var(--watch);color:#fff}.gcA{background:var(--amber)}.gcR{background:var(--red)}.gcOps{background:#cfd6df;color:#3a4757}
+/* worklist */
+.wl{display:flex;flex-direction:column;gap:8px}
+.wlrow{display:flex;align-items:center;gap:12px;border:1px solid var(--line);border-left-width:4px;border-radius:10px;padding:9px 13px;cursor:pointer;transition:background .12s,transform .12s}
+.wlrow:hover{background:#f7fafd;transform:translateX(2px)}
+.wlrow.RED{border-left-color:var(--red)}.wlrow.AMBER{border-left-color:var(--amber)}
+.wlrow .who{font-weight:700;font-size:13px;min-width:96px}
+.wlrow .what{flex:1 1 auto;font-size:12.5px;color:var(--ink-2)}
+.wlrow .val{font-weight:700;font-size:12.5px}
+.wlempty{color:var(--muted);font-size:12.5px;padding:8px 2px}
+/* roster filter */
+.filterbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.filterbar input,.filterbar select{font-family:var(--fs);font-size:12.5px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;background:#fff;color:var(--ink)}
+.filterbar input:focus,.filterbar select:focus{outline:2px solid var(--brand);outline-offset:1px}
+.fchip{font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;color:#fff}
+.fchip.RED{background:var(--red)}.fchip.AMBER{background:var(--amber)}.fchip.watch{background:var(--watch)}.fchip.GREEN{background:var(--green)}.fchip.ops{background:var(--ops)}
+.flagdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 1px}
+/* tooltip */
+.tip{position:fixed;z-index:60;pointer-events:none;background:#0f1722;color:#fff;border-radius:9px;padding:8px 11px;font-size:11.5px;line-height:1.5;box-shadow:0 10px 30px rgba(0,0,0,.3);max-width:250px;opacity:0;transform:translateY(3px);transition:opacity .1s,transform .1s;border:1px solid rgba(255,255,255,.08)}
+.tip.show{opacity:1;transform:none}.tip .t-id{font-weight:700;font-size:12px;margin-bottom:2px}.tip .t-sub{color:#a9bdd4;font-size:10.5px;margin-bottom:4px}
+.tip .t-row{display:flex;align-items:center;gap:6px}.tip .t-row .d{width:7px;height:7px;border-radius:50%}.tip .t-hint{color:#8aa2bd;font-size:10px;margin-top:4px}
+/* modal */
+#modal{display:none;position:fixed;inset:0;background:rgba(13,20,32,.5);backdrop-filter:blur(3px);z-index:50;align-items:flex-start;justify-content:center;padding:34px 14px;overflow:auto;opacity:0;transition:opacity .16s}
+#modal.show{display:flex;opacity:1}
+.mbox{background:var(--surface);border-radius:16px;max-width:780px;width:100%;padding:22px 26px 24px;box-shadow:var(--shadow-lg);transform:translateY(10px) scale(.98);transition:transform .2s cubic-bezier(.2,.7,.3,1)}
+#modal.show .mbox{transform:none}
+.mbox .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.mbox h2{margin:0;font-size:19px;font-weight:650;display:flex;align-items:center;gap:9px}
+.mbox h3{font-size:13px;font-weight:700;color:var(--brand-ink);letter-spacing:.2px;margin:16px 0 7px;text-transform:uppercase}
+.x{cursor:pointer;font-size:16px;color:var(--muted);background:#f0f3f8;border:1px solid var(--line);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .12s,color .12s;flex:0 0 auto}
+.x:hover{background:#e6ebf2;color:var(--ink)}
+.sparkrow{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:10px;margin-top:4px}
+.sparkc{border:1px solid var(--line-2);border-radius:9px;padding:7px 9px;background:#fcfdff}
+.sparkc .st{font-size:11px;font-weight:700;display:flex;justify-content:space-between;gap:6px}
+.foot{font-size:11.5px;color:var(--muted);padding:0 4% 40px;line-height:1.6}.foot .fr{border-top:1px solid var(--line);margin-top:6px;padding-top:14px;max-width:1100px}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+@media(max-width:1080px){.kpis{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:780px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}header h1{font-size:18px}}
+</style></head>
+<body>
+<header><div class="row"><div class="mark">T</div><h1>TRIALMON — Interactive Monitoring Dashboard</h1><span class="sy">SYNTHETIC</span></div>
+<span class="tag">The deterministic backbone, made visible · the validated monitoring view · longitudinal (per-visit) detail</span></header>
+<div class="ribbon"><span class="ic">&#9888;</span><div><b>The deterministic checks are the validated backbone</b> — pre-specified thresholds; a flag is a <i>screening prompt</i>, the medical monitor / SRC / covering biostatistician decide; reported numbers (incidence tables, the ICH&nbsp;E14 table, central reads, MTD, final disposition) come only from validated tools (Phoenix WinNonlin / Pinnacle&nbsp;21), never this dashboard. Data is <b>synthetic and illustrative</b> — no real participants, no PHI, no treatment unblinding. Thresholds/SLAs/windows shown are illustrative; the live version reads protocol/SAP limits.</div></div>
+<div class="statusband" id="statusband"></div>
+<div class="kpis" id="kpis"></div>
+<nav class="subnav" id="subnav" aria-label="Sections"></nav>
+<div id="sections"></div>
+<div class="foot" id="foot"></div>
+<div class="tip" id="tip"></div>
+<div id="modal"><div class="mbox" id="mbox"></div></div>
+<script>
+/* =========================================================================
+   TRIALMON deterministic monitoring dashboard — SYNTHETIC, self-contained.
+   Longitudinal per-visit model. Backward-compatible: every per-visit series'
+   worst on-treatment value == the original summary value (same SEED), so the
+   eDISH/QTcF/AE panels never contradict. SCREENING flags only — humans decide.
+   ========================================================================= */
+const SEED=20260611;function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+let rnd=mulberry32(SEED);function rn(m,s){let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return m+s*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),rr=(x,d=1)=>{const p=Math.pow(10,d);return Math.round(x*p)/p};
+const COH=[['C1',10,3],['C2',30,3],['C3',60,6],['C4',120,6],['C5',200,4]];
+const VIS=['Screen','C1D1','C1D8','C1D15','C2D1','C2D8','C3D1','EOT'];
+const VDAY=[-7,1,8,15,22,29,43,53];
+const DLT_WINDOW_DAY=28;            // single fixed first-cycle DLT window (illustrative)
+/* ---------- synthetic cohort (seeded; same generation each load) ---------- */
+const S=[];let n=0;
+for(const [c,dose,k] of COH){for(let j=0;j<k;j++){n++;const id='CP101-'+String(n).padStart(3,'0');
+  const tox=(dose/200);
+  let alt=clamp(Math.exp(rn(-0.15,0.4)),0.3,2.6),ast=clamp(alt*Math.exp(rn(0,0.2)),0.3,2.6),tbl=clamp(Math.exp(rn(-0.6,0.3)),0.3,1.4),alp=clamp(Math.exp(rn(-0.1,0.25)),0.4,1.6);
+  let qt=clamp(rn(415,16),382,462),dqt=rn(7,11),qbase=qt-dqt;
+  let dltfl='N',dlteval='N',mv=false,decoy=null,misvisit=false;
+  S.push({id,coh:c,dose,sex:rnd()<.5?'M':'F',age:Math.round(rn(42,11)),alt,ast,tbl,alp,qt,dqt,qbase,dltfl,dlteval,mv,decoy,misvisit,
+    nae:Math.round(clamp(rn(4+tox*3,2),0,12)),sae:rnd()<(.05+tox*.08)?1:0,g3:rnd()<(.10+tox*.12)?1:0,
+    hgb:rn(13.5,1.1),neut:rn(3.8,1.0),creat:rn(0.9,0.15)});
+}}
+const byId=o=>S.find(s=>s.id===o);
+/* ---------- PLANTED SIGNALS (preserve exactly) ---------- */
+Object.assign(byId('CP101-014'),{alt:5.6,ast:4.9,tbl:3.1,alp:1.4,dltfl:'Y',dlteval:'Y',note:'Hy’s-Law screening position (RED): ALT 5.6× & TBili 3.1×. R-ratio 4.0 = MIXED pattern (not hepatocellular). Also an adjudicated DLT.'});
+Object.assign(byId('CP101-009'),{alt:4.2,ast:3.6,tbl:1.6,alp:1.2,note:'ALT 4.2× but TBili 1.6× (<2×) → NOT a Hy’s-Law position — the AND-gate. Sits lower-right (Temple’s-Corollary region: ALT without bili). GREEN every visit.'});
+Object.assign(byId('CP101-018'),{qt:503,dqt:41,qbase:462,note:'QTcF 503 ms (>500) — RED tier at an on-treatment visit (as-collected, pending ECG QC). Baseline 462 was already in the watch band (not a drug effect).'});
+Object.assign(byId('CP101-006'),{qt:486,dqt:33,qbase:453,note:'QTcF 486 ms (>480) — AMBER tier (as-collected). Baseline 453 already watch-band.'});
+byId('CP101-013').dltfl='Y';byId('CP101-013').dlteval='Y';byId('CP101-013').note='Adjudicated DLT (with 014 → 2/6 in C4).';
+byId('CP101-010').dltfl='Y';byId('CP101-010').dlteval='Y';byId('CP101-010').note='Adjudicated DLT (1/6 in C3).';
+Object.assign(byId('CP101-011'),{alt:2.6,ast:2.4,tbl:1.7,alp:1.3,qt:474,dqt:26,hgb:11.1,neut:1.9,creat:1.28,mv:true,note:'Every univariate value sits BELOW its own action threshold at every visit (QTcF 474 is watch, not AMBER; ALT 2.6× is below 3×; Hgb/ANC sub-Gr2) — GREEN/watch on every deterministic check though several organs drift together. No single univariate rule is crossed, so the backbone correctly does NOT fire; whether such coordinated sub-threshold drift is worth a closer human look is a clinical judgement for the reviewer, not an automated flag.'});
+Object.assign(byId('CP101-012'),{alt:2.3,ast:2.1,tbl:1.4,qt:468,dqt:22,mv:true,ambig:true,note:'Mild co-drift, every value sub-threshold (QTcF 468 = watch). GREEN/watch on every deterministic check.'});
+Object.assign(byId('CP101-003'),{misvisit:true,decoy:'missed-visit',note:'A missed visit (C2D1) — an operational data-completeness gap, NOT a clinical signal. A missed visit can mean missed safety labs → route to a human; it never means the participant is fine.'});
+Object.assign(byId('CP101-020'),{decoy:'dose-change',note:'A protocol-driven dose adjustment shifted several labs at once at one visit — operational, not clinical; all values stay sub-threshold. GREEN on every clinical check.'});
+/* ---------- deterministic derivations (summary; mirror %tm_chk_*) ---------- */
+S.forEach(s=>{
+  s.red_hys=((s.alt>3)||(s.ast>3))&&(s.tbl>2);
+  s.rratio=s.alt/s.alp; s.pattern=s.rratio>=5?'hepatocellular':s.rratio<=2?'cholestatic':'mixed';
+  s.rUnstable=(s.alt<1.2||s.alp<1.2);
+  s.qsev=(s.qt>500||s.dqt>60)?'RED':(s.qt>480||s.dqt>30)?'AMBER':(s.qt>450?'watch':'GREEN');
+  s.aesev=(s.sae||s.g3)?'AMBER':'GREEN';
+});
+/* ============================ LONGITUDINAL MODEL ============================ */
+/* visit scaffold (target/window/actual-day jitter/status) */
+S.forEach(s=>{ s.visits=VDAY.map((d,i)=>{
+  const w=i<2?1:3; let actual=i===0?d:d+Math.round(rn(0,w*0.45)); let present=true,status='done';
+  if(s.misvisit&&i===4){present=false;status='missed';actual=null;}
+  const oow=present&&actual!=null&&(actual<d-w||actual>d+w);
+  if(oow)status='oow';
+  return {name:VIS[i],i,target:d,lo:d-w,hi:d+w,actual,present,status};
+}); });
+/* build a per-visit series from baseline→extreme; max(on-treatment)==extreme (backward-compat) */
+function buildSeries(s,baseline,extreme,peakV,mono){ return s.visits.map((vv,i)=>{
+  if(!vv.present) return null;
+  if(i===0) return baseline;
+  let w; if(mono){ w=i<=peakV?i/peakV:1; } else { w=(i===peakV)?1:clamp(0.2+0.55*rnd(),0,0.86); }
+  return baseline+(extreme-baseline)*w;
+}); }
+/* hepatic LFT series (×ULN) */
+S.forEach(s=>{
+  const riser=s.red_hys||s.alt>3||s.mv; const pv=riser?6:(2+Math.floor(rnd()*4));
+  const base=a=>Math.min(a*0.78,0.85);
+  const altB=base(s.alt),astB=base(s.ast),tblB=Math.min(s.tbl*0.8,0.7),alpB=Math.min(s.alp*0.85,0.9);
+  s.ggt=clamp(s.alp*Math.exp(rn(0,0.18)),0.4,3.0);
+  const ggtB=Math.min(s.ggt*0.85,0.95);
+  const tblPV=(s.id==='CP101-014')?7:pv; // TBili lags ALT
+  s.lftv=s.visits.map((vv,i)=>{ if(!vv.present)return null; return {}; });
+  const A=buildSeries(s,altB,s.alt,pv,riser),B=buildSeries(s,astB,s.ast,pv,riser),
+        T=buildSeries(s,tblB,s.tbl,tblPV,riser),P=buildSeries(s,alpB,s.alp,pv,false),G=buildSeries(s,ggtB,s.ggt,pv,false);
+  s.lftv=s.visits.map((vv,i)=>vv.present?{alt:rr(A[i],2),ast:rr(B[i],2),tbl:rr(T[i],2),alp:rr(P[i],2),ggt:rr(G[i],2),
+     rratio:rr(A[i]/P[i],1),red_hys:((A[i]>3)||(B[i]>3))&&(T[i]>2)}:null);
+});
+/* cardiac ECG series */
+S.forEach(s=>{
+  const pv=(['CP101-018','CP101-006','CP101-011','CP101-012'].includes(s.id))?5:(3+Math.floor(rnd()*4));
+  const Q=buildSeries(s,s.qbase,s.qt,pv,s.qt>s.qbase+5);
+  s.ecgv=s.visits.map((vv,i)=>{ if(!vv.present)return null; const qtcf=Math.round(Q[i]),dq=Math.round(qtcf-s.qbase);
+    const hr=Math.round(clamp(rn(66,7),48,104)),pr=Math.round(clamp(rn(158,18),110,228)),qrs=Math.round(clamp(rn(92,9),70,134));
+    const sev=(qtcf>500||dq>60)?'RED':(qtcf>480||dq>30)?'AMBER':(qtcf>450?'watch':'GREEN');
+    return {qtcf,dqtcf:dq,hr,pr,qrs,sev,baselineWatch:(i<=1&&qtcf>450)}; });
+});
+/* labs: heme + chem/renal + electrolytes (per visit). Backward-compat: nadir/peak == existing summary */
+S.forEach(s=>{
+  const riser=s.mv;
+  const hgb=buildSeries(s,14.2,s.hgb,riser?6:(2+Math.floor(rnd()*4)),false);  // low-bad
+  const anc=buildSeries(s,4.0,s.neut,riser?6:(2+Math.floor(rnd()*4)),false);   // low-bad
+  const creat=buildSeries(s,0.85,s.creat,riser?6:(2+Math.floor(rnd()*4)),s.creat>1.0); // ×?  treat as mg/dL? keep ×ULN-ish via /0.9
+  const pltB=clamp(rn(255,45),150,360),pltX=clamp(pltB-(riser?120:rn(35,30)),60,360);
+  const plt=buildSeries(s,pltB,pltX,riser?6:(2+Math.floor(rnd()*4)),false);
+  const wbcB=clamp(rn(6.6,1.4),3.5,11),wbcX=clamp(wbcB-(riser?2.2:rn(.6,.6)),1.5,11),wbc=buildSeries(s,wbcB,wbcX,5,false);
+  const naB=clamp(rn(140,1.6),134,145),na=buildSeries(s,naB,clamp(naB-rn(2,1.5),128,145),4,false);
+  const kB=clamp(rn(4.1,0.3),3.4,5.0),kk=buildSeries(s,kB,clamp(kB+rn(0,.35),3.0,5.6),5,false);
+  const caB=clamp(rn(9.4,0.3),8.6,10.2),ca=buildSeries(s,caB,clamp(caB-rn(.4,.3),7.4,10.2),5,false); // corrected
+  const bunB=clamp(rn(14,3),8,26),bun=buildSeries(s,bunB,clamp(bunB+(riser?9:rn(2,3)),8,40),6,false);
+  s.labv=s.visits.map((vv,i)=>{ if(!vv.present)return null; const cr=rr(creat[i],2);
+    const eGFR=Math.round(142*Math.pow(Math.min(cr/(s.sex==='F'?0.7:0.9),1),s.sex==='F'?-0.241:-0.302)*Math.pow(Math.max(cr/(s.sex==='F'?0.7:0.9),1),-1.2)*Math.pow(0.9938,s.age)*(s.sex==='F'?1.012:1));
+    return {hgb:rr(hgb[i],1),anc:rr(anc[i],2),plt:Math.round(plt[i]),wbc:rr(wbc[i],1),creat:cr,bun:Math.round(bun[i]),na:Math.round(na[i]),k:rr(kk[i],1),ca:rr(ca[i],1),egfr:clamp(eGFR,15,140)}; });
+});
+/* vitals + orthostatic (operational PCS decoys allowed; never escalate study status) */
+const ORTHO=['CP101-007','CP101-016']; // benign orthostatic/HR decoys
+S.forEach(s=>{
+  const sbpB=clamp(rn(122,11),98,150),dbpB=clamp(rn(76,8),58,96),hrB=clamp(rn(70,9),50,98),tB=clamp(rn(36.7,.3),35.9,37.6),wB=clamp(rn(75,12),48,108);
+  s.vitalv=s.visits.map((vv,i)=>{ if(!vv.present)return null;
+    let sbp=Math.round(clamp(sbpB+rn(0,6),88,168)),dbp=Math.round(clamp(dbpB+rn(0,5),52,104)),hr=Math.round(clamp(hrB+rn(0,6),46,118));
+    let sbpSt=sbp-Math.round(clamp(rn(6,4),-2,16)),orth=sbp-sbpSt;
+    if(ORTHO.includes(s.id)&&i===4){hr=122;orth=23;sbpSt=sbp-23;} // transient infusion-visit decoy
+    return {sbp,dbp,hr,temp:rr(clamp(tB+rn(0,.2),35.8,38.2),1),wt:rr(clamp(wB+rn(0,.8),46,110),1),sbpStand:sbpSt,orthostatic:orth,
+      pcs:(sbp>160||sbp<90||dbp>100||hr>120||hr<45||orth>=20)}; });
+});
+/* ---------- AE events (controlled vocab; rollups preserve nae/sae/g3) ---------- */
+const AEDICT=[['Investigations','ALT increased'],['Investigations','AST increased'],['Investigations','Blood bilirubin increased'],['Investigations','Electrocardiogram QT prolonged'],['Investigations','Neutrophil count decreased'],['Investigations','Platelet count decreased'],
+['Hepatobiliary disorders','Hyperbilirubinaemia'],['Gastrointestinal disorders','Nausea'],['Gastrointestinal disorders','Vomiting'],['Gastrointestinal disorders','Diarrhoea'],['Nervous system disorders','Headache'],['Nervous system disorders','Dizziness'],['General disorders','Fatigue'],['General disorders','Pyrexia'],['Skin disorders','Rash'],['Musculoskeletal disorders','Arthralgia'],['Blood/lymphatic disorders','Anaemia'],['Metabolism disorders','Decreased appetite']];
+const REL=['Not related','Unlikely','Possible','Probable','Related'],SERCRIT=['—','Hospitalisation','Other medically important'];
+S.forEach(s=>{ const evs=[]; const k=Math.max(0,s.nae); const tox=s.dose/200;
+  for(let e=0;e<k;e++){ const pick=AEDICT[Math.floor(rnd()*AEDICT.length)]; let gr=clamp(Math.round(0.85+rnd()*0.95+tox*0.8),1,3); /* mostly Gr1–2; Gr3 a minority — planted constellations carry the high grades */
+    const onset=Math.max(1,Math.round(rn(14,12))); const dur=Math.round(clamp(rn(7,6),1,40));
+    evs.push({soc:pick[0],pt:pick[1],grade:gr,onset,resolution:onset+dur,teae:onset>=1,serious:false,serCrit:'—',rel:REL[Math.min(REL.length-1,Math.floor(rnd()*REL.length))],expected:rnd()<.75}); }
+  // honor existing rollup flags
+  if(s.g3&&!evs.some(x=>x.grade>=3)&&evs[0])evs[0].grade=3;
+  if(s.sae&&!evs.some(x=>x.serious)&&evs[0]){evs[0].serious=true;evs[0].serCrit=SERCRIT[1+Math.floor(rnd()*2)];}
+  s.ae=evs;
+});
+// planted AE constellations
+function setAE(id,arr){const s=byId(id);if(s)s.ae=arr;}
+setAE('CP101-014',[{soc:'Investigations',pt:'ALT increased',grade:3,onset:18,resolution:null,teae:true,serious:true,serCrit:'Other medically important',rel:'Related',expected:false},
+ {soc:'Investigations',pt:'AST increased',grade:3,onset:18,resolution:null,teae:true,serious:false,serCrit:'—',rel:'Related',expected:false},
+ {soc:'Hepatobiliary disorders',pt:'Hyperbilirubinaemia',grade:3,onset:22,resolution:null,teae:true,serious:true,serCrit:'Other medically important',rel:'Related',expected:false},
+ {soc:'General disorders',pt:'Fatigue',grade:2,onset:16,resolution:30,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
+setAE('CP101-013',[{soc:'Investigations',pt:'Neutrophil count decreased',grade:4,onset:15,resolution:24,teae:true,serious:true,serCrit:'Hospitalisation',rel:'Related',expected:true},
+ {soc:'General disorders',pt:'Pyrexia',grade:2,onset:16,resolution:19,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
+setAE('CP101-010',[{soc:'Investigations',pt:'Platelet count decreased',grade:3,onset:12,resolution:26,teae:true,serious:false,serCrit:'—',rel:'Probable',expected:true},
+ {soc:'Gastrointestinal disorders',pt:'Nausea',grade:1,onset:9,resolution:12,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
+setAE('CP101-018',[{soc:'Investigations',pt:'Electrocardiogram QT prolonged',grade:3,onset:29,resolution:38,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:false},
+ {soc:'Nervous system disorders',pt:'Dizziness',grade:2,onset:28,resolution:35,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
+setAE('CP101-006',[{soc:'Investigations',pt:'Electrocardiogram QT prolonged',grade:2,onset:22,resolution:36,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:false}]);
+setAE('CP101-009',[{soc:'Investigations',pt:'ALT increased',grade:2,onset:15,resolution:34,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]); /* the eDISH near-miss: real ALT bump, NOT serious — stays silent in the worklist */
+setAE('CP101-011',[{soc:'Gastrointestinal disorders',pt:'Nausea',grade:1,onset:8,resolution:14,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true},
+ {soc:'General disorders',pt:'Fatigue',grade:2,onset:15,resolution:40,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
+// re-derive rollups so existing panels stay exact
+S.forEach(s=>{ s.nae=s.ae.filter(a=>a.teae).length; s.sae=s.ae.some(a=>a.serious)?1:0; s.g3=s.ae.some(a=>a.grade>=3)?1:0; });
+/* ---------- disposition + feeds + deviations (controlled vocab) ---------- */
+const DISP={done:'Completed',ong:'Ongoing',dc:'Discontinued'};
+S.forEach((s,idx)=>{ s.enrollDay=-(60-idx*2)+Math.round(rn(0,3)); s.dispStatus='ong'; s.dispReason='—';
+  if(s.coh==='C1'||s.coh==='C2'){s.dispStatus='done';s.dispReason='Completed per protocol';}
+});
+byId('CP101-014').dispStatus='dc';byId('CP101-014').dispReason='Adverse event';
+byId('CP101-013').dispStatus='dc';byId('CP101-013').dispReason='Adverse event';
+const SCREENFAIL=[{id:'CP101-S01',reason:'Eligibility — lab out of range'},{id:'CP101-S02',reason:'Withdrew consent'}];
+const FEEDS=[['adam.adlb',3,'fresh',6],['adam.adeg',7,'fresh',12],['adam.adae',11,'fresh',24],['safe.sae',5,'fresh',6],['ixrs.rand',38,'stale',24]];
+const DEVI=[{id:'CP101-020',type:'Dosing / IP',sev:'Minor',detail:'Dose adjustment not per schedule window'},
+ {id:'CP101-003',type:'Visit / procedure',sev:'Minor',detail:'Missed scheduled visit (C2D1)'},
+ {id:'CP101-009',type:'Lab / sample',sev:'Minor',detail:'Repeat LFT drawn out of window'},
+ {id:'CP101-S01',type:'Eligibility',sev:'Major',detail:'Enrolled then found ineligible — entry criterion'}];
+/* ---------- analyte metadata: ONE source of truth for CTCAE-style screening bands ---------- */
+const GCOL=['gc0','gc1','gcW','gcA','gcR']; // not used for grade; grade→class below
+const gradeClass=g=>g<=0?'gc0':g===1?'gc1':g===2?'gcA':'gcR';
+const META={ // dir:hi value worsens up; bands: ascending cutoffs producing grade 1..max
+ alt:{unit:'×ULN',dir:'hi',cuts:[1,3,5,20],max:4}, ast:{unit:'×ULN',dir:'hi',cuts:[1,3,5,20],max:4},
+ tbl:{unit:'×ULN',dir:'hi',cuts:[1,1.5,3,10],max:4}, alp:{unit:'×ULN',dir:'hi',cuts:[1,2.5,5,20],max:4}, ggt:{unit:'×ULN',dir:'hi',cuts:[1,2.5,5,20],max:4},
+ hgb:{unit:'g/dL',dir:'lo',cuts:[12.0,10.0,8.0],max:3,capnote:'value-based band capped at Gr3; clinical Gr4 needs monitor assessment'},
+ anc:{unit:'10⁹/L',dir:'lo',cuts:[1.9,1.5,1.0,0.5],max:4}, plt:{unit:'10⁹/L',dir:'lo',cuts:[150,75,50,25],max:4}, wbc:{unit:'10⁹/L',dir:'lo',cuts:[3.5,3.0,2.0,1.0],max:4},
+ creat:{unit:'mg/dL',dir:'hi',cuts:[1.1,1.5,3.0,6.0],max:4}, bun:{unit:'mg/dL',dir:'hi',cuts:[20,26,40,60],max:4},
+ na:{unit:'mmol/L',dir:'lo',cuts:[135,130,125,120],max:4}, k:{unit:'mmol/L',dir:'hi',cuts:[5.0,5.5,6.0,7.0],max:4}, ca:{unit:'mg/dL(corr)',dir:'lo',cuts:[8.4,8.0,7.0,6.0],max:4}
+};
+function gradeBand(v,m){ if(v==null||!m)return 0; let g=0;
+  if(m.dir==='hi'){ for(let i=0;i<m.cuts.length;i++) if(v>m.cuts[i]) g=i+1; }
+  else { for(let i=0;i<m.cuts.length;i++) if(v< m.cuts[i]) g=i+1; }
+  return Math.min(g,m.max); }
+/* ---------- per-visit + worst-on-study derivations ---------- */
+function visClin(s,i){ // worst screening severity at visit i (hepatic AND-gate, cardiac E14 tier) — clinical only
+  if(!s.visits[i].present) return 'gap';
+  const L=s.lftv[i],E=s.ecgv[i]; let sev='GREEN';
+  const rank={GREEN:0,watch:1,AMBER:2,RED:3};
+  if(L&&L.red_hys) sev='RED';
+  if(E){ if(rank[E.sev]>rank[sev]) sev=E.sev; if(E.baselineWatch&&sev==='watch') sev='baselineWatch'; }
+  return sev;
+}
+S.forEach(s=>{ s.worstByVisit=s.visits.map((vv,i)=>vv.present?visClin(s,i):'gap'); });
+const cohAgg=COH.map(([c,dose,k])=>{const ss=S.filter(s=>s.coh===c);const nd=ss.filter(s=>s.dltfl==='Y').length;const neval=ss.filter(s=>s.dlteval==='Y'||s.dltfl==='Y').length||ss.length;
+  return {c,dose,plannedN:k,n:ss.length,nd,neval,dltsev:nd>=2?'RED':nd===1?'AMBER':'GREEN',nsae:ss.filter(s=>s.sae).length,ng3:ss.filter(s=>s.g3).length,nae:ss.reduce((a,s)=>a+s.nae,0),aesev:ss.some(s=>s.sae||s.g3)?'AMBER':'GREEN'};});
+const sevRank={GREEN:0,watch:0,baselineWatch:0,AMBER:1,RED:2,ERROR:3,gap:0};
+function worst(...a){return a.reduce((w,x)=>sevRank[x]>sevRank[w]?x:w,'GREEN')}
+const anyStale=FEEDS.some(f=>f[2]!=='fresh');
+const STATUS=worst(S.some(s=>s.red_hys)?'RED':'GREEN', S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN', cohAgg.some(c=>c.dltsev==='RED')?'RED':cohAgg.some(c=>c.dltsev==='AMBER')?'AMBER':'GREEN', anyStale?'RED':'GREEN');
+/* ---------- attention worklist: every open AMBER/RED screening flag (watch excluded — not an action tier) ---------- */
+const WL=[];
+S.forEach(s=>{ if(s.red_hys)WL.push({id:s.id,sev:'RED',check:'eDISH / Hy’s-Law screen',val:`ALT ${s.alt.toFixed(1)}× & TBili ${s.tbl.toFixed(1)}× (R ${s.rratio.toFixed(1)} ${s.pattern})`,rule:'(ALT or AST >3×) AND TBili >2×'});
+  if(s.qsev==='RED')WL.push({id:s.id,sev:'RED',check:'QTcF (ICH E14 screen)',val:`${s.qt} ms · Δ${s.dqt.toFixed(0)}`,rule:'QTcF >500 or Δ>60 ms'});
+  else if(s.qsev==='AMBER')WL.push({id:s.id,sev:'AMBER',check:'QTcF (ICH E14 screen)',val:`${s.qt} ms · Δ${s.dqt.toFixed(0)}`,rule:'QTcF >480 or Δ>30 ms'});
+  if(s.sae)WL.push({id:s.id,sev:'RED',check:'Serious AE recorded',val:s.ae.filter(a=>a.serious).map(a=>a.pt).join(', '),rule:'investigator-recorded seriousness'});
+});
+cohAgg.forEach(c=>{ if(c.dltsev==='RED')WL.push({id:c.c+' cohort',sev:'RED',check:'Adjudicated DLT count vs 3+3',val:`${c.nd}/${c.neval} evaluable`,rule:'≥2 DLT in cohort → rule satisfied'});
+  else if(c.dltsev==='AMBER')WL.push({id:c.c+' cohort',sev:'AMBER',check:'Adjudicated DLT count vs 3+3',val:`${c.nd}/${c.neval} evaluable`,rule:'1 DLT in cohort'}); });
+if(anyStale)WL.push({id:'data pipeline',sev:'RED',check:'Stale feed (green-on-stale → RED)',val:FEEDS.filter(f=>f[2]!=='fresh').map(f=>`${f[0]} ${f[1]}h`).join(', '),rule:'a GREEN built on stale data is escalated to RED'});
+const wlRank={RED:0,AMBER:1};WL.sort((a,b)=>wlRank[a.sev]-wlRank[b.sev]);
+/* 3+3 escalation state (trigger/pending framing — the dashboard NEVER decides) */
+function dltState(c){ const open=c.c==='C4'||c.c==='C5'; // last cohorts still in window (illustrative)
+  if(c.nd>=2) return {label:'MTD-exceeded TRIGGER — SRC decision pending',cls:'RED'};
+  if(c.nd===1) return {label:'1 DLT — expansion/▲ rule check, SRC decides',cls:'AMBER'};
+  return {label:open?'DLT window open — accruing':'0/'+c.neval+' — escalation-eligible, SRC decides',cls:'GREEN'}; }
+
+/* ============================ HELPERS ============================ */
+const $=id=>document.getElementById(id);
+const cohC={C1:'#7aa5c9',C2:'#5b8fbf',C3:'#2C5F8A',C4:'#C2871A',C5:'#C4544A'};
+const SEVC={RED:'#c4544a',AMBER:'#c2871a',watch:'#5f8aa8',baselineWatch:'#9bb4c6',GREEN:'#cdeedd',gap:'#cfd6df'};
+function sparkline(series,o){ o=o||{}; const w=o.w||168,h=o.h||44,pl=4,pr=4,pt=6,pb=6;
+  const vals=series.filter(v=>v!=null); if(!vals.length)return `<svg viewBox="0 0 ${w} ${h}"></svg>`;
+  let lo=o.lo!=null?o.lo:Math.min(...vals),hi=o.hi!=null?o.hi:Math.max(...vals); if(hi-lo<1e-6){hi=lo+1;}
+  const X=i=>pl+i*(w-pl-pr)/(series.length-1),Y=v=>h-pb-(v-lo)/(hi-lo)*(h-pt-pb); let g='';
+  (o.bands||[]).forEach(b=>{ if(b.v>=lo&&b.v<=hi)g+=`<line x1="${pl}" y1="${Y(b.v)}" x2="${w-pr}" y2="${Y(b.v)}" stroke="${b.c}" stroke-dasharray="3 3" stroke-width="1" opacity=".7"/>`; });
+  let dpath='',started=false,prev=null;
+  series.forEach((v,i)=>{ if(v==null){return;} dpath+=(started?' L':'M')+X(i)+' '+Y(v); started=true; prev=i; });
+  g+=`<path d="${dpath}" fill="none" stroke="${o.c||'#2563a8'}" stroke-width="1.8"/>`;
+  series.forEach((v,i)=>{ if(v==null){ g+=`<circle cx="${X(i)}" cy="${h-2}" r="1.6" fill="#c9b27a"/>`; return; }
+    const band=o.meta?gradeBand(v,o.meta):0; const c=band>=3?'#c4544a':band===2?'#c2871a':band===1?'#5f8aa8':(o.c||'#2563a8');
+    g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="${(o.markPeak&&v===(o.hiPeak))?2.8:2}" fill="${c}"/>`; });
+  if(o.baselineIdx!=null&&series[o.baselineIdx]!=null)g+=`<circle cx="${X(o.baselineIdx)}" cy="${Y(series[o.baselineIdx])}" r="2.4" fill="none" stroke="#8aa" stroke-width="1.4"/>`;
+  return `<svg viewBox="0 0 ${w} ${h}">${g}</svg>`;
+}
+const govLine='<div class="gov">Screening flags on synthetic data — a prompt for a human, not a determination or reportable number. Reported numbers come from validated tools (Phoenix WinNonlin / Pinnacle 21).</div>';
+
+/* ============================ RENDER: header ============================ */
+$('statusband').innerHTML=`<div class="statuscard"><span class="pill ${STATUS}">${STATUS}</span><div><div class="lbl">Study status</div><div class="val">worst-of-all checks</div></div></div>`+
+  `<span class="meta">Study <b>CP-101</b> (synthetic) · run <b>2026-06-11 06:00</b> · <b>${S.length}</b> participants · <b>${VIS.length}</b> visits · longitudinal</span>`+
+  `<div class="chips"><span class="chip beat">&#9829; heartbeat 06:00</span>`+FEEDS.map(f=>`<span class="chip ${f[2]}" title="SLA ${f[3]}h">${f[0]} · ${f[1]}h ${f[2]==='fresh'?'':f[2]==='stale'?'STALE':'MISSING'}</span>`).join('')+`</div>`+
+  `<div class="freshnote"><span>&#9888;</span><span><b>Freshness:</b> one feed is STALE — a green built on stale data is the most dangerous state, so study status is escalated to RED.</span></div>`;
+
+/* KPI tiles */
+const nRED=WL.filter(w=>w.sev==='RED').length,nAMB=WL.filter(w=>w.sev==='AMBER').length,nSAE=S.filter(s=>s.sae).length,nDLT=S.filter(s=>s.dltfl==='Y').length;
+const nEnr=S.length,nDone=S.filter(s=>s.dispStatus==='done').length,nDC=S.filter(s=>s.dispStatus==='dc').length;
+const KPI=[
+ {n:nEnr,k:'Enrolled',s:`${nDone} completed · ${nDC} d/c`,cls:''},
+ {n:nRED,k:'Open RED flags',s:'screening · awaiting review',cls:nRED?'red':'green',go:'ov'},
+ {n:nAMB,k:'Open AMBER',s:'screening · same-day review',cls:nAMB?'amber':'green',go:'ov'},
+ {n:nSAE,k:'Serious AEs',s:'investigator-recorded',cls:nSAE?'red':'green',go:'ae'},
+ {n:nDLT,k:'Adjudicated DLT',s:'SRC-adjudicated flags',cls:nDLT?'amber':'green',go:'ae'},
+ {n:Math.round(nEnr/22*100)+'%',k:'Enrollment',s:'22 / planned',cls:'',go:'disp'},
+ {n:anyStale?'STALE':'OK',k:'Data feeds',s:anyStale?'1 stale → RED':'all fresh',cls:anyStale?'red':'green',go:'ov'},
+];
+$('kpis').innerHTML=KPI.map(t=>`<div class="kpi ${t.cls} ${t.go?'click':''}" ${t.go?`data-go="${t.go}"`:''}><div class="n">${t.n}</div><div class="k">${t.k}</div><div class="s">${t.s}</div></div>`).join('');
+
+/* ============================ SECTION FRAMEWORK ============================ */
+const SECTIONS=[];
+function reg(id,label,badge,fn){SECTIONS.push({id,label,badge,fn});}
+
+/* ---------- OVERVIEW ---------- */
+function ovWorklist(){ const rows=WL.length?WL.map(w=>`<div class="wlrow ${w.sev}" ${byId(w.id)?`data-id="${w.id}"`:''}><span class="who">${w.id}</span><span class="what"><b>${w.check}</b> — ${w.val} <span style="color:#9aa3b0">· rule: ${w.rule}</span></span><span class="sevtag ${w.sev}">${w.sev}</span></div>`).join(''):'<div class="wlempty">No open AMBER/RED screening flags. (Watch-tier QTcF and the multivariate-only / operational participants are intentionally NOT here — that silence is the point: the backbone fires only on a crossed action threshold.)</div>';
+  return `<div class="card wide"><div class="ch"><h3>Attention worklist — open screening flags</h3><span class="sevtag RED">${WL.filter(w=>w.sev==='RED').length} RED</span><span class="sevtag AMBER">${WL.filter(w=>w.sev==='AMBER').length} AMBER</span></div><p class="cap">Every current AMBER/RED screening flag across all checks, highest-severity first. Click a participant row to open its evidence packet. This is a triage queue — not a reportable safety list; <b>watch</b>-tier is not an action tier and is excluded.</p><div class="wl">${rows}</div>${govLine}</div>`; }
+function ovFreshness(){ const run='2026-06-11 06:00'; const rows=FEEDS.map(f=>{const ageOK=f[1]<=f[3];const cls=f[2]==='fresh'?'GREEN':f[2]==='stale'?'AMBER':'RED';
+   const ticks=Array.from({length:10},(_,i)=>{const stale=f[2]!=='fresh'&&i>=8;return `<span style="display:inline-block;width:7px;height:13px;border-radius:2px;margin:0 1px;background:${stale?'#e7e0d0':'#'+(i<8?'9cc6ab':'cdd6e1')}"></span>`;}).join('');
+   return `<tr><td><b>${f[0]}</b></td><td>${f[1]} h</td><td>${f[3]} h</td><td>${ticks}</td><td><span class="sevtag ${cls==='GREEN'?'GREEN':cls==='AMBER'?'AMBER':'RED'}">${f[2]==='fresh'?'FRESH':f[2]==='stale'?'STALE → RED':'MISSING'}</span></td></tr>`;}).join('');
+  return `<div class="card"><div class="ch"><h3>Data freshness &amp; load SLA</h3><span class="sevtag RED">escalated</span></div><p class="cap">Per-feed age vs SLA + load-tick history (run ${run}). <b>This is pipeline freshness</b> (load recency), distinct from data-content QC (Pinnacle 21). The core rule: any panel that would render GREEN on a <b>stale</b> feed is forced to RED — a green built on stale data is the most dangerous state.</p><table class="mx"><tr><th>Feed</th><th>Age</th><th>SLA</th><th>Load history</th><th>State</th></tr>${rows}</table></div>`; }
+function ovHeatmap(){ let head='<tr><th class="rh">Participant</th>'+VIS.map(v=>`<th>${v}</th>`).join('')+'</tr>';
+  const rows=S.map(s=>{ const cells=s.worstByVisit.map((sev,i)=>{ if(!s.visits[i].present)return `<td class="gap" title="missed/absent visit — operational">·</td>`;
+     const cls=sev==='RED'?'gcR':sev==='AMBER'?'gcA':sev==='watch'?'gcW':sev==='baselineWatch'?'gcW':'gc0'; const bl=i<=1?' bl':'';
+     const lab=sev==='RED'?'R':sev==='AMBER'?'A':sev==='watch'?'w':sev==='baselineWatch'?'b':'';
+     return `<td class="${cls}${bl}" data-id="${s.id}" title="${s.id} ${VIS[i]}: ${sev}${sev==='baselineWatch'?' (baseline, not drug effect)':''}">${lab}</td>`; }).join('');
+   return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
+  return `<div class="card wide"><div class="ch"><h3>Study heatmap — worst screening flag by participant × visit</h3></div><p class="cap">Each cell = worst deterministic clinical screening severity at that visit (hepatic AND-gate + QTcF E14 tier). <b>R</b> RED · <b>A</b> AMBER · <b>w</b> watch · <b>b</b> baseline-watch (ringed; not a drug effect) · hatched = missed/absent visit (operational, never read as “fine”). The when-did-it-start view. Click a cell/participant. ${''}</p><div class="heatwrap"><table class="heat">${head}${rows}</table></div>${govLine}</div>`; }
+reg('ov','Overview',()=>STATUS,()=>`<div class="grid">${ovWorklist()}<div class="card"><div class="ch"><h3>KPI roll-up note</h3></div><p class="cap">The tiles above are a pure roll-up of the same screening flags shown in every panel (via <code>worst()</code>) — they can never disagree with the detail below. RED/AMBER/feeds tiles jump to the relevant section.</p><ul style="font-size:12.5px;color:#3a4757;margin:6px 0 0;padding-left:18px"><li><b>${nRED}</b> open RED, <b>${nAMB}</b> AMBER screening flags.</li><li><b>${nDLT}</b> adjudicated DLT flag(s); <b>${nSAE}</b> participant(s) with a serious AE.</li><li>Study status <b>${STATUS}</b> — driven here by the stale feed + the eDISH/DLT REDs.</li></ul></div>${ovFreshness()}${ovHeatmap()}</div>`);
+
+/* ---------- HEPATIC ---------- */
+function edish(){const W=820,H=388,pl=58,pb=46;const xs=v=>pl+(Math.log10(clamp(v,.2,12))-Math.log10(.2))/(Math.log10(12)-Math.log10(.2))*(W-pl-14);const ys=v=>H-pb-(clamp(v,.2,6)-.2)/(6-.2)*(H-pb-16);let g='';
+  [.5,1,2,3,5,8].forEach(v=>g+=`<line x1="${xs(v)}" y1="14" x2="${xs(v)}" y2="${H-pb}" stroke="#f0f3f8"/>`);[1,2,3,4,5].forEach(v=>g+=`<line x1="${pl}" y1="${ys(v)}" x2="${W-14}" y2="${ys(v)}" stroke="#f0f3f8"/>`);
+  g+=`<rect x="${xs(3)}" y="14" width="${W-14-xs(3)}" height="${ys(2)-14}" fill="#c4544a" opacity=".07" rx="4"/>`;
+  g+=`<line x1="${xs(3)}" y1="14" x2="${xs(3)}" y2="${H-pb}" stroke="#c08" stroke-dasharray="5 4" opacity=".5"/><line x1="${pl}" y1="${ys(2)}" x2="${W-14}" y2="${ys(2)}" stroke="#c08" stroke-dasharray="5 4" opacity=".5"/>`;
+  g+=`<text x="${xs(3)}" y="${H-pb+14}" font-size="10" fill="#8a93a0">3×ULN</text><text x="${pl-7}" y="${ys(2)+3}" font-size="10" fill="#8a93a0" text-anchor="end">2×</text>`;
+  g+=`<text x="${W-18}" y="27" font-size="9.5" fill="#9a3d34" text-anchor="end" font-weight="700">potential Hy’s-Law quadrant</text><text x="${pl+6}" y="27" font-size="9" fill="#9aa3b0">cholestatic / hyperbili</text><text x="${W-18}" y="${H-pb-7}" font-size="9" fill="#9aa3b0" text-anchor="end">← Temple’s-Corollary region (ALT w/o bili)</text>`;
+  // per-visit trails (history only)
+  S.forEach(s=>{ const pts=s.lftv.map((L,i)=>L?[xs(L.alt),ys(L.tbl)]:null).filter(Boolean); if(pts.length>1){const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' '); g+=`<path d="${d}" fill="none" stroke="${cohC[s.coh]}" stroke-width="1.3" opacity=".32"/>`;} });
+  g+=`<line x1="${pl}" y1="${H-pb}" x2="${W-14}" y2="${H-pb}" stroke="#c9d3df"/><line x1="${pl}" y1="14" x2="${pl}" y2="${H-pb}" stroke="#c9d3df"/>`;
+  [...S].sort((a,b)=>(a.red_hys?1:0)-(b.red_hys?1:0)).forEach(s=>{const x=xs(s.alt),y=ys(s.tbl),r=s.red_hys?7:4.6;
+    if(s.red_hys)g+=`<circle cx="${x}" cy="${y}" r="13" fill="#c4544a" opacity=".14"><animate attributeName="r" values="11;15;11" dur="2.4s" repeatCount="indefinite"/></circle>`;
+    g+=`<circle class="subj" data-id="${s.id}" cx="${x}" cy="${y}" r="${r}" fill="${cohC[s.coh]}" stroke="${s.red_hys?'#9a3d34':'#fff'}" stroke-width="${s.red_hys?2.5:1.2}"/>`;});
+  g+=`<text x="${(W+pl)/2}" y="${H-9}" font-size="11" text-anchor="middle" fill="#5a6b7b">peak ALT (×ULN, log)</text><text x="16" y="${(H-pb)/2}" font-size="11" text-anchor="middle" fill="#5a6b7b" transform="rotate(-90 16 ${(H-pb)/2})">peak T.Bili (×ULN)</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="tall">${g}</svg>`;}
+function hepTraj(){ const order=[...S].sort((a,b)=>b.alt-a.alt); return `<div class="sm">`+order.map(s=>{const m=s.red_hys?'#c4544a':s.alt>3?'#c2871a':(s.lftv.some(L=>L&&L.alt>3)?'#c2871a':'#9fb0c0');
+   const sk=sparkline(s.lftv.map(L=>L?L.alt:null),{w:150,h:40,bands:[{v:3,c:'#c4544a'},{v:1,c:'#cdd6e1'}],lo:0,hi:Math.max(6,s.alt*1.05),meta:META.alt,baselineIdx:0});
+   const tk=sparkline(s.lftv.map(L=>L?L.tbl:null),{w:150,h:26,bands:[{v:2,c:'#c08'}],lo:0,hi:Math.max(3.2,s.tbl*1.05),c:'#8a6cae',meta:META.tbl});
+   return `<div class="smc subj" data-id="${s.id}"><div class="t">${s.id}<span class="mini" style="background:${m}">ALT ${s.alt.toFixed(1)}×</span></div>${sk}<div style="font-size:9px;color:#9aa3b0;margin:-2px 0 1px">TBili ×ULN (gate at 2×)</div>${tk}</div>`; }).join('')+`</div><p class="cap" style="margin-top:8px">Per-visit ALT (top, ref lines 1× & 3×) and TBili (below, ref 2×) for every participant, sorted by peak ALT. Converts the static eDISH dot into a time course — rising vs plateaued vs already-falling. Dots colour by CTCAE-style band. <b>014</b> rises with TBili lagging; <b>009</b> rises in ALT but TBili never reaches 2× (GREEN every visit); <b>011</b> drifts but stays sub-threshold. As-collected, single-draw, unconfirmed.</p>`; }
+function rratioStrip(){ const watch=S.filter(s=>s.lftv.some(L=>L&&(L.alt>2||L.red_hys))).sort((a,b)=>b.alt-a.alt);
+  const rows=watch.map(s=>{const cells=s.lftv.map((L,i)=>{ if(!L)return `<td class="gap">·</td>`; const R=L.rratio; const unstable=(L.alt<1.2||L.alp<1.2);
+    const cls=unstable?'gcOps':R>=5?'gc1':R<=2?'gcW':'gcA'; const lab=unstable?'?':R>=5?'H':R<=2?'C':'M';
+    return `<td class="${cls}" title="${s.id} ${VIS[i]}: R=${R.toFixed(1)} ${unstable?'(unstable, near ULN)':R>=5?'hepatocellular':R<=2?'cholestatic':'mixed'}">${lab}</td>`; }).join('');
+    return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
+  return `<div class="heatwrap"><table class="heat"><tr><th class="rh">Participant</th>${VIS.map(v=>`<th>${v}</th>`).join('')}</tr>${rows}</table></div><p class="cap" style="margin-top:8px"><b>H</b> hepatocellular (R≥5) · <b>M</b> mixed (2&lt;R&lt;5) · <b>C</b> cholestatic (R≤2) · <b>?</b> unstable (ALT or ALP near ULN). R=(ALT/ULN)/(ALP/ULN). A biochemical descriptor that steers the causality work-up (e.g. mixed/cholestatic → chase biliary) — <b>not</b> a diagnosis. <b>014’s R≈4.0 = mixed</b> (not hepatocellular) and is <b>not</b> reassuring relative to its AND-gate RED.</p>`; }
+function hepTable(){ const an=['alt','ast','tbl','alp']; const arrow=t=>t==='up'?'<span style="color:#c4544a">▲</span>':t==='down'?'<span style="color:#1f8a5b">▼</span>':'<span style="color:#8a93a0">▬</span>';
+   const rows=[...S].sort((a,b)=>b.alt-a.alt).slice(0,14).map(s=>{
+   return `<tr class="click subj" data-id="${s.id}"><td><b>${s.id}</b></td><td>${s.coh}</td>`+an.map(k=>{const ser=s.lftv.map(L=>L?L[k]:null),vals=ser.filter(v=>v!=null),base=ser[0],peak=Math.max(...vals),pv=ser.indexOf(peak),lastIdx=ser.map((v,i)=>v!=null?i:-1).filter(i=>i>=0).pop();const trend=ser[lastIdx]>=peak*0.92?'up':(ser[lastIdx]<base+(peak-base)*0.5?'down':'flat');const band=gradeBand(peak,META[k]);
+     return `<td><b style="color:${band>=3?'#c4544a':band===2?'#c2871a':'#16202b'}">${peak.toFixed(1)}×</b> <span style="color:#9aa3b0">/${base.toFixed(1)}</span> ${arrow(trend)} <span style="color:#9aa3b0">${VIS[pv]}</span></td>`;}).join('')+`</tr>`; }).join('');
+  return `<table class="mx"><tr><th>Participant</th><th>Coh</th>${an.map(k=>`<th>${k.toUpperCase()} peak/base · trend · t-peak</th>`).join('')}</tr>${rows}</table><p class="cap" style="margin-top:8px">Peak ×ULN / baseline, time-to-peak, and an as-collected <b>trend</b> glyph (▲ up / ▬ flat / ▼ down). The trend is a heuristic label on synthetic single-draw values — <b>not</b> a de-challenge / re-challenge assessment, which the medical monitor performs with confounders, timing and confirmatory labs.</p>`; }
+reg('hep','Hepatic',()=>S.some(s=>s.red_hys)?'RED':'GREEN',()=>`<div class="grid">
+   <div class="card wide"><div class="ch"><h3>eDISH scatter — the Hy’s-Law screen, with per-visit trails</h3><span class="sevtag ${S.some(s=>s.red_hys)?'RED':'GREEN'}">${S.some(s=>s.red_hys)?'RED':'GREEN'}</span></div><p class="cap">Peak ALT vs peak TBili (×ULN); faint polylines are each participant’s <b>history</b> of as-collected positions ending in the current dot (where they HAVE been — it does <b>not</b> predict future movement). RED = (ALT or AST >3×) AND TBili >2×. A position in the quadrant is a <b>screening prompt</b> pending confirmatory repeat + cholestasis/alternative-cause exclusion — never a Hy’s-Law determination. Hover/click a point.</p>${edish()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>Per-visit LFT trajectories</h3></div>${hepTraj()}</div>
+   <div class="card wide"><div class="ch"><h3>R-ratio pattern over time</h3></div>${rratioStrip()}</div>
+   <div class="card wide"><div class="ch"><h3>Hepatic peak / baseline / trend</h3></div>${hepTable()}${govLine}</div>
+ </div>`);
+
+/* ---------- CARDIAC ---------- */
+function qtcfSpaghetti(){const W=820,H=360,pl=46,pb=34;const xs=i=>pl+i*(W-pl-16)/(VIS.length-1);const ys=v=>H-pb-(clamp(v,400,520)-400)/(520-400)*(H-pb-18);let g='';
+  [[450,'#1f8a5b','450 watch'],[480,'#c2871a','480 AMBER'],[500,'#c4544a','500 RED']].forEach(([v,c,l])=>{g+=`<line x1="${pl}" y1="${ys(v)}" x2="${W-16}" y2="${ys(v)}" stroke="${c}" stroke-dasharray="4 3" opacity=".6"/><text x="${W-18}" y="${ys(v)-3}" font-size="9" fill="${c}" text-anchor="end" font-weight="600">${l}</text>`;});
+  // cohort median band
+  const med=VIS.map((v,i)=>{const vals=S.map(s=>s.ecgv[i]?s.ecgv[i].qtcf:null).filter(x=>x!=null).sort((a,b)=>a-b);return vals.length?vals[Math.floor(vals.length/2)]:null;});
+  let mp=med.map((v,i)=>v!=null?(i?'L':'M')+xs(i)+' '+ys(v):'').join(' ');g+=`<path d="${mp}" fill="none" stroke="#16344f" stroke-width="2.4" opacity=".5"/>`;
+  S.forEach(s=>{const pts=s.ecgv.map((E,i)=>E?[xs(i),ys(E.qtcf)]:null);let d='',st=false;pts.forEach(p=>{if(p){d+=(st?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1);st=true;}});const c=s.qsev==='RED'?'#c4544a':s.qsev==='AMBER'?'#c2871a':s.qsev==='watch'?'#5f8aa8':'#b8c6d4';
+    g+=`<path d="${d}" fill="none" stroke="${c}" stroke-width="${s.qsev==='RED'||s.qsev==='AMBER'?2:1.1}" opacity="${s.qsev==='RED'||s.qsev==='AMBER'?.95:.5}"/>`;
+    pts.forEach((p,i)=>{if(!p)return;const E=s.ecgv[i];const isPk=E.qtcf===s.qt;g+=`<circle class="subj" data-id="${s.id}" cx="${p[0]}" cy="${p[1]}" r="${isPk&&(s.qsev==='RED'||s.qsev==='AMBER')?4.5:2.4}" fill="${c}" stroke="#fff" stroke-width="1" ${E.baselineWatch?'stroke-dasharray="2 1.5"':''}/>`;});});
+  g+=`<line x1="${pl}" y1="${H-pb}" x2="${W-16}" y2="${H-pb}" stroke="#c9d3df"/>`;VIS.forEach((v,i)=>g+=`<text x="${xs(i)}" y="${H-pb+13}" font-size="9" text-anchor="middle" fill="#8a93a0">${v}</text>`);
+  g+=`<text x="14" y="${(H-pb)/2}" font-size="11" text-anchor="middle" fill="#5a6b7b" transform="rotate(-90 14 ${(H-pb)/2})">QTcF (ms, Fridericia)</text>`;
+  return `<svg viewBox="0 0 ${W} ${H}" class="tall">${g}</svg>`;}
+function e14census(){ const tiers=[['QTcF >450 ms','qtcf',450],['QTcF >480 ms','qtcf',480],['QTcF >500 ms','qtcf',500],['ΔQTcF >30 ms','dqtcf',30],['ΔQTcF >60 ms','dqtcf',60]];
+  const head='<tr><th>Category (screening)</th>'+COH.map(c=>`<th>${c[0]}<br><span style="font-weight:400;color:#9aa3b0">${c[1]}mg</span></th>`).join('')+'<th>All</th></tr>';
+  const rows=tiers.map(([lab,fld,thr])=>{ let tot=0; const cells=COH.map(([c])=>{const ss=S.filter(s=>s.coh===c);const cnt=ss.filter(s=>s.ecgv.some((E,i)=>E&&!E.baselineWatch&&E[fld]>thr)).length;tot+=cnt;const cls=cnt?(thr>=500||thr>=60?'gcR':thr>=480?'gcA':'gcW'):'';return `<td style="text-align:center;${cnt?'font-weight:700':''}" class="${cnt?cls:''}">${cnt||'·'}</td>`;}).join('');
+    return `<tr><td><b>${lab}</b></td>${cells}<td style="text-align:center;font-weight:700">${tot}</td></tr>`; }).join('');
+  return `<div style="display:inline-block;background:#16293f;color:#fff;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 9px;border-radius:6px;margin-bottom:8px">SCREENING CENSUS — NOT THE ICH E14 TABLE</div><table class="mx">${head}${rows}</table><p class="cap" style="margin-top:8px">A screening tally of how many participants ever crossed each pre-specified category at an <b>on-treatment</b> visit (baseline-watch excluded), by dose. Pending central-ECG QC + replicate confirmation. The validated ICH&nbsp;E14 categorical table + concentration-QTc are produced by the validated analysis (Phoenix WinNonlin / SAS) and adjudicated by the cardiologist — <b>not</b> this dashboard.</p>`; }
+reg('card','Cardiac',()=>S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN',()=>`<div class="grid">
+   <div class="card wide"><div class="ch"><h3>QTcF trajectory (per-visit, cohort median band)</h3><span class="sevtag ${S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN'}">${S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN'}</span></div><p class="cap">QTcF (Fridericia — the pre-specified correction) per visit; dark line = cohort median. Separates a transient single-visit spike from a sustained on-treatment rise. <b>018</b> crosses 500 at an on-treatment visit; <b>006</b> plateaus ~486; dashed-ring points are <b>baseline-watch</b> (already &gt;450 at baseline — not a drug effect). As-collected, pending ECG QC / replicate confirmation — screening flags, not E14 determinations.</p>${qtcfSpaghetti()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>ICH E14 categorical outlier census (screening)</h3></div>${e14census()}${govLine}</div>
+ </div>`);
+
+/* ---------- LABS & VITALS ---------- */
+const SHIFT_AN=[['alt','ALT'],['ast','AST'],['tbl','TBili'],['alp','ALP'],['hgb','Hgb'],['anc','ANC'],['plt','Plt'],['wbc','WBC'],['creat','Creat'],['k','K'],['na','Na'],['ca','Ca']];
+function worstBand(s,key){ const m=META[key]; let wg=0,wv=null,wvi=null,base=null;
+  s.visits.forEach((vv,i)=>{ if(!vv.present)return; const L=s.lftv[i],B=s.labv[i]; let v=(L&&key in L)?L[key]:(B?B[key]:undefined);
+    if(v==null)return; if(base==null)base=v; const g=gradeBand(v,m); if(g>wg){wg=g;wv=v;wvi=i;} });
+  return {g:wg,v:wv,vi:wvi,base}; }
+function labShift(){ const head='<tr><th class="rh">Participant</th>'+SHIFT_AN.map(a=>`<th>${a[1]}</th>`).join('')+'</tr>';
+  const rows=S.map(s=>{ const cells=SHIFT_AN.map(([k,lab])=>{ const wb=worstBand(s,k); const cls=wb.g>=3?'gcR':wb.g===2?'gcA':wb.g===1?'gc1':'gc0';
+     return `<td class="${cls}" data-id="${s.id}" title="${s.id} ${lab}: worst band Gr${wb.g}${wb.v!=null?' ('+wb.v+' '+META[k].unit+' at '+VIS[wb.vi]+', base '+wb.base+')':''}${k==='hgb'&&wb.g>=3?' — value band capped at Gr3; clinical Gr4 needs monitor assessment':''}">${wb.g||'·'}</td>`; }).join('');
+     return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
+  return `<div class="heatwrap"><table class="heat">${head}${rows}</table></div><div class="legend" style="margin-top:8px"><i><s class="gc0"></s>within range</i><i><s class="gc1"></s>Gr1</i><i><s class="gcA"></s>Gr2</i><i><s class="gcR"></s>Gr3+</i></div><p class="cap">Worst CTCAE-style <b>band</b> reached on any visit, baseline→worst. A screening band applied deterministically to a single synthetic value — <b>NOT an adjudicated CTCAE AE grade and not a reportable number</b>. The monitor confirms, deduplicates against the AE panel (an independent source), and rules out artifact (hemolysis, timing, prior values). Hgb value-band capped at Gr3.</p>`; }
+function hemeTraj(){ const order=[...S].sort((a,b)=>Math.min(...a.labv.filter(L=>L).map(L=>L.hgb))-Math.min(...b.labv.filter(L=>L).map(L=>L.hgb)));
+  return `<div class="sm">`+order.map(s=>{ const hgbN=Math.min(...s.labv.filter(L=>L).map(L=>L.hgb)),ancN=Math.min(...s.labv.filter(L=>L).map(L=>L.anc));const band=gradeBand(hgbN,META.hgb);const mc=band>=3?'#c4544a':band===2?'#c2871a':band===1?'#5f8aa8':'#9fb0c0';
+   const hk=sparkline(s.labv.map(L=>L?L.hgb:null),{w:150,h:38,bands:[{v:12,c:'#5f8aa8'},{v:10,c:'#c2871a'},{v:8,c:'#c4544a'}],lo:7.5,hi:15.5,meta:META.hgb,c:'#9a5a9a',baselineIdx:0});
+   const ak=sparkline(s.labv.map(L=>L?L.anc:null),{w:150,h:26,bands:[{v:1.5,c:'#c2871a'},{v:1.0,c:'#c4544a'}],lo:0,hi:6,meta:META.anc,c:'#3f7fc4'});
+   return `<div class="smc subj" data-id="${s.id}"><div class="t">${s.id}<span class="mini" style="background:${mc}">Hgb ${hgbN.toFixed(1)}</span></div>${hk}<div style="font-size:9px;color:#9aa3b0;margin:-2px 0 1px">ANC 10⁹/L (Gr2 1.5 · Gr3 1.0)</div>${ak}</div>`; }).join('')+`</div><p class="cap" style="margin-top:8px">Hgb (top; bands 12/10/8 g/dL) and ANC (below; 1.5/1.0) per visit, sorted by Hgb nadir. Cytopenias are the classic dose-escalation toxicity — the <i>shape</i> (dip-and-recover vs progressive decline) is what a static worst-value misses and what feeds the DLT conversation. Screening bands, not adjudicated grades.</p>`; }
+function renalPanel(){ const rows=[...S].map(s=>{ const ser=s.labv.map(L=>L?L.creat:null).filter(v=>v!=null),base=ser[0],peak=Math.max(...ser),fold=peak/base; const egfr=Math.min(...s.labv.filter(L=>L).map(L=>L.egfr)); const band=gradeBand(peak,META.creat);
+   return {s,base,peak,fold,egfr,band}; }).sort((a,b)=>b.fold-a.fold).slice(0,12).map(o=>`<tr class="click subj" data-id="${o.s.id}"><td><b>${o.s.id}</b></td><td>${o.s.coh}</td><td>${o.base.toFixed(2)}</td><td><b style="color:${o.band>=2?'#c2871a':'#16202b'}">${o.peak.toFixed(2)}</b> mg/dL</td><td>${o.fold.toFixed(2)}×</td><td>${o.egfr} <span style="color:#9aa3b0">est.</span></td></tr>`).join('');
+  return `<table class="mx"><tr><th>Participant</th><th>Coh</th><th>Base</th><th>Peak creat</th><th>Fold ↑ vs own base</th><th>eGFR nadir</th></tr>${rows}</table><p class="cap" style="margin-top:8px">Creatinine fold-rise over the participant’s <b>own</b> baseline catches early AKI that an absolute “in-range” value hides; pairs with eDISH for the full organ-clearance picture. eGFR is a <b>CKD-EPI 2021 race-free ESTIMATE</b>, never a measured/reported renal value. Screening only.</p>`; }
+function vitalsPanel(){ const flags=[]; S.forEach(s=>s.vitalv.forEach((V,i)=>{ if(V&&V.pcs)flags.push({s,i,V}); }));
+  const rows=flags.length?flags.map(f=>`<tr class="click subj" data-id="${f.s.id}"><td><b>${f.s.id}</b></td><td>${VIS[f.i]}</td><td>${f.V.sbp}/${f.V.dbp}</td><td>${f.V.hr}</td><td>${f.V.orthostatic>=20?'<b style="color:#c2871a">↓'+f.V.orthostatic+' mmHg</b>':f.V.orthostatic+' mmHg'}</td><td>${f.V.temp}°C</td><td><span class="sevtag ops">PCS — context</span></td></tr>`).join(''):'<tr><td colspan="7" style="color:#9aa3b0">No vital-sign PCS flags.</td></tr>';
+  return `<table class="mx"><tr><th>Participant</th><th>Visit</th><th>BP</th><th>HR</th><th>Orthostatic Δ</th><th>Temp</th><th>Flag</th></tr>${rows}</table><p class="cap" style="margin-top:8px">Potentially-clinically-significant (PCS) vital-sign / orthostatic flags (SBP &lt;90/&gt;160, DBP&gt;100, HR&lt;45/&gt;120, orthostatic SBP drop ≥20 mmHg — illustrative cutoffs). These are reviewed as <b>context, not a severity tier</b>, and on this synthetic set are transient/benign — they do not escalate study status. Vitals are routinely under-reviewed yet where early hemodynamic/infusion effects first show.</p>`; }
+reg('labs','Labs & Vitals',()=>S.some(s=>SHIFT_AN.some(a=>worstBand(s,a[0]).g>=3))?'AMBER':'GREEN',()=>`<div class="grid">
+   <div class="card wide"><div class="ch"><h3>Lab shift grid — baseline → worst band</h3></div>${labShift()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>Hematology trajectories — Hgb &amp; ANC</h3></div>${hemeTraj()}</div>
+   <div class="card"><div class="ch"><h3>Renal — creatinine fold-rise + eGFR</h3></div>${renalPanel()}${govLine}</div>
+   <div class="card"><div class="ch"><h3>Vital signs &amp; orthostatic PCS</h3><span class="sevtag ops">operational context</span></div>${vitalsPanel()}</div>
+ </div>`);
+
+/* ---------- AE & DLT ---------- */
+function aeMatrix(){ const SOCS=[...new Set(S.flatMap(s=>s.ae.map(a=>a.soc)))].sort();
+  const head='<tr><th>System Organ Class</th><th>Gr1</th><th>Gr2</th><th>Gr3</th><th>Gr4</th><th>Gr5</th><th>Subj w/ event</th></tr>';
+  const rows=SOCS.map(soc=>{ const buckets=[0,0,0,0,0,0]; let nsubj=0;
+    S.forEach(s=>{ const g=s.ae.filter(a=>a.soc===soc).reduce((m,a)=>Math.max(m,a.grade),0); if(g>0){buckets[g]++;nsubj++;} });
+    const cells=[1,2,3,4,5].map(g=>{const c=buckets[g];const cls=c?(g>=3?'gcR':g===2?'gcA':'gc1'):'';return `<td style="text-align:center" class="${cls}">${c||'·'}</td>`;}).join('');
+    return `<tr><td><b>${soc}</b></td>${cells}<td style="text-align:center;font-weight:700">${nsubj}</td></tr>`; }).join('');
+  return `<table class="mx">${head}${rows}</table><p class="cap" style="margin-top:8px">Participant-incidence by SOC and <b>worst CTCAE grade</b> per participant (a participant counts once per SOC, at their worst grade). Grade-5 is zero in this teaching set. <b>Severity (grade) and seriousness (regulatory) are separate</b> — see the seriousness column in the swimlane; a Gr3 event is not automatically serious. Hepatobiliary/Investigations Gr3+ ties back to 014’s eDISH RED. Counts are screening tallies, not the validated incidence table.</p>`; }
+function dltLadder(){ const rows=cohAgg.map(c=>{ const st=dltState(c); let dots='';for(let i=0;i<c.neval;i++)dots+=`<span style="display:inline-block;width:14px;height:14px;border-radius:50%;margin:0 1.5px;background:${i<c.nd?'#c4544a':'#e4e9f0'};border:1px solid ${i<c.nd?'#9a3d34':'#cdd6e1'};vertical-align:middle"></span>`;
+    return `<tr><td><b>${c.c}</b></td><td>${c.dose} mg</td><td>${c.plannedN} <span style="color:#9aa3b0">designed</span></td><td>${c.neval} evaluable</td><td>${dots} <b>${c.nd}/${c.neval}</b></td><td><span class="sevtag ${st.cls}">${st.label}</span></td></tr>`; }).join('');
+  return `<table class="mx"><tr><th>Cohort</th><th>Dose</th><th>Planned N</th><th>Evaluable</th><th>Adjudicated DLT (28-day window)</th><th>3+3 state</th></tr>${rows}</table><p class="cap" style="margin-top:8px">The dashboard computes which 3+3 branch the current evaluable count satisfies and shows a <b>trigger / decision-pending</b> label — it does <b>not</b> escalate, expand, de-escalate, or declare MTD; the SRC / medical monitor does. DLTs are SRC-<b>adjudicated</b> flags the dashboard displays (it never adjudicates). Planned N is read from the design (C3 was designed N=6 — never “expanded” from 3). Window = ${DLT_WINDOW_DAY} days (illustrative).</p>`; }
+function aeSwim(){ const subs=S.filter(s=>s.ae.length).sort((a,b)=>a.dose-b.dose||a.id.localeCompare(b.id));
+  const W=820,rowH=20,padL=86,padT=24,maxDay=56,plotW=W-padL-16; const H=padT+subs.length*rowH+22; const xd=d=>padL+clamp(d,0,maxDay)/maxDay*plotW; let g='';
+  [0,7,14,21,28,42,56].forEach(d=>{g+=`<line x1="${xd(d)}" y1="${padT-4}" x2="${xd(d)}" y2="${H-18}" stroke="#eef1f6"/><text x="${xd(d)}" y="${H-6}" font-size="8.5" fill="#9aa3b0" text-anchor="middle">d${d}</text>`;});
+  g+=`<line x1="${xd(DLT_WINDOW_DAY)}" y1="${padT-4}" x2="${xd(DLT_WINDOW_DAY)}" y2="${H-18}" stroke="#c4544a" stroke-dasharray="3 3"/><text x="${xd(DLT_WINDOW_DAY)+3}" y="${padT+4}" font-size="8.5" fill="#c4544a">DLT window ${DLT_WINDOW_DAY}d</text>`;
+  subs.forEach((s,r)=>{ const y=padT+r*rowH+rowH/2; g+=`<text x="4" y="${y+3}" font-size="9" fill="#3a4757" class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</text>`;
+    s.ae.forEach(a=>{ const x1=xd(a.onset),x2=xd(a.resolution!=null?a.resolution:a.onset+4); const c=a.grade>=4?'#9a3d34':a.grade>=3?'#c4544a':a.grade===2?'#c2871a':'#9fb0c0';
+      g+=`<rect x="${x1}" y="${y-4}" width="${Math.max(3,x2-x1)}" height="8" rx="3" fill="${c}" opacity="${a.teae?0.95:0.4}"/>`;
+      if(a.serious)g+=`<circle cx="${x1}" cy="${y}" r="3.4" fill="none" stroke="#7a2030" stroke-width="1.6"/>`;
+      if(a.resolution==null)g+=`<path d="M${x2} ${y} l5 -3 v6 z" fill="${c}"/>`; }); });
+  return `<svg viewBox="0 0 ${W} ${H}">${g}</svg><div class="legend" style="margin-top:6px"><i><s style="background:#9fb0c0"></s>Gr1</i><i><s style="background:#c2871a"></s>Gr2</i><i><s style="background:#c4544a"></s>Gr3</i><i><s style="background:#9a3d34"></s>Gr4</i><i><b style="border:1.6px solid #7a2030;background:none"></b>serious</i><i>solid=TEAE · faded=pre-dose · ▸ ongoing</i></div><p class="cap">AE onset→resolution vs study day — Phase 1 safety is about <b>timing relative to dose</b>; clustering inside the ${DLT_WINDOW_DAY}-day DLT window is how monitors reason about drug-relatedness. Onset/relationship/seriousness are investigator-recorded and displayed, not derived (only the TEAE flag is derived). Synthetic; controlled-vocabulary terms, no case narratives.</p>`; }
+reg('ae','AE & DLT',()=>S.some(s=>s.sae)?'RED':cohAgg.some(c=>c.dltsev!=='GREEN')?'AMBER':'GREEN',()=>`<div class="grid">
+   <div class="card wide"><div class="ch"><h3>3+3 dose-escalation state ladder</h3><span class="sevtag ${cohAgg.some(c=>c.dltsev==='RED')?'RED':'AMBER'}">trigger / pending</span></div>${dltLadder()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>AE incidence by SOC × CTCAE grade (worst-grade, participant-incidence)</h3></div>${aeMatrix()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>AE onset / duration swimlane vs study day</h3></div>${aeSwim()}</div>
+ </div>`);
+
+/* ---------- DISPOSITION ---------- */
+function dispFunnel(){ const screened=S.length+SCREENFAIL.length,enrolled=S.length,ongoing=S.filter(s=>s.dispStatus==='ong').length,done=S.filter(s=>s.dispStatus==='done').length,dc=S.filter(s=>s.dispStatus==='dc').length;
+  const bar=(lab,n,tot,c)=>{const w=Math.round(n/screened*100);return `<div style="margin:7px 0"><div style="display:flex;justify-content:space-between;font-size:12px"><span><b>${lab}</b></span><span>${n}${tot?` / ${tot}`:''}</span></div><div style="height:16px;background:#eef2f7;border-radius:5px;overflow:hidden"><div style="height:100%;width:${w}%;background:${c};border-radius:5px"></div></div></div>`;};
+  const reasons={};S.filter(s=>s.dispStatus==='dc').forEach(s=>reasons[s.dispReason]=(reasons[s.dispReason]||0)+1);
+  return bar('Screened',screened,0,'#7aa5c9')+bar('Enrolled',enrolled,screened,'#2C5F8A')+bar('Ongoing',ongoing,enrolled,'#5b8fbf')+bar('Completed',done,enrolled,'#1f8a5b')+bar('Discontinued',dc,enrolled,'#c4544a')
+   +`<p class="cap" style="margin-top:8px"><b>Screen failures:</b> ${SCREENFAIL.map(f=>f.id+' ('+f.reason+')').join(', ')}. <b>Discontinuation reasons (as recorded):</b> ${Object.entries(reasons).map(([k,v])=>k+' ×'+v).join(', ')||'—'}. Reasons are investigator-recorded vocabulary, <b>never adjudicated</b> by the dashboard; final disposition comes from the validated pipeline.</p>`; }
+function visitCompliance(){ const head='<tr><th class="rh">Participant</th>'+VIS.map(v=>`<th>${v}</th>`).join('')+'</tr>';
+  const rows=S.map(s=>{ const cells=s.visits.map((vv,i)=>{ if(!vv.present)return `<td class="gcR" data-id="${s.id}" title="${s.id} ${vv.name}: MISSED — missed visit may mean missed safety labs → route to a human">M</td>`;
+     if(vv.status==='oow')return `<td class="gcA" data-id="${s.id}" title="${s.id} ${vv.name}: out of window (target d${vv.target}, actual d${vv.actual})">⌖</td>`;
+     return `<td class="gc0" data-id="${s.id}" title="${s.id} ${vv.name}: day ${vv.actual} (in window)">✓</td>`; }).join('');
+   return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
+  return `<div class="heatwrap"><table class="heat">${head}${rows}</table></div><div class="legend" style="margin-top:8px"><i><s class="gc0"></s>in window</i><i><s class="gcA"></s>out of window ⌖</i><i><s class="gcR"></s>missed M</i></div><p class="cap">Visit timing vs protocol window — catches out-of-window PK/ECG draws that threaten NCA validity <b>before</b> they corrupt the dataset. <b>003’s missed C2D1</b> shows here. A missed visit can mean missed safety labs → route to a human; it never means the participant is fine. Windows are illustrative.</p>`; }
+function kriDeviations(){ const nDev=DEVI.length,nMajor=DEVI.filter(d=>d.sev==='Major').length,nMiss=S.reduce((a,s)=>a+s.visits.filter(v=>v.status==='missed').length,0),nOOW=S.reduce((a,s)=>a+s.visits.filter(v=>v.status==='oow').length,0),sf=Math.round(SCREENFAIL.length/(S.length+SCREENFAIL.length)*100);
+  const tiles=[['Screen-fail rate',sf+'%','illustrative KRI'],['Protocol deviations',nDev,nMajor+' major'],['Missed visits',nMiss,'route to human'],['Out-of-window',nOOW,'PK/ECG validity'],['Open queries','—','from EDC/CTMS'],['AE reporting lag','—','from safety DB']];
+  const tg=tiles.map(t=>`<div class="kpi" style="cursor:default"><div class="n" style="font-size:20px">${t[1]}</div><div class="k">${t[0]}</div><div class="s" style="color:#9aa3b0">${t[2]}</div></div>`).join('');
+  const dev=DEVI.map(d=>`<tr ${byId(d.id)?'class="click subj" data-id="'+d.id+'"':''}><td><b>${d.id}</b></td><td>${d.type}</td><td><span class="sevtag ${d.sev==='Major'?'AMBER':'plain'}">${d.sev}</span></td><td>${d.detail}</td></tr>`).join('');
+  return `<div class="kpis" style="grid-template-columns:repeat(6,1fr);padding:0 0 12px">${tg}</div><table class="mx"><tr><th>Participant</th><th>Type</th><th>Severity</th><th>Detail (as recorded)</th></tr>${dev}</table><p class="cap" style="margin-top:8px">A one-glance RBQM / central-monitoring strip (ICH E6) + the deviation trail (020’s dose change, 003’s missed visit appear here). KRI banding is a <b>“look here” prompt</b>; deviation severity is shown <b>as recorded</b>, never computed. Strictly operational — no PHI, no reportable safety numbers. Query/lag tiles are placeholders fed by EDC/CTMS in the live version.</p>`; }
+reg('disp','Disposition',()=>'GREEN',()=>`<div class="grid">
+   <div class="card"><div class="ch"><h3>Enrollment &amp; disposition</h3></div>${dispFunnel()}</div>
+   <div class="card"><div class="ch"><h3>RBQM KRIs &amp; protocol deviations</h3></div>${kriDeviations()}</div>
+   <div class="card wide"><div class="ch"><h3>Visit-compliance matrix (participant × visit)</h3></div>${visitCompliance()}</div>
+ </div>`);
+
+/* ---------- PARTICIPANTS (roster) ---------- */
+let rosterSort={k:'id',dir:1},rosterFilt={coh:'',flag:'',q:''};
+function subjFlags(s){const f=[];if(s.red_hys)f.push(['RED','eDISH']);if(s.qsev==='RED')f.push(['RED','QTcF']);else if(s.qsev==='AMBER')f.push(['AMBER','QTcF']);else if(s.qsev==='watch')f.push(['watch','QTcF watch']);
+  if(s.dltfl==='Y')f.push(['AMBER','DLT']);if(s.sae)f.push(['RED','SAE']);if(s.decoy)f.push(['ops',s.decoy]);if(s.mv&&!f.length)f.push(['watch','co-drift']);return f;}
+function worstFlag(s){const order={RED:3,AMBER:2,watch:1,ops:0.5};return subjFlags(s).reduce((w,f)=>Math.max(w,order[f[0]]||0),0);}
+function renderRosterRows(){ let list=S.filter(s=>{ if(rosterFilt.coh&&s.coh!==rosterFilt.coh)return false; if(rosterFilt.q&&!s.id.toLowerCase().includes(rosterFilt.q.toLowerCase()))return false;
+    if(rosterFilt.flag==='red'&&!(s.red_hys||s.qsev==='RED'||s.sae))return false; if(rosterFilt.flag==='amber'&&!(s.qsev==='AMBER'||s.dltfl==='Y'))return false; if(rosterFilt.flag==='clear'&&(s.red_hys||s.qsev==='RED'||s.qsev==='AMBER'||s.sae||s.dltfl==='Y'))return false; return true; });
+  const kf={id:s=>s.id,coh:s=>s.dose,alt:s=>s.alt,tbl:s=>s.tbl,qt:s=>s.qt,nae:s=>s.nae,flag:s=>worstFlag(s)};
+  list.sort((a,b)=>{const va=kf[rosterSort.k](a),vb=kf[rosterSort.k](b);return (va<vb?-1:va>vb?1:0)*rosterSort.dir;});
+  return list.map(s=>{const fl=subjFlags(s);return `<tr class="click subj" data-id="${s.id}"><td><b>${s.id}</b></td><td>${s.coh} · ${s.dose}mg</td><td>${s.sex}/${s.age}</td><td>${s.alt.toFixed(1)}×</td><td>${s.tbl.toFixed(1)}×</td><td>${s.qt}${s.qsev==='watch'?' <span style="color:#5f8aa8">(watch)</span>':''}</td><td>${s.nae}</td><td>${fl.length?fl.map(f=>`<span class="fchip ${f[0]}">${f[1]}</span>`).join(' '):'<span style="color:#9aa3b0">clear</span>'}</td></tr>`;}).join('')||'<tr><td colspan="8" style="color:#9aa3b0">No participants match the filter.</td></tr>';
+}
+function rosterTable(){ const th=(k,l)=>`<th class="sortable" data-sort="${k}">${l}${rosterSort.k===k?(rosterSort.dir>0?' ▲':' ▼'):''}</th>`;
+  return `<div class="filterbar"><input id="rq" type="search" placeholder="Search participant id…" value="${rosterFilt.q}"><select id="rcoh"><option value="">All cohorts</option>${COH.map(c=>`<option value="${c[0]}" ${rosterFilt.coh===c[0]?'selected':''}>${c[0]} · ${c[1]}mg</option>`).join('')}</select><select id="rflag"><option value="">All flag states</option><option value="red" ${rosterFilt.flag==='red'?'selected':''}>Has RED</option><option value="amber" ${rosterFilt.flag==='amber'?'selected':''}>Has AMBER</option><option value="clear" ${rosterFilt.flag==='clear'?'selected':''}>Clear / watch only</option></select><span style="font-size:11.5px;color:#9aa3b0">click a row → evidence packet</span></div>
+   <table class="mx" id="rostertbl"><thead><tr>${th('id','Participant')}${th('coh','Cohort')}<th>Sex/Age</th>${th('alt','Peak ALT')}${th('tbl','Peak TBili')}${th('qt','Max QTcF')}${th('nae','TEAE')}${th('flag','Screening flags')}</tr></thead><tbody id="rosterbody">${renderRosterRows()}</tbody></table>`; }
+reg('subj','Participants',()=>STATUS,()=>`<div class="grid"><div class="card wide"><div class="ch"><h3>Participant roster — sort, filter, search</h3></div><p class="cap">All ${S.length} participants with key screening values + per-domain flag chips. This is where you confirm the near-misses are correctly <b>not</b> flagged: <b>009</b> (high ALT, TBili &lt;2× → no eDISH flag) and <b>011/012</b> (QTcF in the <b>watch</b> band, every value sub-threshold). Click a row for the evidence packet.</p>${rosterTable()}${govLine}</div></div>`);
+
+/* ============================ NAV + RENDER ============================ */
+let curSection='ov';
+function badgeHTML(b){ if(b==='RED')return '<span class="ct red">RED</span>'; if(b==='AMBER')return '<span class="ct amber">AMBER</span>'; return ''; }
+function buildNav(){ $('subnav').innerHTML=SECTIONS.map(s=>`<button data-sec="${s.id}" class="${s.id===curSection?'on':''}">${s.label}${badgeHTML(s.badge())}</button>`).join(''); }
+function renderSections(){ $('sections').innerHTML=SECTIONS.map(s=>`<div class="zone ${s.id===curSection?'':'hide'}" id="sec-${s.id}" role="tabpanel"></div>`).join('');
+  SECTIONS.forEach(s=>{ $('sec-'+s.id).innerHTML=s.fn(); }); }
+function showSection(id){ curSection=id; SECTIONS.forEach(s=>$('sec-'+s.id).classList.toggle('hide',s.id!==id)); [...$('subnav').children].forEach(b=>b.classList.toggle('on',b.dataset.sec===id)); window.scrollTo({top:$('subnav').offsetTop-2,behavior:'instant'in document.documentElement.style?'instant':'auto'}); }
+buildNav();renderSections();
+
+/* ============================ TOOLTIP ============================ */
+const tip=$('tip');
+function tipHTML(s){const dot=c=>`<span class="d" style="background:${c}"></span>`;const sc={RED:'#c4544a',AMBER:'#c2871a',GREEN:'#27996a',watch:'#5f8aa8'};
+  return `<div class="t-id">${s.id}</div><div class="t-sub">${s.coh} · ${s.dose} mg · ${s.sex} · ${s.age}y</div>`+
+   `<div class="t-row">${dot(s.red_hys?sc.RED:sc.GREEN)}ALT ${s.alt.toFixed(1)}× · TBili ${s.tbl.toFixed(1)}×${s.red_hys?' — Hy’s-Law screen':''}</div>`+
+   `<div class="t-row">${dot(sc[s.qsev]||sc.GREEN)}QTcF ${s.qt} ms · Δ${s.dqt.toFixed(0)}${s.qsev==='watch'?' (watch)':''}</div>`+
+   (s.dltfl==='Y'?`<div class="t-row">${dot(sc.AMBER)}adjudicated DLT</div>`:'')+`<div class="t-hint">click for the evidence packet</div>`;}
+function moveTip(e){tip.style.left=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-8)+'px';tip.style.top=Math.min(e.clientY+16,window.innerHeight-tip.offsetHeight-8)+'px';}
+document.addEventListener('mouseover',e=>{const el=e.target.closest('circle.subj');if(el&&byId(el.dataset.id)){tip.innerHTML=tipHTML(byId(el.dataset.id));tip.classList.add('show');moveTip(e);}});
+document.addEventListener('mousemove',e=>{if(tip.classList.contains('show'))moveTip(e);});
+document.addEventListener('mouseout',e=>{if(e.target.closest('circle.subj'))tip.classList.remove('show');});
+
+/* ============================ MODAL (enhanced w/ sparklines) ============================ */
+function band3(v,m){const g=gradeBand(v,m);return g>=3?'#c4544a':g===2?'#c2871a':g===1?'#5f8aa8':'#16202b';}
+function openSubj(id){const s=byId(id);if(!s)return;
+  const det=`<table class="mx"><tr><th>Check</th><th>Value (peak/worst)</th><th>Screening flag</th></tr>
+   <tr><td>eDISH / Hy’s-Law</td><td>ALT ${s.alt.toFixed(1)}× · AST ${s.ast.toFixed(1)}× · TBili ${s.tbl.toFixed(1)}× · ALP ${s.alp.toFixed(1)}× · R=${s.rratio.toFixed(1)} (${s.rUnstable?'unstable':s.pattern})</td><td><span class="sevtag ${s.red_hys?'RED':'GREEN'}">${s.red_hys?'RED':'GREEN'}</span></td></tr>
+   <tr><td>QTcF (ICH E14 screen)</td><td>max ${s.qt} ms · Δ ${s.dqt.toFixed(0)} ms</td><td><span class="sevtag ${s.qsev==='watch'?'watch':s.qsev}">${s.qsev==='watch'?'WATCH (>450, &lt;480)':s.qsev}</span></td></tr>
+   <tr><td>Adjudicated DLT</td><td>${s.dltfl==='Y'?'candidate DLT (SRC-adjudicated)':'none'}</td><td><span class="sevtag ${s.dltfl==='Y'?'AMBER':'GREEN'}">${s.dltfl==='Y'?'flagged':'GREEN'}</span></td></tr>
+   <tr><td>AEs (TEAE / serious / Gr≥3)</td><td>${s.nae} TEAE · ${s.sae?'≥1 serious':'no serious'} · ${s.g3?'≥1 Gr3':'no Gr3'}</td><td><span class="sevtag ${s.sae?'RED':s.g3?'AMBER':'GREEN'}">${s.sae?'serious':s.g3?'Gr3':'GREEN'}</span></td></tr></table>`;
+  const spk=(lab,ser,o)=>`<div class="sparkc"><div class="st">${lab}<span style="color:#9aa3b0">${o.last}</span></div>${sparkline(ser,o)}</div>`;
+  const sparks=`<div class="sparkrow">`+
+    spk('ALT ×ULN',s.lftv.map(L=>L?L.alt:null),{w:172,h:46,bands:[{v:3,c:'#c4544a'},{v:1,c:'#cdd6e1'}],lo:0,hi:Math.max(6,s.alt*1.05),meta:META.alt,baselineIdx:0,last:s.alt.toFixed(1)+'×'})+
+    spk('TBili ×ULN',s.lftv.map(L=>L?L.tbl:null),{w:172,h:46,bands:[{v:2,c:'#c08'}],lo:0,hi:Math.max(3.2,s.tbl*1.05),meta:META.tbl,c:'#8a6cae',baselineIdx:0,last:s.tbl.toFixed(1)+'×'})+
+    spk('QTcF ms',s.ecgv.map(E=>E?E.qtcf:null),{w:172,h:46,bands:[{v:450,c:'#1f8a5b'},{v:480,c:'#c2871a'},{v:500,c:'#c4544a'}],lo:410,hi:Math.max(510,s.qt+8),c:'#2563a8',baselineIdx:0,last:s.qt+' ms'})+
+    spk('Hgb g/dL',s.labv.map(L=>L?L.hgb:null),{w:172,h:46,bands:[{v:10,c:'#c2871a'},{v:8,c:'#c4544a'}],lo:7.5,hi:15.5,meta:META.hgb,c:'#9a5a9a',baselineIdx:0,last:(s.labv.find(L=>L)?Math.min(...s.labv.filter(L=>L).map(L=>L.hgb)).toFixed(1):'')+''})+
+    spk('ANC 10⁹/L',s.labv.map(L=>L?L.anc:null),{w:172,h:46,bands:[{v:1.5,c:'#c2871a'},{v:1.0,c:'#c4544a'}],lo:0,hi:6,meta:META.anc,c:'#3f7fc4',baselineIdx:0,last:''})+
+    spk('Creatinine',s.labv.map(L=>L?L.creat:null),{w:172,h:46,bands:[{v:1.1,c:'#c2871a'}],lo:0.5,hi:Math.max(1.6,s.creat+0.2),meta:META.creat,c:'#1f8a5b',baselineIdx:0,last:''})+`</div>`;
+  $('mbox').innerHTML=`<div class="hd"><h2>${s.id} <span class="sy" style="background:#e7c34d">SYNTHETIC</span> ${s.decoy?'<span class="sevtag ops">OPERATIONAL</span>':''}</h2><span class="x" tabindex="0" role="button" aria-label="Close" onclick="closeModal()">&times;</span></div>
+   <p class="cap" style="margin:4px 0 0">${s.coh} · ${s.dose} mg · ${s.sex} · ${s.age}y · enrolled day ${s.enrollDay} · ${DISP[s.dispStatus]}${s.dispReason!=='—'?' ('+s.dispReason+')':''}</p>
+   <h3>Deterministic evidence (the validated backbone)</h3>${det}
+   <h3>Per-visit trajectories (as-collected, single-draw)</h3>${sparks}
+   ${s.note?`<p class="lead" style="margin-top:12px"><b>Provenance:</b> ${s.note}</p>`:''}
+   <p class="cap" style="margin-top:12px">Screening flags on synthetic data — not reported values; vitals/heme shown for context, not a tier. Reported numbers come from validated tools (Phoenix WinNonlin / Pinnacle 21).</p>`;
+  $('modal').classList.add('show');tip.classList.remove('show');}
+function closeModal(){$('modal').classList.remove('show');}
+
+/* ============================ INTERACTIONS ============================ */
+document.addEventListener('click',e=>{
+  const nav=e.target.closest('[data-sec]'); if(nav){showSection(nav.dataset.sec);return;}
+  const kpi=e.target.closest('[data-go]'); if(kpi){showSection(kpi.dataset.go);return;}
+  const th=e.target.closest('th[data-sort]'); if(th){const k=th.dataset.sort;if(rosterSort.k===k)rosterSort.dir*=-1;else{rosterSort={k,dir:k==='id'||k==='coh'?1:-1};}$('rosterbody').innerHTML=renderRosterRows();$('rostertbl').querySelectorAll('th[data-sort]').forEach(h=>{h.textContent=h.textContent.replace(/[▲▼]/g,'').trim();if(h.dataset.sort===k)h.textContent+=rosterSort.dir>0?' ▲':' ▼';});return;}
+  const el=e.target.closest('.subj,[data-id]'); if(el&&el.dataset.id&&byId(el.dataset.id)){openSubj(el.dataset.id);return;}
+  if(e.target===$('modal'))closeModal();
+});
+document.addEventListener('input',e=>{ if(e.target.id==='rq'){rosterFilt.q=e.target.value;$('rosterbody').innerHTML=renderRosterRows();}
+  if(e.target.id==='rcoh'){rosterFilt.coh=e.target.value;$('rosterbody').innerHTML=renderRosterRows();}
+  if(e.target.id==='rflag'){rosterFilt.flag=e.target.value;$('rosterbody').innerHTML=renderRosterRows();} });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+$('foot').innerHTML='<div class="fr">TRIALMON interactive dashboard · SYNTHETIC longitudinal ops data, seeded (SEED 20260611) for a reproducible picture — not a claim any signal is real or robust · every per-visit series’ worst on-treatment value equals the original summary so prior panels stay exact · the deterministic checks are the validated backbone (detect / package / page; humans decide) · severity (CTCAE band) and seriousness (regulatory) are kept separate; the dashboard derives only the TEAE flag and the 3+3 trigger, never escalation/MTD/SUSAR · reported numbers come only from validated tools (Phoenix WinNonlin / Pinnacle 21). Part of the SAS/R Monitoring &amp; On-Leave Coverage package. &nbsp;<a href="TRIALMON_Dashboard_Wiki.html" style="color:#2563a8;font-weight:700;text-decoration:none">&#128214; Open the Field Guide</a> &mdash; how to read every section, panel, threshold &amp; rule.</div>';
+</script></body></html>

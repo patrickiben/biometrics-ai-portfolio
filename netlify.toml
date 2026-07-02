@@ -1,0 +1,55 @@
+# Netlify configuration — "AI for Biometrics" static site.
+# This is a PRE-BUILT static site (no framework, no build step). Deploy this folder as-is:
+# drag it onto app.netlify.com/drop, or connect the repo. index.html is served at "/".
+
+[build]
+  publish = "."          # the site lives at the repo root
+  command = ""           # nothing to build
+
+# Netlify serves clean URLs by default (/Operations -> Operations.html) and revalidates
+# HTML automatically, so edits show up on the next deploy without manual cache-busting.
+
+# --- Long-lived caching for big, rarely-changing assets -------------------------------
+# Videos, PDFs, and images get a fingerprinted year-long cache so repeat visits are fast
+# and don't re-download (they don't change without a re-deploy).
+[[headers]]
+  for = "/*.mp4"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.pdf"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.svg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# The shared stylesheet changes rarely but should refresh within the hour after an edit.
+[[headers]]
+  for = "/site.css"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+# --- Sensible security headers across the whole site ----------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+
+# A custom 404 page (404.html) is served automatically for unknown paths.

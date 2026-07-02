@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Knowledge Base — no GUI</title>
+<style>
+  :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--r:12px}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0a0d16 70%);color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:15px;line-height:1.62}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 22px 70px}
+  header.hero{padding:24px 0 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .home{color:var(--mut);font-size:12.5px} .home a{color:var(--mut)}
+  h1{font-size:25px;margin:8px 0 6px;font-weight:680}
+  .sub{color:var(--mut);font-size:14.5px;max-width:860px;margin:0}
+  h2{font-size:18px;font-weight:660;margin:26px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:14.5px;color:#cfe0ff;margin:18px 0 6px}
+  p{margin:9px 0} ul,ol{margin:9px 0;padding-left:22px} li{margin:5px 0} strong{color:#fff}
+  code{background:#0e1422;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12.8px;color:#cfe3ff;font-family:"SFMono-Regular",Consolas,monospace}
+  pre{background:#0c1426;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:9px;padding:12px 14px;overflow:auto;font-size:12.6px;line-height:1.5}
+  pre code{background:none;border:none;padding:0;color:#d6e6ff}
+  table.t{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+  table.t th,table.t td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.t th{color:var(--mut);font-weight:600;background:#0e1422}
+  table.t tr:hover td{background:#0e1626}
+  .note,.warn{border-radius:9px;padding:11px 14px;margin:12px 0;font-size:13.6px}
+  .note{background:#0e2230;border:1px solid #235049;border-left:3px solid var(--teal)}
+  .note::before{content:"NOTE";display:block;font-size:10.5px;letter-spacing:.06em;color:var(--teal);font-weight:700;margin-bottom:3px}
+  .warn{background:#241c08;border:1px solid #5a4a1f;border-left:3px solid var(--gold)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#0c1426;border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0;font-size:12.8px}
+  .flow .box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 11px}
+  .flow .box.auto{border-color:#2b5a4a;background:#0e2a22}
+  .flow .arr{color:var(--accent);font-weight:700}
+  .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;margin:8px 0}
+  .files a{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-size:12.5px}
+  .files a:hover{background:#24304e;text-decoration:none}
+  .files a code{background:none;border:none;color:var(--teal);padding:0}
+  .files a .d{color:var(--mut);font-size:11px;display:block}
+  .badge{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:20px;background:#15213f;color:#9dbcff;border:1px solid #2b4a86;vertical-align:middle;margin-left:6px}
+  footer{color:var(--mut);font-size:12.3px;margin-top:30px;border-top:1px solid var(--line);padding-top:14px}
+  .ways{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .ways a{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 13px;font-size:12.5px;color:#cfe0ff}
+  .ways a:hover{background:#24304e;text-decoration:none}
+  .glance{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:12px 0}
+  .glance .g{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px 15px}
+  .glance .g .n{font-size:10.5px;color:var(--gold);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+  .glance .g h4{margin:5px 0 5px;font-size:14.5px} .glance .g p{margin:0;font-size:12.8px;color:var(--mut)}
+  .skb{background:#0c1426;border:1px solid var(--line);border-radius:12px;padding:14px;margin:14px 0}
+  .skb-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .skb-pane{background:#0e1422;border:1px solid var(--line);border-radius:9px;padding:10px;display:flex;flex-direction:column}
+  .skb-h{font-size:11.5px;color:var(--mut);font-weight:700;margin-bottom:8px;border-bottom:1px solid var(--line);padding-bottom:5px}
+  .skb-mail{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:7px 9px;margin-bottom:7px;font-size:11.5px;position:relative}
+  .skb-mail .s{font-weight:600;color:#e9edf7;display:block;margin-bottom:2px;line-height:1.35} .skb-mail .f{color:var(--mut);font-size:10.5px}
+  .skb-mail.restricted{border-color:#5a2a2a;background:#1a1012}
+  .skb-mail.filed{opacity:.5}
+  .skb-tag{display:inline-block;font-size:9px;font-weight:700;border-radius:10px;padding:1px 7px;margin-top:5px}
+  .skb-tag.ok{background:#10331f;color:#7ee0a6;border:1px solid #2b5a3a}
+  .skb-tag.no{background:#3a1414;color:#ffb0b0;border:1px solid #6a2a2a}
+  .skb-tag.new{background:#102a3a;color:#8fd0ff;border:1px solid #2b557a}
+  .skb-btns{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+  .skb-run,.skb-add{background:var(--green);color:#04130b;border:none;border-radius:7px;padding:7px 10px;font-weight:700;font-size:12px;cursor:pointer}
+  .skb-add{background:var(--panel2);color:#cfe0ff;border:1px solid var(--line)}
+  .skb-run:disabled{opacity:.4;cursor:not-allowed}
+  .skb-console{background:#070b14;border:1px solid var(--line);border-radius:7px;padding:8px;margin-top:8px;font-size:10.6px;min-height:72px;max-height:150px;overflow:auto;color:#7ee0a6;white-space:pre-wrap}
+  .skb-search{width:100%;background:#0e1422;border:1px solid var(--line);border-radius:7px;padding:6px 9px;color:var(--ink);font-size:12px;margin-bottom:8px}
+  .skb-idx{width:100%;border-collapse:collapse;font-size:11.3px} .skb-idx td{border-bottom:1px solid var(--line);padding:5px 6px;vertical-align:top}
+  .skb-idx .dt{color:var(--mut);white-space:nowrap} .skb-idx .f2{color:var(--mut);font-size:10.5px}
+  .skb-empty{color:var(--mut);font-size:11.5px;padding:6px}
+  .skb-reset{margin-top:10px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);border-radius:7px;padding:5px 11px;font-size:12px;cursor:pointer}
+  .walk{margin:16px 0}
+  .wstep{display:flex;gap:14px;margin:22px 0;align-items:flex-start}
+  .wnum{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:var(--gold);color:#241500;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;margin-top:1px}
+  .wbody{flex:1;min-width:0} .wbody h4{margin:2px 0 5px;font-size:15.5px;color:#fff} .wbody p{margin:6px 0}
+  .shot{margin:10px 0 2px;border:1px solid var(--line);border-radius:10px;overflow:hidden;max-width:680px}
+  .shot svg{display:block;width:100%;height:auto}
+  .shot .cap{background:#0e1422;color:var(--mut);font-size:11.5px;padding:7px 11px;border-top:1px solid var(--line)}
+  kbd{background:#10182b;border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px;font-size:12px;color:#dce8ff}
+  .click{color:var(--gold);font-weight:700} .mini{font-size:12.5px;color:var(--mut)}
+  .fill{color:#7a86a6;border-bottom:1px dotted #4a5878;min-width:150px;display:inline-block}
+  .checklist{list-style:none;padding-left:0;margin:10px 0}
+  .checklist li{position:relative;padding:8px 12px 8px 38px;border:1px solid var(--line);border-radius:8px;margin:6px 0;background:var(--panel);cursor:pointer;font-size:13.6px;user-select:none}
+  .checklist li:hover{border-color:#3a4a6e;background:#161d31}
+  .checklist li::before{content:"";position:absolute;left:11px;top:9px;width:17px;height:17px;border:2px solid #57658a;border-radius:4px;background:#0e1422}
+  .checklist li.done{opacity:.62} .checklist li.done span{text-decoration:line-through}
+  .checklist li.done::before{background:var(--green);border-color:var(--green)}
+  .checklist li.done::after{content:"✓";position:absolute;left:14px;top:8px;color:#04130b;font-weight:900;font-size:12.5px}
+  .copybtn{position:absolute;top:7px;right:7px;background:var(--panel2);border:1px solid var(--line);color:#cfe0ff;border-radius:6px;font-size:11px;padding:3px 9px;cursor:pointer;opacity:.85;font-family:inherit}
+  .copybtn:hover{background:#24304e;opacity:1} .copybtn.ok{background:#10331f;color:#7ee0a6;border-color:#2b5a3a}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+  .tools button{background:var(--panel2);border:1px solid var(--line);color:#cfe0ff;border-radius:20px;padding:6px 14px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .tools button:hover{background:#24304e}
+  @media(max-width:760px){.skb-row{grid-template-columns:1fr}.glance{grid-template-columns:1fr}.wstep{flex-direction:column;gap:7px}}
+  @media print{
+    body{background:#fff !important;color:#1a1a1a !important;font-size:11.5pt}
+    .wrap{max-width:100%;padding:0}
+    a{color:#16357a !important} h1,h2,h3,h4,strong,b,.glance .g h4{color:#000 !important}
+    .sub,.mini,p,li,td,th,.wbody p{color:#222 !important}
+    code{background:#eef0f3 !important;color:#0a2a6a !important;border-color:#ccd !important}
+    pre{background:#f5f6f8 !important;color:#111 !important;border-color:#ccd !important;border-left-color:#16357a !important} pre code{color:#111 !important}
+    .note{background:#eef7f5 !important;border-color:#9ccfc7 !important;color:#173a35 !important}
+    .warn{background:#fdf6e3 !important;border-color:#d9c690 !important;color:#5a4a1f !important}
+    .glance .g{background:#f6f7f9 !important;border-color:#dde !important} .glance .g p{color:#333 !important} .glance .g .n{color:#9a6a10 !important}
+    .checklist li{background:#f6f7f9 !important;border-color:#dde !important;color:#222 !important} .checklist li span{color:#222 !important;text-decoration:none !important}
+    table.t th{background:#eef0f3 !important} table.t th,table.t td{border-color:#dde !important}
+    .wnum{background:#caa24a !important;color:#241500 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .ways,#skb,#try>p,#try>h2+p,.skb-reset,.copybtn,.tools,footer,.checklist li::before,.checklist li::after{display:none !important}
+    #try>h2::after{content:" (interactive — omitted in print)";font-size:12px;color:#777;font-weight:400}
+    .shot,.wstep,.glance .g,table.t,.note,.warn{break-inside:avoid}
+    .badge{color:#333 !important;background:#eee !important;border-color:#ccc !important}
+    h2{break-after:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style></head><body><div class="wrap">
+
+<header class="hero">
+  <div class="home"><a href="../START_HERE.html">← Program home</a></div>
+  <h1>Study Knowledge Base — no GUI <span class="badge" title="A paste-able script + operating pattern, structure-verified — validate on your own machine before relying on it. Deliberate: a reference to adopt, not a shipped product.">REFERENCE SKELETON</span></h1>
+  <p class="sub">Files your <strong>whole study's</strong> email into a searchable knowledge base <strong>automatically</strong>: a scheduled script reads your Outlook study folder and turns every new message into a note + rebuilds a searchable index. You set it up once; after that it runs hands-off. No Power Automate flow, no SharePoint clicking, no Copilot.</p>
+</header>
+
+<div class="warn"><strong>Status — not validated software.</strong> This is a paste-able script + operating skeleton, structure-verified (not executed) in authoring; run/parse it on your own Windows machine first. Reported or regulated numbers always come from validated tools — <strong>never</strong> from a note or an LLM summary of one.</div>
+
+<p>This is the no-GUI equivalent of the old Copilot/Outlook wiki's <strong>"when a new email arrives in the study folder → file it"</strong> Power Automate flow. The difference: the trigger is a <strong>scheduled local script</strong>, not a cloud flow. Point it at your study mail once (an Outlook rule into a folder, or a subject/sender filter) and it files the <strong>entire study automatically</strong> — there is <strong>no flow to build, no SharePoint pages to click, and no AI Builder/Copilot credits</strong>. Dragging individual emails is only an <em>ad-hoc fallback</em> for the odd message that lives outside the study folder.</p>
+
+<div class="ways">
+  <a href="#glance">⚡ At a glance</a>
+  <a href="#try">🖱 Try it (interactive)</a>
+  <a href="#watch">▶ Watch it work</a>
+  <a href="#how">🔧 How it works</a>
+  <a href="#setup">🛠 Set it up once</a>
+  <a href="#trouble">🆘 Troubleshooting</a>
+  <a href="#example">📄 Worked example</a>
+  <a href="#ask">🤝 The ask</a>
+  <a href="#code">💻 Browse the code</a>
+</div>
+
+<h2 id="watch">▶ Watch it work — a guided tour</h2>
+<div style="max-width:880px;margin:6px 0 6px">
+  <video controls preload="metadata" poster="Study_KB_NoGUI_Screencast_poster.jpg" style="width:100%;border-radius:12px;border:1px solid #27314c;background:#0a0e1a;display:block;box-shadow:0 12px 34px #00000050">
+    <source src="Study_KB_NoGUI_Screencast_narrated.mp4" type="video/mp4">
+    Your browser can't play this video — <a href="Study_KB_NoGUI_Screencast_narrated.mp4">download it</a>.
+  </video>
+  <p style="font-size:13px;color:#8b93a8;margin:9px 2px 0">A real Windows PowerShell session (no mockups): the actual script code, creating the folder, the ad-hoc drop into <code>_Inbox</code>, the ingest run, the sanitize before/after, the EntryID watermark skipping duplicates, and the one-click macro — narrated, captioned, ops-only. <a href="Study_KB_NoGUI_Screencast_narrated.mp4" download style="color:#7aa2f7">Download</a> · <a href="Study_KB_NoGUI_Screencast.vtt" download style="color:#7aa2f7">captions (.vtt)</a></p>
+</div>
+
+<h2 id="glance">At a glance</h2>
+<div class="glance">
+  <div class="g"><div class="n">The trigger</div><h4>Automatic, whole-study</h4><p>A scheduled run reads your Outlook study folder and files <strong>every new</strong> message itself — no per-email clicking. It remembers what it's filed, so it never double-files and only ever <em>reads</em> your mail. Runs while your Outlook is open and you're signed in; if it's closed it just catches up next run — nothing's lost.</p></div>
+  <div class="g"><div class="n">The engine</div><h4>One scheduled script</h4><p><code>Update-StudyKB.ps1</code> reads Outlook directly, writes one clean HTML note per message, and rebuilds the index — no flow builder, no SharePoint clicks, no Copilot.</p></div>
+  <div class="g"><div class="n">The result</div><h4>A searchable wiki</h4><p>One <code>index.html</code> you search instantly; an on-device assistant (no cloud) can answer questions over it. Operations-only — never protected health information (PHI).</p></div>
+</div>
+
+<h2 id="try">Try it — a 60-second interactive demo</h2>
+<p>A sandboxed simulation of the automatic loop. Your inbound Outlook rule decides what enters the <code>CP-101</code> folder; the scheduled job reads <strong>that folder</strong> and files the whole batch at once — not one at a time. <strong>Watch the red item in the Inbox</strong> — a restricted lab-portal email your rule excepts by source: it stays put while the ops mail files itself. Press <b>▶ Run scheduled job</b>, then add more mail and run again.</p>
+<div class="skb" id="skb">
+  <div class="skb-row">
+    <div class="skb-pane">
+      <div class="skb-h">📥 INBOX — your rule decides what enters</div>
+      <div id="skbInbox"></div>
+      <div class="skb-h" style="margin-top:10px">📁 "CP-101" FOLDER — the job reads this</div>
+      <div id="skbEmails"></div>
+      <div class="skb-btns"><button id="skbAdd" class="skb-add">＋ New study mail arrives</button></div>
+    </div>
+    <div class="skb-pane"><div class="skb-h">⏱ SCHEDULED JOB (every 15 min)</div>
+      <button id="skbRun" class="skb-run">▶ Run scheduled job now</button>
+      <pre id="skbConsole" class="skb-console">idle — press ▶ Run to simulate the next 15-min run</pre>
+    </div>
+    <div class="skb-pane"><div class="skb-h">🔎 INDEX.HTML — SEARCHABLE WIKI</div>
+      <input id="skbSearch" class="skb-search" placeholder="search the KB…  (try: DBL, assay)">
+      <table class="skb-idx"><tbody id="skbIndex"></tbody></table>
+    </div>
+  </div>
+  <button id="skbReset" class="skb-reset">↺ Reset demo</button>
+</div>
+<p><em>Illustrative only — it mimics the flow; it never runs PowerShell or touches a mailbox. The job files <strong>everything in the CP-101 folder</strong> — it doesn't read content for sensitivity. The control is your inbound rule, and it routes by <strong>source</strong>: the ops contacts land in the folder; the lab-portal item (a sensitive channel) is excepted by the rule, so it stays in the Inbox and is never filed. A rule can't classify content — it's a coarse filter, backed by ops-only policy and your review.</em></p>
+
+<h2 id="how">How it works</h2>
+<div class="flow">
+  <span class="box">study mail lands in an<br>Outlook folder <span style="color:var(--mut)">(a one-time rule — or filter the Inbox)</span></span>
+  <span class="arr">→</span>
+  <span class="box auto"><code>Update-StudyKB.ps1</code><br><span style="color:var(--mut)">every ~15 min — reads the folder, files all new mail</span></span>
+  <span class="arr">→</span>
+  <span class="box"><code>Notes\*.html</code> + <code>index.html</code><br><span style="color:var(--mut)">rebuilt each run</span></span>
+  <span class="arr">→</span>
+  <span class="box">OneDrive syncs to SharePoint <span style="color:var(--mut)">(no API)</span></span>
+</div>
+<p>On each run the script connects to your already-open classic Outlook, reads the study folder(s) you named (or sweeps the Inbox by subject/sender), and files every message it hasn't filed before. It remembers what it's done in <code>.state\seen.json</code> (Outlook EntryIDs), so re-runs are idempotent and your mailbox is only ever <em>read</em> — nothing is moved, deleted, or marked. <span style="color:var(--mut)">(EntryIDs are per-store, so mail you later move to an archive/PST can re-file as a harmless duplicate note — never data loss; the <code>seen.json</code> set is the idempotence key, so keep it.)</span> OneDrive does the SharePoint upload, so there's no Graph/connector/API.</p>
+<div class="note">It needs <strong>classic Outlook for Windows, open and signed in</strong>, in your own session (that's how it reads mail with no API and no admin rights). It <strong>attaches</strong> to your running Outlook — it won't launch one; if Outlook is closed it simply skips auto-ingest and picks up on the next run. The "new" Outlook and Outlook on Mac don't expose this automation — for those, use the drop-folder path in <a href="README.md">the README</a>. On the first run you may see Outlook's <em>"a program is trying to access Outlook"</em> prompt — it only reads; allow it (or, the clean enterprise path, have IT <strong>code-sign the script and trust that publisher</strong> in Trust Center ▸ Programmatic Access, so the guard stays on for everything else).</div>
+<div class="note"><strong>Where the data lives.</strong> The notes and index are plain files in your <strong>OneDrive/SharePoint-synced library</strong> — so the knowledge base inherits <strong>that library's permissions, DLP, and retention</strong>, and anyone who can read the library can read the whole study's filed mail. Point it at a <strong>restricted, ops-team-scoped SharePoint site</strong> (not a personal OneDrive, not an open Team site). Content stays inside your governed M365 tenant — no third-party API or connector — but it does sync to the cloud tenant by design.</div>
+
+<h2 id="setup">Set it up once</h2>
+<p>About <strong>ten minutes, once</strong> — then it runs itself. The screens below match <strong>classic Outlook for Windows</strong>; your version may look slightly different, but the option names are the same. You'll do three things:</p>
+<p class="mini"><strong>① put the script in the synced folder &nbsp;·&nbsp; ② make one Outlook rule so study mail lands in a folder &nbsp;·&nbsp; ③ schedule the script.</strong> Step ② is the only fiddly part, so it's drawn out screen by screen.</p>
+
+<div class="note"><strong>Before you start, you'll need:</strong> classic <strong>Outlook for Windows</strong> (desktop), kept open during the workday &nbsp;·&nbsp; a <strong>synced SharePoint/OneDrive library folder</strong> on your PC (where the wiki will live) &nbsp;·&nbsp; <strong>Windows PowerShell</strong> (built into Windows — nothing to install) &nbsp;·&nbsp; about <strong>10 minutes</strong>. No admin rights, no new software. <span class="mini">(On new Outlook or a Mac? The rule path needs <em>classic</em> Outlook — see the note at the end of this section.)</span></div>
+
+<p><strong>You'll customize just four things.</strong> Decide them now and reuse them throughout (fill the middle column in — this page prints, too):</p>
+<table class="t">
+  <thead><tr><th style="width:32%">What</th><th style="width:28%">Your value</th><th>Example</th></tr></thead>
+  <tbody>
+    <tr><td>① Your synced library folder</td><td><span class="fill">&nbsp;</span></td><td><code>C:\Users\you\Contoso\Study Knowledge Base - Documents</code></td></tr>
+    <tr><td>② The study — folder name &amp; tag</td><td><span class="fill">&nbsp;</span></td><td><code>CP-101</code></td></tr>
+    <tr><td>③ Your operational senders / distros</td><td><span class="fill">&nbsp;</span></td><td>CRO PM distro · Data Management distro · named ops contacts</td></tr>
+    <tr><td>④ How often it runs</td><td><span class="fill">&nbsp;</span></td><td>every 15 minutes</td></tr>
+  </tbody>
+</table>
+<p class="mini">Wherever the steps below show <code>CP-101</code> or <code>C:\Users\you\Study Knowledge Base</code>, use <em>your</em> values from this table.</p>
+
+<p><strong>Quick-start checklist</strong> — click each as you finish it (full details for every line are below):</p>
+<ul class="checklist" id="qsc">
+  <li><span>Copy <code>Update-StudyKB.ps1</code> into your synced library folder</span></li>
+  <li><span>Make a <code>CP-101</code> folder in Outlook (right-click Inbox → New Folder)</span></li>
+  <li><span>Create the rule: <em>from</em> your ops senders → move to <code>CP-101</code>, <em>except</em> sensitive channels / subjects</span></li>
+  <li><span>Schedule it — paste the <code>schtasks</code> command</span></li>
+  <li><span>Run it once — confirm <code>[StudyKB] root = …</code> then <code>+ Notes\…</code> lines</span></li>
+  <li><span>Open <code>index.html</code> in that folder — your searchable wiki</span></li>
+</ul>
+<div class="tools">
+  <button type="button" onclick="window.print()">🖨 Print / save as PDF</button>
+  <button type="button" id="qscReset">↺ Reset checklist</button>
+</div>
+
+<h3>① Put the script where the wiki will live</h3>
+<div class="walk">
+  <div class="wstep"><div class="wnum">1</div><div class="wbody">
+    <h4>Copy <code>Update-StudyKB.ps1</code> into your synced library folder.</h4>
+    <p>In File Explorer, open the local folder of your synced SharePoint/OneDrive library (right-click the library — it's already a normal folder on disk). Drop <a href="Update-StudyKB.ps1"><code>Update-StudyKB.ps1</code></a> in there. <strong>That folder becomes the knowledge base automatically — there is no path to edit inside the script.</strong> Every run prints <code>[StudyKB] root = …</code> so you can see exactly where it's writing.</p>
+    <div class="shot">
+      <svg viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="220" fill="#eef1f4"/>
+        <rect x="20" y="14" width="640" height="192" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="20" y="14" width="640" height="28" rx="6" fill="#f3f4f6"/><rect x="20" y="32" width="640" height="10" fill="#f3f4f6"/>
+        <rect x="34" y="48" width="612" height="24" rx="3" fill="#fff" stroke="#cdd3db"/>
+        <text x="46" y="64" font-size="11.5" fill="#3a414c">📁  OneDrive — Contoso  ›  Study Knowledge Base - Documents</text>
+        <rect x="34" y="80" width="612" height="118" fill="#fff" stroke="#e3e6ea"/>
+        <rect x="36" y="82" width="608" height="26" fill="#dbeafe"/>
+        <text x="52" y="100" font-size="12.5" fill="#16203a" font-weight="800">📄  Update-StudyKB.ps1</text>
+        <text x="430" y="100" font-size="11.5" fill="#5b6470">◀ drop the script here</text>
+        <text x="52" y="130" font-size="12.5" fill="#9aa3b0">📁  Notes &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(appears on first run)</text>
+        <text x="52" y="156" font-size="12.5" fill="#9aa3b0">📄  index.html &nbsp;(appears on first run — your wiki)</text>
+        <text x="52" y="182" font-size="12.5" fill="#9aa3b0">📁  _Inbox</text>
+      </svg>
+      <div class="cap">Put the script in the synced library folder. <b>Notes\</b> and <b>index.html</b> are created here on the first run.</div>
+    </div>
+  </div></div>
+</div>
+
+<h3>② Make one Outlook rule (so study mail lands in a "CP-101" folder)</h3>
+<p>This keeps the knowledge base fed automatically <em>and</em> keeps participant data out — you route mail by <strong>who sent it</strong> into a folder the script reads.</p>
+<div class="walk">
+
+  <div class="wstep"><div class="wnum">2</div><div class="wbody">
+    <h4>Make the folder. Right-click your <span class="click">Inbox</span> → <span class="click">New Folder</span> → type <code>CP-101</code> → press Enter.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 270" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="270" fill="#eef1f4"/>
+        <rect x="0" y="0" width="250" height="270" fill="#fbfcfd" stroke="#dfe3e8"/>
+        <text x="16" y="28" font-size="12.5" fill="#5b6470" font-weight="700">▾ you@org.com</text>
+        <rect x="6" y="40" width="238" height="26" rx="3" fill="#dbeafe"/>
+        <text x="22" y="58" font-size="13.5" fill="#16203a" font-weight="700">Inbox</text>
+        <text x="22" y="90" font-size="13" fill="#3a414c">Drafts</text>
+        <text x="22" y="118" font-size="13" fill="#3a414c">Sent Items</text>
+        <text x="22" y="146" font-size="13" fill="#3a414c">Deleted Items</text>
+        <rect x="70" y="56" width="212" height="170" rx="4" fill="#ffffff" stroke="#b9bfc9"/>
+        <text x="88" y="80" font-size="12.5" fill="#3a414c">Open in New Window</text>
+        <rect x="72" y="90" width="208" height="26" fill="#cfe6fb"/>
+        <text x="88" y="108" font-size="12.5" fill="#16203a" font-weight="800">New Folder…</text>
+        <text x="88" y="136" font-size="12.5" fill="#3a414c">Rename Folder</text>
+        <text x="88" y="164" font-size="12.5" fill="#3a414c">Move Folder</text>
+        <text x="88" y="192" font-size="12.5" fill="#3a414c">Delete Folder</text>
+        <text x="88" y="218" font-size="12.5" fill="#3a414c">Properties</text>
+        <text x="300" y="104" font-size="13" fill="#c2410c" font-weight="800">◀ click</text>
+        <rect x="372" y="120" width="288" height="96" rx="6" fill="#ffffff" stroke="#b9bfc9"/>
+        <text x="388" y="148" font-size="12.5" fill="#5b6470">…then type the name:</text>
+        <rect x="388" y="158" width="200" height="32" rx="3" fill="#fff" stroke="#1f6feb" stroke-width="1.5"/>
+        <text x="400" y="180" font-size="14.5" fill="#16203a" font-weight="700">CP-101</text>
+      </svg>
+      <div class="cap">Right-click <b>Inbox</b> in the folder list (far left) → <b>New Folder…</b> → type <b>CP-101</b>.</div>
+    </div>
+  </div></div>
+
+  <div class="wstep"><div class="wnum">3</div><div class="wbody">
+    <h4>Open the rules. On the <span class="click">Home</span> tab click <span class="click">Rules</span> → <span class="click">Manage Rules &amp; Alerts…</span>, then in the window that opens click <span class="click">New Rule…</span></h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 230" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="230" fill="#eef1f4"/>
+        <rect x="0" y="0" width="680" height="40" fill="#f3f4f6" stroke="#dfe3e8"/>
+        <text x="18" y="25" font-size="12.5" fill="#7a828e">File</text>
+        <rect x="52" y="6" width="52" height="28" rx="3" fill="#fff" stroke="#cdd3db"/>
+        <text x="62" y="25" font-size="12.5" fill="#16203a" font-weight="700">Home</text>
+        <text x="120" y="25" font-size="12.5" fill="#7a828e">Send / Receive    View</text>
+        <rect x="436" y="6" width="86" height="28" rx="3" fill="#eaf2fd" stroke="#1f6feb"/>
+        <text x="450" y="25" font-size="12.5" fill="#16203a" font-weight="700">⚙ Rules ▾</text>
+        <rect x="436" y="42" width="244" height="96" rx="4" fill="#ffffff" stroke="#b9bfc9"/>
+        <text x="452" y="66" font-size="12.5" fill="#3a414c">Create Rule…</text>
+        <rect x="438" y="76" width="240" height="26" fill="#cfe6fb"/>
+        <text x="452" y="94" font-size="12.5" fill="#16203a" font-weight="800">Manage Rules &amp; Alerts…</text>
+        <text x="452" y="124" font-size="12.5" fill="#3a414c">Always Move Messages From…</text>
+        <text x="436" y="174" font-size="12.5" fill="#5b6470">Then in the Rules and Alerts window:</text>
+        <rect x="436" y="184" width="120" height="30" rx="4" fill="#eaf2fd" stroke="#1f6feb"/>
+        <text x="452" y="204" font-size="12.5" fill="#16203a" font-weight="800">＋ New Rule…</text>
+      </svg>
+      <div class="cap"><b>Home</b> ribbon → <b>Rules ▾</b> → <b>Manage Rules &amp; Alerts…</b> → <b>New Rule…</b></div>
+    </div>
+  </div></div>
+
+  <div class="wstep"><div class="wnum">4</div><div class="wbody">
+    <h4>Start from a blank rule. Under <em>Start from a blank rule</em>, pick <span class="click">Apply rule on messages I receive</span> → <span class="click">Next</span>.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="300" fill="#eef1f4"/>
+        <rect x="30" y="16" width="620" height="268" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="30" y="16" width="620" height="30" rx="6" fill="#f3f4f6"/><rect x="30" y="36" width="620" height="10" fill="#f3f4f6"/>
+        <text x="46" y="36" font-size="13" fill="#1f2a44" font-weight="700">Rules Wizard</text>
+        <text x="50" y="74" font-size="13" fill="#1f2a44" font-weight="700">Step 1: Select a template</text>
+        <text x="50" y="98" font-size="12.5" fill="#5b6470">Stay Organized</text>
+        <text x="50" y="126" font-size="12.5" fill="#5b6470">Stay Up to Date</text>
+        <text x="50" y="150" font-size="12.5" fill="#16203a" font-weight="700">Start from a blank rule</text>
+        <rect x="64" y="160" width="552" height="26" fill="#cfe6fb"/>
+        <text x="82" y="178" font-size="12.5" fill="#16203a" font-weight="800">▸ Apply rule on messages I receive</text>
+        <text x="82" y="206" font-size="12.5" fill="#5b6470">Apply rule on messages I send</text>
+        <rect x="486" y="248" width="70" height="28" rx="3" fill="#1f6feb"/>
+        <text x="500" y="267" font-size="12.5" fill="#fff" font-weight="700">Next ></text>
+        <rect x="566" y="248" width="70" height="28" rx="3" fill="#eef0f3" stroke="#b9bfc9"/>
+        <text x="582" y="267" font-size="12.5" fill="#5b6470">Cancel</text>
+      </svg>
+      <div class="cap">Select <b>Apply rule on messages I receive</b>, then <b>Next</b>.</div>
+    </div>
+  </div></div>
+
+  <div class="wstep"><div class="wnum">5</div><div class="wbody">
+    <h4>Pick <span class="click">who counts as study mail</span>. Tick <span class="click">from people or public group</span>; then in the lower box click the blue underlined <span class="click">people or public group</span> and add your ops senders / distribution lists (CRO PM, data management, clinical ops). → <span class="click">Next</span>.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 340" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="340" fill="#eef1f4"/>
+        <rect x="30" y="14" width="620" height="312" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="30" y="14" width="620" height="30" rx="6" fill="#f3f4f6"/><rect x="30" y="34" width="620" height="10" fill="#f3f4f6"/>
+        <text x="46" y="34" font-size="13" fill="#1f2a44" font-weight="700">Rules Wizard</text>
+        <text x="50" y="70" font-size="13" fill="#1f2a44" font-weight="700">Step 1: Select condition(s)</text>
+        <rect x="50" y="80" width="580" height="132" fill="#fff" stroke="#c2c8d2"/>
+        <rect x="52" y="84" width="576" height="24" fill="#cfe6fb"/>
+        <rect x="62" y="89" width="14" height="14" rx="2" fill="#1f6feb"/><path d="M65 96 l3 3 l6 -7" stroke="#fff" stroke-width="2" fill="none"/>
+        <text x="84" y="100" font-size="12.5" fill="#16203a" font-weight="700">from people or public group</text>
+        <rect x="62" y="116" width="14" height="14" rx="2" fill="#fff" stroke="#9aa3b0"/>
+        <text x="84" y="127" font-size="12.5" fill="#3a414c">with specific words in the subject</text>
+        <rect x="62" y="143" width="14" height="14" rx="2" fill="#fff" stroke="#9aa3b0"/>
+        <text x="84" y="154" font-size="12.5" fill="#3a414c">through the specified account</text>
+        <rect x="62" y="170" width="14" height="14" rx="2" fill="#fff" stroke="#9aa3b0"/>
+        <text x="84" y="181" font-size="12.5" fill="#3a414c">sent only to me</text>
+        <text x="50" y="236" font-size="13" fill="#1f2a44" font-weight="700">Step 2: Edit the rule description (click an underlined value)</text>
+        <rect x="50" y="246" width="580" height="44" fill="#fff" stroke="#c2c8d2"/>
+        <text x="62" y="272" font-size="12.5" fill="#16203a">from <tspan fill="#1f6feb" style="text-decoration:underline" font-weight="700">people or public group</tspan>  ← click, then add your ops senders</text>
+        <rect x="486" y="300" width="70" height="28" rx="3" fill="#1f6feb"/>
+        <text x="500" y="319" font-size="12.5" fill="#fff" font-weight="700">Next ></text>
+      </svg>
+      <div class="cap">Condition: <b>from people or public group</b> → your operational senders/distros. Route by <b>SOURCE</b>, never a subject keyword (a keyword would also catch a participant email).</div>
+    </div>
+  </div></div>
+
+  <div class="wstep"><div class="wnum">6</div><div class="wbody">
+    <h4>Send it to the folder. Tick <span class="click">move it to the specified folder</span>; click the blue underlined <span class="click">specified</span> and choose <code>CP-101</code>. → <span class="click">Next</span>.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="320" fill="#eef1f4"/>
+        <rect x="30" y="14" width="620" height="292" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="30" y="14" width="620" height="30" rx="6" fill="#f3f4f6"/><rect x="30" y="34" width="620" height="10" fill="#f3f4f6"/>
+        <text x="46" y="34" font-size="13" fill="#1f2a44" font-weight="700">Rules Wizard</text>
+        <text x="50" y="70" font-size="13" fill="#1f2a44" font-weight="700">Step 1: Select action(s)</text>
+        <rect x="50" y="80" width="580" height="112" fill="#fff" stroke="#c2c8d2"/>
+        <rect x="52" y="84" width="576" height="24" fill="#cfe6fb"/>
+        <rect x="62" y="89" width="14" height="14" rx="2" fill="#1f6feb"/><path d="M65 96 l3 3 l6 -7" stroke="#fff" stroke-width="2" fill="none"/>
+        <text x="84" y="100" font-size="12.5" fill="#16203a" font-weight="700">move it to the specified folder</text>
+        <rect x="62" y="116" width="14" height="14" rx="2" fill="#fff" stroke="#9aa3b0"/>
+        <text x="84" y="127" font-size="12.5" fill="#3a414c">delete it</text>
+        <rect x="62" y="143" width="14" height="14" rx="2" fill="#fff" stroke="#9aa3b0"/>
+        <text x="84" y="154" font-size="12.5" fill="#3a414c">flag message for follow up</text>
+        <text x="50" y="216" font-size="13" fill="#1f2a44" font-weight="700">Step 2: Edit the rule description</text>
+        <rect x="50" y="226" width="580" height="44" fill="#fff" stroke="#c2c8d2"/>
+        <text x="62" y="252" font-size="12.5" fill="#16203a">move it to the <tspan fill="#1f6feb" style="text-decoration:underline" font-weight="700">CP-101</tspan> folder  ← click "specified", choose CP-101</text>
+        <rect x="486" y="280" width="70" height="28" rx="3" fill="#1f6feb"/>
+        <text x="500" y="299" font-size="12.5" fill="#fff" font-weight="700">Next ></text>
+      </svg>
+      <div class="cap">Action: <b>move it to the specified folder</b> → click <b>specified</b> → pick <b>CP-101</b>.</div>
+    </div>
+  </div></div>
+
+  <div class="wstep"><div class="wnum">7</div><div class="wbody">
+    <h4>Add the safety exceptions — <strong>this is what keeps participant data OUT.</strong> Tick <span class="click">except if from people or public group</span> (the safety/PV mailbox, EDC/IVRS, the unblinded-stats distro, any lab portal that carries participant data) <strong>and</strong> <span class="click">except if with specific words in the subject</span> (add <code>unblinded</code>, <code>randomization</code>, <code>SAE narrative</code>). → <span class="click">Next</span>.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 320" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="320" fill="#eef1f4"/>
+        <rect x="30" y="14" width="620" height="292" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="30" y="14" width="620" height="30" rx="6" fill="#f3f4f6"/><rect x="30" y="34" width="620" height="10" fill="#f3f4f6"/>
+        <text x="46" y="34" font-size="13" fill="#1f2a44" font-weight="700">Rules Wizard</text>
+        <text x="50" y="70" font-size="13" fill="#1f2a44" font-weight="700">Step 1: Select exception(s) &nbsp;(optional but important here)</text>
+        <rect x="50" y="80" width="580" height="138" fill="#fff" stroke="#c2c8d2"/>
+        <rect x="52" y="84" width="576" height="24" fill="#ffe1e1"/>
+        <rect x="62" y="89" width="14" height="14" rx="2" fill="#c0392b"/><path d="M65 96 l3 3 l6 -7" stroke="#fff" stroke-width="2" fill="none"/>
+        <text x="84" y="100" font-size="12.5" fill="#16203a" font-weight="700">except if from people or public group</text>
+        <rect x="52" y="110" width="576" height="24" fill="#ffe1e1"/>
+        <rect x="62" y="115" width="14" height="14" rx="2" fill="#c0392b"/><path d="M65 122 l3 3 l6 -7" stroke="#fff" stroke-width="2" fill="none"/>
+        <text x="84" y="126" font-size="12.5" fill="#16203a" font-weight="700">except if with specific words in the subject</text>
+        <rect x="62" y="143" width="14" height="14" rx="2" fill="#fff" stroke="#9aa3b0"/>
+        <text x="84" y="154" font-size="12.5" fill="#3a414c">except if it is marked as importance</text>
+        <rect x="62" y="170" width="14" height="14" rx="2" fill="#fff" stroke="#9aa3b0"/>
+        <text x="84" y="181" font-size="12.5" fill="#3a414c">except if sent only to me</text>
+        <text x="50" y="242" font-size="13" fill="#1f2a44" font-weight="700">Step 2: Edit the rule description</text>
+        <rect x="50" y="252" width="580" height="24" fill="#fff" stroke="#c2c8d2"/>
+        <text x="62" y="269" font-size="11.5" fill="#16203a">…except if from <tspan fill="#1f6feb" style="text-decoration:underline">safety/PV; EDC/IVRS; lab portal</tspan> or subject has <tspan fill="#1f6feb" style="text-decoration:underline">unblinded; randomization; SAE narrative</tspan></text>
+        <rect x="486" y="284" width="70" height="26" rx="3" fill="#1f6feb"/>
+        <text x="500" y="302" font-size="12.5" fill="#fff" font-weight="700">Next ></text>
+      </svg>
+      <div class="cap">Exceptions (the red ticks): sensitive <b>channels</b> and sensitive <b>subject words</b> are excluded — they stay in your Inbox and never reach the folder, so they're never filed.</div>
+    </div>
+  </div></div>
+
+  <div class="wstep"><div class="wnum">8</div><div class="wbody">
+    <h4>Name it and turn it on. Type a name (e.g. <code>CP-101 → KB</code>), make sure <span class="click">Turn on this rule</span> is ticked → <span class="click">Finish</span>.</h4>
+    <p class="mini">From now on, operational email lands in the <code>CP-101</code> folder; sensitive channels stay in your Inbox. <strong>Shared mailbox or a deeper folder?</strong> When you schedule the script (next), pass the path, e.g. <code>-StudyFolders "Project Mailbox\Inbox\CP-101"</code>; separate several with <code>;</code>.</p>
+  </div></div>
+</div>
+
+<div class="note"><strong>What the rule can — and can't — do.</strong> An Outlook rule can't read an email and decide whether it's "participant-level" — it only matches <strong>who sent it, where it came from, and keywords</strong>. So you keep participant data out by routing on <strong>source</strong> (your bounded set of ops senders/distros) and excepting the sensitive channels — <em>not</em> with a "subject contains CP-101" rule, which would route a participant query straight in. The rule is a coarse pre-filter; the real assurance is layered — <strong>you review what lands</strong>, the KB is <strong>ops-only by policy</strong>, and the number-validator guards anything drafted from it. <strong>Scope:</strong> this is built for a <strong>blinded operational mailbox</strong>. Sensitive channels (lab portals, safety/PV, IVRS) <em>can</em> still reach a blinded inbox — which is exactly why routing is by source + an explicit except-list — and if an operator receives unblinded data by role, source-routing alone is insufficient and the KB shouldn't auto-ingest their Inbox.</div>
+<p class="mini"><strong>No folder rule possible?</strong> You can instead point the script straight at your Inbox by sender: add <code>-SenderContains "cro-bioanalytics"</code> (a known ops distro/domain) when you schedule it. Prefer that over <code>-SubjectContains "CP-101"</code> — a subject tag also matches a participant email about CP-101. This path has no exceptions, so use it only when study mail comes from a clean, known sender.</p>
+
+<h3>③ Make the script run automatically</h3>
+<div class="walk">
+  <div class="wstep"><div class="wnum">9</div><div class="wbody">
+    <h4>Schedule it to run every ~15 min <strong>while you're logged on</strong>. Open <strong>PowerShell</strong> (Start menu → type "PowerShell" → Enter) and paste this — it's <em>one</em> command (the <kbd>^</kbd> just continues the line):</h4>
+<pre><code>schtasks /Create /TN "StudyKB Update" /SC MINUTE /MO 15 /IT /F ^
+  /TR "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"C:\Users\you\Study Knowledge Base\Update-StudyKB.ps1\" -StudyFolders CP-101"</code></pre>
+    <p>Change <code>C:\Users\you\Study Knowledge Base</code> to your real folder from step 1. <code>/IT</code> = "interactive" — it runs on your desktop next to your open Outlook. <strong>Don't</strong> run it as <code>SYSTEM</code> or a stored-password task (there's no Outlook in that session, so it can't attach).</p>
+    <p class="mini"><strong>For IT (preferred posture):</strong> code-sign the script or allowlist its path; <code>-ExecutionPolicy Bypass</code> above is the unsigned quick-start — ExecutionPolicy is an execution-convenience setting, <em>not</em> a security boundary (per Microsoft). The auditable controls are the signed/allowlisted path and the read-only Outlook access.</p>
+  </div></div>
+
+  <div class="wstep"><div class="wnum">10</div><div class="wbody">
+    <h4>Test it once now. In the same PowerShell window, paste this and watch it back-fill the last 30 days:</h4>
+<pre><code>powershell -NoProfile -ExecutionPolicy Bypass -File "C:\Users\you\Study Knowledge Base\Update-StudyKB.ps1" -StudyFolders CP-101</code></pre>
+    <p>On the very first run you may get Outlook's <em>"a program is trying to access Outlook"</em> prompt — it only reads; click Allow. <strong>After this you don't touch it</strong> — while Outlook is open the scheduled job files new study mail on its own.</p>
+    <div class="shot">
+      <svg viewBox="0 0 680 210" xmlns="http://www.w3.org/2000/svg" font-family="Consolas,Menlo,monospace">
+        <rect width="680" height="210" fill="#0c0c0c"/>
+        <rect x="0" y="0" width="680" height="24" fill="#1f1f1f"/>
+        <text x="14" y="16" font-size="11" fill="#cfcfcf" font-family="Segoe UI,Arial,sans-serif">Windows PowerShell</text>
+        <text x="14" y="48" font-size="11.5" fill="#d4d4d4">PS C:\Users\you&gt; .\Update-StudyKB.ps1 -StudyFolders CP-101</text>
+        <text x="14" y="74" font-size="11.5" fill="#7ee0a6">[StudyKB] root = C:\Users\you\Study Knowledge Base - Documents</text>
+        <text x="14" y="96" font-size="11.5" fill="#7ee0a6">[StudyKB] reading Outlook folder "CP-101"</text>
+        <text x="14" y="118" font-size="11.5" fill="#7ee0a6">[StudyKB]  + Notes\20260619_164200__CP-101_PK_assay_re-validation__7f3a9e21.html</text>
+        <text x="14" y="140" font-size="11.5" fill="#7ee0a6">[StudyKB]  + Notes\20260617_091500__CP-101_query_backlog__b042c8d5.html</text>
+        <text x="14" y="162" font-size="11.5" fill="#7ee0a6">[StudyKB] 12 new from Outlook, 0 from drop-folder; 12 total.  mail left untouched</text>
+        <text x="14" y="192" font-size="11" fill="#8a93a6" font-family="Segoe UI,Arial,sans-serif">↑ this is what success looks like — a root path, then one "+ Notes\…" line per email</text>
+      </svg>
+      <div class="cap">What you should see. Then open <b>index.html</b> in your synced folder — that's the searchable wiki.</div>
+    </div>
+  </div></div>
+</div>
+<p class="mini"><strong>On new Outlook or a Mac?</strong> The automatic rule path needs <em>classic</em> Outlook. There, drag study emails into the <code>_Inbox</code> folder instead — see <a href="#adhoc">Ad-hoc capture</a> and <a href="README.md">the README</a>.</p>
+
+<h2 id="adhoc">Ad-hoc capture (the exception, not the routine)</h2>
+<p>Almost everything files itself through the rule above. This is only for a <strong>one-off that never reaches the study folder</strong> — e.g. a thread someone forwards you from outside the study. <strong>Operations content only — never drop a participant-level, unblinded, or sponsor-restricted email in here.</strong> You put the email in the <code>_Inbox</code> folder and the next scheduled run files it. Two ways — <strong>Way 1 needs no setup</strong>.</p>
+
+<h3>Way 1 — Drag it into the <code>_Inbox</code> folder &nbsp;<span class="mini">(no setup · recommended)</span></h3>
+<div class="walk">
+  <div class="wstep"><div class="wnum">1</div><div class="wbody">
+    <h4>Open the <code>_Inbox</code> folder in File Explorer (it's inside your synced library — created on the first run).</h4>
+  </div></div>
+  <div class="wstep"><div class="wnum">2</div><div class="wbody">
+    <h4>Drag the email from Outlook onto the <code>_Inbox</code> folder. That's it.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 270" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="270" fill="#eef1f4"/>
+        <rect x="14" y="18" width="330" height="238" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="14" y="18" width="330" height="26" rx="6" fill="#0f3b6e"/><rect x="14" y="38" width="330" height="8" fill="#0f3b6e"/>
+        <text x="30" y="36" font-size="12" fill="#ffffff" font-weight="700">Outlook — Inbox</text>
+        <rect x="24" y="56" width="310" height="42" rx="3" fill="#dbeafe" stroke="#1f6feb"/>
+        <text x="36" y="76" font-size="12" fill="#16203a" font-weight="700">Dana Cole · CRO Project Mgmt</text>
+        <text x="36" y="92" font-size="11" fill="#3a414c">CP-101 — monitoring visit report filed</text>
+        <text x="36" y="126" font-size="12" fill="#3a414c" font-weight="600">Robin Shah · Data Management</text>
+        <text x="36" y="142" font-size="11" fill="#5b6470">CP-101 — EDC extract delivered</text>
+        <text x="36" y="176" font-size="12" fill="#3a414c" font-weight="600">Alex Park · Biostatistics</text>
+        <text x="36" y="192" font-size="11" fill="#5b6470">CP-101 — draft TLF shells circulated</text>
+        <path d="M200 78 C 330 78, 360 150, 452 156" stroke="#c2410c" stroke-width="2.5" fill="none" stroke-dasharray="6 4"/>
+        <polygon points="452,156 442,150 444,162" fill="#c2410c"/>
+        <rect x="298" y="94" width="116" height="28" rx="4" fill="#ffffff" stroke="#c2410c"/>
+        <text x="309" y="112" font-size="10.5" fill="#16203a">✉ CP-101 …</text>
+        <text x="302" y="86" font-size="12" fill="#c2410c" font-weight="800">drag →</text>
+        <rect x="430" y="18" width="236" height="238" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="430" y="18" width="236" height="26" rx="6" fill="#f3f4f6"/><rect x="430" y="38" width="236" height="8" fill="#f3f4f6"/>
+        <text x="446" y="36" font-size="11.5" fill="#3a414c">Study Knowledge Base</text>
+        <text x="452" y="76" font-size="12.5" fill="#9aa3b0">📁  Notes</text>
+        <rect x="438" y="144" width="220" height="30" rx="3" fill="#dbeafe" stroke="#1f6feb"/>
+        <text x="452" y="164" font-size="12.5" fill="#16203a" font-weight="800">📁  _Inbox &nbsp;&nbsp;◀ drop here</text>
+        <text x="452" y="206" font-size="12.5" fill="#9aa3b0">📄  index.html</text>
+      </svg>
+      <div class="cap">Drag the message from Outlook onto the <b>_Inbox</b> folder. Classic Outlook drops a <code>.msg</code>; new Outlook / Mac drop a <code>.eml</code> (also handled — see <a href="#fidelity">Fidelity</a> for the one-time <code>MimeKit.dll</code> step for full <code>.eml</code> formatting). You can also paste in a <code>.txt</code>/<code>.html</code>.</div>
+    </div>
+  </div></div>
+  <div class="wstep"><div class="wnum">3</div><div class="wbody">
+    <h4>Nothing else. On its next run the scheduled script files it and rebuilds the wiki.</h4>
+    <p class="mini">After filing, the original drop is moved to <code>_Inbox\_processed</code> (kept, not deleted) — so if the email "disappears" from <code>_Inbox</code>, that's success, not a failure.</p>
+  </div></div>
+</div>
+
+<h3>Way 2 — A one-click toolbar button &nbsp;<span class="mini">(optional · needs Outlook macros)</span></h3>
+<div class="warn"><strong>Optional convenience — and it needs Outlook macros turned on.</strong> Check your org's macro policy first; in a regulated shop that's a conversation with IT. If macros aren't allowed, <strong>just use Way 1</strong> — it needs no setup and does exactly the same thing. <a href="FileToKB.vba"><code>FileToKB.vba</code></a> is the small macro.</div>
+<div class="walk">
+  <div class="wstep"><div class="wnum">1</div><div class="wbody">
+    <h4>In Outlook, press <kbd>Alt</kbd>+<kbd>F11</kbd> to open the VBA editor, then <span class="click">Insert → Module</span> and paste <code>FileToKB.vba</code>. Set the <code>INBOX</code> line to your <code>_Inbox</code> path.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 250" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="250" fill="#eef1f4"/>
+        <rect x="14" y="14" width="652" height="222" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="14" y="14" width="652" height="26" rx="6" fill="#2b2b2b"/><rect x="14" y="34" width="652" height="8" fill="#2b2b2b"/>
+        <text x="28" y="32" font-size="11.5" fill="#e6e6e6">Microsoft Visual Basic for Applications — Project1</text>
+        <text x="28" y="60" font-size="11.5" fill="#3a414c">File &nbsp; Edit &nbsp; View</text>
+        <rect x="120" y="48" width="48" height="18" fill="#cfe6fb"/>
+        <text x="127" y="61" font-size="11.5" fill="#16203a" font-weight="800">Insert</text>
+        <rect x="120" y="66" width="134" height="66" fill="#ffffff" stroke="#b9bfc9"/>
+        <text x="134" y="86" font-size="11.5" fill="#3a414c">Procedure…</text>
+        <rect x="122" y="92" width="130" height="22" fill="#cfe6fb"/>
+        <text x="134" y="108" font-size="11.5" fill="#16203a" font-weight="800">Module</text>
+        <text x="134" y="128" font-size="11.5" fill="#3a414c">Class Module</text>
+        <rect x="276" y="50" width="378" height="176" fill="#ffffff" stroke="#c2c8d2"/>
+        <text x="288" y="72" font-size="10.5" fill="#1f6feb" font-family="Consolas,monospace">Sub FileToKB()</text>
+        <rect x="288" y="80" width="356" height="18" fill="#fff7cc"/>
+        <text x="294" y="93" font-size="10" fill="#7a5800" font-family="Consolas,monospace">Const INBOX = "C:\…\_Inbox\"  ' ← set this</text>
+        <text x="288" y="116" font-size="10.5" fill="#3a414c" font-family="Consolas,monospace">' …paste the rest of FileToKB.vba…</text>
+        <text x="288" y="200" font-size="10.5" fill="#1f6feb" font-family="Consolas,monospace">End Sub</text>
+      </svg>
+      <div class="cap"><kbd>Alt</kbd>+<kbd>F11</kbd> → <b>Insert → Module</b> → paste the macro → set the <b>INBOX</b> path to your synced <code>_Inbox</code> folder.</div>
+    </div>
+  </div></div>
+  <div class="wstep"><div class="wnum">2</div><div class="wbody">
+    <h4>Add it to the toolbar. <span class="click">File → Options → Quick Access Toolbar</span> → <em>Choose commands from:</em> <span class="click">Macros</span> → select <span class="click">Project1.FileToKB</span> → <span class="click">Add</span> → <span class="click">OK</span>.</h4>
+    <p class="mini">Don't see the Quick Access Toolbar on screen? Right-click the ribbon → <em>Show Quick Access Toolbar</em> first (newer Outlook hides it by default).</p>
+    <div class="shot">
+      <svg viewBox="0 0 680 270" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="270" fill="#eef1f4"/>
+        <rect x="14" y="14" width="652" height="242" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="14" y="14" width="652" height="26" rx="6" fill="#f3f4f6"/><rect x="14" y="34" width="652" height="8" fill="#f3f4f6"/>
+        <text x="28" y="32" font-size="12" fill="#1f2a44" font-weight="700">Outlook Options</text>
+        <text x="30" y="64" font-size="11.5" fill="#3a414c">General</text>
+        <text x="30" y="88" font-size="11.5" fill="#3a414c">Mail</text>
+        <rect x="22" y="98" width="138" height="22" fill="#cfe6fb"/>
+        <text x="30" y="114" font-size="11.5" fill="#16203a" font-weight="800">Quick Access Toolbar</text>
+        <text x="30" y="140" font-size="11.5" fill="#3a414c">Trust Center</text>
+        <text x="186" y="64" font-size="11.5" fill="#3a414c">Choose commands from:</text>
+        <rect x="186" y="72" width="170" height="24" fill="#ffffff" stroke="#1f6feb"/>
+        <text x="198" y="89" font-size="11.5" fill="#16203a" font-weight="700">Macros ▾</text>
+        <rect x="186" y="104" width="170" height="118" fill="#ffffff" stroke="#c2c8d2"/>
+        <rect x="188" y="108" width="166" height="24" fill="#dbeafe"/>
+        <text x="198" y="125" font-size="11" fill="#16203a" font-weight="800">Project1.FileToKB</text>
+        <rect x="368" y="146" width="62" height="26" rx="3" fill="#eef0f3" stroke="#b9bfc9"/>
+        <text x="378" y="164" font-size="11.5" fill="#16203a" font-weight="700">Add &gt;&gt;</text>
+        <rect x="442" y="104" width="200" height="118" fill="#ffffff" stroke="#c2c8d2"/>
+        <rect x="444" y="108" width="196" height="24" fill="#eafaf0"/>
+        <text x="454" y="125" font-size="11" fill="#176a3a" font-weight="700">✓ FileToKB (added)</text>
+        <rect x="572" y="226" width="62" height="24" rx="3" fill="#1f6feb"/>
+        <text x="588" y="243" font-size="11.5" fill="#ffffff" font-weight="700">OK</text>
+      </svg>
+      <div class="cap">File → Options → <b>Quick Access Toolbar</b> → <em>Choose commands from:</em> <b>Macros</b> → <b>Project1.FileToKB</b> → <b>Add</b> → <b>OK</b>. (Macros blocked? In a regulated shop, have IT sign it — same as the <code>.ps1</code> — or just use Way 1, no macros needed.)</div>
+    </div>
+  </div></div>
+  <div class="wstep"><div class="wnum">3</div><div class="wbody">
+    <h4>Use it: select one or more emails → click your new toolbar button. They're saved into <code>_Inbox</code> and filed on the next run.</h4>
+    <div class="shot">
+      <svg viewBox="0 0 680 170" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
+        <rect width="680" height="170" fill="#eef1f4"/>
+        <rect x="14" y="14" width="652" height="142" rx="6" fill="#ffffff" stroke="#9aa3b0"/>
+        <rect x="14" y="14" width="652" height="30" rx="6" fill="#0f3b6e"/><rect x="14" y="38" width="652" height="6" fill="#0f3b6e"/>
+        <text x="30" y="34" font-size="12" fill="#cfe0ff">⟳ &nbsp; ✉ &nbsp; 🗑</text>
+        <rect x="120" y="19" width="26" height="20" rx="3" fill="#3f9a4a"/>
+        <text x="127" y="34" font-size="12" fill="#ffffff" font-weight="800">▸</text>
+        <text x="156" y="33" font-size="11" fill="#cfe0ff">← your FileToKB button</text>
+        <rect x="28" y="58" width="624" height="34" rx="3" fill="#dbeafe" stroke="#1f6feb"/>
+        <text x="44" y="80" font-size="12.5" fill="#16203a" font-weight="700">2 messages selected</text>
+        <text x="44" y="118" font-size="12.5" fill="#3a414c">Select email(s) &nbsp;→&nbsp; click the button &nbsp;→&nbsp; saved into <tspan font-weight="700">_Inbox</tspan> in one click.</text>
+        <text x="44" y="142" font-size="11.5" fill="#5b6470">The scheduled script turns them into wiki notes on its next run.</text>
+      </svg>
+      <div class="cap">Select email(s) → click your toolbar button → saved into <code>_Inbox</code>.</div>
+    </div>
+  </div></div>
+</div>
+<p class="mini">Same engine either way — the drop folder just handles the messages automation can't see because they never reach the study folder. <strong>Ops content only</strong> — never drop a participant-level / unblinded / sponsor-restricted email in here.</p>
+
+<h2 id="layout">Folder layout (auto-created)</h2>
+<pre><code>&lt;SyncedLibrary&gt;\
+  Notes\               &lt;- one .html note per email (this is the KB content)
+  index.html           &lt;- the searchable wiki (rebuilt every run)
+  _Inbox\              &lt;- ad-hoc drop folder (the exception path)
+  _Inbox\_processed\   &lt;- ad-hoc originals moved here after filing
+  .state\seen.json     &lt;- which messages are already filed (EntryIDs)</code></pre>
+
+<h2 id="example">A worked example (synthetic)</h2>
+<p>End to end on a made-up but realistic study-operations email for the placeholder study <code>CP-101</code>. Everything here is illustrative — no real study, no PHI.</p>
+
+<h3>1 · A study-ops email lands in the CP-101 folder</h3>
+<p>A bioanalytical CRO sends a logistics update; your one-time rule files it into the <code>CP-101</code> Outlook folder. It's operational — timelines, a data transfer, the database-lock target — exactly what the KB is for.</p>
+<pre><code>From:    Jordan Lee &lt;jordan.lee@cro-bioanalytics.example&gt;  (Bioanalytical Project Lead)
+Sent:    Fri 2026-06-19 16:42
+To:      CP-101 Study Team
+Subject: CP-101 — PK assay re-validation complete; transfer Mon, DBL on track
+
+Hi team — re-validation of the CP-101 plasma PK assay is complete
+(incurred-sample reanalysis passed, %CV within spec). We'll push the final
+concentration transfer to the EDC on Monday 22-Jun. No change to the
+database-lock target of Thu 25-Jun. Ping me if you want the validation memo.
+— Jordan</code></pre>
+
+<h3>2 · The next scheduled run files it — automatically</h3>
+<p>You do nothing. Within ~15 minutes the job reads the folder and files every new message (here, this one plus two others that arrived since the last run):</p>
+<pre><code>PS&gt; .\Update-StudyKB.ps1 -StudyFolders CP-101     # (what the scheduler runs)
+[StudyKB] reading Outlook folder "CP-101"
+[StudyKB]  + Notes\20260619_164200__CP-101_PK_assay_re-validation_complete_transfer__7f3a9e21.html
+[StudyKB]  + Notes\20260620_091500__CP-101_monitoring_visit_report_filed_2_action__b042c8d5.html
+[StudyKB]  + Notes\20260618_173000__CP-101_EDC_extract_delivered_for_the_19-Jun__3e9170aa.html
+[StudyKB] 3 new from Outlook, 0 from drop-folder; 47 total. Wiki: ...\index.html  ·  mail left untouched in Outlook</code></pre>
+<p><em>Illustrative — generated from the code path, not a recorded run. The real note name is <code>yyyyMMdd_HHmmss__subject-slug__</code> + an 8-hex MD5 fragment of the Outlook EntryID. First adoption step is a supervised dry-run on one machine against a test folder.</em></p>
+
+<h3>3 · The note it writes</h3>
+<p>One self-contained HTML note lands in <code>Notes\</code> — the email's metadata on top, the body below, ready to read or search:</p>
+<table class="t"><tbody>
+  <tr><th>Subject</th><td>CP-101 — PK assay re-validation complete; transfer Mon, DBL on track</td></tr>
+  <tr><th>From</th><td>Jordan Lee <span style="color:var(--mut)">(the sender's display name, captured verbatim)</span></td></tr>
+  <tr><th>Captured</th><td>2026-06-19 16:42</td></tr>
+  <tr><th>Body</th><td>Re-validation of the CP-101 plasma PK assay complete (incurred-sample reanalysis passed, %CV within spec). Final concentration transfer to EDC Mon 22-Jun. Database-lock target unchanged: Thu 25-Jun.</td></tr>
+</tbody></table>
+
+<h3>4 · It shows up in the searchable index</h3>
+<p>Every run rebuilds <code>index.html</code>. Open it and search (Ctrl-F or the built-in filter) for <code>DBL</code>, <code>assay</code>, or <code>CP-101</code> — alongside everything else the study has accumulated:</p>
+<table class="t">
+  <thead><tr><th>Date</th><th>From</th><th>Subject</th></tr></thead>
+  <tbody>
+    <tr><td>2026-06-19</td><td>Jordan Lee · CRO Bioanalytics</td><td>CP-101 — PK assay re-validation complete; transfer Mon, DBL on track</td></tr>
+    <tr><td>2026-06-17</td><td>Pat Morgan · Data Management</td><td>CP-101 — query backlog down to 12 open; SDV 96%</td></tr>
+    <tr><td>2026-06-13</td><td>Sam Rivera · Clinical Ops</td><td>CP-101 — last-participant-last-visit confirmed 12-Jun</td></tr>
+  </tbody>
+</table>
+
+<h3>5 · Optionally, ask the KB (on-device, no cloud)</h3>
+<p>Point the on-prem model from <a href="../tlf_interpret/index.html">tlf_interpret</a> at <code>Notes\</code> and you can ask in plain language — grounded only on the notes, on-device:</p>
+<pre><code>Q: When is the CP-101 database lock, and is it still on track?
+A: Thu 25-Jun, on track. The PK assay re-validation finished 19-Jun
+   (incurred-sample reanalysis passed); the final concentration transfer
+   is Mon 22-Jun.            [source: 2026-06-19 note · Jordan Lee]</code></pre>
+<p>The model is constrained to quote and cite a note, and is used only for operational recall — any reported or regulated value always comes from the validated system, never from a note or the model, even when the model surfaces one.</p>
+
+<div class="note"><strong>Why this email was OK to file.</strong> It's operational — timelines, a transfer, a lock target. Participant-level content (a lab value, an unblinded assignment, a randomization seed, sponsor IP) must never reach the KB folder — see <a href="#gov">Governance</a> for the layered control. Any database-lock or assay number a report cites still comes from the validated system, never from a note.</div>
+
+<h2 id="rag">Ask the knowledge base with a local model <span class="badge" style="background:#1c2030;color:#aeb6c9;border-color:#33405e">OPTIONAL · LATER PHASE</span></h2>
+<p><em>Not part of the core skeleton — the deliverable above is a deterministic file-mover with no AI. This is a later add-on; skip it in a first demo.</em> That said: <code>Notes\</code> is a small, clean corpus — good for an on-device assistant so you can ask questions over the whole study without any cloud. The flow: <strong>strip the HTML tags → embed → ask</strong>, all locally. A minimal recipe:</p>
+<ol>
+  <li><strong>Plain-text the notes</strong> (one .txt per note). PowerShell, no extra tools:
+<pre><code>New-Item -Type Directory -Force "$Root\.rag" | Out-Null
+Get-ChildItem "$Root\Notes\*.html" | ForEach-Object {
+  $t = (Get-Content -Raw $_) -replace '&lt;[^&gt;]+&gt;',' ' -replace '&amp;nbsp;',' ' -replace '\s+',' '
+  Set-Content "$Root\.rag\$($_.BaseName).txt" $t.Trim() -Encoding UTF8
+}</code></pre></li>
+  <li><strong>Point your local model at <code>.rag\</code></strong> — the same on-prem GGUF used in <a href="../tlf_interpret/index.html">tlf_interpret</a> (llama.cpp / its server, with a small local embedding model). Retrieve the top notes for the question, pass them as context, and require the answer to <strong>quote and cite</strong> the note it used.</li>
+  <li><strong>Keep it grounded:</strong> the model may only restate what's in the notes; a reported or regulated number is never sourced from a note or its summary — it comes from the validated system. (The notes already de-duplicate: one note per message, by EntryID.)</li>
+</ol>
+<div class="note">The <strong>local model runs on-device</strong> — no content goes to any third-party AI or external API. (The KB <em>files</em> themselves live in your governed SharePoint tenant — see <a href="#how">Where the data lives</a>.) This is the "ask the study its own history" win, governed: ops content in, restated-with-citation out, numbers still owned by the validated tools.</div>
+
+<h2 id="fidelity">Fidelity &amp; honest caveats</h2>
+<table class="t">
+  <thead><tr><th>Source</th><th>Fidelity</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Auto-ingest</strong> (Outlook folder / Inbox filter)</td><td>High — reads each message's <code>HTMLBody</code> straight from Outlook, in your own session. Read-only: nothing is moved, deleted, or flagged.</td></tr>
+    <tr><td><code>.msg</code> (ad-hoc classic-Outlook drag)</td><td>High — read via the installed Outlook as a <em>file reader</em> only.</td></tr>
+    <tr><td><code>.txt</code> / <code>.html</code> (you save/paste)</td><td>Exact.</td></tr>
+    <tr><td><code>.eml</code> (ad-hoc new-Outlook drag)</td><td>Full fidelity <strong>if you drop <code>MimeKit.dll</code> next to the script</strong> (auto-detected: <code>MimeMessage.Load</code> → Subject/From/Date/HtmlBody). Without it, a built-in naive MIME reader handles plain/simple-HTML emails (multipart/encoded may show raw sections).</td></tr>
+  </tbody>
+</table>
+<ul>
+  <li><strong>Needs classic Outlook, open and signed in</strong> (the automation path). New Outlook / Mac → use the drop-folder or rule-export path instead.</li>
+  <li><strong>The script doesn't judge content.</strong> It files whatever is in the target folder/filter — so governance is in <em>what you point it at</em>. Keep participant-level mail out of the KB folder.</li>
+  <li><strong>Not validated software</strong>, structure-verified (not executed) in authoring — run/parse it on your Windows machine first.</li>
+</ul>
+<div class="note">MimeKit on Windows PowerShell 5.1 needs its dependency DLLs alongside it (use the <strong>net48</strong> build from the nupkg) or run under <strong>PowerShell 7</strong>; the script falls back to the naive parser if it can't load. (Only relevant to the ad-hoc <code>.eml</code> path — auto-ingest doesn't use it.)</div>
+
+<h2 id="policy">If a script won't run (IT policy)</h2>
+<p><strong>Preferred (production posture):</strong> have IT code-sign the script — or allowlist its path — which also satisfies change control. <code>-ExecutionPolicy Bypass</code> is the unsigned quick-start; note that ExecutionPolicy is an execution-convenience setting, <em>not</em> a security boundary (per Microsoft), so the signature/allowlist is the real control. If a run is blocked: <code>Unblock-File .\Update-StudyKB.ps1</code> first; if still blocked, ask IT for the signature/allowlist. If your org blocks <em>programmatic access to Outlook</em> (the prompt never clears), the clean fix is to <strong>code-sign the script and trust that publisher</strong> in Trust Center ▸ Programmatic Access — keeping the object-model guard ON for everything unsigned — or fall back to the drop-folder path. No admin rights are otherwise needed.</p>
+
+<h2 id="trouble">If it's not working — quick fixes</h2>
+<table class="t">
+  <thead><tr><th style="width:33%">What you see</th><th style="width:28%">Why</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td>Nothing gets filed; <code>index.html</code> stays empty</td><td>Outlook isn't open, or your rule isn't actually moving mail into <code>CP-101</code></td><td>Open classic Outlook and sign in; check study mail is really landing in the <code>CP-101</code> folder. Drop a test email into <code>CP-101</code> and run the script.</td></tr>
+    <tr><td><code>…running scripts is disabled on this system</code></td><td>PowerShell execution policy</td><td><code>Unblock-File .\Update-StudyKB.ps1</code> first; if still blocked, have IT allowlist or sign it (see <a href="#policy">IT policy</a>).</td></tr>
+    <tr><td>"A program is trying to access Outlook"</td><td>Outlook's programmatic-access guard (first run)</td><td>Click <strong>Allow</strong> — the script only reads. For good, have IT sign it and trust the publisher.</td></tr>
+    <tr><td><code>Outlook folder not found: 'CP-101'</code></td><td><code>-StudyFolders</code> name ≠ your rule's folder</td><td>Make them identical. Nested/shared mailbox? Pass the path, e.g. <code>-StudyFolders "Project Mailbox\Inbox\CP-101"</code>.</td></tr>
+    <tr><td><code>Auto-ingest skipped: classic Outlook isn't running</code></td><td>Outlook is closed (or it's new Outlook / Mac)</td><td>Open classic Outlook. New Outlook / Mac: use the <a href="#adhoc">drag-to-<code>_Inbox</code></a> path instead.</td></tr>
+    <tr><td>The wiki isn't where I expected</td><td>The KB root is the <em>script's own folder</em></td><td>Read the <code>[StudyKB] root = …</code> line it prints — that's exactly where it's writing. Put the script in your synced library.</td></tr>
+    <tr><td>My dropped email vanished from <code>_Inbox</code></td><td>It was filed</td><td>That's success — the original moved to <code>_Inbox\_processed</code> (kept, not deleted).</td></tr>
+    <tr><td>Older emails didn't get picked up</td><td>The first run only back-fills 30 days</td><td>Widen it once: add <code>-BackfillDays 90</code> (or more) to the run command.</td></tr>
+    <tr><td>The scheduled task never fires</td><td>Created as <code>SYSTEM</code>/stored-password, or you're logged off</td><td>Recreate it with <code>/IT</code> (interactive) and stay logged on with Outlook open — see <a href="#setup">step ③</a>.</td></tr>
+  </tbody>
+</table>
+<p class="mini">Still stuck? Run the script by hand (the test in step ⑩) and read the <code>[StudyKB]</code> / <code>WARNING</code> lines — they say exactly what it did and didn't do.</p>
+
+<h2 id="gov">Governance (unchanged)</h2>
+<p>Operations content only — <strong>no PHI, no participant-level data, no unblinded/sponsor-restricted material</strong> in the knowledge base. The auto-ingest files whatever reaches the study folder, and an Outlook rule can only filter by <strong>source and keywords — not by understanding content</strong>. So keep participant data out with a <strong>layered</strong> control, not one clever rule: <strong>(1)</strong> <strong>you review what's filed</strong>, and the KB is ops-only by policy; <strong>(2)</strong> route the folder from your operational senders/distros and <em>except</em> the sensitive channels (safety/PV, EDC/IVRS/randomization, unblinded-stats, lab portals); <strong>(3)</strong> it assumes a <strong>blinded operational mailbox</strong> — sensitive channels <em>can</em> reach a blinded inbox, so the except-list is a precondition, not a nicety; if the operator is unblinded by role, don't auto-ingest their Inbox. Reported or regulated numbers always come from validated tools, never from notes or an LLM summary of them.</p>
+
+<h2 id="ask">What we're asking for</h2>
+<p>Not budget, not a new system, not production use — just approval to run a <strong>small, governed pilot</strong>:</p>
+<ul>
+  <li><strong>Scope:</strong> this tool, on <strong>one operator's blinded ops mailbox</strong>, one study — starting against a test folder. Operations content only.</li>
+  <li><strong>Footprint:</strong> nothing new to buy or stand up — it runs on the Microsoft 365 tenant and classic Outlook the team already has.</li>
+  <li><strong>Governance:</strong> IT signs/allowlists the script; a restricted, ops-scoped SharePoint site; a <strong>named owner</strong> reviews what's filed; validated tools still own every reported number.</li>
+  <li><strong>Decision:</strong> a <strong>go/no-go gate</strong> at the end of the window, judged on three things — the team can find the study's operational history, nothing participant-level ever lands in it, and no data-residency surprises.</li>
+</ul>
+<p>It's the lowest-risk piece of the program — governed, reversible, and self-contained — which makes it the right place to prove the operating pattern (pilot → gate → decide) that the rest of the program follows. The wins it's after are <strong>shared team memory</strong> (the study's history survives someone being on leave), <strong>consistency</strong> (one searchable record instead of scattered inboxes), and <strong>speed</strong> of recall — with sensitive data kept in-tenant.</p>
+
+<h2 id="code">Browse the code</h2>
+<h3>Scripts</h3>
+<div class="files">
+  <a href="Update-StudyKB.ps1"><code>Update-StudyKB.ps1</code><span class="d">PowerShell — the scheduled engine: reads your Outlook study folder(s)/Inbox-filter, files every new message as an HTML note (read-only, EntryID-tracked), also drains the ad-hoc _Inbox, and rebuilds index.html</span></a>
+  <a href="FileToKB.vba"><code>FileToKB.vba</code><span class="d">Classic-Outlook macro — toolbar one-click for the ad-hoc path: saves selected email(s) into _Inbox as .msg</span></a>
+</div>
+<h3>Docs</h3>
+<div class="files">
+  <a href="README.md"><code>README.md</code><span class="d">Source operating guide (incl. the new-Outlook / Mac fallback paths)</span></a>
+</div>
+
+<footer>Study Knowledge Base — no GUI. Operations-only, no-PHI. Skeleton / not validated software; verify on your own Windows machine before relying on it. Reported numbers come only from validated tools.</footer>
+
+</div>
+<script>
+(function(){
+  // ops mail your rule has already routed INTO the CP-101 folder
+  var SEED=[
+    {id:1,from:'Jordan Lee',date:'2026-06-19',subject:'CP-101 — PK assay re-validation complete; transfer Mon, DBL on track',filed:false},
+    {id:2,from:'Sam Rivera',date:'2026-06-13',subject:'CP-101 — last-participant-last-visit confirmed 12-Jun',filed:false},
+    {id:3,from:'Pat Morgan',date:'2026-06-17',subject:'CP-101 — query backlog down to 12 open; SDV 96%',filed:false}
+  ];
+  // from the lab portal (a sensitive channel); the rule's "except if" keeps it in the Inbox, never in the folder.
+  // Deliberately shows the CHANNEL, not any participant data — the rule excepts by SOURCE, not by reading content.
+  var KEPT={from:'Central Lab portal (auto)',date:'2026-06-18',subject:'CP-101 — secure lab-result transfer (restricted distribution)'};
+  var EXTRA=[
+    {from:'Dana Cole',date:'2026-06-20',subject:'CP-101 — monitoring visit report filed; 2 action items'},
+    {from:'Alex Park',date:'2026-06-20',subject:'CP-101 — draft TLF shells circulated for review'},
+    {from:'Robin Shah',date:'2026-06-21',subject:'CP-101 — EDC extract delivered for the 19-Jun cut'}
+  ];
+  var folder, idx, addN, nextId;
+  var $=function(i){return document.getElementById(i)};
+  var elE=$('skbEmails'), elInbox=$('skbInbox'), elRun=$('skbRun'), elCon=$('skbConsole'),
+      elIdx=$('skbIndex'), elSearch=$('skbSearch');
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+  function slug(s){return s.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,42)}
+  function hash8(s){var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0;}return ('0000000'+h.toString(16)).slice(-8);}
+  function fname(m){return m.date.replace(/-/g,'')+'_120000__'+slug(m.subject)+'__'+hash8(m.subject)+'.html';}
+  function renderInbox(){
+    elInbox.innerHTML='';
+    var d=document.createElement('div'); d.className='skb-mail restricted';
+    d.innerHTML='<span class="s">'+esc(KEPT.subject)+'</span><span class="f">'+esc(KEPT.from)+' · '+KEPT.date+'</span><br>'+
+      '<span class="skb-tag no">lab portal · sensitive channel — excepted by your rule</span>';
+    elInbox.appendChild(d);
+  }
+  function renderFolder(){
+    elE.innerHTML='';
+    folder.forEach(function(m){
+      var d=document.createElement('div'); d.className='skb-mail'+(m.filed?' filed':'');
+      d.innerHTML='<span class="s">'+esc(m.subject)+'</span><span class="f">'+esc(m.from)+' · '+m.date+'</span><br>'+
+        (m.filed?'<span class="skb-tag ok">✓ filed</span>':'<span class="skb-tag new">new — will be filed</span>');
+      elE.appendChild(d);
+    });
+  }
+  function pending(){ return folder.filter(function(m){return !m.filed}); }
+  function run(){
+    elRun.disabled=true;
+    var batch=pending();
+    var lines=['PS> .\\Update-StudyKB.ps1 -StudyFolders CP-101'];
+    lines.push('[StudyKB] reading Outlook folder "CP-101"');
+    lines.push('[StudyKB] (1 item is in the Inbox, not in "CP-101" — excepted by your rule; never read)');
+    if(!batch.length){
+      lines.push('[StudyKB] 0 new from Outlook, 0 from drop-folder; '+idx.length+' total  ·  mail left untouched');
+    } else {
+      batch.forEach(function(m){ lines.push('[StudyKB]  + Notes\\'+fname(m)); });
+      lines.push('[StudyKB] '+batch.length+' new from Outlook, 0 from drop-folder; '+(idx.length+batch.length)+' total  ·  mail left untouched');
+    }
+    elCon.textContent=''; var i=0;
+    (function step(){
+      if(i<lines.length){ elCon.textContent+=(i?'\n':'')+lines[i]; elCon.scrollTop=elCon.scrollHeight; i++; setTimeout(step,230); }
+      else { batch.forEach(function(m){ m.filed=true; idx.unshift(m); }); renderFolder(); renderIndex(); elRun.disabled=false; }
+    })();
+  }
+  function addMail(){
+    if(addN>=EXTRA.length){ elCon.textContent='(no more sample mail — ↺ Reset to start over)'; return; }
+    var e=EXTRA[addN++]; folder.unshift({id:nextId++,from:e.from,date:e.date,subject:e.subject,filed:false});
+    renderFolder();
+    elCon.textContent='📨 new mail routed into "CP-101" — press ▶ to let the scheduled job file it.';
+  }
+  function renderIndex(){
+    if(!idx.length){ elIdx.innerHTML='<tr><td class="skb-empty">No notes yet — run the scheduled job.</td></tr>'; return; }
+    var q=(elSearch.value||'').toLowerCase();
+    var rows=idx.filter(function(m){return (m.subject+' '+m.from+' '+m.date).toLowerCase().indexOf(q)>=0});
+    if(!rows.length){ elIdx.innerHTML='<tr><td class="skb-empty">No note matches “'+esc(elSearch.value)+'”.</td></tr>'; return; }
+    elIdx.innerHTML=rows.map(function(m){
+      return '<tr><td class="dt">'+m.date+'</td><td><b>'+esc(m.subject)+'</b><br><span class="f2">'+esc(m.from)+'</span></td></tr>';
+    }).join('');
+  }
+  function reset(){ folder=SEED.map(function(m){return {id:m.id,from:m.from,date:m.date,subject:m.subject,filed:false}});
+    idx=[]; addN=0; nextId=100; elCon.textContent='idle — press ▶ Run to simulate the next 15-min run'; elSearch.value='';
+    renderInbox(); renderFolder(); renderIndex(); elRun.disabled=false; }
+  elRun.onclick=run; $('skbAdd').onclick=addMail; $('skbReset').onclick=reset; elSearch.oninput=renderIndex;
+  reset();
+})();
+</script>
+<script>
+(function(){
+  // one-click copy on every command block
+  document.querySelectorAll('pre').forEach(function(pre){
+    var code=pre.querySelector('code'); if(!code) return;
+    pre.style.position='relative';
+    var b=document.createElement('button'); b.className='copybtn'; b.type='button'; b.textContent='Copy';
+    b.onclick=function(){
+      var t=code.innerText;
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(ok, fail);
+      } else { fail(); }
+      function ok(){ b.textContent='Copied ✓'; b.classList.add('ok'); setTimeout(function(){b.textContent='Copy'; b.classList.remove('ok');},1400); }
+      function fail(){ try{var r=document.createRange();r.selectNodeContents(code);var s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();ok();}catch(e){b.textContent='Ctrl-C';} }
+    };
+    pre.appendChild(b);
+  });
+  // tickable quick-start checklist (remembers your ticks on this machine)
+  var qsc=document.getElementById('qsc');
+  if(qsc){
+    var KEY='qsc:'+location.pathname, saved={};
+    try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+    var items=[].slice.call(qsc.children);
+    items.forEach(function(li,i){
+      if(saved[i]) li.classList.add('done');
+      li.onclick=function(){ li.classList.toggle('done'); saved[i]=li.classList.contains('done'); try{localStorage.setItem(KEY,JSON.stringify(saved));}catch(e){} };
+    });
+    var r=document.getElementById('qscReset');
+    if(r) r.onclick=function(){ items.forEach(function(li){li.classList.remove('done');}); try{localStorage.removeItem(KEY);}catch(e){} };
+  }
+})();
+</script>
+</body></html>

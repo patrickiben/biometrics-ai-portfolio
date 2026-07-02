@@ -1,0 +1,1 @@
+The on-device model recognizes it, and because it is inside the evaluation window, flags a candidate toxicity — without any data leaving the device.

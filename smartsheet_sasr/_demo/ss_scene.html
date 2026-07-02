@@ -1,0 +1,201 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<title>Smartsheet × SAS/R — screencast scene</title>
+<style>
+:root{--dark:#15183A;--ice:#D5DAF5;--muted:#5A607E;--ss:#3A6FB0;--ssbg:#EAF1FA;
+ --green:#1F9D55;--greenbg:#E6F6EC;--amber:#C2891C;--amberbg:#FBF1D8;--red:#C0392B;--redbg:#FBECEA;
+ --slate:#5A6378;--slatebg:#EEF0F6;--indigo:#4338CA;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1920px;height:1080px;overflow:hidden;background:var(--dark)}
+body{font-family:Calibri,"Segoe UI",Helvetica,Arial,sans-serif;color:#fff}
+#stage{position:relative;width:1920px;height:1080px;background:radial-gradient(ellipse 95% 70% at 50% 16%,#1b1f47,#15183A 72%)}
+#hdr{position:absolute;left:60px;top:34px;right:60px}
+#hdr .bar{position:absolute;left:0;top:6px;width:8px;height:50px;background:var(--ss);border-radius:4px}
+#hdr .eyebrow{margin-left:25px;font-size:16px;font-weight:700;letter-spacing:3px;color:#aeb4e0;text-transform:uppercase}
+#hdr h1{margin-left:25px;font-family:Georgia,serif;font-size:32px;font-weight:700;color:#fff;margin-top:6px;line-height:1.1}
+/* terminal (left) */
+#term{position:absolute;left:56px;top:140px;width:904px;height:812px;background:#012456;border-radius:9px;overflow:hidden;border:1px solid #0a3a7a;box-shadow:0 26px 70px #00000055}
+#term .tbar{height:42px;background:#2d2d2d;display:flex;align-items:center;gap:10px;padding:0 0 0 15px;font-size:14px;color:#e6e6e6}
+#term .tbar .picon{font-family:Consolas,monospace;font-weight:700;color:#16c60c}
+#term .tbar .wctl{margin-left:auto;display:flex}#term .tbar .wctl i{width:44px;height:42px;display:flex;align-items:center;justify-content:center;font-style:normal;color:#d6d6d6;font-size:13px}
+#term .tbar .wctl .min::before{content:"\2013"}#term .tbar .wctl .max::before{content:"\25A1"}
+#tv{position:absolute;top:42px;left:0;right:0;bottom:0;overflow:hidden}
+#tb{position:absolute;left:0;top:0;right:0;padding:18px 24px;font-family:Consolas,"Cascadia Mono",monospace;font-size:17px;line-height:1.5;color:#eeedf0}
+.cmd{white-space:pre-wrap;margin-top:5px}.cmd .p{color:#e8e8ee}.cmd .c{color:#fff;font-weight:700}.cur{color:#d6d9e6}
+.out{white-space:pre-wrap;color:#cfd6ea}
+.out .ok{color:#16c60c;font-weight:700}.out .key{color:#f9f1a5}.out .com{color:#9fb0e8;font-style:italic}.out .bad{color:#ff9d8a}.out .hd{color:#8fd0ff;font-weight:700}
+/* smartsheet grid (right) */
+#sheet{position:absolute;left:984px;top:140px;width:880px;height:812px;background:#fff;border-radius:9px;overflow:hidden;box-shadow:0 26px 70px #00000055}
+#sheet .sbar{height:42px;background:var(--ss);display:flex;align-items:center;gap:10px;padding:0 16px;color:#fff;font-size:15px;font-weight:700}
+#sheet .sbar .logo{width:18px;height:18px;border-radius:4px;background:#fff;display:inline-block;position:relative}
+#sheet .sbar .logo::before{content:"";position:absolute;inset:4px;border:2px solid var(--ss);border-radius:2px}
+.grid{padding:0}
+.grow{display:grid;grid-template-columns:118px 1fr 116px 92px 96px 86px 40px;align-items:center;border-bottom:1px solid #eef0f6;min-height:62px}
+.grow.head{background:#f3f5fa;min-height:40px;border-bottom:2px solid #dde3ee;position:sticky;top:0}
+.gc{padding:8px 12px;font-size:14.5px;color:#2b3148;overflow:hidden}
+.grow.head .gc{font-size:12px;font-weight:700;letter-spacing:.4px;color:#67708a;text-transform:uppercase}
+.gc.id{font-weight:700;color:#1a2238;font-family:Consolas,monospace;font-size:13.5px}
+.gc.task{color:#33405e}
+.pill{display:inline-block;font-size:13px;font-weight:700;border-radius:20px;padding:4px 12px;white-space:nowrap}
+.pill.ontrack{background:var(--greenbg);color:#157347}.pill.watch{background:var(--amberbg);color:#8a5a12}
+.pill.atrisk{background:var(--redbg);color:#a52a1d}.pill.planned{background:var(--slatebg);color:#4a5269}
+.bar{height:8px;background:#e7eaf3;border-radius:5px;overflow:hidden;margin-top:3px}.bar>i{display:block;height:100%;background:var(--ss)}
+.pct{font-size:12.5px;color:#5a6378}
+.due{font-size:13.5px;color:#2b3148;font-weight:600}
+.att{font-size:17px;text-align:center}
+.flash{animation:none;box-shadow:inset 0 0 0 2px #ffd27a;background:#fffaf0}
+.gnew{box-shadow:inset 3px 0 0 var(--green)}
+/* alert toast */
+#toast{position:absolute;left:1020px;top:632px;width:560px;background:#fff;border-radius:11px;box-shadow:0 24px 60px #00000066;
+ border-left:5px solid var(--red);padding:16px 20px;opacity:0;transform:translateY(-12px);z-index:9}
+#toast .th{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--muted);margin-bottom:5px}
+#toast .th b{color:var(--ss)}
+#toast .tt{font-family:Georgia,serif;font-size:18px;font-weight:700;color:#7a2018}
+#toast .tx{font-size:14px;color:#33405e;margin-top:5px;line-height:1.4}
+/* footer flow caption (which half is acting) */
+#flow{position:absolute;left:56px;right:56px;top:968px;display:flex;justify-content:center;gap:12px;font-size:14px;color:#8a93b5}
+#flow b{color:#cdd4e8}
+</style></head>
+<body><div id="stage">
+  <div id="hdr"><div class="bar"></div><div class="eyebrow" id="seye">SMARTSHEET × SAS/R · CP-101 · NO AI</div><h1 id="stitle">Your tracker updates itself</h1></div>
+
+  <div id="term">
+    <div class="tbar"><span class="picon">&gt;_</span><span>Windows PowerShell</span><span class="wctl"><i class="min"></i><i class="max"></i><i class="cls">&#10005;</i></span></div>
+    <div id="tv"><div id="tb"></div></div>
+  </div>
+
+  <div id="sheet">
+    <div class="sbar"><span class="logo"></span><span>Smartsheet — CP-101 Program Tracker</span></div>
+    <div class="grid" id="grid"></div>
+  </div>
+
+  <div id="toast">
+    <div class="th">⚠ <b>Smartsheet Automation</b> · to: Project Manager, Biostat lead</div>
+    <div class="tt">CP-101 Program Tracker — a task is now At Risk</div>
+    <div class="tx">Row <b>CP101-ENR — Enrollment vs plan</b> changed to <b style="color:#c0392b">At Risk</b>. Sent by the workflow you configured once — triggered by tonight's update.</div>
+  </div>
+
+  <div id="flow" style="opacity:0"></div>
+</div>
+
+<script>
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)), seg=(t,a,b)=>clamp((t-a)/(b-a),0,1), ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const $=s=>document.querySelector(s);
+// ---- grid states (from the real captured before/after API state · _demo/capture/) ----
+const BEFORE=[
+ {id:"CP101-ENR",task:"Enrollment vs plan",status:"On Track",pct:null,owner:"PM",due0:"ongoing"},
+ {id:"CP101-ADPC",task:"ADaM spec — finalize",status:"On Track",pct:0.60,owner:"A. Patel",due0:"15 Jun"},
+ {id:"CP101-CUT",task:"Database soft-lock / data cut",status:"On Track",pct:null,owner:"DM",due0:"17 Jun"},
+ {id:"CP101-TLF",task:"Dry-run TLFs",status:"On Track",pct:0.10,owner:"J. Kim",due0:"24 Jun"},
+ {id:"CP101-DSMB",task:"DSMB pack",status:"On Track",pct:0.00,owner:"Biostat",due0:"30 Jun"},
+];
+const AFTER={
+ "CP101-ENR":{status:"At Risk",pct:null,due:"ongoing"},
+ "CP101-ADPC":{status:"On Track",pct:0.85,due:"15 Jun"},
+ "CP101-CUT":{status:"Watch",pct:null,due:"19 Jun",pdf:true},
+ "CP101-TLF":{status:"On Track",pct:0.10,due:"26 Jun"},
+ "CP101-DSMB":{status:"On Track",pct:0.00,due:"30 Jun"},
+};
+const NEWROW={id:"CP101-CSR",task:"CSR shell - build",status:"Planned",pct:0.00,owner:"Biostat",due0:"10 Jul",isNew:true};
+const pillCls=s=>({"On Track":"ontrack","Watch":"watch","At Risk":"atrisk","Planned":"planned"}[s]||"planned");
+function gridHTML(rows){
+  let h='<div class="grow head"><div class="gc">Task ID</div><div class="gc">Task</div><div class="gc">Status</div><div class="gc">% Done</div><div class="gc">Owner</div><div class="gc">Due</div><div class="gc"></div></div>';
+  rows.forEach(r=>{
+    const pct = r.pct==null?'<span class="pct">—</span>':('<div class="pct">'+Math.round(r.pct*100)+'%</div><div class="bar"><i style="width:'+Math.round(r.pct*100)+'%"></i></div>');
+    h+='<div class="grow'+(r.isNew?' gnew':'')+'">'+
+       '<div class="gc id">'+r.id+'</div>'+
+       '<div class="gc task">'+(r.task||'')+'</div>'+
+       '<div class="gc'+(r._fStatus?' flash':'')+'"><span class="pill '+pillCls(r.status)+'">'+r.status+'</span></div>'+
+       '<div class="gc'+(r._fPct?' flash':'')+'">'+pct+'</div>'+
+       '<div class="gc"><span class="due" style="font-weight:400;color:#5a6378">'+(r.owner||'—')+'</span></div>'+
+       '<div class="gc'+(r._fDue?' flash':'')+'"><span class="due">'+(r.due||r.due0)+'</span></div>'+
+       '<div class="gc att">'+(r.pdf?'📎':'')+'</div></div>';
+  });
+  return h;
+}
+// build the grid at a flip-progress p (0=before, 1=after) with optional pdf+newrow reveal
+function gridAt(p, opts){
+  opts=opts||{};
+  const rows=BEFORE.map(r=>{
+    const a=AFTER[r.id]; const o={...r, due:r.due0};
+    if(p>0 && a){
+      if(p>=0.34){ o.status=a.status; o._fStatus=(p<0.6 && a.status!==r.status); }
+      if(p>=0.5){ o.pct=a.pct; o._fPct=(p<0.78 && a.pct!==r.pct); o.due=a.due; o._fDue=(p<0.78 && a.due!==r.due0); }
+      if(opts.pdf && a.pdf) o.pdf=true;
+    }
+    return o;
+  });
+  if(p>=0.72 || opts.showNew) rows.push({...NEWROW, due:NEWROW.due0, _fStatus:(p<0.92)});
+  return gridHTML(rows);
+}
+// ---- terminal session (transcribed from the real captured run · _demo/capture/r_session.txt) ----
+const PS='<span class="p">PS C:\\Users\\biostat\\CP-101&gt;</span> ';
+const T={
+ lib:[['com',"# ss_companion.R - the shipped SHEETLINK library (httr2)"],
+      ['hd',"ss_upsert <- function(sheet, key, df, allow) {"],
+      ['c',"  ss_guard(names(df), allow)                 # ops-only allowlist (blocks PHI)"],
+      ['c',"  ... match each row by the stable Task key ..."],
+      ['c',"  if (length(upd)) PUT  /sheets/{id}/rows    # update existing in place"],
+      ['c',"  if (length(new)) POST /sheets/{id}/rows    # append only the genuinely new"],
+      ['hd',"}  # idempotent: re-running converges, never duplicates"]],
+ read:["== read the sheet first: fresh column map + rows, keyed by the Task code ==",
+       "  rowId     TASKID   STATUS PCTDONE     DUE",
+       "1  1001  CP101-ENR On Track      NA ongoing",
+       "2  1002 CP101-ADPC On Track     0.6  15 Jun",
+       "3  1003  CP101-CUT On Track      NA  17 Jun",
+       "4  1004  CP101-TLF On Track     0.1  24 Jun",
+       "5  1005 CP101-DSMB On Track     0.0  30 Jun"],
+ run:["== push by key: idempotent upsert (ops-only allowlist enforced in code) ==",
+      "GET  /sheets/5500   PUT /sheets/5500/rows   POST /sheets/5500/rows",
+      "[SHEETLINK] upsert sheet 5500: 4 updated, 1 added (idempotent by TaskID)"],
+ attach:["== attach last night's one-page status PDF to the data-cut row ==",
+         "[SHEETLINK] attached CP101_status.pdf to row 1003"],
+ rerun:["== re-run the SAME job: matched by key, it converges and never duplicates ==",
+        "[SHEETLINK] upsert sheet 5500: 5 updated, 0 added (idempotent by TaskID)",
+        "== a non-allowlisted column? the guard blocks it (no PHI to the cloud) ==",
+        "[SHEETLINK] BLOCKED non-allowlisted column(s): PARTICIPANTALT - possible PHI leak"],
+};
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function colorLine(s){let h=esc(s);
+  if(/^\[SHEETLINK\].*BLOCKED/.test(s))return '<span class="bad">'+h+'</span>';
+  if(/^\[SHEETLINK\]/.test(s))return '<span class="ok">'+h+'</span>';
+  if(/^==/.test(s))return '<span class="com">'+h+'</span>';
+  if(/^(GET|PUT|POST|  rowId)/.test(s))return '<span class="key">'+h+'</span>';
+  return h;}
+function libBlock(){return T.lib.map(([cls,tx])=>'<div class="out"><span class="'+cls+'">'+esc(tx)+'</span></div>').join('');}
+function cmdLine(typed,showCur){return '<div class="cmd">'+PS+'<span class="c">'+esc(typed)+'</span>'+(showCur?'<span class="cur">▏</span>':'')+'</div>';}
+function reveal(lines,p){const n=Math.max(0,Math.min(lines.length,Math.round(p*lines.length)));return lines.slice(0,n).map(l=>'<div class="out">'+colorLine(l)+'</div>').join('');}
+
+const tb=$('#tb'), tv=$('#tv');
+function scroll(){const ch=tv.clientHeight,bh=tb.scrollHeight;tb.style.transform='translateY('+Math.min(0,ch-bh-16)+'px)';}
+function setHdr(e,t){$('#seye').textContent=e;$('#stitle').textContent=t;}
+function toast(v){const el=$('#toast');el.style.opacity=v;el.style.transform='translateY('+((1-v)*-12)+'px)';}
+function flow(html){const f=$('#flow');f.innerHTML=html;f.style.opacity=html?1:0;}
+
+const RUNCMD='Rscript .\\nightly_tracker.R';
+window.seek=function(scene,t){
+  if(scene===0){ setHdr('THE LOOP · NO AI','Scheduler → SAS/R writes the cells → Smartsheet sends the alert');
+    tb.innerHTML=cmdLine(RUNCMD.slice(0,Math.round(seg(t,.2,.7)*RUNCMD.length)),t<.75);
+    $('#grid').innerHTML=gridAt(0); toast(0); flow('<span><b>SAS/R</b> owns the data</span> · <span><b>Smartsheet</b> owns the notifications</span>'); }
+  else if(scene===1){ setHdr('THE LIBRARY · SHIPPED CODE','Idempotent upsert by key, ops-only allowlist enforced in code');
+    tb.innerHTML=libBlock(); $('#grid').innerHTML=gridAt(0); toast(0); flow(''); }
+  else if(scene===2){ setHdr('BEAT 1 · READ','The job reads the sheet — keyed on the Task code you own');
+    tb.innerHTML=cmdLine(RUNCMD,false)+reveal(T.read,seg(t,.1,.9)); $('#grid').innerHTML=gridAt(0);
+    flow('<span><b>SAS/R</b> reading the sheet</span>'); toast(0); }
+  else if(scene===3){ setHdr('BEAT 2 · WRITE BY KEY','Status, % and dates update in place — watch the cells flip');
+    tb.innerHTML=cmdLine(RUNCMD,false)+reveal(T.read,1)+reveal(T.run,seg(t,.15,.7));
+    $('#grid').innerHTML=gridAt(ease(seg(t,.1,.95))); flow('<span><b>SAS/R</b> → upsert → <b>Smartsheet</b> cells flip</span>'); toast(0); }
+  else if(scene===4){ setHdr('BEATS 3-4 · ATTACH & ALERT','SAS/R wrote the data; Smartsheet sent the alert');
+    tb.innerHTML=cmdLine(RUNCMD,false)+reveal(T.run,1)+reveal(T.attach,seg(t,.1,.5));
+    $('#grid').innerHTML=gridAt(1,{pdf:t>.3,showNew:true}); toast(ease(seg(t,.45,.75)));
+    flow('<span><b>Smartsheet</b>’s own workflow sends the notification</span>'); }
+  else if(scene===5){ setHdr('SAFEGUARDS','Idempotent by key · the allowlist blocks any non-ops column');
+    tb.innerHTML=cmdLine(RUNCMD,false)+reveal(T.rerun,seg(t,.1,.95));
+    $('#grid').innerHTML=gridAt(1,{pdf:true,showNew:true}); toast(0); flow('<span>re-run → <b>0 added</b> · PHI column → <b>blocked</b></span>'); }
+  else { setHdr('THE BOTTOM LINE','Always current, alerts automatic — with SAS/R you already own');
+    tb.innerHTML=cmdLine(RUNCMD,false)+reveal(T.run,1)+reveal(T.attach,1)+'<div class="out"><span class="ok">[SHEETLINK] done · tracker current · 0 emails sent by code</span></div>';
+    $('#grid').innerHTML=gridAt(1,{pdf:true,showNew:true}); toast(0); flow(''); }
+  scroll();
+};
+window.seek(0,0);
+</script>
+</body></html>

@@ -1,0 +1,253 @@
+// ============================================================================
+// SUPERSEDED -- the shipped .html for this wiki is HAND-ENHANCED beyond what this
+// builder generates: the package DARK theme, inline SVG diagrams, and content
+// updates (2026-06). Rebuilding from this script regenerates the OLD base shell
+// and DROPS all of that. The .html is the SOURCE OF TRUTH.
+// Rebuild is therefore guarded: it aborts unless you deliberately set REBUILD=1
+// (and accept that you must re-apply the diagrams/content yourself).
+// ============================================================================
+if (process.env.REBUILD !== '1') {
+  console.error('[SUPERSEDED] ' + __filename.split('/').pop() + ': out of sync with the hand-enhanced shipped HTML (dark theme + inline diagrams + content). Rebuilding would REGRESS it. The .html is the source of truth. Re-run with REBUILD=1 only if you intend to redo those enhancements.');
+  process.exit(1);
+}
+
+// Self-contained navigable HTML wiki: keep a Smartsheet program tracker current automatically
+// with NO programming and NO Power Automate — Smartsheet's own Automation + Outlook Rules. For the whole
+// study team (project management, data management, medical writers). The no-code sibling of the
+// SAS/R-driven SHEETLINK (which lives in the Biostatistician package).
+// Feature names verified against Smartsheet Learning Center + Microsoft Learn (June 2026).
+const fs = require("fs");
+const A11Y = require("../wiki_a11y.js");
+
+const sections = [
+  { id: "start", nav: "Start here", html: `
+    <h1>Keep your Smartsheet tracker current &mdash; <em>no code</em></h1>
+    <p class="lede">A no-programming companion that lets the <strong>whole study team</strong> &mdash; project management, data management, medical writers &mdash; keep a Smartsheet program tracker <strong>current automatically</strong>, using only <strong>Smartsheet&rsquo;s own Automation</strong> and, for your email, <strong>Outlook&rsquo;s own Rules</strong>. <strong>No Power Automate</strong>, no scripts, no SAS, no R &mdash; and <strong>no PHI</strong> on the sheet.</p>
+    <div class="callout warn"><strong>Two truths to start with &mdash; they shape everything here.</strong><br>1. <strong>Smartsheet keeps existing rows current by asking their owners.</strong> A recurring <em>Request an update</em> emails each owner a one-click mini-form of just their cells; they Submit and it writes back to the row &mdash; in place, no duplicates, no login.<br>2. <strong>Everything here is native.</strong> Smartsheet&rsquo;s own Automation handles updates, alerts, reminders, and the weekly digest; native <strong>Smartsheet Forms</strong> collect new items; <strong>Outlook Rules</strong> organize your study email. The one thing that genuinely needs code &mdash; updating a specific row <em>by key</em> automatically from your validated pipeline &mdash; is the <strong>SAS/R SHEETLINK in the Biostatistician package</strong>.</div>
+    <h2>The 60-second version</h2>
+    <ol>
+      <li><strong>Smartsheet asks for the updates.</strong> A recurring <strong>Request an update</strong> emails each row&rsquo;s owner just their cells every Monday; they click <em>Open request</em>, fill them in, and Submit &mdash; it saves to the row. No one has to open the sheet.</li>
+      <li><strong>A form collects new items.</strong> A native <strong>Smartsheet form</strong> adds a new row for each submission &mdash; clean intake of new tasks, issues, or requests, straight into the sheet.</li>
+      <li><strong>Smartsheet sends the weekly digest.</strong> A recurring <strong>Alert someone</strong> (or a saved <strong>Report</strong> set to send on a schedule) emails the at-risk &amp; overdue items every Friday &mdash; all inside Smartsheet.</li>
+      <li><strong>It alerts the right people.</strong> When a Status turns <em>At&nbsp;Risk</em>, a Smartsheet <strong>Alert someone</strong> notifies the PM; native <strong>reminders</strong> fire before each due date. Configured once, editable by a PM, no code.</li>
+    </ol>
+    <h2>Which tool for which job?</h2>
+    <table>
+      <tr><th>Goal</th><th>Native way</th><th>Tool</th></tr>
+      <tr><td><b>Keep existing rows current</b></td><td>Recurring <b>Request an update</b> &mdash; owners refresh their own cells on a schedule.</td><td>Smartsheet Automation</td></tr>
+      <tr><td><b>Collect new items</b></td><td>A <b>Smartsheet form</b> &rarr; a new row.</td><td>Smartsheet Forms</td></tr>
+      <tr><td><b>Alerts, reminders, approvals</b></td><td><b>Alert someone</b> / reminders / <b>Request an approval</b>.</td><td>Smartsheet Automation</td></tr>
+      <tr><td><b>Weekly roll-up / digest</b></td><td>A recurring <b>Alert someone</b>, or a saved <b>Report</b> sent on a schedule.</td><td>Smartsheet</td></tr>
+      <tr><td><b>Organize study email</b></td><td><b>Rules</b> &mdash; move, categorize, flag (the Rules Wizard).</td><td>Outlook Rules</td></tr>
+      <tr><td><b>Update a row by key from a pipeline</b></td><td>Needs the API (code).</td><td><b>SAS/R SHEETLINK</b> &mdash; Biostatistician package</td></tr>
+    </table>
+    <p>See it built in , then <a href="#build1">Make the tracker update itself</a>.</p>
+  ` },
+
+  { id: "arch", nav: "How it works (no code)", html: `
+    <h1>Two native engines &mdash; and an honest boundary</h1>
+    <p>Nothing here is programming, and there&rsquo;s <strong>no Power Automate</strong>. <strong>Smartsheet&rsquo;s own Automation</strong> lives inside the sheet and does the heavy lifting; <strong>Outlook&rsquo;s own Rules</strong> organize your study email. Both are point-and-click features of tools you already have.</p>
+    <div class="flow">
+      <div class="node out"><b>Sources of truth (operational)</b><span>row owners (on a schedule) &middot; a native <b>Smartsheet form</b> &middot; your <b>Outlook</b> inbox</span></div>
+      <div class="arrow split">&darr; keep rows current, alert, digest&nbsp;(Smartsheet) &nbsp;&middot;&nbsp; organize email&nbsp;(Outlook) &darr;</div>
+      <div class="row">
+        <div class="node cs"><b>Smartsheet Automation</b><span>recurring <b>Request an update</b> (in-place) &middot; <b>Alert someone</b> on change &middot; reminders before a due date &middot; <b>Request an approval</b> &middot; recurring digest</span></div>
+        <div class="node pa"><b>Outlook Rules</b><span>file / categorize / flag study email automatically (the Rules Wizard) so the right mail is organized &mdash; no Power Automate</span></div>
+      </div>
+      <div class="arrow">&darr;</div>
+      <div class="node sp"><b>The Smartsheet tracker</b><span>one current, shared view &middot; owners refresh their rows on schedule &middot; new items flow in via a form &middot; alerts, reminders &amp; the weekly digest already wired</span></div>
+    </div>
+    <h2>Engine 1 &mdash; Smartsheet Automation (does almost everything)</h2>
+    <p>In any sheet, the <strong>Automation</strong> menu builds a workflow from a <em>trigger</em> + optional <em>condition</em> + <em>action</em>. Triggers include <strong>When rows are changed</strong>, <strong>When rows are added</strong>, and <strong>When a date is reached</strong> (set to a <em>Custom recurrence</em> for anything scheduled). Actions include <strong>Alert someone</strong>, <strong>Request an update</strong>, <strong>Request an approval</strong>, <strong>Record a date</strong>, <strong>Change cell value</strong>, and <strong>Move/Copy rows</strong>. The recurring <strong>Request an update</strong> keeps the tracker current (owners edit <em>existing</em> rows, so it never duplicates); a recurring <strong>Alert someone</strong> is your weekly digest; native <strong>Smartsheet Forms</strong> add new rows.</p>
+    <h2>Engine 2 &mdash; Outlook Rules (organize the email)</h2>
+    <p>For the email side, Outlook&rsquo;s own <strong>Rules</strong> &mdash; the same Rules Wizard from the Copilot wiki (<em>Rules &rarr; Manage Rules &amp; Alerts &rarr; New Rule</em>) &mdash; file study-ops mail into a folder, assign a category, or flag it, automatically. That keeps the inbox organized; the <em>tracker</em> stays current through Smartsheet&rsquo;s update requests and form. No bridge tool in between.</p>
+    <div class="callout warn"><b>The honest boundary.</b> These native tools keep a tracker current, alert, remind, intake, and digest &mdash; all no-code. The one thing they can&rsquo;t do is <b>automatically update a specific existing row by key from your validated pipeline</b> (e.g., write last night&rsquo;s computed status into the matching row). That needs the Smartsheet API &mdash; which is exactly the <b>SAS/R SHEETLINK</b> in the Biostatistician package. For the team, owners keep their own rows current instead.</div>
+  ` },
+
+  { id: "usecases", nav: "What to automate", html: `
+    <h1>What the study team should automate</h1>
+    <p>Everything here is <strong>operational</strong> &mdash; status, dates, counts, ownership. <strong>None of it is participant-level or clinical.</strong></p>
+    <table>
+      <tr><th>Use case</th><th>How (no code)</th><th>Who</th></tr>
+      <tr><td><b>Owners keep their own rows current</b></td><td>Smartsheet recurring <b>Request an update</b> &mdash; each owner gets emailed just their cells; they Submit and it writes back, in place.</td><td>PM sets up; whole team responds</td></tr>
+      <tr><td><b>New task / issue / request intake</b></td><td>A native <b>Smartsheet form</b> adds a new row per submission.</td><td>DM, CRAs, vendors submit</td></tr>
+      <tr><td><b>Due-date reminders</b></td><td>Smartsheet <b>When a date is reached</b> &rarr; <b>Alert someone</b>, e.g. 3 days before <code>Due</code>.</td><td>PM sets up once</td></tr>
+      <tr><td><b>At-risk alerts &amp; escalation</b></td><td>Smartsheet <b>When rows are changed</b> &rarr; <b>Alert someone</b> / <b>Request an approval</b>.</td><td>PM sets up once</td></tr>
+      <tr><td><b>Weekly roll-up / digest</b></td><td>A recurring <b>Alert someone</b>, or a saved <b>Report</b> sent on a schedule &mdash; the at-risk &amp; overdue items.</td><td>PM / medical writer</td></tr>
+      <tr><td><b>Organize study email</b></td><td>Outlook <b>Rules</b> &mdash; file, categorize, or flag study-ops mail automatically.</td><td>PM / study lead</td></tr>
+      <tr><td><b>Hand-offs &amp; coverage</b></td><td>Smartsheet alert on an <b>owner change</b> &rarr; notify the new owner.</td><td>PM sets up once</td></tr>
+      <tr><td><b>Update rows by key from a validated pipeline</b></td><td><em>Needs code/API</em> &mdash; the <b>SAS/R SHEETLINK</b> (Biostatistician package), not no-code.</td><td>Biostatistician</td></tr>
+    </table>
+    <div class="callout tip"><b>The split to remember:</b> Smartsheet&rsquo;s update requests <em>refresh existing rows</em> (no duplicates); a Smartsheet <em>form</em> adds new ones; Smartsheet&rsquo;s own alerts handle reminders and the weekly digest; Outlook Rules organize the email. Anything that must <em>update an existing row by key automatically from a pipeline</em> is the coded SAS/R version.</div>
+  ` },
+
+  { id: "watch", nav: "&#9654; Watch it built", html: `
+    <h1>Watch it built — the no-code tracker, on screen</h1>
+    <p class="lede">A live screen recording on Windows&nbsp;11: building the recurring <strong>Request an update</strong> workflow in Smartsheet&rsquo;s Automation, then an owner submitting an update that writes straight back to the row &mdash; no code, no login.</p>
+    
+    <div class="callout tip">Entirely no-code: <b>Automation &rarr; Create a workflow from a template &rarr; &ldquo;Request an update every week&rdquo;</b>; the trigger is <em>When a date is reached</em> (custom weekly recurrence); the action is <em>Request an update</em> to each row&rsquo;s owner. Then the owner&rsquo;s weekly email &rarr; <em>Open request</em> &rarr; fill cells &rarr; Submit &rarr; the row updates in place.</div>
+  ` },
+
+  { id: "build1", nav: "&#9654; Make it update itself", html: `
+    <h1>Make the tracker update itself &mdash; Smartsheet Automation, zero other tools</h1>
+    <p class="lede">The single highest-value automation, entirely inside Smartsheet: the tracker <strong>asks its owners for updates on a schedule</strong>, so it&rsquo;s current every Monday without anyone opening it. (You need to be a licensed user with Owner or Admin permission on the sheet to build workflows.)</p>
+    
+    <h2>A &mdash; the recurring &ldquo;Request an update&rdquo; (keeps the tracker alive)</h2>
+    <p>Fastest path: Smartsheet ships this as a template. <strong>Automation</strong> &rarr; <strong>Create a workflow from a template</strong> &rarr; <strong>Popular Templates</strong> &rarr; <strong>&ldquo;Request an update every week&rdquo;</strong> &rarr; <strong>Use template</strong>, then set the recipient and columns. Or build it yourself:</p>
+    <ol>
+      <li>Open the sheet &rarr; <strong>Automation</strong> &rarr; <strong>Create a workflow</strong> &rarr; start from blank.</li>
+      <li><b>Trigger:</b> <strong>When a date is reached</strong> &rarr; change <em>Run once</em> to <strong>Custom</strong> &rarr; in <strong>Custom Recurrence</strong> choose <em>Week</em>, Mondays, with a start date (and a trigger time).</li>
+      <li><b>(Optional) Condition:</b> only rows where <code>Status</code> is not <em>Complete</em>, so finished work stops pestering people.</li>
+      <li><b>Action:</b> <strong>Request an update</strong> &rarr; send to the row&rsquo;s <strong>Assigned&nbsp;To</strong> contact (the standard Smartsheet Contact column) &rarr; include <em>only</em> the columns they own (<code>Status</code>, <code>% Complete</code>, <code>Next action</code>, <code>Due</code>).</li>
+      <li><b>Save.</b> Each Monday every open row&rsquo;s owner gets an email; they click <strong>Open request</strong>, fill just their cells, and <strong>Submit</strong> &mdash; it writes straight back to that row.</li>
+    </ol>
+    <div class="callout tip"><b>Two things that make this great:</b> recipients <b>don&rsquo;t need a Smartsheet login</b> (any email address works), and because they edit the <em>existing</em> row, it&rsquo;s always in place &mdash; <b>never a duplicate</b>. <b>One caveat to tell people:</b> they must click <em>Open request</em> and <em>Submit</em> &mdash; simply <em>replying</em> to the email does not save the update.</div>
+    
+    <h2>B &mdash; alert on a slip (configure once)</h2>
+    <ol>
+      <li><strong>Automation</strong> &rarr; <strong>Create a workflow</strong> &rarr; <b>Trigger:</b> <strong>When rows are changed</strong>, watching the <code>Status</code> column.</li>
+      <li><b>Condition:</b> <code>Status</code> <em>is</em> <strong>At&nbsp;Risk</strong>.</li>
+      <li><b>Action:</b> <strong>Alert someone</strong> &rarr; the <strong>PM</strong> (and the row owner) &mdash; message: <em>&ldquo;{{Task}} is now At&nbsp;Risk, due {{Due}}.&rdquo;</em> (You can also <strong>Alert a Microsoft Teams channel</strong>.)</li>
+    </ol>
+    <h2>C &mdash; reminders before a due date</h2>
+    <p><strong>Automation</strong> &rarr; <b>Trigger:</b> <strong>When a date is reached</strong> &rarr; <code>Due</code>, <em>3 days before</em> &rarr; <b>Action:</b> <strong>Alert someone</strong> (the owner). Smartsheet watches the calendar; you do nothing else.</p>
+    <div class="callout warn">Recipients, channels, and escalation live in the workflow &mdash; a PM edits them anytime, no code. Message bodies carry operational signal only (&ldquo;DB lock At&nbsp;Risk, due 20&nbsp;Jun&rdquo;) &mdash; never anything participant-level.</div>
+  ` },
+
+  { id: "build2", nav: "&#9654; Collect updates with a form", html: `
+    <h1>Collect new items with a Smartsheet form</h1>
+    <p class="lede">When people who don&rsquo;t live in Smartsheet need to send in new items &mdash; CRAs, vendors, data management &mdash; give them a <strong>native Smartsheet form</strong>. Each submission becomes a new row, straight into the sheet, with no other tool. (Forms <em>add</em> rows; to keep existing rows current, use the recurring <a href="#build1">Request an update</a>.)</p>
+    <ol>
+      <li>In the sheet &rarr; <strong>Forms</strong> &rarr; <strong>Create form</strong>. Smartsheet builds a form from your columns.</li>
+      <li>Keep only operational fields (<code>Task</code>, <code>Status</code>, <code>% Complete</code>, <code>Note</code>, <code>Assigned To</code>); arrange and label them, then <strong>publish</strong> and share the link (or embed it on a page).</li>
+      <li>Every submission <strong>adds a new row</strong> &mdash; and that new row can itself trigger an <em>Alert someone</em> workflow (&ldquo;new request logged &rarr; notify the PM&rdquo;).</li>
+      <li>Optionally require fields or show a confirmation message &mdash; all in the form builder, no code.</li>
+    </ol>
+    <div class="callout tip"><b>Why a form, not an email-to-row bridge?</b> A form gives you clean, structured rows every time &mdash; no parsing and no Power Automate. For keeping <em>existing</em> rows fresh, the recurring update request does it; for organizing the study email itself, use <a href="#build3">Outlook Rules</a>.</div>
+    
+  ` },
+
+  { id: "build3", nav: "Outlook Rules &amp; the digest", html: `
+    <h1>Organize the email &amp; send the digest &mdash; all native</h1>
+    <h2>Organize study email with Outlook Rules</h2>
+    <p>Use Outlook&rsquo;s own automation &mdash; the same Rules Wizard from the Copilot wiki &mdash; so study-ops mail organizes itself. No Power Automate:</p>
+    <ol>
+      <li>In Outlook: <strong>Rules &rarr; Manage Rules &amp; Alerts &rarr; New Rule</strong> (the Rules Wizard).</li>
+      <li><b>Condition:</b> <em>with specific words in the subject</em> = <code>CP-101</code> (or <em>from</em> the CRO distribution list).</li>
+      <li><b>Action:</b> <em>move it to</em> a <code>CP-101</code> folder and <em>assign a category</em>; click <strong>Finish</strong>.</li>
+      <li>Now study mail is filed and tagged automatically &mdash; the team works from a clean folder and updates the tracker through the recurring <a href="#build1">Request an update</a> or the <a href="#build2">form</a>.</li>
+    </ol>
+    <div class="callout tip">Outlook Rules organize the <em>email</em>; Smartsheet keeps the <em>tracker</em> current. Keeping them separate is what lets the whole thing stay no-code &mdash; auto-turning an email&rsquo;s contents into a tracker row would need code/the API (the SAS/R SHEETLINK), and isn&rsquo;t needed here.</div>
+    
+    <h2>The weekly digest &mdash; inside Smartsheet</h2>
+    <p>No external scheduler &mdash; Smartsheet sends it:</p>
+    <ol>
+      <li><b>Easiest:</b> build a <strong>Report</strong> filtered to <code>Status</code> = At&nbsp;Risk or <code>Due</code> overdue, then <strong>Send</strong> it <strong>on a recurring schedule</strong> (e.g., Friday 4&nbsp;PM) to the team.</li>
+      <li><b>Or:</b> an <strong>Automation</strong> &mdash; trigger <strong>When a date is reached</strong> (custom weekly recurrence) &rarr; <strong>Alert someone</strong>, with the matching at-risk &amp; overdue rows in the message.</li>
+      <li>Either way it&rsquo;s one current summary every week, sent automatically by Smartsheet &mdash; no code, no Power Automate.</li>
+    </ol>
+  ` },
+
+  { id: "gov", nav: "Governance &amp; limits", html: `
+    <h1>Governance, safety &amp; honest limits</h1>
+    <h2>The data boundary (the reason this is safe to automate)</h2>
+    <ul>
+      <li><b>Operational columns only.</b> Milestone dates, deliverable/QC status, % Complete, aggregate counts, ownership. <b>Never</b> a participant-level value, anything unblinded or PHI, or a reported clinical number. The tracker is an operational convenience, not a clinical record.</li>
+      <li><b>Smartsheet is a tracker, not a system of record.</b> The validated outputs (SAS/R, Phoenix WinNonlin, the EDC/CTMS) remain the source of truth; the sheet mirrors <em>operational</em> status.</li>
+      <li><b>No AI and no bridge tool.</b> Everything is point-and-click in Smartsheet and Outlook; nothing parses your email into the sheet, so there&rsquo;s nothing to mis-read or mis-route.</li>
+    </ul>
+    <h2>Set-up safety (no code, but still real systems)</h2>
+    <ul>
+      <li><b>Workflows are owned by a licensed user.</b> Building Smartsheet Automation needs Owner or Admin permission on the sheet; keep that with the PM (and a named backup) so it doesn&rsquo;t break when someone leaves.</li>
+      <li><b>Share the sheet to the right people only.</b> Update requests can reach any email address you choose, but editing the sheet itself stays restricted to the team.</li>
+      <li><b>Test on a copy first.</b> Build the workflow on a sandbox copy of the sheet, confirm it behaves, then turn it on for the live tracker.</li>
+      <li><b>Recipients live in the workflow.</b> Keep who-gets-told in Smartsheet&rsquo;s Automation, where a PM can edit it &mdash; no code anywhere.</li>
+    </ul>
+    <h2>The honest limit</h2>
+    <div class="callout warn"><b>This keeps a tracker current and fires pre-configured alerts &mdash; it does not triage, narrate, or decide.</b> Smartsheet collects truthful operational updates from owners and forms and sends the alerts &amp; digest; Outlook Rules organize the email; the PM and team own every decision. And the one thing these native tools deliberately can&rsquo;t do &mdash; update an existing row by key from a pipeline &mdash; is exactly what the coded SAS/R SHEETLINK is for.</div>
+  ` },
+
+  { id: "faq", nav: "FAQ", html: `
+    <h1>FAQ</h1>
+    <p><b>Do we need Power Automate?</b> No &mdash; we deliberately don&rsquo;t use it. Smartsheet&rsquo;s own Automation keeps rows current and sends the alerts, reminders, and weekly digest; native <b>Smartsheet Forms</b> collect new items; <b>Outlook Rules</b> organize the email. All point-and-click, in tools you already have.</p>
+    <p><b>Do we need to write any code?</b> No. Everything here is built in Smartsheet&rsquo;s Automation/Forms and Outlook&rsquo;s Rules &mdash; no scripts. This is the no-programming sibling of the SAS/R-driven version (which lives in the Biostatistician package).</p>
+    <p><b>Will it create duplicate rows?</b> No &mdash; the recurring <b>Request an update</b> edits the <em>existing</em> row in place. A <b>form</b> adds a genuinely new row per submission, so use it for new items, not to refresh existing ones.</p>
+    <p><b>Do recipients need a Smartsheet license to respond?</b> No. An update request works for any email address &mdash; they click <em>Open request</em>, fill their cells, and <em>Submit</em>. (A plain email reply does <em>not</em> write back.)</p>
+    <p><b>What about getting an email&rsquo;s contents into a row automatically?</b> That&rsquo;s the one thing that needs code/the API (the SAS/R SHEETLINK). For the team, organize the mail with <b>Outlook Rules</b> and keep rows current with the <b>Request an update</b> &mdash; no bridge tool needed.</p>
+    <p><b>Do we have to buy anything?</b> Smartsheet Automation and Forms are included with Smartsheet (building workflows needs a licensed user with Owner/Admin on the sheet). Outlook Rules are included with Outlook. Nothing else.</p>
+    <p><b>Could this leak PHI?</b> Only if someone puts PHI on the sheet &mdash; so don&rsquo;t. Keep the columns operational; the tracker is a convenience mirror, not a clinical record.</p>
+    <p><b>How is this different from the SAS/R &ldquo;SHEETLINK&rdquo;?</b> Same goal &mdash; a self-current tracker &mdash; with <b>no programming</b>, so the rest of the study team can own it. The SAS/R version does the one thing this can&rsquo;t: <em>update existing rows by key</em> automatically from a validated pipeline.</p>
+  ` },
+];
+
+const css = `
+:root{--indigo:#6FA0DC;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--amber:#D9A94F;--terra:#E0857A;--sas:#3FB6C2;--bg:#0E1124}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+#wrap{display:flex;min-height:100vh}
+#side{width:280px;flex:0 0 280px;background:#161B33;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #242a4a}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #2c3257;margin-bottom:10px}
+#side .brand b{font-family:Georgia,serif;font-size:16px}#side .brand span{display:block;color:#9fb4dd;font-size:11px;margin-top:4px}
+#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #353c66;background:#1b2047;color:#fff;font-size:13px}
+#side a{display:block;color:#c8d2ec;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}
+#side a:hover{background:#1b2047}#side a.active{color:#fff;border-left-color:#3fc0c8;background:#1b2047;font-weight:600}
+#main{flex:1;max-width:980px;margin:0 auto;padding:34px 48px 80px}
+section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.3}to{opacity:1}}
+h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
+h2{font-family:Georgia,serif;color:#5FC9D2;font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:16.5px;color:#C3CCE4}p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
+code{background:#11302F;color:#7FD6DD;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
+pre.code{background:#080A18;color:#DCE6FB;padding:16px 18px;border-radius:10px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;border:1px solid var(--line)}
+pre.code code{background:none;color:inherit;padding:0}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:#10142E;color:#fff;font-weight:600}tr:nth-child(even) td{background:var(--panel)}
+.callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}
+.callout.warn{background:#2A1614;border-left:4px solid var(--terra)}
+.callout.tip{background:#0F262A;border-left:4px solid var(--teal)}
+.muted{color:var(--muted);font-size:13px}
+.flow{margin:18px 0}
+.node{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.30)}
+.node b{display:block;font-size:15px}.node span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+.node.out{border-left:5px solid var(--indigo)}.node.pa{border-left:5px solid var(--amber)}.node.sp{border-left:5px solid var(--teal)}.node.cs{border-left:5px solid var(--teal)}
+.arrow{text-align:center;color:var(--teal);font-size:18px;margin:5px 0;font-weight:700}
+.arrow.split{font-size:13px}
+.row{display:flex;gap:14px}.row .node{flex:1}
+.footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+a{color:var(--teal)}
+.dl{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}
+.btn{display:inline-block;background:var(--sas);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px}
+.btn.ghost{background:transparent;color:var(--sas);border:1.5px solid var(--sas)}
+.btn:hover{opacity:.92}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.shots figure{margin:0}
+.shots img{width:100%;border:1px solid var(--line);border-radius:8px;box-shadow:0 2px 10px rgba(20,30,60,.10);display:block}
+.shots figcaption{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.4}
+.shots .stp{display:inline-block;font-weight:700;color:#0c5f68;margin-right:5px}
+h3.shots-h{font-family:Georgia,serif;color:#0c5f68;font-size:16px;margin:22px 0 2px}
+`;
+
+const js = `
+const secs=[...document.querySelectorAll('section')];
+const links=[...document.querySelectorAll('#side a[data-t]')];
+function show(id){secs.forEach(s=>s.classList.toggle('show',s.id===id));links.forEach(a=>a.classList.toggle('active',a.dataset.t===id));window.scrollTo(0,0);if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}
+links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.t);}));
+document.querySelectorAll('#main a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href').slice(1);if(document.getElementById(id)){e.preventDefault();show(id);}}));
+const q=document.getElementById('search');
+q.addEventListener('input',()=>{const v=q.value.toLowerCase().trim();links.forEach(a=>{const s=document.getElementById(a.dataset.t);const hit=!v||s.textContent.toLowerCase().includes(v);a.style.display=hit?'block':'none';});});
+show((location.hash||'#start').slice(1)||'start');
+`;
+
+const nav = sections.map(s => `<a href="#${s.id}" data-t="${s.id}">${s.nav}</a>`).join("\n");
+const body = sections.map(s => `<section id="${s.id}" aria-label="${String(s.nav).replace(/&[^;]+;/g,'').replace(/<[^>]+>/g,'').trim()}">${s.html}<div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>`).join("\n");
+
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Keep your Smartsheet tracker current — no code</title><style>${css}</style></head>
+<body><div id="wrap">
+<nav id="side"><div class="brand"><b>Smartsheet &mdash; no code</b><span>Self-current tracker for the study team</span></div>
+<input id="search" placeholder="Search the wiki..." autocomplete="off">
+${nav}</nav>
+<main id="main">${body}</main></div>
+<script>${js}</script></body></html>`;
+
+fs.writeFileSync(__dirname + "/Smartsheet_NoCode.html", A11Y.accessibleShell(html));
+console.log("WROTE Smartsheet_NoCode.html (" + html.length + " bytes, " + sections.length + " pages)");

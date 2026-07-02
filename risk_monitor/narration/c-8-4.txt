@@ -1,0 +1,1 @@
+It is decision-support only: the threshold rules stay authoritative, the methods were independently checked, and it is validated and frozen before it ever informs a regulated decision.

@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study-Lifecycle Sandbox</title>
+<style>
+  :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--r:12px}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0a0d16 70%);color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:15px;line-height:1.62}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 22px 70px}
+  header.hero{padding:24px 0 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .home{color:var(--mut);font-size:12.5px} .home a{color:var(--mut)}
+  h1{font-size:25px;margin:8px 0 6px;font-weight:680}
+  .sub{color:var(--mut);font-size:14.5px;max-width:840px;margin:0}
+  h2{font-size:18px;font-weight:660;margin:26px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .panel{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:12px 0}
+  .note{border-left:3px solid var(--teal);background:rgba(63,208,201,.06)}
+  code{background:#0e1424;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.8px;color:#bfe1ff}
+  pre{background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow:auto;font-size:12.8px}
+  ul{padding-left:20px} li{margin:5px 0}
+  .files{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+  .files a{display:block;background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:ui-monospace,Menlo,monospace;font-size:12.6px}
+  .files a .d{display:block;color:var(--mut);font-family:"Segoe UI",system-ui;font-size:11.8px;margin-top:2px}
+  .tag{display:inline-block;font-size:11px;color:var(--green);border:1px solid rgba(67,196,125,.4);background:rgba(67,196,125,.1);border-radius:5px;padding:1px 8px;margin-left:6px;vertical-align:middle}
+  @media(max-width:720px){.files{grid-template-columns:1fr}}
+</style></head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="home"><a href="../Biostatistics.html">&larr; Biostatistics</a> &middot; <a href="../START_HERE.html">full library</a></div>
+    <h1>Study-Lifecycle Sandbox <span class="tag">runs / synthetic</span></h1>
+    <p class="sub">One synthetic early-phase clinical-pharmacology study, taken end-to-end through the analysis tools &mdash; synthetic ADaM &rarr; PK/NCA &rarr; TLF computations &mdash; to exercise the whole pipeline on realistically-shaped data. Base R; deterministic; runs offline.</p>
+  </header>
+
+  <h2>What it is</h2>
+  <div class="panel">
+    A self-contained generator (<code>simulate_adam.R</code>) emits eight ADaM-shaped domains &mdash;
+    <code>ADSL ADEX ADPC ADPP ADAE ADVS ADLB ADEG</code> &mdash; with a one-compartment oral PK model + NCA,
+    a 2&times;2 bioequivalence crossover option, and per-period safety domains. <code>run_lifecycle.R</code> then
+    runs the demographics, the <strong>PK-NCA (geometric mean, log scale)</strong>, and the
+    <strong>bioequivalence ANOVA (90% CI)</strong> computations on the simulated study.
+  </div>
+
+  <h2>100% synthetic</h2>
+  <div class="panel note">
+    The <strong>design structure</strong> (design-model mix, enrollment-N distribution, healthy-volunteer rate,
+    randomization/masking, archetype mix, unit geography) is informed by public early-phase
+    <strong>Phase-1 registration patterns on ClinicalTrials.gov</strong>. <strong>All participant-level data is
+    simulated</strong> from generic domain priors (typical oral small-molecule PK, healthy-volunteer AE incidence) &mdash;
+    it is not fit to any specific sponsor, and no real participant-level data is used or reproduced. This demonstrates
+    the <em>tools and the life cycle</em>, not any real study's outcomes. The public-registry calibration corpus that
+    informed the priors is not included here; the priors it produced are baked into <code>priors.R</code>, so the
+    generator runs standalone.
+  </div>
+
+  <h2>Run it</h2>
+  <pre><code>Rscript sim_lifecycle/run_lifecycle.R</code></pre>
+
+  <h2>Source &amp; output</h2>
+  <div class="files">
+    <a href="simulate_adam.R"><code>simulate_adam.R</code><span class="d">synthetic ADaM generator (base R, priors baked in)</span></a>
+    <a href="priors.R"><code>priors.R</code><span class="d">design + domain priors (hardcoded list)</span></a>
+    <a href="run_lifecycle.R"><code>run_lifecycle.R</code><span class="d">driver: simulate &rarr; demographics / PK-NCA / BE-ANOVA</span></a>
+    <a href="out/adsl.csv"><code>out/adsl.csv</code><span class="d">one-record-per-participant (ADSL)</span></a>
+    <a href="out/adpp.csv"><code>out/adpp.csv</code><span class="d">PK parameters (NCA)</span></a>
+    <a href="out/adae.csv"><code>out/adae.csv</code><span class="d">adverse events</span></a>
+  </div>
+  <p class="sub">Full generated study (seed 2026): the eight <code>out/*.csv</code> ADaM domains. Output feeds the
+    <a href="../sas_tlf_pseudocode/index.html">SAS</a> and <a href="../r_tlf_pseudocode/index.html">R</a> TLF pseudocode libraries.</p>
+</div>
+</body></html>

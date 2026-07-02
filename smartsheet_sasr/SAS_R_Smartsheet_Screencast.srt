@@ -1,0 +1,71 @@
+1
+00:00:00,000 --> 00:00:04,440
+Keeping a Smartsheet program tracker current is usually a manual chore.
+
+2
+00:00:04,740 --> 00:00:12,957
+Here is a tool that does it for you, from the validated SAS or R you already run on a schedule, with no A-I and no copy and paste.
+
+3
+00:00:13,257 --> 00:00:17,735
+This is a representative demo of the C-P one-oh-one program tracker.
+
+4
+00:00:18,035 --> 00:00:20,815
+Click run, and watch a single night's job.
+
+5
+00:00:21,815 --> 00:00:23,128
+One scheduled run.
+
+6
+00:00:23,428 --> 00:00:30,939
+The job reads the sheet, computes tonight's operational status, and writes it back to each row by a stable key.
+
+7
+00:00:31,239 --> 00:00:44,209
+Enrollment drops to At Risk; the database cut moves to Watch and its date slips; the spec ticks up to eighty-five percent; and one genuinely new row is appended, all in a single idempotent upsert.
+
+8
+00:00:45,209 --> 00:00:51,759
+Look at the log on the right: real reads and writes to the Smartsheet A-P-I, then the status attachment.
+
+9
+00:00:52,059 --> 00:01:00,989
+And the instant the status cell changed to At Risk, Smartsheet's own workflow, the one a project manager configured once, emailed them.
+
+10
+00:01:01,289 --> 00:01:05,050
+The code wrote the fact; Smartsheet decided who to tell.
+
+11
+00:01:06,050 --> 00:01:07,990
+Run the very same job again.
+
+12
+00:01:08,290 --> 00:01:15,514
+Nothing duplicates, because every row is matched by its key, so it reports rows updated and zero added.
+
+13
+00:01:15,814 --> 00:01:21,040
+Re-running is always safe; the sheet just converges to the same truthful state.
+
+14
+00:01:22,040 --> 00:01:25,270
+And the safety boundary is in code, not policy.
+
+15
+00:01:25,570 --> 00:01:37,587
+When a non-operational column tries to ride along, the ops-only allowlist blocks it and the job stops, so no participant-level data and no reported clinical number can ever reach the cloud.
+
+16
+00:01:38,587 --> 00:01:39,895
+That is the whole idea.
+
+17
+00:01:40,195 --> 00:01:49,367
+Your tracker is always current, the alerts are automatic, and you never paste a status again, all from validated SAS and R you already own.
+
+18
+00:01:49,667 --> 00:01:56,551
+The library ships ready to use: drop in your sheet, your key, and your allowlist, and schedule it.

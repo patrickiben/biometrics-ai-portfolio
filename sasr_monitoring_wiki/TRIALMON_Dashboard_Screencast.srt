@@ -1,0 +1,63 @@
+1
+00:00:00,000 --> 00:00:04,155
+This is the TRIALMON safety dashboard, on synthetic data.
+
+2
+00:00:04,455 --> 00:00:15,974
+It is the covering biostatistician's morning view: every participant in the study screened against the pre-specified safety thresholds, with the worst flag surfaced first.
+
+3
+00:00:16,274 --> 00:00:18,946
+No A-I; deterministic checks only.
+
+4
+00:00:19,946 --> 00:00:21,569
+Open the hepatic view.
+
+5
+00:00:21,869 --> 00:00:26,465
+This is the eDISH plane: peak A-L-T against peak bilirubin.
+
+6
+00:00:26,765 --> 00:00:36,458
+The reference lines are three-times and two-times the upper limit, and the shaded upper-right is the Hy's-Law screening quadrant, where both limbs are elevated together.
+
+7
+00:00:37,458 --> 00:00:44,778
+Click the participant sitting in that quadrant, and the evidence packet opens: the deterministic backbone first.
+
+8
+00:00:45,078 --> 00:00:54,899
+The eDISH numbers, the QTcF screen, any adjudicated D-L-T, and the adverse-event counts, each with its own screening flag.
+
+9
+00:00:55,899 --> 00:01:08,997
+And underneath, the per-visit trajectories, drawn from the as-collected single-draw data: A-L-T and bilirubin climbing visit over visit, QTcF, hemoglobin, neutrophils.
+
+10
+00:01:09,297 --> 00:01:13,351
+Every value here is a screening flag, never a reported number.
+
+11
+00:01:13,651 --> 00:01:19,536
+The reported numbers come from the validated tools, Phoenix WinNonlin and Pinnacle 21.
+
+12
+00:01:20,536 --> 00:01:24,062
+The other views screen the rest of the protocol the same way.
+
+13
+00:01:24,362 --> 00:01:35,680
+The cardiac view runs QTcF against the I-C-H E-14 thresholds, and the adverse-event view runs the three-plus-three dose-escalation state for each cohort.
+
+14
+00:01:36,680 --> 00:01:37,988
+That is the whole idea.
+
+15
+00:01:38,288 --> 00:01:52,603
+The dashboard detects, surfaces, and packages the evidence on a schedule; every clinical decision, causality, seriousness, dose, stays with the medical monitor and the safety review committee.
+
+16
+00:01:52,903 --> 00:01:56,074
+It detects and pages; the humans decide.

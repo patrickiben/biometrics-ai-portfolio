@@ -1,0 +1,127 @@
+1
+00:00:00,000 --> 00:00:06,105
+This is one overnight cycle on Study CP-101, a Phase 1 clin-pharm study.
+
+2
+00:00:06,405 --> 00:00:15,638
+A scheduled SAS or R job runs the deterministic checks and Pinnacle 21 produces the conformance findings, exactly as they do today.
+
+3
+00:00:15,938 --> 00:00:29,460
+The only thing that is new is a small open-weight model running locally on the workstation, called by the job to handle the language layer — labeling each finding, sorting it into a queue, and drafting a candidate query.
+
+4
+00:00:29,760 --> 00:00:37,863
+SAS/R owns every number; the model only helps with words; and a human approves before anything touches a record of truth.
+
+5
+00:00:38,863 --> 00:00:41,021
+The setup is deliberately boring.
+
+6
+00:00:41,321 --> 00:00:57,867
+An ordinary workstation you already own runs Ollama, serving one quantized model — say Qwen2.5 7B at Q4_K_M, Apache-2.0 licensed — on the loopback address 127.0.0.1.
+
+7
+00:00:58,167 --> 00:01:09,869
+The model name, quantization, and digest are pinned and registered, decoding is fixed at temperature zero with a set seed, so the same input gives the same output every run.
+
+8
+00:01:10,169 --> 00:01:20,338
+The box stays offline: there is no cloud account, no telemetry, and the network cable is unplugged — the data-egress story is simply that nothing can leave.
+
+9
+00:01:21,338 --> 00:01:24,923
+Overnight, the scheduled job runs the validated work.
+
+10
+00:01:25,223 --> 00:01:42,371
+Pinnacle 21 executes the CDISC conformance run over SDTM and Define-XML, and the study's own SAS or R programs run the cross-form edit checks, the PK timing and BLQ rules, and the lab and IXRS reconciliation.
+
+11
+00:01:42,671 --> 00:01:46,231
+This morning it produces two hundred fourteen findings.
+
+12
+00:01:46,531 --> 00:01:58,492
+Every one of those counts, comparisons, and rule evaluations came from validated, double-programmed code — the small model has not been called yet and will never compute a number.
+
+13
+00:01:59,492 --> 00:02:08,421
+Now SAS/R calls the local model, one finding at a time, using PROC HTTP or httr2 to the loopback endpoint.
+
+14
+00:02:08,721 --> 00:02:21,216
+For each short finding it asks three narrow, in-envelope questions: is this new or a known recurring issue, what type and severity bucket does it fall in, and which owner or queue should it route to.
+
+15
+00:02:21,516 --> 00:02:29,677
+The model must answer as JSON constrained to a fixed schema with allowed values only — no free prose, no numbers.
+
+16
+00:02:29,977 --> 00:02:37,035
+This is short-text classification and routing, squarely in what a small quantized model can do reliably.
+
+17
+00:02:38,035 --> 00:02:50,470
+Before trusting a single word, the SAS/R validator parses the JSON and checks every field against the allowed enum — any malformed or out-of-vocabulary answer is dropped and logged, never guessed.
+
+18
+00:02:50,770 --> 00:03:05,159
+For findings that pass, the model drafts a one-line candidate query, but only grounded by retrieval over the study's own specifications and edit-check definitions, so the wording stays anchored to real source text.
+
+19
+00:03:05,459 --> 00:03:14,760
+Every draft is labeled DRAFT and is unsent; SAS/R then assembles the survivors into a single ranked worklist, ordered by severity and aging.
+
+20
+00:03:15,760 --> 00:03:19,965
+At the workstation the biostatistician opens the ranked worklist.
+
+21
+00:03:20,265 --> 00:03:30,920
+Each row shows the deterministic facts from SAS/R — the rule, the records, the counts — next to the model's suggested label and its draft query text.
+
+22
+00:03:31,220 --> 00:03:39,114
+The reviewer approves, edits, or rejects each one; a wrong label is a two-second fix, not a silent error.
+
+23
+00:03:39,414 --> 00:03:44,571
+Nothing the model produced becomes real until a qualified human has signed off on it.
+
+24
+00:03:45,571 --> 00:03:47,825
+Only the approved items get written.
+
+25
+00:03:48,125 --> 00:04:03,798
+SAS/R issues the queries to the EDC and writes a 21 CFR Part 11 audit line for each one, recording the prompt, the pinned model name, quantization and digest, the draft text, and who approved it and when.
+
+26
+00:04:04,098 --> 00:04:11,867
+Because the model is frozen and decoding is fixed, that audit line is a re-runnable artifact an inspector can reproduce.
+
+27
+00:04:12,167 --> 00:04:23,280
+And the offline guarantee is physical, not a policy promise — the cable is unplugged, so the only thing that ever left the box was a query you approved into your own EDC.
+
+28
+00:04:24,280 --> 00:04:26,996
+Step back and the division of labor is clean.
+
+29
+00:04:27,296 --> 00:04:35,550
+SAS/R and Pinnacle 21 owned the data, every check and count, the validator, every write, and the audit trail.
+
+30
+00:04:35,850 --> 00:04:45,404
+The small local model did one narrow language job — sorting findings and drafting candidate words — and it never touched a number or a record on its own.
+
+31
+00:04:45,704 --> 00:04:49,034
+The biostatistician made every decision that mattered.
+
+32
+00:04:49,334 --> 00:04:59,396
+That is the honest shape of an on-device win: the model saved triage time on a narrow, validated task, and the truth stayed exactly where it always was.

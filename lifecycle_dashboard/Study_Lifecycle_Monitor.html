@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Lifecycle Monitor — Biostatistics Operations</title>
+<style>
+  :root{
+    --bg:#0b0f1a; --panel:#141a28; --panel2:#1b2336; --line:#26304a; --ink:#e7ecf5;
+    --mut:#93a0bd; --accent:#4ea8ff; --green:#2ecc71; --amber:#e6b450; --red:#ff5d6c;
+    --r:12px; --sh:0 1px 0 #ffffff0a inset, 0 8px 24px #0006;
+    font-synthesis:none;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b0f1a,#0a0d16 60%);color:var(--ink);
+       font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:14px}
+  a{color:var(--accent)}
+  .wrap{max-width:1320px;margin:0 auto;padding:18px 18px 60px}
+  header.top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:14px}
+  header.top h1{font-size:20px;margin:0;font-weight:650;letter-spacing:.2px}
+  .sub{color:var(--mut);font-size:12.5px;margin:2px 0 0}
+  .grow{flex:1}
+  .badge{display:inline-block;font-size:11px;font-weight:650;padding:3px 8px;border-radius:999px;
+         border:1px solid var(--line);background:#0e1422;color:var(--mut)}
+  .badge.demo{color:#ffd47a;border-color:#5a4a1f;background:#241c08}
+  select,button{background:var(--panel2);color:var(--ink);border:1px solid var(--line);
+         border-radius:8px;padding:7px 10px;font:inherit;cursor:pointer}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:6px 0 14px}
+  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;box-shadow:var(--sh)}
+  .kpi .v{font-size:23px;font-weight:700;line-height:1.1}
+  .kpi .l{color:var(--mut);font-size:11.5px;margin-top:3px}
+  .kpi .v.g{color:var(--green)} .kpi .v.a{color:var(--amber)} .kpi .v.r{color:var(--red)}
+  .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px;box-shadow:var(--sh)}
+  .card h2{font-size:13.5px;margin:0 0 10px;font-weight:650;display:flex;align-items:center;gap:8px}
+  .card h2 .hint{color:var(--mut);font-weight:400;font-size:11.5px}
+  table{width:100%;border-collapse:collapse;font-size:12.8px}
+  th,td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+  th{color:var(--mut);font-weight:600;cursor:pointer;user-select:none;white-space:nowrap}
+  tbody tr:hover{background:#0e1422;cursor:pointer}
+  .rag{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:middle}
+  .g{color:var(--green)} .a{color:var(--amber)} .r{color:var(--red)}
+  .bg-g{background:var(--green)} .bg-a{background:var(--amber)} .bg-r{background:var(--red)}
+  /* heatmap */
+  .hm{display:grid;gap:5px}
+  .hm .row{display:grid;grid-template-columns:120px repeat(4,1fr);gap:5px;align-items:center}
+  .hm .hd{color:var(--mut);font-size:11px;text-align:center}
+  .hm .nm{font-size:12px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cell{height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;
+        font-size:11px;font-weight:650;color:#0b0f1a;cursor:pointer;border:1px solid #0006}
+  /* milestone timeline */
+  .ms{display:flex;gap:0;align-items:flex-start;overflow-x:auto;padding-top:6px}
+  .ms .step{flex:1;min-width:78px;text-align:center;position:relative}
+  .ms .dot{width:16px;height:16px;border-radius:50%;margin:0 auto;border:2px solid var(--line);background:var(--panel2)}
+  .ms .step:not(:last-child):after{content:"";position:absolute;top:8px;left:50%;width:100%;height:2px;background:var(--line);z-index:0}
+  .ms .dot{position:relative;z-index:1}
+  .ms .k{font-size:11px;margin-top:6px;color:var(--ink)} .ms .d{font-size:10px;color:var(--mut)}
+  .dot.done{background:var(--green);border-color:var(--green)}
+  .dot.wip{background:var(--accent);border-color:var(--accent)}
+  .dot.risk{background:var(--red);border-color:var(--red)}
+  .dot.todo{background:var(--panel2)}
+  /* bars */
+  .bar{height:9px;border-radius:6px;background:#0e1422;overflow:hidden;border:1px solid var(--line)}
+  .bar > i{display:block;height:100%}
+  .barrow{display:grid;grid-template-columns:96px 1fr 64px;gap:8px;align-items:center;margin:7px 0;font-size:12px}
+  .barrow .lab{color:var(--mut)} .barrow .num{text-align:right;color:var(--mut);font-variant-numeric:tabular-nums}
+  /* funnel */
+  .fn{display:flex;flex-direction:column;gap:6px}
+  .fn .seg{display:flex;align-items:center;gap:8px}
+  .fn .lab{width:96px;color:var(--mut);font-size:12px}
+  .fn .meter{flex:1;height:22px;border-radius:6px;background:#0e1422;border:1px solid var(--line);overflow:hidden}
+  .fn .meter > i{display:block;height:100%;background:linear-gradient(90deg,#2b6cb0,#4ea8ff)}
+  .fn .n{width:42px;text-align:right;font-variant-numeric:tabular-nums;font-size:12px}
+  /* signals */
+  .sig{display:flex;gap:10px;padding:9px 6px;border-bottom:1px solid var(--line)}
+  .sig .pip{width:8px;border-radius:4px;flex:0 0 8px}
+  .sig .t{font-size:12.5px} .sig .m{font-size:11.5px;color:var(--mut);margin-top:2px}
+  .sig .who{font-size:11px;color:var(--accent);font-weight:600}
+  .spark{display:inline-block;vertical-align:middle}
+  .legend{color:var(--mut);font-size:11px;margin-top:8px;display:flex;gap:14px;flex-wrap:wrap}
+  details.note{margin-top:10px;color:var(--mut);font-size:12px}
+  details.note summary{cursor:pointer;color:var(--accent)}
+  /* modal */
+  .modal{position:fixed;inset:0;background:#000a;display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+  .modal.open{display:flex}
+  .modal .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:760px;width:100%;
+        max-height:88vh;overflow:auto;padding:18px}
+  .modal h3{margin:0 0 4px} .closex{float:right;border:none;background:none;color:var(--mut);font-size:20px;cursor:pointer}
+  .kv{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}
+  .kv div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+  .kv b{display:block;color:var(--mut);font-weight:600;font-size:11px} .kv span{font-size:15px}
+  footer{color:var(--mut);font-size:11.5px;margin-top:20px;border-top:1px solid var(--line);padding-top:12px}
+  @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Study Lifecycle Monitor <span class="badge">Biostatistics Operations</span></h1>
+      <p class="sub">Operational health of studies from protocol to CSR — deliverables, data readiness, TLF production, milestones.</p>
+    </div>
+    <div class="grow"></div>
+    <span class="badge demo">SIMULATED DEMO DATA</span>
+    <select id="studySel" title="Focus study"></select>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Portfolio health <span class="hint">RAG by dimension — click a cell to drill in</span></h2>
+      <div class="hm" id="heat"></div>
+      <div class="legend">
+        <span><span class="rag bg-g"></span> On track</span>
+        <span><span class="rag bg-a"></span> Watch</span>
+        <span><span class="rag bg-r"></span> At risk</span>
+        <span>Dimensions: Timeline · Data · TLF · Resource</span>
+      </div>
+      <details class="note"><summary>How the operational risk score works (transparent, no black box)</summary>
+        Each dimension is a plain weighted 0–100 score, scaled by how close the relevant gate is:
+        <b>Timeline</b> = overdue milestones + days-to-DBL pressure · <b>Data</b> = open-query backlog +
+        (1−clean%) + (1−SDV%), weighted by DBL proximity · <b>TLF</b> = (1−finalized/planned) weighted by
+        reporting proximity · <b>Resource</b> = double-programming lag + open discrepancies. Green &lt;33,
+        Watch 33–66, At risk &gt;66. No predictive model, no experimental method — just the numbers your
+        CTMS/EDC/TLF tracker already hold.
+      </details>
+    </div>
+    <div class="card">
+      <h2>Operational early-warning signals <span class="hint">ranked</span></h2>
+      <div id="signals"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>Portfolio trend <span class="hint">8 weeks · all studies — direction of travel</span></h2>
+    <div id="trend"></div>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <h2 id="msTitle">Milestone track</h2>
+      <div class="ms" id="ms"></div>
+    </div>
+    <div class="card">
+      <h2>Data readiness</h2>
+      <div id="data"></div>
+    </div>
+    <div class="card">
+      <h2>TLF production <span class="hint">planned → final</span></h2>
+      <div class="fn" id="funnel"></div>
+    </div>
+  </div>
+
+  <div class="grid3">
+    <div class="card" style="grid-column:1 / -1">
+      <h2>Deliverables pipeline (selected study) <span class="hint">done / total by phase</span></h2>
+      <div id="deliv"></div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <h2>Study roster <span class="hint">click a row for detail · click a header to sort</span></h2>
+    <table id="tbl"><thead></thead><tbody></tbody></table>
+  </div>
+
+  <footer id="foot"></footer>
+</div>
+
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+
+<script>
+/* ===== DATA ADAPTER (how to go live) =========================================
+   To replace the demo with real data, implement loadPortfolio() to pull
+   READ-ONLY operational metadata and return the SAME study objects the demo
+   generator produces (see genStudy for the exact shape). NO PHI / participant-level
+   / reported clinical values ever cross — operational fields only.
+
+     async function loadPortfolio(){
+       const studies = await ctmsStudies();           // CTMS  -> id, phase, milestones, enrolled/target, sites
+       for (const s of studies){
+         const e = await edcMetrics(s.id);            // EDC   -> openQ, qtrend[8], cleanPct, sdvPct, daysToDBL
+         const t = await tlfTrackerCounts(s.id);      // TLF tracker -> planned/programmed/qcd/finalized
+         const d = await deliverablesRegister(s.id);  // register    -> {phase:{done,total}}
+         Object.assign(s, mapToModel(e, t, d));       // map into the demo's field names
+       }
+       return studies;                                // then: STUDIES = await loadPortfolio()
+     }
+
+   Wire each source read-only (REST or nightly CSV export). The synthetic
+   generator below is the DEMO default until loadPortfolio() is supplied. ====== */
+
+/* ---------- deterministic synthetic portfolio (no PHI, no participant-level) ----- */
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+var R = rng(20260621);
+var ri = function(a,b){return Math.floor(a+R()*(b-a+1));};
+var rf = function(a,b){return a+R()*(b-a);};
+var pick = function(a){return a[Math.floor(R()*a.length)];};
+var TODAY = new Date('2026-06-21');
+function addDays(base,n){var d=new Date(base);d.setDate(d.getDate()+n);return d;}
+function fmt(d){return d.toISOString().slice(0,10);}
+
+var PHASES = ['Startup','Conduct','DB Lock','Reporting'];
+var DESIGNS = ['Parallel SAD','Parallel MAD','2x2 Crossover BE','Fixed-sequence DDI','Food-effect','Single-ascending FIH'];
+var MS_KEYS = ['Protocol','SAP','FPFV','LPLV','DBL','TLFs','CSR'];
+var OWNERS = ['A. Rivera','J. Okafor','M. Chen','S. Patel','L. Dubois','K. Novak'];
+
+function genStudy(i){
+  var phase = PHASES[Math.min(3, Math.floor(i/2) % 4 + (R()<.3?1:0))];
+  // phase-conditioned progress 0..1 along the lifecycle
+  var prog = {Startup:rf(.05,.25),Conduct:rf(.3,.6),'DB Lock':rf(.6,.8),Reporting:rf(.8,.98)}[phase];
+  var target = pick([24,32,40,48,60,16]);
+  var enrolled = phase==='Startup'? ri(0,Math.round(target*.4)) : (phase==='Conduct'? ri(Math.round(target*.5),target) : target);
+  // milestones with status from prog
+  var base = addDays(TODAY, -Math.round(prog*240) - 30);
+  var offs = [0,18,35,150,185,215,250];
+  var ms = MS_KEYS.map(function(k,j){
+    var d = addDays(base, offs[j]);
+    var done = d < TODAY && R() < .92;
+    var s = done ? 'done' : (d < addDays(TODAY,14) && d>=TODAY ? 'wip' : (d<TODAY ? 'risk' : 'todo'));
+    if (prog>0.9 && j<5) s='done';
+    return {k:k,d:fmt(d),s:s};
+  });
+  // deliverables (echoes the 136-item Protocol->CSR register, scaled)
+  var phs={Startup:[14,prog],Conduct:[26,prog],Analysis:[34,prog],Reporting:[20,prog]};
+  var deliv={};
+  Object.keys(phs).forEach(function(p,idx){
+    var tot=phs[p][0]; var stagew=[1,.85,.55,.2][idx]; // later phases lag
+    var done=Math.min(tot,Math.round(tot*Math.max(0,Math.min(1, prog/stagew - (idx*.15) + rf(-.05,.05)))));
+    deliv[p]={done:done,total:tot};
+  });
+  // data readiness
+  var daysToDBL = (function(){var m=ms.find(function(x){return x.k==='DBL';});return Math.round((new Date(m.d)-TODAY)/864e5);})();
+  var openQ = phase==='Startup'? ri(0,6): phase==='Conduct'? ri(25,120): phase==='DB Lock'? ri(10,48): ri(0,8);
+  var qtrend=[]; var q=openQ+ri(0,40); for(var t=0;t<8;t++){q=Math.max(0,Math.round(q + (phase==='Reporting'?-q*.2:rf(-8,10)))); qtrend.push(q);} qtrend[7]=openQ;
+  var cleanPct = Math.min(.999, prog*0.7 + rf(.2,.32));
+  var sdvPct = Math.min(.999, prog*0.6 + rf(.2,.35));
+  // TLF production (echoes the 217-program library, scaled per study)
+  var planned = pick([90,120,150,180,72]);
+  var rep = phase==='Reporting'? rf(.6,1): phase==='DB Lock'? rf(.15,.4): rf(0,.15);
+  var programmed=Math.round(planned*Math.min(1,rep+rf(.05,.2)));
+  var qcd=Math.round(programmed*rf(.55,.85)); var finalized=Math.round(qcd*rf(.55,.95));
+  var dblPct = Math.round(rf(.4,.85)*100); var discrep = ri(0,18);
+  return {
+    id:'CP-'+(101+i), name:DESIGNS[i%DESIGNS.length]+' study', phase:phase, design:DESIGNS[i%DESIGNS.length],
+    owner:pick(OWNERS), target:target, enrolled:enrolled, sites:ri(1,4),
+    ms:ms, deliv:deliv, daysToDBL:daysToDBL,
+    data:{openQ:openQ, qtrend:qtrend, cleanPct:cleanPct, sdvPct:sdvPct},
+    tlf:{planned:planned, programmed:programmed, qcd:qcd, finalized:finalized},
+    prog:{dblProgPct:dblPct, discrep:discrep}, _p:prog
+  };
+}
+var STUDIES = []; for(var i=0;i<8;i++) STUDIES.push(genStudy(i));
+// demo: make one late study clearly AT RISK so the red state + signals are exercised
+(function(){var s=STUDIES[7]; s.phase='Reporting'; s.daysToDBL=-24;
+  s.tlf.programmed=Math.round(s.tlf.planned*0.45); s.tlf.qcd=Math.round(s.tlf.planned*0.22); s.tlf.finalized=Math.round(s.tlf.planned*0.10);
+  s.prog.dblProgPct=42; s.prog.discrep=16; s.data.openQ=7; s.data.cleanPct=0.91; s.data.sdvPct=0.86;
+  ['TLFs','CSR'].forEach(function(k){var m=s.ms.find(function(x){return x.k===k;}); if(m) m.s='risk';});
+})();
+
+/* ---------- transparent operational risk scoring ---------------------------- */
+function clamp(x){return Math.max(0,Math.min(100,x));}
+function dblPressure(s){ // 0 (far) .. 1 (imminent/overdue) once heading to lock
+  if (s.phase==='Startup') return .15;
+  var d=s.daysToDBL; return d<=0?1: d<14?.85: d<30?.6: d<60?.35:.2;
+}
+function repPressure(s){ return s.phase==='Reporting'?1: s.phase==='DB Lock'?.6: s.phase==='Conduct'?.25:.1; }
+function scores(s){
+  var overdue = s.ms.filter(function(m){return m.s==='risk';}).length;
+  var timeline = clamp(overdue*22 + dblPressure(s)*45);
+  var data = clamp((Math.min(1,s.data.openQ/120)*45 + (1-s.data.cleanPct)*30 + (1-s.data.sdvPct)*25) * (0.5+0.6*dblPressure(s)));
+  var tlf = clamp((1 - s.tlf.finalized/s.tlf.planned)*100 * (0.3+0.8*repPressure(s)));
+  var resource = clamp((1-s.prog.dblProgPct/100)*55 + Math.min(1,s.prog.discrep/18)*45*repPressure(s));
+  var overall = clamp(0.30*timeline+0.28*data+0.27*tlf+0.15*resource);
+  return {Timeline:timeline,Data:data,TLF:tlf,Resource:resource,overall:overall};
+}
+function rag(v){return v>66?'r':v>33?'a':'g';}
+function ragColor(v){return v>66?'var(--red)':v>33?'var(--amber)':'var(--green)';}
+STUDIES.forEach(function(s){s.sc=scores(s);});
+
+var SEL = STUDIES.slice().sort(function(a,b){return b.sc.overall-a.sc.overall;})[0].id;
+
+/* ---------- renderers -------------------------------------------------------- */
+var $=function(id){return document.getElementById(id);};
+function cur(){return STUDIES.find(function(s){return s.id===SEL;});}
+function pct(x){return Math.round(x*100)+'%';}
+
+function renderKpis(){
+  var atRisk=STUDIES.filter(function(s){return s.sc.overall>66;}).length;
+  var watch=STUDIES.filter(function(s){return s.sc.overall>33&&s.sc.overall<=66;}).length;
+  var totQ=STUDIES.reduce(function(a,s){return a+s.data.openQ;},0);
+  var avgDel=Math.round(STUDIES.reduce(function(a,s){var d=Object.values(s.deliv);return a+d.reduce(function(p,c){return p+c.done;},0)/d.reduce(function(p,c){return p+c.total;},0);},0)/STUDIES.length*100);
+  var tlfFin=STUDIES.reduce(function(a,s){return a+s.tlf.finalized;},0), tlfPlan=STUDIES.reduce(function(a,s){return a+s.tlf.planned;},0);
+  var nextDBL=STUDIES.filter(function(s){return s.daysToDBL>0;}).sort(function(a,b){return a.daysToDBL-b.daysToDBL;})[0];
+  var k=[
+    {v:STUDIES.length,l:'Active studies',c:''},
+    {v:atRisk,l:'At risk',c:atRisk?'r':'g'},
+    {v:watch,l:'On watch',c:watch?'a':'g'},
+    {v:totQ,l:'Open queries (portfolio)',c:''},
+    {v:avgDel+'%',l:'Avg deliverables complete',c:avgDel>70?'g':avgDel>45?'a':'r'},
+    {v:nextDBL?nextDBL.daysToDBL+'d':'—',l:'Next DB lock'+(nextDBL?' ('+nextDBL.id+')':''),c:nextDBL&&nextDBL.daysToDBL<14?'a':''}
+  ];
+  $('kpis').innerHTML=k.map(function(x){return '<div class="kpi"><div class="v '+x.c+'">'+x.v+'</div><div class="l">'+x.l+'</div></div>';}).join('');
+}
+
+function renderHeat(){
+  var dims=['Timeline','Data','TLF','Resource'];
+  var h='<div class="row"><div></div>'+dims.map(function(d){return '<div class="hd">'+d+'</div>';}).join('')+'</div>';
+  STUDIES.slice().sort(function(a,b){return b.sc.overall-a.sc.overall;}).forEach(function(s){
+    h+='<div class="row"><div class="nm" title="'+s.name+'">'+s.id+'</div>'+dims.map(function(d){
+      var v=s.sc[d];return '<div class="cell" style="background:'+ragColor(v)+'" data-id="'+s.id+'" data-dim="'+d+'">'+Math.round(v)+'</div>';
+    }).join('')+'</div>';
+  });
+  $('heat').innerHTML=h;
+  $('heat').querySelectorAll('.cell').forEach(function(c){c.onclick=function(){SEL=c.dataset.id;openModal(cur(),c.dataset.dim);renderAll();};});
+}
+
+function renderSignals(){
+  var sigs=[];
+  STUDIES.forEach(function(s){
+    if(s.daysToDBL>0&&s.daysToDBL<21&&s.data.openQ>15)
+      sigs.push({sev:s.daysToDBL<10?'r':'a',who:s.id,t:'DB lock at risk',m:s.data.openQ+' open queries with DBL in '+s.daysToDBL+' days'});
+    var qd=s.data.qtrend[7]-s.data.qtrend[4];
+    if(qd>10) sigs.push({sev:qd>25?'r':'a',who:s.id,t:'Query backlog rising',m:'+'+qd+' open queries over the last 3 weeks'});
+    if(repPressure(s)>=.6 && s.tlf.finalized/s.tlf.planned<.6)
+      sigs.push({sev:s.tlf.finalized/s.tlf.planned<.35?'r':'a',who:s.id,t:'TLF production behind',m:Math.round(100*s.tlf.finalized/s.tlf.planned)+'% finalized while in '+s.phase});
+    if(repPressure(s)>=.6 && s.prog.dblProgPct<60)
+      sigs.push({sev:'a',who:s.id,t:'Double-programming lag',m:s.prog.dblProgPct+'% double-programmed, '+s.prog.discrep+' open discrepancies'});
+    if(s.ms.filter(function(m){return m.s==='risk';}).length)
+      sigs.push({sev:'r',who:s.id,t:'Milestone overdue',m:s.ms.filter(function(m){return m.s==='risk';}).map(function(m){return m.k;}).join(', ')+' past due'});
+  });
+  sigs.sort(function(a,b){return (b.sev==='r')-(a.sev==='r');});
+  $('signals').innerHTML = sigs.length? sigs.slice(0,9).map(function(x){
+    return '<div class="sig"><div class="pip '+(x.sev==='r'?'bg-r':'bg-a')+'"></div><div><div class="t"><span class="who">'+x.who+'</span> — '+x.t+'</div><div class="m">'+x.m+'</div></div></div>';
+  }).join('') : '<div class="m" style="color:var(--mut);padding:8px">No operational signals above threshold.</div>';
+}
+
+function renderMs(){
+  var s=cur(); $('msTitle').innerHTML='Milestone track <span class="hint">'+s.id+' · '+s.phase+'</span>';
+  $('ms').innerHTML=s.ms.map(function(m){
+    return '<div class="step"><div class="dot '+m.s+'"></div><div class="k">'+m.k+'</div><div class="d">'+m.d+'</div></div>';
+  }).join('');
+}
+
+function spark(arr,w,h){
+  var mx=Math.max.apply(null,arr)||1,mn=Math.min.apply(null,arr);
+  var pts=arr.map(function(v,i){return (i/(arr.length-1)*w).toFixed(1)+','+(h-((v-mn)/((mx-mn)||1))*h).toFixed(1);}).join(' ');
+  return '<svg class="spark" width="'+w+'" height="'+h+'"><polyline fill="none" stroke="#4ea8ff" stroke-width="1.6" points="'+pts+'"/></svg>';
+}
+function renderData(){
+  var s=cur(),d=s.data;
+  var dblTxt = s.daysToDBL>0? s.daysToDBL+' days to DB lock' : 'DB lock '+(s.phase==='Startup'?'not scheduled':'reached');
+  $('data').innerHTML=
+    '<div class="barrow"><span class="lab">Data clean</span><div class="bar"><i style="width:'+pct(d.cleanPct)+';background:'+ragColor((1-d.cleanPct)*100)+'"></i></div><span class="num">'+pct(d.cleanPct)+'</span></div>'+
+    '<div class="barrow"><span class="lab">SDV</span><div class="bar"><i style="width:'+pct(d.sdvPct)+';background:'+ragColor((1-d.sdvPct)*120)+'"></i></div><span class="num">'+pct(d.sdvPct)+'</span></div>'+
+    '<div class="barrow"><span class="lab">Open queries</span><div>'+spark(d.qtrend,150,26)+'</div><span class="num '+(d.openQ>40?'a':'')+'">'+d.openQ+'</span></div>'+
+    '<div style="margin-top:8px;font-size:12.5px;color:'+(s.daysToDBL>0&&s.daysToDBL<21?'var(--amber)':'var(--mut)')+'">'+dblTxt+'</div>';
+}
+
+function renderFunnel(){
+  var t=cur().tlf,mx=t.planned;
+  var rows=[['Planned',t.planned],['Programmed',t.programmed],['QC passed',t.qcd],['Finalized',t.finalized]];
+  $('funnel').innerHTML=rows.map(function(r){
+    return '<div class="seg"><div class="lab">'+r[0]+'</div><div class="meter"><i style="width:'+(100*r[1]/mx)+'%"></i></div><div class="n">'+r[1]+'</div></div>';
+  }).join('')+'<div class="legend" style="margin-top:8px">Finalized = QC-passed &amp; signed off. Mirrors the per-study TLF program tracker.</div>';
+}
+
+function renderDeliv(){
+  var s=cur(),h='';
+  Object.keys(s.deliv).forEach(function(p){
+    var x=s.deliv[p],r=x.done/x.total;
+    h+='<div class="barrow"><span class="lab">'+p+'</span><div class="bar"><i style="width:'+pct(r)+';background:'+ragColor((1-r)*90)+'"></i></div><span class="num">'+x.done+'/'+x.total+'</span></div>';
+  });
+  $('deliv').innerHTML=h;
+}
+
+var sortKey='overall',sortDir=-1;
+function renderTable(){
+  var cols=[['id','Study'],['phase','Phase'],['design','Design'],['owner','Lead'],['enrolled','Enrolled'],
+            ['openQ','Open Q'],['cleanPct','Clean'],['tlfFin','TLF final'],['overall','Risk']];
+  $('tbl').querySelector('thead').innerHTML='<tr>'+cols.map(function(c){return '<th data-k="'+c[0]+'">'+c[1]+(sortKey===c[0]?(sortDir<0?' ▾':' ▴'):'')+'</th>';}).join('')+'</tr>';
+  var rows=STUDIES.map(function(s){return {s:s,
+    id:s.id,phase:s.phase,design:s.design,owner:s.owner,enrolled:s.enrolled+'/'+s.target,
+    openQ:s.data.openQ,cleanPct:s.data.cleanPct,tlfFin:s.tlf.finalized/s.tlf.planned,overall:s.sc.overall};});
+  rows.sort(function(a,b){var x=a[sortKey],y=b[sortKey];return (x>y?1:x<y?-1:0)*sortDir;});
+  $('tbl').querySelector('tbody').innerHTML=rows.map(function(r){var s=r.s;
+    return '<tr data-id="'+s.id+'"><td><b>'+s.id+'</b></td><td>'+s.phase+'</td><td>'+s.design+'</td><td>'+s.owner+'</td>'+
+      '<td>'+r.enrolled+'</td><td class="'+(s.data.openQ>40?'a':'')+'">'+s.data.openQ+'</td><td>'+pct(s.data.cleanPct)+'</td>'+
+      '<td>'+pct(r.tlfFin)+'</td><td><span class="rag bg-'+rag(s.sc.overall)+'"></span> '+Math.round(s.sc.overall)+'</td></tr>';
+  }).join('');
+  $('tbl').querySelectorAll('th').forEach(function(th){th.onclick=function(){var k=th.dataset.k;if(sortKey===k)sortDir*=-1;else{sortKey=k;sortDir=-1;}renderTable();};});
+  $('tbl').querySelectorAll('tbody tr').forEach(function(tr){tr.onclick=function(){SEL=tr.dataset.id;openModal(cur());renderAll();};});
+}
+
+function openModal(s,dim){
+  var sc=s.sc;
+  var box='<button class="closex" onclick="document.getElementById(\'modal\').classList.remove(\'open\')">×</button>'+
+    '<h3>'+s.id+' — '+s.name+'</h3><div class="m" style="color:var(--mut)">'+s.design+' · '+s.phase+' · Lead '+s.owner+(dim?' · focus: '+dim:'')+'</div>'+
+    '<div class="kv">'+
+      [['Overall risk',Math.round(sc.overall)+' ('+({g:'on track',a:'watch',r:'at risk'})[rag(sc.overall)]+')'],
+       ['Timeline / Data',Math.round(sc.Timeline)+' / '+Math.round(sc.Data)],
+       ['TLF / Resource',Math.round(sc.TLF)+' / '+Math.round(sc.Resource)],
+       ['Enrollment',s.enrolled+' / '+s.target+' ('+s.sites+' sites)'],
+       ['Open queries',s.data.openQ+'  ·  clean '+pct(s.data.cleanPct)+'  ·  SDV '+pct(s.data.sdvPct)],
+       ['Days to DB lock',s.daysToDBL>0?s.daysToDBL:'—'],
+       ['TLF planned→final',s.tlf.planned+' → '+s.tlf.programmed+' → '+s.tlf.qcd+' → '+s.tlf.finalized],
+       ['Double-programmed',s.prog.dblProgPct+'%  ·  '+s.prog.discrep+' discrepancies']
+      ].map(function(x){return '<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>';}).join('')+
+    '</div>'+
+    '<details class="note" open style="margin-top:12px"><summary>Where these numbers would come from</summary>'+
+      'Milestones → CTMS · enrollment/queries/clean/SDV → EDC · TLF funnel → the TLF program tracker · '+
+      'deliverables → the Protocol→CSR deliverables register. This demo is seeded synthetic data; wire each '+
+      'panel to those sources read-only. Operational fields only — no PHI, no participant-level or reported clinical values.</details>';
+  $('modalBox').innerHTML=box;$('modal').classList.add('open');
+}
+$('modal').onclick=function(e){if(e.target===this)this.classList.remove('open');};
+
+function renderSel(){
+  $('studySel').innerHTML=STUDIES.map(function(s){return '<option value="'+s.id+'"'+(s.id===SEL?' selected':'')+'>'+s.id+' — '+s.phase+'</option>';}).join('');
+  $('studySel').onchange=function(){SEL=this.value;renderAll();};
+}
+function renderTrend(){
+  var W=8,q=[],f=[];
+  for(var w=0;w<W;w++){var qs=0,fs=0;
+    STUDIES.forEach(function(s){qs+=s.data.qtrend[w]; fs+=Math.round(s.tlf.finalized*(0.35+0.65*w/(W-1)));});
+    q.push(qs);f.push(fs);
+  }
+  var vw=1000,vh=150,pad=26;
+  function line(arr,col){var mx=Math.max.apply(null,arr)||1;
+    var pts=arr.map(function(v,i){return (pad+i/(arr.length-1)*(vw-2*pad)).toFixed(1)+','+(vh-pad-(v/mx)*(vh-2*pad)).toFixed(1);}).join(' ');
+    return '<polyline fill="none" stroke="'+col+'" stroke-width="2.5" points="'+pts+'"/>';}
+  $('trend').innerHTML=
+    '<svg viewBox="0 0 '+vw+' '+vh+'" width="100%" height="150" preserveAspectRatio="none" style="display:block">'+
+    line(q,'#e6b450')+line(f,'#4ea8ff')+'</svg>'+
+    '<div class="legend"><span style="color:#e6b450">● Open queries (portfolio): now '+q[W-1]+'</span>'+
+    '<span style="color:#4ea8ff">● TLFs finalized (cumulative): now '+f[W-1]+'</span>'+
+    '<span>oldest → newest · each point = 1 week (two scales)</span></div>';
+}
+function renderAll(){renderKpis();renderHeat();renderSignals();renderTrend();renderMs();renderData();renderFunnel();renderDeliv();renderTable();renderSel();}
+renderAll();
+$('foot').innerHTML='Study Lifecycle Monitor · self-contained, offline · <b>SIMULATED DEMO DATA</b> (seeded, reproducible) — not real study data. '+
+  'Operational monitoring only: no PHI, no participant-level data, no reported clinical numbers; reported values always come from validated tools. '+
+  'Transparent operational scoring — no predictive model and no experimental components.';
+</script>
+</body>
+</html>

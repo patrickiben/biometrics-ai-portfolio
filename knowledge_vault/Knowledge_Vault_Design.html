@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Knowledge Vault for Study Operations — design note</title>
+<style>
+:root{--bg:#0B0E14;--panel:#141925;--panel2:#1b2230;--text:#E6EAF2;--muted:#8b95a8;--line:#27303f;
+  --accent:#F2C14E;--teal:#56C2C0;--blue:#7AA2F7;--violet:#9D7CD8;--green:#6FCF97;--rose:#E5677B;}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse 90% 60% at 50% 0%,#121829 0%,#0B0E14 60%);
+  color:var(--text);font-family:-apple-system,"Segoe UI",Inter,Arial,sans-serif;line-height:1.6}
+.wrap{max-width:980px;margin:0 auto;padding:30px 22px 90px}
+.badge{display:inline-block;background:#6b46c1;color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.04em;
+  padding:5px 12px;border-radius:20px;margin-bottom:14px}
+h1{font-family:Georgia,serif;font-size:34px;margin:0 0 8px;line-height:1.12}
+.lede{font-size:17px;color:#cdd4e1;max-width:760px;margin:0 0 18px}
+.cta{display:flex;gap:11px;flex-wrap:wrap;margin:18px 0 6px}
+.cta a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:14px;
+  padding:11px 18px;border-radius:10px}
+.cta a.prim{background:var(--accent);color:#26200a}
+.cta a.ghost{background:#10141e;color:var(--text);border:1px solid var(--line)}
+.cta a:hover{opacity:.92}
+.shot{margin:22px 0 6px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0b0e14;
+  box-shadow:0 20px 60px #00000055}
+.shot img{display:block;width:100%}
+.cap{font-size:12px;color:var(--muted);margin:8px 2px 0}
+h2{font-family:Georgia,serif;font-size:23px;margin:42px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+h2 .n{color:var(--accent);font-size:15px;margin-right:9px;font-family:-apple-system,Arial,sans-serif}
+.sub{color:var(--muted);font-size:14px;margin:0 0 16px}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
+.card .ic{font-size:20px}
+.card h3{font-size:15px;margin:8px 0 5px}
+.card p{font-size:13px;color:#c2cad8;margin:0}
+.card .badge2{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 7px;margin-top:9px}
+.callout{border-radius:12px;padding:15px 18px;margin:18px 0;font-size:14.5px}
+.callout.rule{background:#2a1414;border:1px solid #5a2b2b;border-left:4px solid var(--rose)}
+.callout.rule b{color:#ffb4a8}
+.callout.honest{background:#241c08;border:1px solid #5a4a1f;border-left:4px solid var(--accent)}
+.callout.honest b{color:var(--accent)}
+.callout.tip{background:#0e2424;border:1px solid #1d4a48;border-left:4px solid var(--teal)}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:10px 13px;text-align:left;vertical-align:top}
+th{background:#10141e;color:#cdd4e1;font-weight:600}
+td b{color:var(--text)} .rec{color:var(--green);font-weight:700}
+ul{padding-left:20px}li{margin:5px 0;font-size:14.5px}
+.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
+.steps li{position:relative;padding:4px 0 16px 44px;margin:0}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;
+  background:var(--accent);color:#26200a;border-radius:50%;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+.steps li b{font-size:15px}
+pre{position:relative;background:#0c1019;border:1px solid var(--line);border-left:3px solid var(--teal);
+  border-radius:9px;padding:12px 14px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;color:#d6deea;margin:8px 0}
+.legend-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#c2cad8}
+.lg .sw{width:10px;height:10px;border-radius:50%}
+.footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.footer b{color:#9aa3b6}
+@media(max-width:720px){.cards{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="badge">⚠ PROPOSED — a capability to evaluate, not current practice</div>
+  <h1>Knowledge Vault for Study Operations</h1>
+  <p class="lede">A local‑first <b>Markdown vault</b> — the same idea behind Obsidian, Foam and Logseq — that turns our Study Knowledge Base into a <b>navigable, linked map</b> of a study's operational knowledge, and doubles as a clean corpus for the on‑prem model. This note shows what it is, how it slots into what we already have, the governance, and which tool to pick.</p>
+
+  <div class="cta">
+    <a class="prim" href="Knowledge_Graph.html">◉ Open the live knowledge graph</a>
+    <a class="ghost" href="vault/">📁 Browse the 28‑note vault</a>
+  </div>
+
+  <div class="shot">
+    <img src="graph_preview.png" alt="The CP-101 study knowledge graph — a gold hub at the centre with colour-coded clusters of linked notes arranged in named regions">
+  </div>
+  <p class="cap">The interactive graph of a synthetic study (CP‑101). Hub at the centre; colour = note type; clusters settle into named regions. Hover to focus a note and its links; click for the full note + backlinks.</p>
+  <div class="legend-row">
+    <span class="lg"><span class="sw" style="background:#F2C14E"></span>Hub</span>
+    <span class="lg"><span class="sw" style="background:#7AA2F7"></span>Design</span>
+    <span class="lg"><span class="sw" style="background:#9D7CD8"></span>Statistics</span>
+    <span class="lg"><span class="sw" style="background:#56C2C0"></span>Data</span>
+    <span class="lg"><span class="sw" style="background:#E0A458"></span>Process</span>
+    <span class="lg"><span class="sw" style="background:#E5677B"></span>Safety</span>
+    <span class="lg"><span class="sw" style="background:#6FCF97"></span>Supply</span>
+    <span class="lg"><span class="sw" style="background:#E08FB8"></span>Program</span>
+    <span class="lg"><span class="sw" style="background:#8A93A6"></span>Reference</span>
+  </div>
+
+  <h2><span class="n">01</span>What it actually is</h2>
+  <p class="sub">Not a new system — a folder of plain text the rest of our stack can already use.</p>
+  <div class="cards">
+    <div class="card"><div class="ic">🔗</div><h3>Linked notes</h3><p>Each artifact is a Markdown note joined to others with <code>[[wikilinks]]</code>. Backlinks answer "what references this DTA?" in one click.</p></div>
+    <div class="card"><div class="ic">🕸️</div><h3>Graph view</h3><p>The links draw a map of the study. Navigate by relationship, onboard fast, and spot orphaned or missing connections.</p></div>
+    <div class="card"><div class="ic">🤖</div><h3>RAG‑ready</h3><p>Clean Markdown is the ideal corpus for the on‑prem model — "ask the study" with grounded, human‑gated answers.</p></div>
+  </div>
+
+  <h2><span class="n">02</span>One vault, three jobs</h2>
+  <p class="sub">It earns its place by doing three things at once, all over the same files.</p>
+  <div class="cards">
+    <div class="card"><h3>① A graph layer over the Study KB</h3><p>The auto‑ingest engine writes each entry as a <code>.md</code> note linked to a per‑study hub — open the folder and the graph is just <i>there</i>.</p><span class="badge2" style="background:#1d3a2a;color:#7fe0a8">extends what we built</span></div>
+    <div class="card"><h3>② A living team knowledge base</h3><p>SOPs, naming conventions, the glossary, lessons‑learned — editable, cross‑linked notes. The HTML wikis stay as the read‑only published face.</p><span class="badge2" style="background:#3a2a14;color:#e0b070">grows over time</span></div>
+    <div class="card"><h3>③ The corpus for the local model</h3><p>Point the frozen on‑prem SLM at the vault. Same retrieval pattern as the local‑SLM operating wiki — and it still <b>never sources a number</b>.</p><span class="badge2" style="background:#14243a;color:#8fb6e0">feeds the SLM</span></div>
+  </div>
+
+  <h2><span class="n">03</span>How it wires into what we have</h2>
+  <p class="sub">Outlook → the existing auto‑ingest → a Markdown vault → people <i>and</i> the model read the same files.</p>
+  <pre>  Outlook study mailbox  ──▶  Auto-ingest engine        ──▶   Markdown vault (.md + [[links]] + git)
+   (ops emails only)            (= your Study KB)               ├─ Ingested  · read-only
+                                                                └─ Team notes · editable
+                                                                       │
+                                          ┌────────────────────────────┴───────────────────────────┐
+                                          ▼                                                          ▼
+                              Obsidian / Foam / Logseq                                     Local frozen SLM
+                              backlinks · search · graph                                   RAG over the vault</pre>
+  <p style="font-size:13.5px;color:#c2cad8">Plain Markdown + <b>git</b> gives versioning and a frozen history — which is exactly the sovereignty / reproducibility story the rest of the program already makes.</p>
+
+  <div class="callout rule">
+    <b>Same governance as the Study KB — non‑negotiable.</b> The vault is <b>operations only</b>: never PHI, participant‑level data, unblinded assignments, or sponsor‑restricted IP. Every note carries an "informational ops support — <b>not a source of record</b>" line. Reported and regulated numbers come from validated tools (Phoenix WinNonlin, Pinnacle 21, the validated pipeline) and a human signs them — <b>the vault never produces a number.</b> A graph holds the wrong thing as easily as a mailbox does, so the inbound‑rule + watermark governance carries over unchanged.
+  </div>
+
+  <h2><span class="n">04</span>Which tool — and why it barely matters</h2>
+  <p class="sub">The vault is just Markdown files in git. You own the files; the app is only a viewer you can swap.</p>
+  <table>
+    <tr><th>Tool</th><th>Licence / IT story</th><th>Strengths</th><th>Watch‑outs</th></tr>
+    <tr><td><b>Foam</b> <span class="rec">◀ recommended start</span></td><td>MIT, free. Runs inside <b>VS Code</b> — which biostatisticians often already have approved.</td><td>Lowest‑friction IT path; wikilinks + graph; lives next to your code.</td><td>Graph is good, not as lush as Obsidian's.</td></tr>
+    <tr><td><b>Obsidian</b></td><td>Free for personal; <b>commercial‑use licence</b> required at work.</td><td>The best graph/UX and plugin ecosystem; the most polished demo.</td><td>Third‑party app + a licence; community plugins are unvetted code — allow core + a small vetted set, or none.</td></tr>
+    <tr><td><b>Logseq</b></td><td>Open‑source, free.</td><td>Outliner‑style; strong daily‑notes / journaling.</td><td>Different mental model; smaller ecosystem.</td></tr>
+  </table>
+  <div class="callout tip">The bundled <b><a href="Knowledge_Graph.html" style="color:var(--teal)">Knowledge_Graph.html</a></b> needs <i>no install at all</i> — it's a self‑contained viewer over the same vault. Use it for demos and read‑only sharing; use Foam/Obsidian when people need to edit.</div>
+
+  <h2><span class="n">05</span>Honest about the graph</h2>
+  <div class="callout honest">
+    <b>The graph is for navigation, onboarding, and spotting gaps — not analysis.</b> It's genuinely useful (and it demos beautifully), but the load‑bearing value is the <b>linked notes + search + RAG</b>, not the picture. And to be explicit: this is standard knowledge‑management graphing — it has nothing to do with any research methods, and is kept entirely separate from them.
+  </div>
+
+  <h2><span class="n">06</span>Try it · reproduce it</h2>
+  <ol class="steps">
+    <li><b>See it</b> — open the live graph; hover a note to focus it, click for the full note and its backlinks, use the legend to isolate a note type.
+      <pre>open Knowledge_Graph.html</pre></li>
+    <li><b>Open it as a real vault</b> — point Obsidian or Foam at the <code>vault/</code> folder; its own graph view will match this one (same <code>[[links]]</code>).</li>
+    <li><b>Regenerate it</b> — the vault is generated from a single source of truth (<code>graph_model.json</code>), so the graph is built, not hand‑drawn:
+      <pre>python3 assemble_vault.py        # rebuild the 28 notes
+python3 kb_to_vault.py --demo    # production path: live Study KB entries → vault</pre></li>
+  </ol>
+
+  <div class="footer">
+    <b>Operations only</b> · no PHI, participant‑level, or unblinded data · reported numbers come from validated tools — never this vault.<br>
+    Part of the AI Biometrics Program · a <b>proposed</b> capability, pending management approval — not current practice.
+  </div>
+</div>
+
+<script>
+/* portable reproducibility kit: copy-buttons + Print/PDF (theme-agnostic) */
+(function(){
+  var css='.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 "Segoe UI",Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.85}.repro-copybtn:hover{opacity:1}.repro-copybtn.ok{background:#1f9d55}.repro-print{position:fixed;bottom:16px;right:16px;background:#F2C14E;color:#26200a;border:none;border-radius:22px;font:700 13px "Segoe UI",Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);z-index:60}@media print{.repro-copybtn,.repro-print{display:none!important}.cta,.shot{break-inside:avoid}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+  var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+  document.querySelectorAll('pre').forEach(function(pre){var t=pre.innerText.trim();if(!t)return;
+    pre.style.position='relative';var b=document.createElement('button');b.className='repro-copybtn';b.type='button';b.textContent='Copy';
+    b.addEventListener('click',function(){navigator.clipboard&&navigator.clipboard.writeText(t).then(function(){b.textContent='Copied ✓';b.classList.add('ok');setTimeout(function(){b.textContent='Copy';b.classList.remove('ok');},1400);});});
+    pre.appendChild(b);});
+  var p=document.createElement('button');p.className='repro-print';p.type='button';p.textContent='🖨 Print / PDF';
+  p.addEventListener('click',function(){window.print();});document.body.appendChild(p);
+})();
+</script>
+</body>
+</html>

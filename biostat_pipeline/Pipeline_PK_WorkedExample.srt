@@ -1,0 +1,135 @@
+1
+00:00:00,000 --> 00:00:14,758
+Let me follow one deliverable — the Phase-1 PK package on Study CP-101 — all the way from Protocol to CSR, and show exactly what each stage hands to AI, to a validated tool, and to a human.
+
+2
+00:00:15,058 --> 00:00:24,240
+The rule never changes: sensitivity decides the engine, validated tools own every reported number, and a statistician signs.
+
+3
+00:00:25,240 --> 00:00:34,550
+The PK package is three things: the ADPC dataset, the PK tables and figures, and the PK section of the CSR.
+
+4
+00:00:34,850 --> 00:00:37,384
+At every stage the same rule applies.
+
+5
+00:00:37,684 --> 00:00:44,352
+Anything touching unmasked, participant-level data runs on the local model, with zero egress.
+
+6
+00:00:44,652 --> 00:00:50,808
+Hard reasoning on de-identified text goes to cloud Claude, under a business-associate agreement.
+
+7
+00:00:51,108 --> 00:00:57,055
+And every reported number comes from a validated tool, QC'd, and signed by a human.
+
+8
+00:00:58,055 --> 00:01:01,409
+Stage one, the statistical analysis plan.
+
+9
+00:01:01,709 --> 00:01:18,306
+Cloud Claude drafts the PK statistical-methods prose from the protocol and the SAP shell — the NCA parameters, the BLQ rule, nominal versus actual time, the populations — with placeholders for anything study-specific.
+
+10
+00:01:18,606 --> 00:01:19,897
+It invents nothing.
+
+11
+00:01:20,197 --> 00:01:23,261
+There is no number here yet; this is text.
+
+12
+00:01:23,561 --> 00:01:31,396
+The statistician reviews every derivation rule, owns the estimand and endpoint decisions, and signs the SAP.
+
+13
+00:01:32,396 --> 00:01:42,067
+Stage two, building the ADPC dataset on the real, unmasked PK data — so this runs on the local model, zero egress.
+
+14
+00:01:42,367 --> 00:01:51,506
+It drafts the spec and code: the BLQ handling, nominal and actual time, deviation flags, the mapping to ADPC.
+
+15
+00:01:51,806 --> 00:01:57,059
+Conformance comes from Pinnacle 21 — a validated tool, not the model.
+
+16
+00:01:57,359 --> 00:02:06,007
+Then an independent program double-checks ADPC, discrepancies are resolved, and the statistician signs and freezes it.
+
+17
+00:02:07,007 --> 00:02:10,362
+Stage three, the analysis — the numbers.
+
+18
+00:02:10,662 --> 00:02:23,466
+This is the line nobody crosses: the reported NCA parameters, Cmax, AUC, half-life, clearance, come from Phoenix WinNonlin, the validated tool.
+
+19
+00:02:23,766 --> 00:02:32,182
+The local model only assists the QC — it sanity-checks the profiles and flags outliers for review, on the unmasked data.
+
+20
+00:02:32,482 --> 00:02:34,899
+It never produces a reported value.
+
+21
+00:02:35,199 --> 00:02:43,700
+A second analyst double-programs the parameters, the medical monitor reviews the emerging PK, and the statistician signs.
+
+22
+00:02:44,700 --> 00:02:48,867
+Stage four, the tables, listings, and figures.
+
+23
+00:02:49,167 --> 00:02:57,804
+The model drafts the shells, titles, and footnotes, and checks wording consistency across outputs — text only.
+
+24
+00:02:58,104 --> 00:03:06,740
+The actual tables and figures are produced by the validated SAS programs, from the frozen ADPC and the NCA results.
+
+25
+00:03:07,040 --> 00:03:11,422
+QC ties every cell back to source, and the package is signed.
+
+26
+00:03:12,422 --> 00:03:14,686
+Stage five, the CSR.
+
+27
+00:03:14,986 --> 00:03:27,159
+Cloud Claude drafts the PK methods and results narrative from the de-identified summary outputs, consistent with the tables and citing them — it copies numbers, it never computes them.
+
+28
+00:03:27,459 --> 00:03:30,406
+The signed TLFs remain the source of truth.
+
+29
+00:03:30,706 --> 00:03:35,619
+A medical writer and the statistician finalize and sign the regulated text.
+
+30
+00:03:36,619 --> 00:03:43,933
+So across the whole package, AI did the drafting and the QC; validated tools and humans owned the numbers.
+
+31
+00:03:44,233 --> 00:03:51,186
+Sensitivity routed the engine — unmasked data stayed local, de-identified reasoning went to cloud.
+
+32
+00:03:51,486 --> 00:04:01,839
+Phoenix computed the NCA, Pinnacle 21 validated conformance, SAS produced the TLFs — the model never produced a reported value.
+
+33
+00:04:02,139 --> 00:04:04,091
+And a human signed every gate.
+
+34
+00:04:04,391 --> 00:04:12,247
+Faster drafting, tighter QC, the data staying put, and the regulated outputs unchanged in their provenance.

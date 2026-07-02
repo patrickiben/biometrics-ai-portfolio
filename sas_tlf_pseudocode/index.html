@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAS TLF Pseudocode Library</title>
+<style>
+  :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--r:12px}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0a0d16 70%);color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:15px;line-height:1.62}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 22px 70px}
+  header.hero{padding:24px 0 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .home{color:var(--mut);font-size:12.5px} .home a{color:var(--mut)}
+  h1{font-size:25px;margin:8px 0 6px;font-weight:680}
+  .sub{color:var(--mut);font-size:14.5px;max-width:840px;margin:0}
+  h2{font-size:18px;font-weight:660;margin:26px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:14.5px;color:#cfe0ff;margin:18px 0 6px}
+  p{margin:9px 0} ul,ol{margin:9px 0;padding-left:22px} li{margin:4px 0} strong{color:#fff}
+  code{background:#0e1422;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12.8px;color:#cfe3ff;font-family:"SFMono-Regular",Consolas,monospace}
+  pre{background:#0c1426;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:9px;padding:12px 14px;overflow:auto;font-size:12.6px;line-height:1.5}
+  pre code{background:none;border:none;padding:0;color:#d6e6ff}
+  table.t{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+  table.t th,table.t td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.t th{color:var(--mut);font-weight:600;background:#0e1422}
+  table.t tr:hover td{background:#0e1626}
+  .note,.warn{border-radius:9px;padding:11px 14px;margin:12px 0;font-size:13.6px}
+  .note{background:#0e2230;border:1px solid #235049;border-left:3px solid var(--teal)}
+  .note::before{content:"NOTE";display:block;font-size:10.5px;letter-spacing:.06em;color:var(--teal);font-weight:700;margin-bottom:3px}
+  .warn{background:#241c08;border:1px solid #5a4a1f;border-left:3px solid var(--gold)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#0c1426;border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0;font-size:12.8px}
+  .flow .box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 11px}
+  .flow .arr{color:var(--accent);font-weight:700}
+  .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;margin:8px 0}
+  .files a{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-size:12.5px}
+  .files a:hover{background:#24304e;text-decoration:none}
+  .files a code{background:none;border:none;color:var(--teal);padding:0}
+  .files a .d{color:var(--mut);font-size:11px;display:block}
+  .badge{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:20px;background:#15213f;color:#9dbcff;border:1px solid #2b4a86;vertical-align:middle;margin-left:6px}
+  footer{color:var(--mut);font-size:12.3px;margin-top:30px;border-top:1px solid var(--line);padding-top:14px}
+  .ways{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .ways a{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 13px;font-size:12.5px;color:#cfe0ff}
+  .ways a:hover{background:#24304e;text-decoration:none}
+  .mini{font-size:12.5px;color:var(--mut)}
+  .fill{color:#7a86a6;border-bottom:1px dotted #4a5878;min-width:150px;display:inline-block}
+  .checklist{list-style:none;padding-left:0;margin:10px 0}
+  .checklist li{position:relative;padding:8px 12px 8px 38px;border:1px solid var(--line);border-radius:8px;margin:6px 0;background:var(--panel);cursor:pointer;font-size:13.6px;user-select:none}
+  .checklist li:hover{border-color:#3a4a6e;background:#161d31}
+  .checklist li::before{content:"";position:absolute;left:11px;top:9px;width:17px;height:17px;border:2px solid #57658a;border-radius:4px;background:#0e1422}
+  .checklist li.done{opacity:.62} .checklist li.done span{text-decoration:line-through}
+  .checklist li.done::before{background:var(--green);border-color:var(--green)}
+  .checklist li.done::after{content:"✓";position:absolute;left:14px;top:8px;color:#04130b;font-weight:900;font-size:12.5px}
+  .copybtn{position:absolute;top:7px;right:7px;background:var(--panel2);border:1px solid var(--line);color:#cfe0ff;border-radius:6px;font-size:11px;padding:3px 9px;cursor:pointer;opacity:.85;font-family:inherit}
+  .copybtn:hover{background:#24304e;opacity:1} .copybtn.ok{background:#10331f;color:#7ee0a6;border-color:#2b5a3a}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+  .tools button{background:var(--panel2);border:1px solid var(--line);color:#cfe0ff;border-radius:20px;padding:6px 14px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .tools button:hover{background:#24304e}
+  @media print{
+    body{background:#fff !important;color:#1a1a1a !important;font-size:11.5pt}
+    .wrap{max-width:100%;padding:0}
+    a{color:#16357a !important} h1,h2,h3,h4,strong,b,.glance .g h4{color:#000 !important}
+    .sub,.mini,p,li,td,th,.wbody p{color:#222 !important}
+    code{background:#eef0f3 !important;color:#0a2a6a !important;border-color:#ccd !important}
+    pre{background:#f5f6f8 !important;color:#111 !important;border-color:#ccd !important;border-left-color:#16357a !important} pre code{color:#111 !important}
+    .note{background:#eef7f5 !important;border-color:#9ccfc7 !important;color:#173a35 !important}
+    .warn{background:#fdf6e3 !important;border-color:#d9c690 !important;color:#5a4a1f !important}
+    .glance .g{background:#f6f7f9 !important;border-color:#dde !important} .glance .g p{color:#333 !important} .glance .g .n{color:#9a6a10 !important}
+    .checklist li{background:#f6f7f9 !important;border-color:#dde !important;color:#222 !important} .checklist li span{color:#222 !important;text-decoration:none !important}
+    table.t th{background:#eef0f3 !important} table.t th,table.t td{border-color:#dde !important}
+    .wnum{background:#caa24a !important;color:#241500 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .ways,#skb,#try>p,#try>h2+p,.skb-reset,.copybtn,.tools,footer,.checklist li::before,.checklist li::after{display:none !important}
+    #try>h2::after{content:" (interactive — omitted in print)";font-size:12px;color:#777;font-weight:400}
+    .shot,.wstep,.glance .g,table.t,.note,.warn{break-inside:avoid}
+    .badge{color:#333 !important;background:#eee !important;border-color:#ccc !important}
+    h2{break-after:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style></head><body><div class="wrap">
+
+<header class="hero">
+  <div class="home"><a href="../START_HERE.html">&larr; Program home</a></div>
+  <h1>SAS TLF Pseudocode Library <span class="badge">217 TLF PROGRAMS</span></h1>
+  <p class="sub">ADaM-based SAS pseudocode for every Table, Listing, and Figure in an early-phase clinical-pharmacology study &mdash; a complete, separate set per study design (parallel, crossover, single-sequence, SAD, MAD) plus the shared setup macros.</p>
+</header>
+
+<div class="warn"><strong>Status &mdash; illustrative pseudocode / skeleton, not validated software.</strong> These programs are spec / double-programming scaffolds, not validated production code. Nothing here originates a number: reported numbers come only from validated ADaM + double-programmed code per SOP, never from an LLM. All deliverables use <strong>participant</strong> (CDISC <code>USUBJID</code>/<code>SUBJID</code> preserved in code only).</div>
+
+<p>ADaM-based SAS <strong>pseudocode</strong> for every Table, Listing, and Figure (TLF) in an early-phase clin-pharm study, with a <strong>complete separate set per study design</strong>. Illustrative structure for spec / double-programming &mdash; not validated production code. Reported numbers come from validated ADaM + double-programmed code per SOP; nothing here originates a number.</p>
+
+<div class="ways">
+  <a href="#start">🧰 Before you start</a>
+  <a href="#run">▶ How to run</a>
+  <a href="#designs">📁 Designs</a>
+  <a href="#flow">🔧 How each program runs</a>
+  <a href="#inventory">📋 TLF inventory</a>
+  <a href="#trouble">🆘 Troubleshooting</a>
+  <a href="#code">💻 Browse the code</a>
+</div>
+
+<h2 id="start">Before you start</h2>
+<div class="note"><strong>You'll need:</strong> <strong>SAS 9.4+</strong> (or SAS Studio) on a machine that can reach your study's CDISC <strong>ADaM datasets</strong> &nbsp;·&nbsp; the relevant <strong>ADaM tables for the TLF you're running</strong> — at minimum <code>ADSL</code>, plus the domain the program reads (<code>ADAE</code> for AE tables, <code>ADLB</code> for labs, <code>ADVS</code>/<code>ADEG</code> for vitals/ECG, <code>ADPC</code>/<code>ADPP</code> for PK, <code>ADPD</code> for PD, <code>ADIS</code> for immunogenicity, <code>ADEX</code> for exposure) &nbsp;·&nbsp; <strong>write access to an output folder</strong> for the result datasets &nbsp;·&nbsp; the study's <strong>format catalog</strong> (treatment order, AE severity, lab ranges) referenced by <code>%setup</code>. No internet, no install beyond SAS itself. <span class="mini">These are <strong>pseudocode skeletons</strong> — open one, point a <code>LIBNAME</code> at <em>your</em> ADaM, and complete the spec; don't expect a clean run out of the box.</span></div>
+
+<h2 id="run">How to run a program</h2>
+<p>There's <strong>no single command-line driver</strong> — each <code>.sas</code> is one self-contained TLF program. The pattern is the same for all 217: <strong>open it in SAS &rarr; point a <code>LIBNAME</code> at your ADaM &rarr; submit the program</strong>. Each program already <code>%include</code>s the shared macros and calls <code>%setup</code> / <code>%designvars</code> for you, so the two things you edit are the <strong>ADaM path</strong> and the <strong>output path</strong> in the <code>%setup</code> call near the top.</p>
+
+<p><strong>Quick-start checklist</strong> &mdash; click each as you finish it:</p>
+<ul class="checklist" id="qsc">
+  <li><span>Open the program for the TLF you want, in the folder for your study's <strong>design</strong> (e.g. <code>parallel/t_demographics.sas</code>)</span></li>
+  <li><span>Edit the <code>%setup(...)</code> line: set <code>adam=</code> to your ADaM library path and <code>out=</code> to your output folder</span></li>
+  <li><span>Confirm <code>%designvars(design=...)</code> matches the folder (e.g. <code>PARALLEL</code> for <code>parallel/</code>)</span></li>
+  <li><span>Make sure your study <strong>format catalog</strong> is available to <code>%setup</code> (treatment order, severity, lab ranges)</span></li>
+  <li><span>Submit the program in SAS; check the log for <code>%include</code>/<code>%setup</code>/<code>%designvars</code> resolving cleanly</span></li>
+  <li><span>Open the output dataset / TLF and reconcile it against the validated (double-programmed) result per SOP</span></li>
+</ul>
+<div class="tools">
+  <button type="button" onclick="window.print()">🖨 Print / save as PDF</button>
+  <button type="button" id="qscReset">↺ Reset checklist</button>
+</div>
+
+<h3>Run it</h3>
+<p>Either edit the <code>%setup</code> line inside the program and submit it directly, or drive it from a tiny wrapper that sets the libname and <code>%include</code>s the program. Both do the same thing:</p>
+<pre><code>/* --- run one TLF program from a wrapper (SAS 9.4+) --------------- */
+libname adam "/data/cp101/adam" access=readonly;   /* your ADaM datasets   */
+libname tfl  "/data/cp101/tfl";                     /* your output folder   */
+
+/* submit a program from the folder for your study's design:               *
+ *   parallel/  crossover/  single_sequence/  sad/  mad/                    */
+%include "parallel/t_demographics.sas";   /* one program -> one output      */
+
+/* — or, equivalently, open parallel/t_demographics.sas in SAS, edit its    *
+ *   %setup(study=CP-101, adam=/data/cp101/adam, out=/data/cp101/tfl);       *
+ *   line to your paths, and just submit the whole program. —               */</code></pre>
+<div class="note">Each program's own header shows the canonical call sequence: <code>%include "../00_setup_macros.sas";</code> then <code>%setup(study=, adam=, out=);</code> then <code>%designvars(design=&lt;folder&gt;);</code> then the TLF body. Run from the design folder (or adjust the relative <code>../</code> path to <code>00_setup_macros.sas</code>). Reported numbers always come from validated ADaM + double-programmed code per SOP &mdash; never from this scaffold or an LLM.</div>
+
+<h2 id="designs">Designs (one folder each &mdash; full set per design)</h2>
+<table class="t">
+  <thead><tr><th>Folder</th><th>Design</th><th>Key analysis differences</th></tr></thead>
+  <tbody>
+    <tr><td><code>parallel/</code></td><td>Parallel-group</td><td>Between-group; treatment = <code>TRT01A</code>/<code>TRT01AN</code></td></tr>
+    <tr><td><code>crossover/</code></td><td>Crossover (2&times;2, Williams)</td><td>Within-participant; by <code>APERIOD</code>/<code>TRTSEQP</code>; <strong>BE/ANOVA</strong> (mixed model, GMR + 90% CI)</td></tr>
+    <tr><td><code>single_sequence/</code></td><td>Single-/fixed-sequence (e.g. DDI)</td><td>By <code>APERIOD</code>; fixed order, <strong>no</strong> randomized sequence; ratio + 90% CI vs reference period</td></tr>
+    <tr><td><code>sad/</code></td><td>Single Ascending Dose</td><td>Parallel cohorts (dose = treatment); <strong>dose-proportionality</strong> (power model)</td></tr>
+    <tr><td><code>mad/</code></td><td>Multiple Ascending Dose</td><td>Parallel cohorts, repeated dosing; <strong>accumulation ratio</strong> (Rac), steady-state assessment</td></tr>
+  </tbody>
+</table>
+<p>Design is also wired in code via <code>%designvars(design=...)</code> in <code>00_setup_macros.sas</code>, so each design folder's programs differ only where the <strong>statistics</strong> genuinely differ (PK comparison, by-period/by-sequence safety, dose escalation) &mdash; Tables/Listings of safety are structurally identical, re-pointed to the design's treatment/period variables.</p>
+
+<h2 id="flow">How each program runs</h2>
+<div class="flow">
+  <span class="box"><code>%include 00_setup_macros.sas</code></span>
+  <span class="arr">&rarr;</span>
+  <span class="box"><code>%setup</code></span>
+  <span class="arr">&rarr;</span>
+  <span class="box"><code>%designvars(design=&lt;folder&gt;)</code></span>
+  <span class="arr">&rarr;</span>
+  <span class="box">TLF body (one program &rarr; one output)</span>
+</div>
+
+<h2 id="inventory">TLF inventory (each = one program per design)</h2>
+
+<h3>Disposition / Demographics / Exposure (ADSL, ADEX, ADCM, ADMH)</h3>
+<ul>
+  <li><code>t_disposition</code> &middot; <code>t_demographics</code> &middot; <code>t_baseline_characteristics</code> &middot; <code>t_exposure</code></li>
+  <li><code>t_protocol_deviations</code> &middot; <code>t_prior_con_meds</code> &middot; <code>t_medical_history</code> &middot; <code>l_disposition</code></li>
+</ul>
+
+<h3>Safety &mdash; AE (ADAE)</h3>
+<ul>
+  <li><code>t_ae_overview</code> &middot; <code>t_ae_by_soc_pt</code> &middot; <code>t_ae_by_severity</code> &middot; <code>t_ae_by_relationship</code></li>
+  <li><code>t_ae_sae_death_withdrawal</code> &middot; <code>l_ae</code> &middot; <code>l_sae_death</code></li>
+</ul>
+
+<h3>Safety &mdash; Labs (ADLB)</h3>
+<ul>
+  <li><code>t_lab_summary</code> &middot; <code>t_lab_shift</code> &middot; <code>t_lab_marked_abnormal</code> &middot; <code>f_lab_lft_scatter</code> &middot; <code>f_lab_change</code> &middot; <code>l_lab_abnormal</code></li>
+</ul>
+
+<h3>Safety &mdash; Vitals / ECG (ADVS, ADEG)</h3>
+<ul>
+  <li><code>t_vitals_summary</code> &middot; <code>f_vitals_change</code> &middot; <code>l_vitals</code></li>
+  <li><code>t_ecg_summary</code> &middot; <code>t_ecg_qtc_categorical</code> &middot; <code>f_qtc_change</code> &middot; <code>l_ecg</code></li>
+</ul>
+
+<h3>PK (ADPC, ADPP)</h3>
+<ul>
+  <li><code>t_pk_conc_summary</code> &middot; <code>l_pk_conc</code> &middot; <code>f_pk_conc_mean</code> (linear+semilog) &middot; <code>f_pk_conc_individual</code></li>
+  <li><code>t_pk_param_summary</code> &middot; <code>l_pk_param</code> &middot; <code>f_pk_param_boxplot</code></li>
+  <li>design-specific: <code>t_dose_proportionality</code> (SAD) &middot; <code>t_accumulation</code> (MAD) &middot; <code>t_be_anova</code> (crossover/single-seq) &middot; <code>t_pk_param_by_period</code> (crossover/single-seq) &middot; <code>t_dose_proportionality_ss</code> (MAD)</li>
+</ul>
+
+<h3>PD / Biomarkers (ADPD)</h3>
+<ul><li><code>t_pd_summary</code> &middot; <code>f_pd_change</code> &middot; <code>f_pkpd_overlay</code> &middot; <code>l_pd</code></li></ul>
+
+<h3>Immunogenicity (ADIS)</h3>
+<ul><li><code>t_ada_summary</code> &middot; <code>t_ada_impact_pk</code> &middot; <code>l_ada</code></li></ul>
+
+<h2>Naming convention</h2>
+<p><code>t_</code> table &middot; <code>l_</code> listing &middot; <code>f_</code> figure. One program &rarr; one output. Each program <code>%include</code>s <code>00_setup_macros.sas</code>, calls <code>%setup</code> then <code>%designvars(design=&lt;folder&gt;)</code>, then the TLF body.</p>
+
+<h2>ADaM variables relied on (no re-derivation here)</h2>
+<ul>
+  <li><strong>Treatment:</strong> <code>TRT01A/TRT01AN</code> (parallel), <code>TRTA/TRTAN</code>+<code>APERIOD/APERIODC</code>+<code>TRTSEQP</code> (crossover/seq)</li>
+  <li><strong>Populations:</strong> <code>SAFFL</code>, <code>PKFL</code>, <code>ITTFL</code>, <code>RANDFL</code></li>
+  <li><strong>Analysis:</strong> <code>PARAM/PARAMCD</code>, <code>AVAL</code>, <code>CHG</code>, <code>PCHG</code>, <code>BASE</code>, <code>AVISIT/AVISITN</code>, <code>ATPT/ATPTN</code>, <code>ANRIND</code>, <code>BNRIND</code></li>
+  <li><strong>AE:</strong> <code>TRTEMFL</code>, <code>AESOC</code>, <code>AEDECOD</code>, <code>ASEV/AESEVN</code>, <code>AREL</code>, <code>AESER</code>, <code>AESDTH</code>, <code>AEACN</code></li>
+  <li><strong>PK:</strong> <code>ADPC</code> AVAL=conc, <code>NRRELTM</code>/<code>ATPTN</code>=nominal time; <code>ADPP</code> PARAMCD=Cmax/Tmax/AUClast/AUCinf/CL/Vz/t&frac12;/Rac</li>
+</ul>
+
+<div class="note">Geometric PK statistics are computed on the <strong>log scale</strong> (never <code>exp(arithmetic mean)</code>). AE counts are distinct participants. Single-sequence participant-level tables key on <code>&amp;SEQVAR</code>/<code>&amp;SEQVARN</code> while period tables denominate from a period-bearing source. The library is free of <code>eDISH</code> / <code>Hy's Law</code> terminology.</div>
+
+<h2>Quality status</h2>
+<p>Complete: <strong>217 TLF programs</strong> across all five design folders + <code>00_setup_macros.sas</code> (218 files total). Built by fan-out generation, then a two-pass adversarial QC (6 family reviewers &rarr; per-finding verification: 35 confirmed defects fixed, 2 reviewer false-positives rejected), then a deterministic sweep. All programs scaffold correctly (<code>%include</code>/<code>%setup</code>/<code>%designvars</code>), <code>%designvars</code> matches each folder. Pseudocode for spec / double-programming &mdash; not validated production code; reported numbers still come from validated tools per SOP.</p>
+
+<h2 id="trouble">Troubleshooting</h2>
+<table class="t">
+  <thead><tr><th style="width:34%">Symptom</th><th style="width:30%">Why</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr><td><code>ERROR: Libref ADAM is not assigned</code> / <code>File ADAM.ADSL does not exist</code></td><td>The <code>LIBNAME</code> in <code>%setup</code> doesn't point at your ADaM datasets</td><td>Set <code>adam=</code> in the <code>%setup(...)</code> call (or the wrapper <code>libname adam</code>) to the real folder holding <code>ADSL</code>/<code>ADAE</code>/&hellip;; it's opened <code>access=readonly</code>.</td></tr>
+    <tr><td><code>ERROR: Physical file does not exist &hellip; 00_setup_macros.sas</code></td><td>The program's <code>%include "../00_setup_macros.sas"</code> path is relative to where you submit from</td><td>Submit from inside the design folder, or change the <code>%include</code> to the absolute path of <code>00_setup_macros.sas</code>.</td></tr>
+    <tr><td>Columns/by-structure look wrong (e.g. no period split on a crossover)</td><td><code>%designvars(design=...)</code> doesn't match the folder you opened</td><td>Set it to the folder's design: <code>PARALLEL</code>, <code>CROSSOVER</code>, <code>SINGLESEQ</code>, <code>SAD</code>, or <code>MAD</code>. It resolves <code>&amp;TRTVAR</code>/<code>&amp;SEQVAR</code>/<code>&amp;BYPERIOD</code>.</td></tr>
+    <tr><td><code>ERROR: Format &hellip; not found</code> in <code>PROC REPORT</code>/<code>FORMAT</code></td><td>The study format catalog (treatment order, AE severity, lab ranges) isn't available to <code>%setup</code></td><td>Build/point <code>tfl.formats</code> at your study format catalog (the <code>proc format library=tfl.formats</code> step in <code>00_setup_macros.sas</code>), then resubmit.</td></tr>
+    <tr><td>Geometric mean / Geo-CV% looks off vs the validated output</td><td>Expecting <code>exp(arithmetic mean)</code> &mdash; this library computes geo stats on the <strong>log scale</strong></td><td>That's intended: geo mean = <code>exp(mean of logs)</code>, Geo-CV% = <code>100*sqrt(exp(var of logs)-1)</code> (see <code>%pkstats</code>). Reconcile against the double-programmed value, not <code>exp(mean)</code>.</td></tr>
+    <tr><td>AE counts higher than expected</td><td>Treating event <em>rows</em> as the unit instead of distinct participants</td><td>The AE macros count <code>count(distinct USUBJID)</code> per level (treatment-emergent via <code>TRTEMFL='Y'</code>). Reconcile participant counts, not row counts.</td></tr>
+    <tr><td>Period table denominators don't add up (crossover / single-sequence)</td><td>Denominating a per-period table from <code>ADSL</code> (one record per participant)</td><td>Per-period denominators must come from a <strong>period-bearing source</strong> (<code>ADEX</code>/<code>ADIS</code>/<code>ADPD</code>); participant-level tables key on <code>&amp;SEQVAR</code>/<code>&amp;SEQVARN</code>.</td></tr>
+    <tr><td>Looking for an eDISH / Hy's-Law panel</td><td>The library deliberately omits that terminology</td><td>Use <code>f_lab_lft_scatter.sas</code> + the lab tables for transaminase/bilirubin review; there is no <code>eDISH</code>/<code>Hy's Law</code> output by design.</td></tr>
+  </tbody>
+</table>
+<p class="mini">Every program is a <strong>spec / double-programming scaffold</strong>, not validated production code. If a number here disagrees with the validated, double-programmed result, the validated result governs &mdash; always reconcile per SOP.</p>
+
+<h2 id="code">Browse the code</h2>
+<p>Every program below links to its actual <code>.sas</code> file by relative path. Start with the shared macros, then pick a design folder.</p>
+
+<h3>Shared setup</h3>
+<div class="files">
+  <a href="00_setup_macros.sas"><code>00_setup_macros.sas</code><span class="d">%setup + %designvars; included by every program</span></a>
+</div>
+
+<h3>parallel/ <span class="badge">PARALLEL-GROUP</span></h3>
+<p><strong>Disposition / Demographics / Exposure</strong></p>
+<div class="files">
+  <a href="parallel/t_disposition.sas"><code>t_disposition.sas</code></a>
+  <a href="parallel/t_demographics.sas"><code>t_demographics.sas</code></a>
+  <a href="parallel/t_baseline_characteristics.sas"><code>t_baseline_characteristics.sas</code></a>
+  <a href="parallel/t_exposure.sas"><code>t_exposure.sas</code></a>
+  <a href="parallel/t_protocol_deviations.sas"><code>t_protocol_deviations.sas</code></a>
+  <a href="parallel/t_prior_con_meds.sas"><code>t_prior_con_meds.sas</code></a>
+  <a href="parallel/t_medical_history.sas"><code>t_medical_history.sas</code></a>
+  <a href="parallel/l_disposition.sas"><code>l_disposition.sas</code></a>
+</div>
+<p><strong>Safety &mdash; AE</strong></p>
+<div class="files">
+  <a href="parallel/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
+  <a href="parallel/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
+  <a href="parallel/t_ae_by_severity.sas"><code>t_ae_by_severity.sas</code></a>
+  <a href="parallel/t_ae_by_relationship.sas"><code>t_ae_by_relationship.sas</code></a>
+  <a href="parallel/t_ae_sae_death_withdrawal.sas"><code>t_ae_sae_death_withdrawal.sas</code></a>
+  <a href="parallel/l_ae.sas"><code>l_ae.sas</code></a>
+  <a href="parallel/l_sae_death.sas"><code>l_sae_death.sas</code></a>
+</div>
+<p><strong>Safety &mdash; Labs</strong></p>
+<div class="files">
+  <a href="parallel/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
+  <a href="parallel/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
+  <a href="parallel/t_lab_marked_abnormal.sas"><code>t_lab_marked_abnormal.sas</code></a>
+  <a href="parallel/f_lab_lft_scatter.sas"><code>f_lab_lft_scatter.sas</code></a>
+  <a href="parallel/f_lab_change.sas"><code>f_lab_change.sas</code></a>
+  <a href="parallel/l_lab_abnormal.sas"><code>l_lab_abnormal.sas</code></a>
+</div>
+<p><strong>Vitals / ECG</strong></p>
+<div class="files">
+  <a href="parallel/t_vitals_summary.sas"><code>t_vitals_summary.sas</code></a>
+  <a href="parallel/f_vitals_change.sas"><code>f_vitals_change.sas</code></a>
+  <a href="parallel/l_vitals.sas"><code>l_vitals.sas</code></a>
+  <a href="parallel/t_ecg_summary.sas"><code>t_ecg_summary.sas</code></a>
+  <a href="parallel/t_ecg_qtc_categorical.sas"><code>t_ecg_qtc_categorical.sas</code></a>
+  <a href="parallel/f_qtc_change.sas"><code>f_qtc_change.sas</code></a>
+  <a href="parallel/l_ecg.sas"><code>l_ecg.sas</code></a>
+</div>
+<p><strong>PK</strong></p>
+<div class="files">
+  <a href="parallel/t_pk_conc_summary.sas"><code>t_pk_conc_summary.sas</code></a>
+  <a href="parallel/l_pk_conc.sas"><code>l_pk_conc.sas</code></a>
+  <a href="parallel/f_pk_conc_mean.sas"><code>f_pk_conc_mean.sas</code></a>
+  <a href="parallel/f_pk_conc_individual.sas"><code>f_pk_conc_individual.sas</code></a>
+  <a href="parallel/t_pk_param_summary.sas"><code>t_pk_param_summary.sas</code></a>
+  <a href="parallel/l_pk_param.sas"><code>l_pk_param.sas</code></a>
+  <a href="parallel/f_pk_param_boxplot.sas"><code>f_pk_param_boxplot.sas</code></a>
+</div>
+<p><strong>PD / Biomarkers</strong></p>
+<div class="files">
+  <a href="parallel/t_pd_summary.sas"><code>t_pd_summary.sas</code></a>
+  <a href="parallel/f_pd_change.sas"><code>f_pd_change.sas</code></a>
+  <a href="parallel/f_pkpd_overlay.sas"><code>f_pkpd_overlay.sas</code></a>
+  <a href="parallel/l_pd.sas"><code>l_pd.sas</code></a>
+</div>
+<p><strong>Immunogenicity</strong></p>
+<div class="files">
+  <a href="parallel/t_ada_summary.sas"><code>t_ada_summary.sas</code></a>
+  <a href="parallel/t_ada_impact_pk.sas"><code>t_ada_impact_pk.sas</code></a>
+  <a href="parallel/l_ada.sas"><code>l_ada.sas</code></a>
+</div>
+
+<h3>crossover/ <span class="badge">2&times;2 / WILLIAMS</span></h3>
+<p><strong>Disposition / Demographics / Exposure</strong></p>
+<div class="files">
+  <a href="crossover/t_disposition.sas"><code>t_disposition.sas</code></a>
+  <a href="crossover/t_demographics.sas"><code>t_demographics.sas</code></a>
+  <a href="crossover/t_baseline_characteristics.sas"><code>t_baseline_characteristics.sas</code></a>
+  <a href="crossover/t_exposure.sas"><code>t_exposure.sas</code></a>
+  <a href="crossover/t_protocol_deviations.sas"><code>t_protocol_deviations.sas</code></a>
+  <a href="crossover/t_prior_con_meds.sas"><code>t_prior_con_meds.sas</code></a>
+  <a href="crossover/t_medical_history.sas"><code>t_medical_history.sas</code></a>
+  <a href="crossover/l_disposition.sas"><code>l_disposition.sas</code></a>
+</div>
+<p><strong>Safety &mdash; AE</strong></p>
+<div class="files">
+  <a href="crossover/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
+  <a href="crossover/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
+  <a href="crossover/t_ae_by_severity.sas"><code>t_ae_by_severity.sas</code></a>
+  <a href="crossover/t_ae_by_relationship.sas"><code>t_ae_by_relationship.sas</code></a>
+  <a href="crossover/t_ae_sae_death_withdrawal.sas"><code>t_ae_sae_death_withdrawal.sas</code></a>
+  <a href="crossover/l_ae.sas"><code>l_ae.sas</code></a>
+  <a href="crossover/l_sae_death.sas"><code>l_sae_death.sas</code></a>
+</div>
+<p><strong>Safety &mdash; Labs</strong></p>
+<div class="files">
+  <a href="crossover/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
+  <a href="crossover/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
+  <a href="crossover/t_lab_marked_abnormal.sas"><code>t_lab_marked_abnormal.sas</code></a>
+  <a href="crossover/f_lab_lft_scatter.sas"><code>f_lab_lft_scatter.sas</code></a>
+  <a href="crossover/f_lab_change.sas"><code>f_lab_change.sas</code></a>
+  <a href="crossover/l_lab_abnormal.sas"><code>l_lab_abnormal.sas</code></a>
+</div>
+<p><strong>Vitals / ECG</strong></p>
+<div class="files">
+  <a href="crossover/t_vitals_summary.sas"><code>t_vitals_summary.sas</code></a>
+  <a href="crossover/f_vitals_change.sas"><code>f_vitals_change.sas</code></a>
+  <a href="crossover/l_vitals.sas"><code>l_vitals.sas</code></a>
+  <a href="crossover/t_ecg_summary.sas"><code>t_ecg_summary.sas</code></a>
+  <a href="crossover/t_ecg_qtc_categorical.sas"><code>t_ecg_qtc_categorical.sas</code></a>
+  <a href="crossover/f_qtc_change.sas"><code>f_qtc_change.sas</code></a>
+  <a href="crossover/l_ecg.sas"><code>l_ecg.sas</code></a>
+</div>
+<p><strong>PK</strong> (incl. <code>t_be_anova</code>, <code>t_pk_param_by_period</code>)</p>
+<div class="files">
+  <a href="crossover/t_pk_conc_summary.sas"><code>t_pk_conc_summary.sas</code></a>
+  <a href="crossover/l_pk_conc.sas"><code>l_pk_conc.sas</code></a>
+  <a href="crossover/f_pk_conc_mean.sas"><code>f_pk_conc_mean.sas</code></a>
+  <a href="crossover/f_pk_conc_individual.sas"><code>f_pk_conc_individual.sas</code></a>
+  <a href="crossover/t_pk_param_summary.sas"><code>t_pk_param_summary.sas</code></a>
+  <a href="crossover/t_pk_param_by_period.sas"><code>t_pk_param_by_period.sas</code></a>
+  <a href="crossover/l_pk_param.sas"><code>l_pk_param.sas</code></a>
+  <a href="crossover/f_pk_param_boxplot.sas"><code>f_pk_param_boxplot.sas</code></a>
+  <a href="crossover/t_be_anova.sas"><code>t_be_anova.sas</code><span class="d">BE/ANOVA mixed model, GMR + 90% CI</span></a>
+</div>
+<p><strong>PD / Biomarkers</strong></p>
+<div class="files">
+  <a href="crossover/t_pd_summary.sas"><code>t_pd_summary.sas</code></a>
+  <a href="crossover/f_pd_change.sas"><code>f_pd_change.sas</code></a>
+  <a href="crossover/f_pkpd_overlay.sas"><code>f_pkpd_overlay.sas</code></a>
+  <a href="crossover/l_pd.sas"><code>l_pd.sas</code></a>
+</div>
+<p><strong>Immunogenicity</strong></p>
+<div class="files">
+  <a href="crossover/t_ada_summary.sas"><code>t_ada_summary.sas</code></a>
+  <a href="crossover/t_ada_impact_pk.sas"><code>t_ada_impact_pk.sas</code></a>
+  <a href="crossover/l_ada.sas"><code>l_ada.sas</code></a>
+</div>
+
+<h3>single_sequence/ <span class="badge">FIXED-SEQUENCE / DDI</span></h3>
+<p><strong>Disposition / Demographics / Exposure</strong></p>
+<div class="files">
+  <a href="single_sequence/t_disposition.sas"><code>t_disposition.sas</code></a>
+  <a href="single_sequence/t_demographics.sas"><code>t_demographics.sas</code></a>
+  <a href="single_sequence/t_baseline_characteristics.sas"><code>t_baseline_characteristics.sas</code></a>
+  <a href="single_sequence/t_exposure.sas"><code>t_exposure.sas</code></a>
+  <a href="single_sequence/t_protocol_deviations.sas"><code>t_protocol_deviations.sas</code></a>
+  <a href="single_sequence/t_prior_con_meds.sas"><code>t_prior_con_meds.sas</code></a>
+  <a href="single_sequence/t_medical_history.sas"><code>t_medical_history.sas</code></a>
+  <a href="single_sequence/l_disposition.sas"><code>l_disposition.sas</code></a>
+</div>
+<p><strong>Safety &mdash; AE</strong></p>
+<div class="files">
+  <a href="single_sequence/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
+  <a href="single_sequence/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
+  <a href="single_sequence/t_ae_by_severity.sas"><code>t_ae_by_severity.sas</code></a>
+  <a href="single_sequence/t_ae_by_relationship.sas"><code>t_ae_by_relationship.sas</code></a>
+  <a href="single_sequence/t_ae_sae_death_withdrawal.sas"><code>t_ae_sae_death_withdrawal.sas</code></a>
+  <a href="single_sequence/l_ae.sas"><code>l_ae.sas</code></a>
+  <a href="single_sequence/l_sae_death.sas"><code>l_sae_death.sas</code></a>
+</div>
+<p><strong>Safety &mdash; Labs</strong></p>
+<div class="files">
+  <a href="single_sequence/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
+  <a href="single_sequence/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
+  <a href="single_sequence/t_lab_marked_abnormal.sas"><code>t_lab_marked_abnormal.sas</code></a>
+  <a href="single_sequence/f_lab_lft_scatter.sas"><code>f_lab_lft_scatter.sas</code></a>
+  <a href="single_sequence/f_lab_change.sas"><code>f_lab_change.sas</code></a>
+  <a href="single_sequence/l_lab_abnormal.sas"><code>l_lab_abnormal.sas</code></a>
+</div>
+<p><strong>Vitals / ECG</strong></p>
+<div class="files">
+  <a href="single_sequence/t_vitals_summary.sas"><code>t_vitals_summary.sas</code></a>
+  <a href="single_sequence/f_vitals_change.sas"><code>f_vitals_change.sas</code></a>
+  <a href="single_sequence/l_vitals.sas"><code>l_vitals.sas</code></a>
+  <a href="single_sequence/t_ecg_summary.sas"><code>t_ecg_summary.sas</code></a>
+  <a href="single_sequence/t_ecg_qtc_categorical.sas"><code>t_ecg_qtc_categorical.sas</code></a>
+  <a href="single_sequence/f_qtc_change.sas"><code>f_qtc_change.sas</code></a>
+  <a href="single_sequence/l_ecg.sas"><code>l_ecg.sas</code></a>
+</div>
+<p><strong>PK</strong> (incl. <code>t_be_anova</code> ratio + 90% CI vs reference period, <code>t_pk_param_by_period</code>)</p>
+<div class="files">
+  <a href="single_sequence/t_pk_conc_summary.sas"><code>t_pk_conc_summary.sas</code></a>
+  <a href="single_sequence/l_pk_conc.sas"><code>l_pk_conc.sas</code></a>
+  <a href="single_sequence/f_pk_conc_mean.sas"><code>f_pk_conc_mean.sas</code></a>
+  <a href="single_sequence/f_pk_conc_individual.sas"><code>f_pk_conc_individual.sas</code></a>
+  <a href="single_sequence/t_pk_param_summary.sas"><code>t_pk_param_summary.sas</code></a>
+  <a href="single_sequence/t_pk_param_by_period.sas"><code>t_pk_param_by_period.sas</code></a>
+  <a href="single_sequence/l_pk_param.sas"><code>l_pk_param.sas</code></a>
+  <a href="single_sequence/f_pk_param_boxplot.sas"><code>f_pk_param_boxplot.sas</code></a>
+  <a href="single_sequence/t_be_anova.sas"><code>t_be_anova.sas</code><span class="d">Ratio + 90% CI vs reference period</span></a>
+</div>
+<p><strong>PD / Biomarkers</strong></p>
+<div class="files">
+  <a href="single_sequence/t_pd_summary.sas"><code>t_pd_summary.sas</code></a>
+  <a href="single_sequence/f_pd_change.sas"><code>f_pd_change.sas</code></a>
+  <a href="single_sequence/f_pkpd_overlay.sas"><code>f_pkpd_overlay.sas</code></a>
+  <a href="single_sequence/l_pd.sas"><code>l_pd.sas</code></a>
+</div>
+<p><strong>Immunogenicity</strong></p>
+<div class="files">
+  <a href="single_sequence/t_ada_summary.sas"><code>t_ada_summary.sas</code></a>
+  <a href="single_sequence/t_ada_impact_pk.sas"><code>t_ada_impact_pk.sas</code></a>
+  <a href="single_sequence/l_ada.sas"><code>l_ada.sas</code></a>
+</div>
+
+<h3>sad/ <span class="badge">SINGLE ASCENDING DOSE</span></h3>
+<p><strong>Disposition / Demographics / Exposure</strong></p>
+<div class="files">
+  <a href="sad/t_disposition.sas"><code>t_disposition.sas</code></a>
+  <a href="sad/t_demographics.sas"><code>t_demographics.sas</code></a>
+  <a href="sad/t_baseline_characteristics.sas"><code>t_baseline_characteristics.sas</code></a>
+  <a href="sad/t_exposure.sas"><code>t_exposure.sas</code></a>
+  <a href="sad/t_protocol_deviations.sas"><code>t_protocol_deviations.sas</code></a>
+  <a href="sad/t_prior_con_meds.sas"><code>t_prior_con_meds.sas</code></a>
+  <a href="sad/t_medical_history.sas"><code>t_medical_history.sas</code></a>
+  <a href="sad/l_disposition.sas"><code>l_disposition.sas</code></a>
+</div>
+<p><strong>Safety &mdash; AE</strong></p>
+<div class="files">
+  <a href="sad/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
+  <a href="sad/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
+  <a href="sad/t_ae_by_severity.sas"><code>t_ae_by_severity.sas</code></a>
+  <a href="sad/t_ae_by_relationship.sas"><code>t_ae_by_relationship.sas</code></a>
+  <a href="sad/t_ae_sae_death_withdrawal.sas"><code>t_ae_sae_death_withdrawal.sas</code></a>
+  <a href="sad/l_ae.sas"><code>l_ae.sas</code></a>
+  <a href="sad/l_sae_death.sas"><code>l_sae_death.sas</code></a>
+</div>
+<p><strong>Safety &mdash; Labs</strong></p>
+<div class="files">
+  <a href="sad/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
+  <a href="sad/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
+  <a href="sad/t_lab_marked_abnormal.sas"><code>t_lab_marked_abnormal.sas</code></a>
+  <a href="sad/f_lab_lft_scatter.sas"><code>f_lab_lft_scatter.sas</code></a>
+  <a href="sad/f_lab_change.sas"><code>f_lab_change.sas</code></a>
+  <a href="sad/l_lab_abnormal.sas"><code>l_lab_abnormal.sas</code></a>
+</div>
+<p><strong>Vitals / ECG</strong></p>
+<div class="files">
+  <a href="sad/t_vitals_summary.sas"><code>t_vitals_summary.sas</code></a>
+  <a href="sad/f_vitals_change.sas"><code>f_vitals_change.sas</code></a>
+  <a href="sad/l_vitals.sas"><code>l_vitals.sas</code></a>
+  <a href="sad/t_ecg_summary.sas"><code>t_ecg_summary.sas</code></a>
+  <a href="sad/t_ecg_qtc_categorical.sas"><code>t_ecg_qtc_categorical.sas</code></a>
+  <a href="sad/f_qtc_change.sas"><code>f_qtc_change.sas</code></a>
+  <a href="sad/l_ecg.sas"><code>l_ecg.sas</code></a>
+</div>
+<p><strong>PK</strong> (incl. <code>t_dose_proportionality</code> power model)</p>
+<div class="files">
+  <a href="sad/t_pk_conc_summary.sas"><code>t_pk_conc_summary.sas</code></a>
+  <a href="sad/l_pk_conc.sas"><code>l_pk_conc.sas</code></a>
+  <a href="sad/f_pk_conc_mean.sas"><code>f_pk_conc_mean.sas</code></a>
+  <a href="sad/f_pk_conc_individual.sas"><code>f_pk_conc_individual.sas</code></a>
+  <a href="sad/t_pk_param_summary.sas"><code>t_pk_param_summary.sas</code></a>
+  <a href="sad/l_pk_param.sas"><code>l_pk_param.sas</code></a>
+  <a href="sad/f_pk_param_boxplot.sas"><code>f_pk_param_boxplot.sas</code></a>
+  <a href="sad/t_dose_proportionality.sas"><code>t_dose_proportionality.sas</code><span class="d">Power model</span></a>
+</div>
+<p><strong>PD / Biomarkers</strong></p>
+<div class="files">
+  <a href="sad/t_pd_summary.sas"><code>t_pd_summary.sas</code></a>
+  <a href="sad/f_pd_change.sas"><code>f_pd_change.sas</code></a>
+  <a href="sad/f_pkpd_overlay.sas"><code>f_pkpd_overlay.sas</code></a>
+  <a href="sad/l_pd.sas"><code>l_pd.sas</code></a>
+</div>
+<p><strong>Immunogenicity</strong></p>
+<div class="files">
+  <a href="sad/t_ada_summary.sas"><code>t_ada_summary.sas</code></a>
+  <a href="sad/t_ada_impact_pk.sas"><code>t_ada_impact_pk.sas</code></a>
+  <a href="sad/l_ada.sas"><code>l_ada.sas</code></a>
+</div>
+
+<h3>mad/ <span class="badge">MULTIPLE ASCENDING DOSE</span></h3>
+<p><strong>Disposition / Demographics / Exposure</strong></p>
+<div class="files">
+  <a href="mad/t_disposition.sas"><code>t_disposition.sas</code></a>
+  <a href="mad/t_demographics.sas"><code>t_demographics.sas</code></a>
+  <a href="mad/t_baseline_characteristics.sas"><code>t_baseline_characteristics.sas</code></a>
+  <a href="mad/t_exposure.sas"><code>t_exposure.sas</code></a>
+  <a href="mad/t_protocol_deviations.sas"><code>t_protocol_deviations.sas</code></a>
+  <a href="mad/t_prior_con_meds.sas"><code>t_prior_con_meds.sas</code></a>
+  <a href="mad/t_medical_history.sas"><code>t_medical_history.sas</code></a>
+  <a href="mad/l_disposition.sas"><code>l_disposition.sas</code></a>
+</div>
+<p><strong>Safety &mdash; AE</strong></p>
+<div class="files">
+  <a href="mad/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
+  <a href="mad/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
+  <a href="mad/t_ae_by_severity.sas"><code>t_ae_by_severity.sas</code></a>
+  <a href="mad/t_ae_by_relationship.sas"><code>t_ae_by_relationship.sas</code></a>
+  <a href="mad/t_ae_sae_death_withdrawal.sas"><code>t_ae_sae_death_withdrawal.sas</code></a>
+  <a href="mad/l_ae.sas"><code>l_ae.sas</code></a>
+  <a href="mad/l_sae_death.sas"><code>l_sae_death.sas</code></a>
+</div>
+<p><strong>Safety &mdash; Labs</strong></p>
+<div class="files">
+  <a href="mad/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
+  <a href="mad/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
+  <a href="mad/t_lab_marked_abnormal.sas"><code>t_lab_marked_abnormal.sas</code></a>
+  <a href="mad/f_lab_lft_scatter.sas"><code>f_lab_lft_scatter.sas</code></a>
+  <a href="mad/f_lab_change.sas"><code>f_lab_change.sas</code></a>
+  <a href="mad/l_lab_abnormal.sas"><code>l_lab_abnormal.sas</code></a>
+</div>
+<p><strong>Vitals / ECG</strong></p>
+<div class="files">
+  <a href="mad/t_vitals_summary.sas"><code>t_vitals_summary.sas</code></a>
+  <a href="mad/f_vitals_change.sas"><code>f_vitals_change.sas</code></a>
+  <a href="mad/l_vitals.sas"><code>l_vitals.sas</code></a>
+  <a href="mad/t_ecg_summary.sas"><code>t_ecg_summary.sas</code></a>
+  <a href="mad/t_ecg_qtc_categorical.sas"><code>t_ecg_qtc_categorical.sas</code></a>
+  <a href="mad/f_qtc_change.sas"><code>f_qtc_change.sas</code></a>
+  <a href="mad/l_ecg.sas"><code>l_ecg.sas</code></a>
+</div>
+<p><strong>PK</strong> (incl. <code>t_accumulation</code> Rac / steady-state, <code>t_dose_proportionality_ss</code>)</p>
+<div class="files">
+  <a href="mad/t_pk_conc_summary.sas"><code>t_pk_conc_summary.sas</code></a>
+  <a href="mad/l_pk_conc.sas"><code>l_pk_conc.sas</code></a>
+  <a href="mad/f_pk_conc_mean.sas"><code>f_pk_conc_mean.sas</code></a>
+  <a href="mad/f_pk_conc_individual.sas"><code>f_pk_conc_individual.sas</code></a>
+  <a href="mad/t_pk_param_summary.sas"><code>t_pk_param_summary.sas</code></a>
+  <a href="mad/l_pk_param.sas"><code>l_pk_param.sas</code></a>
+  <a href="mad/f_pk_param_boxplot.sas"><code>f_pk_param_boxplot.sas</code></a>
+  <a href="mad/t_accumulation.sas"><code>t_accumulation.sas</code><span class="d">Accumulation ratio (Rac), steady-state</span></a>
+  <a href="mad/t_dose_proportionality_ss.sas"><code>t_dose_proportionality_ss.sas</code><span class="d">Dose-proportionality at steady state</span></a>
+</div>
+<p><strong>PD / Biomarkers</strong></p>
+<div class="files">
+  <a href="mad/t_pd_summary.sas"><code>t_pd_summary.sas</code></a>
+  <a href="mad/f_pd_change.sas"><code>f_pd_change.sas</code></a>
+  <a href="mad/f_pkpd_overlay.sas"><code>f_pkpd_overlay.sas</code></a>
+  <a href="mad/l_pd.sas"><code>l_pd.sas</code></a>
+</div>
+<p><strong>Immunogenicity</strong></p>
+<div class="files">
+  <a href="mad/t_ada_summary.sas"><code>t_ada_summary.sas</code></a>
+  <a href="mad/t_ada_impact_pk.sas"><code>t_ada_impact_pk.sas</code></a>
+  <a href="mad/l_ada.sas"><code>l_ada.sas</code></a>
+</div>
+
+<footer>
+  SAS TLF Pseudocode Library &mdash; 218 files (217 TLF programs + <code>00_setup_macros.sas</code>) across 5 design folders. Illustrative pseudocode for spec / double-programming, not validated production code; reported numbers come only from validated tools per SOP. Terminology: participant. <a href="../START_HERE.html">&larr; Program home</a>
+</footer>
+
+</div>
+<script>
+(function(){
+  // one-click copy on every command block
+  document.querySelectorAll('pre').forEach(function(pre){
+    var code=pre.querySelector('code'); if(!code) return;
+    pre.style.position='relative';
+    var b=document.createElement('button'); b.className='copybtn'; b.type='button'; b.textContent='Copy';
+    b.onclick=function(){
+      var t=code.innerText;
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(ok, fail);
+      } else { fail(); }
+      function ok(){ b.textContent='Copied ✓'; b.classList.add('ok'); setTimeout(function(){b.textContent='Copy'; b.classList.remove('ok');},1400); }
+      function fail(){ try{var r=document.createRange();r.selectNodeContents(code);var s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();ok();}catch(e){b.textContent='Ctrl-C';} }
+    };
+    pre.appendChild(b);
+  });
+  // tickable quick-start checklist (remembers your ticks on this machine)
+  var qsc=document.getElementById('qsc');
+  if(qsc){
+    var KEY='qsc:'+location.pathname, saved={};
+    try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+    var items=[].slice.call(qsc.children);
+    items.forEach(function(li,i){
+      if(saved[i]) li.classList.add('done');
+      li.onclick=function(){ li.classList.toggle('done'); saved[i]=li.classList.contains('done'); try{localStorage.setItem(KEY,JSON.stringify(saved));}catch(e){} };
+    });
+    var r=document.getElementById('qscReset');
+    if(r) r.onclick=function(){ items.forEach(function(li){li.classList.remove('done');}); try{localStorage.removeItem(KEY);}catch(e){} };
+  }
+})();
+</script>
+</body></html>

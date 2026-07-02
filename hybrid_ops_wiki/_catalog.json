@@ -1,0 +1,832 @@
+{
+  "areas": [
+    {
+      "area": "Project & Timeline Management",
+      "usecases": [
+        {
+          "name": "Milestone & critical-path tracking agent",
+          "trigger": "scheduled (nightly) + event (any predecessor task status/date change via Smartsheet webhook)",
+          "what_ai_does": "Pulls the dependency-enabled Smartsheet plan, recomputes critical path and float, and flags tasks now on/near the critical path or at risk of slipping; drafts a plain-language 'what changed and why it matters' note. The recompute math and dependency logic come from Smartsheet's engine (validated path); the LLM explains, prioritizes, and proposes — it does not move the baseline.",
+          "engine": "Cloud Claude (de-identified plan/task names) for the narrative; Smartsheet API for the actual critical-path computation",
+          "integration": "Smartsheet API (sheets, cells, dependencies, webhooks), CTMS, RAG (project charter / timeline plan-of-record)",
+          "tier": "AMBER",
+          "human": "PM reviews flagged critical-path changes; baseline/milestone-date edits require PM approval before the agent writes back",
+          "value": "Early warning on schedule risk; no more manual nightly Gantt re-reads; the critical path is always current and explained"
+        },
+        {
+          "name": "Study-event timeline auto-update & notification (data cut, DB lock, milestone slip)",
+          "trigger": "event (data-cut declared, soft/hard DB lock, milestone marked complete or slipped) caught by webhook or system event",
+          "what_ai_does": "A gateway agent recomputes the downstream plan in Smartsheet, drafts targeted notifications (who is now blocked, what shifts), and posts them to the right channels. The Smartsheet API performs the dependency recompute; the LLM composes the human-readable alert and routes it by role. Date commits to the plan-of-record are proposed, not auto-applied to contractual milestones.",
+          "engine": "Local+Cloud (Local if event payload carries unblinded/subject context; Cloud for de-identified scheduling text); Smartsheet API for recompute",
+          "integration": "Smartsheet API (webhooks + cell updates + update requests), Outlook/Exchange, Teams/Slack, EDC/CTMS event hooks",
+          "tier": "AMBER",
+          "human": "Lead approves the recomputed downstream dates and the notification list before contractual/regulated milestone dates are committed",
+          "value": "Hours-to-minutes turnaround on cascade updates after a data cut or lock; stakeholders notified consistently, nobody learns of a slip late"
+        },
+        {
+          "name": "Status-report generation (study & program)",
+          "trigger": "scheduled (weekly/biweekly study status; monthly program report)",
+          "what_ai_does": "Aggregates milestone status, enrollment, open risks/issues, action-item aging, and vendor deliverable status into a drafted status report in the house template, citing the plan-of-record from RAG. Drafts only — numbers are pulled from systems of record, not invented; flagged for the PM to confirm.",
+          "engine": "Cloud Claude (de-identified status metrics and narrative); Local if the report embeds unblinded interim figures",
+          "integration": "Smartsheet API, CTMS, RAG (templates + charter), SharePoint, Outlook",
+          "tier": "GREEN",
+          "human": "PM edits and signs off before distribution; any RED metric (e.g., reported enrollment of record) is verified against the system of record",
+          "value": "Eliminates the weekly manual status-deck assembly; consistent, on-template reports across all studies in minutes"
+        },
+        {
+          "name": "Action-item & decision extraction from email/meetings",
+          "trigger": "event (new meeting transcript posted; flagged email thread) or on-demand",
+          "what_ai_does": "Reads meeting transcripts/notes and email threads, extracts action items (owner, due date), and logged decisions; classifies and de-duplicates against the existing action log, then proposes new rows. Drafts/classifies only; it does not assign accountability or set committed dates without owner confirmation.",
+          "engine": "Local frozen model (emails/transcripts may contain PHI, site, or unblinded references — keep on-prem)",
+          "integration": "Outlook/Exchange, Teams transcripts, Smartsheet (action/decision log), SharePoint",
+          "tier": "AMBER",
+          "human": "Owner/PM confirms each extracted action and decision before it is logged as the record",
+          "value": "Nothing falls through the cracks post-meeting; decision provenance captured automatically; far less manual minute-mining"
+        },
+        {
+          "name": "Meeting agenda & minutes drafting",
+          "trigger": "scheduled (before recurring governance/team meetings) + event (after the meeting for minutes)",
+          "what_ai_does": "Builds the agenda from open action items, risks due for review, and prior-meeting carryover (pulled from RAG/Smartsheet); after the meeting, drafts minutes from the transcript with decisions and new actions cross-linked. Draft artifacts only.",
+          "engine": "Local frozen model (transcripts/attendee context on-prem); Cloud for de-identified agenda skeletons if preferred",
+          "integration": "Outlook/Exchange (calendar), Teams transcripts, Smartsheet (actions/risks), SharePoint, RAG",
+          "tier": "GREEN",
+          "human": "Chair reviews/edits agenda and approves minutes before circulation",
+          "value": "Standardized agendas and same-day minutes with zero clerical overhead; tight action-item continuity meeting to meeting"
+        },
+        {
+          "name": "Vendor/CRO oversight & deliverable tracking",
+          "trigger": "scheduled (weekly deliverable sweep) + event (deliverable received / due-date approaching)",
+          "what_ai_does": "Tracks contracted deliverables and SLAs against SOW/contract obligations stored in RAG, flags upcoming/overdue/at-risk items, and drafts oversight-log entries and follow-up emails to vendors. Classifies status and drafts chasers; humans own escalation and acceptance decisions.",
+          "engine": "Cloud Claude (de-identified deliverable/SLA text) grounded by RAG over SOWs/contracts",
+          "integration": "RAG (SOW/contract/oversight plan), Smartsheet (deliverable tracker), Outlook, SharePoint",
+          "tier": "AMBER",
+          "human": "Oversight lead confirms deliverable acceptance and approves any escalation or SLA-breach notice",
+          "value": "Continuous, documented vendor oversight aligned to ICH E6(R3) sponsor-oversight expectations; no missed deliverables or unlogged follow-ups"
+        },
+        {
+          "name": "Resourcing & capacity conflict detection",
+          "trigger": "scheduled (weekly) + event (plan change that shifts effort dates)",
+          "what_ai_does": "Reads allocations across studies (programmers, PK scientists, clinic capacity) from the resourcing sheets, detects over-allocation and contention windows against recomputed timelines, and drafts a leveling recommendation. Proposes options; the LLM does not reassign people.",
+          "engine": "Cloud Claude (de-identified roles/effort) + Smartsheet API for the date math",
+          "integration": "Smartsheet API (resource/allocation sheets, dependencies), CTMS, HR/PSA resource system if present",
+          "tier": "AMBER",
+          "human": "Resource manager approves any reassignment or re-leveling before it becomes the plan",
+          "value": "Surfaces double-booking before it bites; protects shared early-phase resources (PK lab, beds, programmers) across parallel cohorts"
+        },
+        {
+          "name": "Risk register upkeep & RBQM linkage",
+          "trigger": "scheduled (monthly review prep) + event (KRI/QTL breach signal, new issue, milestone slip)",
+          "what_ai_does": "Keeps the risk register current: drafts new risk entries from issues/slips and from RBQM KRI/QTL breach signals, proposes likelihood/impact and updated status/mitigations, and prepares the review packet. Drafts and classifies; risk acceptance and scoring sign-off stay human per ICH E6(R3).",
+          "engine": "Local frozen model if breach signals carry unblinded/site detail; Cloud for de-identified risk narrative",
+          "integration": "Smartsheet (risk register), RBQM/KRI dashboard, RAG (risk-assessment plan, integrated quality risk mgmt), Outlook",
+          "tier": "AMBER",
+          "human": "Quality/PM lead approves risk scoring, mitigations, and closures; QTL-breach actions go through the quality decision path",
+          "value": "A living, defensible risk register tied to live RBQM signals — inspection-ready and not a stale spreadsheet"
+        },
+        {
+          "name": "Budget & PO / accrual tracking",
+          "trigger": "scheduled (monthly close prep) + event (invoice received, PO threshold approached, milestone-based payment triggered)",
+          "what_ai_does": "Reconciles vendor invoices and POs against budget lines and milestone-based payment schedules from RAG/contracts, drafts accrual estimates and budget-vs-actual commentary, and flags overruns or payments due on completed milestones. Drafts and flags only; reported financial actuals come from the finance/ERP system of record.",
+          "engine": "Cloud Claude (de-identified budget lines/commentary) grounded by RAG over contracts/payment schedules",
+          "integration": "Finance/ERP system of record, Smartsheet (budget tracker), RAG (contract/payment schedule), Outlook",
+          "tier": "RED",
+          "human": "Finance/PM verifies every reported actual and approves accruals/payment triggers in the system of record — LLM is out of the commit path",
+          "value": "Faster, better-supported monthly accruals and early overrun warnings, with all reported numbers staying tool-of-record authoritative"
+        },
+        {
+          "name": "Cross-study portfolio rollup",
+          "trigger": "scheduled (weekly/monthly portfolio cadence) + on-demand (leadership ask)",
+          "what_ai_does": "Aggregates milestones, slip status, risk heat, enrollment, and budget health across all active studies into a portfolio dashboard narrative and exception list (which studies are red and why). Summarizes and ranks; underlying metrics come from each study's system of record.",
+          "engine": "Cloud Claude (de-identified, rolled-up metrics) + Smartsheet API for cross-sheet aggregation",
+          "integration": "Smartsheet API (cross-sheet reports/dashboards), CTMS, finance system, RAG",
+          "tier": "GREEN",
+          "human": "Portfolio lead reviews the rollup; any escalated exception is confirmed before leadership distribution",
+          "value": "One coherent portfolio view across many parallel early-phase studies without manual cross-sheet stitching; exceptions surface first"
+        },
+        {
+          "name": "Action-item SLA chasing & escalation",
+          "trigger": "scheduled (daily) — overdue/approaching-due action items",
+          "what_ai_does": "Scans the action/decision log for items nearing or past due, drafts polite reminder emails to owners and an escalation summary for items breaching SLA. Drafts and routes; escalation decisions remain human.",
+          "engine": "Cloud Claude (de-identified action titles/owners); Local if action text references PHI/unblinded context",
+          "integration": "Smartsheet (action log), Outlook/Exchange, Teams",
+          "tier": "GREEN",
+          "human": "PM approves escalations; owners receive AI-drafted reminders (low-risk auto-send optional per policy)",
+          "value": "Closes the loop on stalled actions automatically; PMs stop being the manual nag for routine reminders"
+        },
+        {
+          "name": "Milestone-slip root-cause & schedule-recovery proposal",
+          "trigger": "event (milestone marked slipped or critical-path date moves beyond tolerance)",
+          "what_ai_does": "On a confirmed slip, correlates likely drivers from linked actions, risks, vendor deliverables, and recent status notes, and drafts candidate recovery options (fast-track, re-sequence, resource add) with their timeline impact computed by Smartsheet. Diagnoses and proposes scenarios; it does not commit a recovery plan.",
+          "engine": "Local+Cloud (Local for any unblinded/site root-cause detail; Cloud for scenario narrative) + Smartsheet API for impact modeling",
+          "integration": "Smartsheet API (what-if date impact, dependencies), Risk/action logs, RAG (timeline plan), Outlook",
+          "tier": "AMBER",
+          "human": "PM/lead selects and approves the recovery scenario before it becomes the revised plan-of-record",
+          "value": "Turns a slip alert into actionable, pre-modeled recovery choices in minutes, shortening the decide-and-replan cycle"
+        }
+      ]
+    },
+    {
+      "area": "eTMF & Document Control",
+      "usecases": [
+        {
+          "name": "Auto-classify & file to the DIA TMF Reference Model",
+          "trigger": "event — new document lands in an intake folder / SharePoint dropzone / scan inbox / email attachment",
+          "what_ai_does": "OCRs and reads the document, then classifies it to the correct TMF Reference Model v3.2.0 Zone > Section > artifact ID and extracts filing metadata (study, site, country, document date, version). Proposes the filing as a draft with a confidence score; the validated eTMF and a human declare the record-of-truth. High-confidence routine artifacts can be batch pre-staged for one-click human approval.",
+          "engine": "Local frozen model (documents routinely contain PHI/PII; classify on-prem) — only fully de-identified, hard-to-classify edge cases optionally escalate to Cloud Claude",
+          "integration": "SharePoint/scan-inbox -> RAG/classifier -> eTMF (Veeva Vault eTMF / Montrium) write to staging + approval queue; Outlook for attachment intake",
+          "tier": "AMBER",
+          "human": "Document controller verifies classification + metadata and approves the final filing into the record-of-truth (RED on the filing action itself); low-confidence items always go to a person",
+          "value": "Eliminates the largest manual eTMF burden (sorting/indexing/metadata entry), cuts mis-filing, and keeps the TMF contemporaneous instead of backlogged"
+        },
+        {
+          "name": "TMF completeness / QC & missing-document detection",
+          "trigger": "scheduled (nightly/weekly) + event on milestone change (site activation, FPI, data cut)",
+          "what_ai_does": "Compares filed artifacts against the expected-document index (TMF plan / artifact-to-milestone map) for the current study phase and each site, computes per-zone completeness %, lists missing/overdue/placeholder artifacts, and flags quality defects (wrong version, unsigned, illegible scan, wrong date). Drafts the gap list and a QC summary; does not change any record.",
+          "engine": "Local frozen model (operates over filed PHI-bearing documents and metadata) + Validated tool for the authoritative status fields",
+          "integration": "eTMF API (artifact/metadata read), Smartsheet/TMF-plan as expected-document index, dashboard",
+          "tier": "AMBER",
+          "human": "TMF lead reviews the gap report and assigns remediation owners; any status correction is made by a human in the validated system",
+          "value": "Continuous (not pre-inspection) completeness, fewer late filings, and an always-current view of TMF health required by ICH E6(R3)"
+        },
+        {
+          "name": "Expiring-document alerts (CV / training / license / certs)",
+          "trigger": "scheduled (daily) sweep of expiry-dated artifacts",
+          "what_ai_does": "Extracts expiry dates from CVs, GCP-training certificates, medical licenses, lab certifications/normal-range docs, and IATA shipping certs; tracks them against thresholds (e.g. 90/60/30 days) and drafts targeted reminder notices to the responsible site/role. Maintains a credential-currency register. Sends alerts only; renewals and re-filing stay manual.",
+          "engine": "Local frozen model (CVs/licenses contain personal data)",
+          "integration": "eTMF API, Outlook/Teams for notifications, register in Smartsheet",
+          "tier": "GREEN (alerting) / AMBER (the extracted expiry metadata is human-verified before it drives a register)",
+          "human": "CRA/site manager confirms the flagged expiries and chases renewals; nobody's record is changed automatically",
+          "value": "Prevents lapsed-credential inspection findings — a common, avoidable Major finding — with zero manual diary-keeping"
+        },
+        {
+          "name": "SOP / WI / study-document ingestion into the RAG knowledge base",
+          "trigger": "event — a controlled document is approved/effective or superseded in the DMS",
+          "what_ai_does": "Parses the approved document, chunks and embeds it into the permissioned local vector store with metadata (doc ID, version, effective date, owner, applicable studies), and links/citations back to the source. On supersession, retires the old version's chunks so retrieval never serves obsolete guidance. Indexing only — it authors nothing.",
+          "engine": "Local frozen model + local embeddings (knowledge base is on-prem and permissioned; SOPs are internal IP)",
+          "integration": "DMS/SharePoint controlled-docs library -> local RAG vector store; effective-version feed from the DMS",
+          "tier": "GREEN",
+          "human": "QA owns which version is 'effective'; ingestion follows the DMS state of truth, so no separate approval is needed beyond normal doc-control",
+          "value": "Turns the SOP/WI library into an instantly queryable, always-current-version knowledge base and is the foundation for compliance Q&A"
+        },
+        {
+          "name": "Compliance Q&A over SOPs/WIs (\"what does SOP-12 require for X?\")",
+          "trigger": "on-demand — staff question via chat/portal",
+          "what_ai_does": "Retrieves the relevant SOP/WI chunks and answers with the requirement, quoting and citing the exact document ID, version, and section; flags when multiple/conflicting documents apply and when a referenced doc is superseded. Answers are guidance/navigation, explicitly 'verify against the controlled document' — it never overrides the SOP.",
+          "engine": "Local frozen model over local RAG (default; keeps internal IP on-prem). Cloud Claude only for de-identified, non-proprietary general-GCP reasoning if ever needed.",
+          "integration": "Local RAG store, chat/portal UI, link-out to the DMS source",
+          "tier": "GREEN",
+          "human": "User judgment; for regulatory-binding interpretation the answer routes the user to QA/RA",
+          "value": "Cuts time-to-answer for 'how do we do X per our SOP' from hours of searching to seconds, with citations — improves consistency and onboarding"
+        },
+        {
+          "name": "Version / superseded-document control & reference reconciliation",
+          "trigger": "event — new version of an SOP / protocol amendment / ICF / plan is filed",
+          "what_ai_does": "Detects the supersession, diffs old vs new to summarize what changed, identifies downstream documents and TMF references that cite the prior version, and drafts a reconciliation checklist (which docs need re-pointing, which trainings re-trigger). Proposes marking prior versions superseded; the human and validated system execute the status change.",
+          "engine": "Local frozen model (internal controlled docs) + Cloud Claude optionally for a de-identified plain-language change summary",
+          "integration": "DMS/eTMF API, training system, Smartsheet checklist",
+          "tier": "AMBER",
+          "human": "Doc-control/QA approves the supersession status change and confirms the reconciliation actions in the validated system (RED on the actual status write)",
+          "value": "Stops obsolete-version use and dangling references — a frequent root cause of TMF and protocol-compliance findings"
+        },
+        {
+          "name": "Inspection-readiness gap analysis",
+          "trigger": "scheduled (monthly) + on-demand ahead of an audit/inspection",
+          "what_ai_does": "Runs a deeper readiness scan: completeness by zone, overdue/placeholder artifacts, unsigned or out-of-window documents, expiring credentials, superseded-version references, and known inspector hot-spots; produces a prioritized remediation plan with owners and a narrative readiness summary. Assessment and drafting only; remediation is human-executed.",
+          "engine": "Local frozen model (operates over the live TMF) + Cloud Claude for a de-identified executive readiness narrative",
+          "integration": "eTMF API, Smartsheet remediation tracker, dashboard, Outlook for the summary",
+          "tier": "AMBER",
+          "human": "QA / clinical-ops lead reviews the gap analysis, validates findings, and owns the remediation plan and timeline",
+          "value": "Shifts inspection prep from a frantic manual TMF audit to a continuous, scored, prioritized readiness posture"
+        },
+        {
+          "name": "Redaction / PII-PHI detection before any cloud use",
+          "trigger": "event — any document or text about to be sent to the Cloud Claude backend (a guardrail in the gateway path)",
+          "what_ai_does": "Scans content with Presidio (incl. MedicalNER and DICOM/image redaction) to detect PII/PHI; if found, blocks the cloud route and keeps processing local, or produces a de-identified version for cloud reasoning with a logged mapping. Acts as the enforcement point of the route-by-sensitivity rule; never the sole gate for declaring data 'safe'.",
+          "engine": "Validated/deterministic tool (Presidio) at the gateway, augmented by the Local frozen model for context-aware checks; this is what GATES Cloud Claude",
+          "integration": "LiteLLM-class gateway pre-call hook, Presidio service, audit log",
+          "tier": "AMBER (a human/QA spot-checks de-identification quality before any de-identified corpus is routinely cloud-processed; PHI never reaches cloud regardless)",
+          "human": "Privacy/QA validates de-identification adequacy on samples; flagged-as-PHI items are hard-routed local with no human override needed",
+          "value": "Hard technical guarantee that PHI/PII never egresses to the cloud — the linchpin that makes the hybrid HIPAA-defensible"
+        },
+        {
+          "name": "Document QC linter (signatures, dates, legibility, completeness fields)",
+          "trigger": "event — at point of filing / intake, before a doc reaches the approval queue",
+          "what_ai_does": "Checks each incoming document for required signatures and dates, signature-vs-event date windows, page completeness, legibility/scan quality, correct form version, and required fields populated; drafts a QC finding note for any defect and routes it back to the originator. Flags and explains only; it does not pass/fail the official record.",
+          "engine": "Local frozen model (PHI-bearing source-adjacent docs)",
+          "integration": "Intake pipeline, eTMF staging, Outlook/Teams for return-to-originator",
+          "tier": "AMBER",
+          "human": "Document controller confirms the QC finding and decides accept/reject; final QC status is set in the validated eTMF",
+          "value": "Catches the everyday quality defects (missing signature/date, wrong version, bad scan) at the door instead of at inspection"
+        },
+        {
+          "name": "Email & attachment auto-routing to the eTMF intake",
+          "trigger": "event — inbound email to a study mailbox with a fileable attachment",
+          "what_ai_does": "Triages study mailboxes, recognizes fileable artifacts (e.g. a returned signed form, a site cert, a vendor qualification doc), extracts study/site context, and routes the attachment into the classification/QC pipeline with proposed metadata. Triage and routing only; filing remains the human-approved step downstream.",
+          "engine": "Local frozen model (email bodies/attachments may contain PHI)",
+          "integration": "Outlook/Exchange, intake pipeline -> classifier -> eTMF staging",
+          "tier": "AMBER",
+          "human": "Owner of the intake queue reviews routed items; filing approval happens at the classify-and-file step",
+          "value": "Closes the 'documents stuck in inboxes' gap, the most common reason artifacts arrive in the TMF late or not at all"
+        },
+        {
+          "name": "Translation / certified-copy & localization control",
+          "trigger": "event — a non-English or country-specific document is filed (e.g. local ICF, regulatory approval, ethics correspondence)",
+          "what_ai_does": "Detects language and document type, drafts a working translation/summary for reviewer context, checks that a certified translation and the corresponding source/certified-copy artifact are both present and correctly cross-linked, and flags missing pairs. The certified translation of record stays a validated, human/vendor deliverable — the LLM never produces the official translation.",
+          "engine": "Local frozen model (regulatory/ethics docs, possibly PII) — working summary; Cloud Claude only on de-identified text",
+          "integration": "eTMF API, translation-vendor tracker in Smartsheet",
+          "tier": "AMBER",
+          "human": "Regulatory/QA confirms the certified translation and certified-copy pairing in the record-of-truth",
+          "value": "Prevents the common multi-country finding of missing certified translations or unlinked source/translation pairs"
+        },
+        {
+          "name": "TMF audit-trail & filing-activity summarizer",
+          "trigger": "scheduled (weekly) + on-demand for a specific period/site",
+          "what_ai_does": "Reads the eTMF/Part-11 audit trail and summarizes filing activity, backlog age, who-filed-what, recurring rejection reasons, and bottlenecks; drafts a plain-language TMF-health narrative and trend for governance. Reads and summarizes the validated audit trail — it never edits it, and reported metrics tie back to the system of record.",
+          "engine": "Local frozen model (audit data references subjects/sites/people) + Cloud Claude for a de-identified executive narrative",
+          "integration": "eTMF/Part-11 audit-trail API, Smartsheet/dashboard, Outlook for the digest",
+          "tier": "GREEN (read-only summary; the audit trail itself is the immutable validated record)",
+          "human": "TMF lead reviews the narrative before it goes to governance",
+          "value": "Turns an opaque audit trail into an actionable weekly TMF-health and bottleneck signal without manual log-trawling"
+        }
+      ]
+    },
+    {
+      "area": "Data Validity & Recurrent QC",
+      "usecases": [
+        {
+          "name": "Scheduled CDISC conformance run + AI finding-triage (SDTM/ADaM/Define-XML)",
+          "trigger": "scheduled (nightly + on every new SDTM/ADaM build or data refresh)",
+          "what_ai_does": "Pinnacle 21 (validated) produces the authoritative findings file (Error/Warning/Notice) against SDTMIG v3.4 / ADaMIG v1.3 / Define-XML v2.1 / FDA + PMDA rules. The LOCAL LLM then clusters findings by rule and domain, diffs against the last clean run to surface only NEW findings, drafts a plain-language explanation and a proposed disposition (real defect vs expected/explained-in-cSDRG/ADRG) grounded in the reviewer guides via RAG, and routes each cluster to the right programmer. It never changes the pass/fail verdict.",
+          "engine": "Validated tool (Pinnacle 21) for pass/fail + Local frozen model for triage/draft",
+          "integration": "Pinnacle 21 Enterprise output share, SDTM/ADaM datasets, Define-XML, cSDRG/ADRG in RAG store, programmer worklist/Smartsheet, Part 11 audit trail",
+          "tier": "AMBER",
+          "human": "Stat programmer / CDISC lead reviews and accepts/edits every triage disposition; the conformance report itself is the validated record-of-truth (RED) and is never altered by AI",
+          "value": "Hundreds of repeat/expected findings get pre-explained and the genuinely new ones surface instantly each build — turning a multi-hour manual triage into minutes, with a fully audited disposition log ready for the cSDRG/ADRG."
+        },
+        {
+          "name": "Cross-form / edit-check / logical-consistency surveillance",
+          "trigger": "event (each EDC data load / DTA transfer) + scheduled daily",
+          "what_ai_does": "Deterministic edit-check and cross-form logic (the validated check battery / SQL) runs first and flags hard inconsistencies (e.g., AE start before first dose, lab date outside visit window, EX dose vs randomized arm, pregnancy-test logic, visit-sequence breaks). The LOCAL LLM then reads the flagged subject-level rows, explains the likely cause in clinical language, distinguishes a true data error from an explainable protocol event, drafts a candidate query text, and proposes routing to DM or the site. Cross-form *logic* design can be drafted by Cloud Claude from de-identified specs.",
+          "engine": "Validated check logic + Local frozen model (subject-level rows stay local); Cloud Claude only for de-identified check-design",
+          "integration": "EDC/CTMS, Data Review Plan + edit-check spec in RAG, query manager, DM worklist, audit trail",
+          "tier": "AMBER",
+          "human": "DM / data reviewer approves the query before it is issued; no value is changed by AI",
+          "value": "Catches logical impossibilities and cross-domain contradictions continuously instead of at lock, with draft queries ready for one-click human approval."
+        },
+        {
+          "name": "PK timing (actual vs nominal) and BLQ/LLOQ rule checking",
+          "trigger": "event (each bioanalytical / PK concentration load) + scheduled",
+          "what_ai_does": "Validated logic computes actual-minus-nominal sampling deviations and applies the SAP/PK-plan BLQ/LLOQ handling rules (e.g., pre-first-dose BLQ=0, embedded BLQ vs trailing BLQ, LLOQ substitution) deterministically. The LOCAL LLM triages timing deviations beyond tolerance, explains each against the PK sampling schedule and t1/2 expectations via RAG, flags mis-applied or ambiguous BLQ flags for the PK scientist, and drafts the discrepancy note — it does not set the analysis value (that re-derives from the validated rule / Phoenix downstream).",
+          "engine": "Validated rule logic + Phoenix WinNonlin downstream (engine of record) + Local frozen model for triage",
+          "integration": "ADPC/PC datasets, PK Analysis Plan + BLQ/LLOQ rules in RAG, bioanalytical transfer, PK scientist worklist, audit trail",
+          "tier": "AMBER",
+          "human": "PK scientist reviews timing deviations and confirms BLQ handling; reported PK values come from the validated engine, never the LLM",
+          "value": "Timing-deviation and BLQ edge cases (the classic source of NCA errors) are surfaced and explained every load, protecting the integrity of the concentration dataset feeding Phoenix."
+        },
+        {
+          "name": "Lab / IXRS(IRT) / PK-sample reconciliation",
+          "trigger": "event (each lab, IXRS, or bioanalytical transfer) + scheduled weekly",
+          "what_ai_does": "Validated reconciliation logic performs 100% record-count, key, and value matching across sources (central-lab transfer vs LB, IXRS dispensing/kit vs EX/randomization, PK samples drawn per IXRS/lab manifest vs concentrations received/PC). The LOCAL LLM triages the unreconciled set, classifies each mismatch (missing sample, unit mismatch, duplicate, late transfer, mis-keyed accession), explains the likely root cause, and drafts the reconciliation finding + routing to the lab, DM, or PK. It does not adjudicate the matched record-of-truth.",
+          "engine": "Validated reconciliation logic + Local frozen model for mismatch triage",
+          "integration": "Central-lab transfer, IXRS/IRT, bioanalytical manifest, LB/EX/PC datasets, reconciliation spec in RAG, lab + DM worklists, audit trail",
+          "tier": "AMBER",
+          "human": "DM / PK scientist confirms each reconciliation resolution; the matched dataset is the validated record",
+          "value": "Sample-accountability and kit/dispensing gaps are caught and root-caused continuously, preventing missing-data surprises at lock and supporting full PK sample accountability."
+        },
+        {
+          "name": "Query-management oversight, aging & SLA escalation",
+          "trigger": "scheduled daily + threshold breach",
+          "what_ai_does": "Pulls open-query metadata from the query manager (de-identified: counts, ages, status, site, query type) and lets the LLM compute aging buckets, detect SLA breaches, summarize the open-query landscape, predict which queries threaten the next data-review or lock milestone, draft escalation emails, and prioritize the DM worklist. Subject-level query text stays LOCAL; aggregate metadata may go CLOUD for sharper trend reasoning. It does not open, answer, or close queries.",
+          "engine": "Local (query text) / Cloud Claude (de-identified aggregate metadata)",
+          "integration": "Query manager/EDC, CTMS milestones, Outlook/Teams, Smartsheet/DM dashboard, audit trail",
+          "tier": "AMBER",
+          "human": "DM lead reviews the prioritized list and approves escalations; query state changes stay human",
+          "value": "Aging queries stop slipping past lock-critical thresholds; DM gets a daily, ranked, milestone-aware worklist and ready-to-send escalations."
+        },
+        {
+          "name": "Duplicate / outlier / range / digit-preference checks",
+          "trigger": "scheduled (each refresh) + event on load",
+          "what_ai_does": "Validated statistical/rule logic computes range violations, within-subject and population outliers (e.g., robust z / IQR), duplicate records, and digit-preference / rounding patterns. The LOCAL LLM triages each flag on subject-level data: separates a plausible-but-extreme physiological value from a likely transcription error, explains it against the variable's expected range and the subject's own trajectory (RAG), and drafts a query or a 'no-action, explained' note. Method design and thresholds can be drafted via Cloud Claude on de-identified specs.",
+          "engine": "Validated statistical logic + Local frozen model for triage",
+          "integration": "SDTM/ADaM + raw EDC, range/edit specs in RAG, DM/central-monitoring dashboard, audit trail",
+          "tier": "AMBER",
+          "human": "Data reviewer / central monitor confirms each outlier disposition; no value altered by AI",
+          "value": "Outliers and duplicates are explained in context rather than dumped as raw flags, and digit-preference checks feed the central-monitoring (fraud/quality) signal — every refresh."
+        },
+        {
+          "name": "Data-quality KRI / QTL trend dashboard upkeep (RBQM)",
+          "trigger": "scheduled (daily/weekly) + threshold breach",
+          "what_ai_does": "Validated metric definitions compute the data-quality KRIs (site-level: query rate, query age, missing-data %, overdue forms, protocol-deviation rate, time-to-entry) and QTLs (trial-level acceptable ranges per ICH E6(R3)). The LLM narrates the dashboard: explains which KRI/QTL moved and why, distinguishes signal from noise, drafts the RBQM/central-monitoring narrative, and proposes a follow-up action. Aggregate site-level metrics may go CLOUD; any drill-down to subject rows stays LOCAL. Thresholds and breach status come from the validated metric layer.",
+          "engine": "Validated metric layer + Cloud Claude (aggregate narrative) / Local (subject drill-down)",
+          "integration": "EDC/CTMS, RBQM/CSM platform, KRI/QTL spec in RAG, Smartsheet/dashboard, audit trail",
+          "tier": "AMBER",
+          "human": "Central monitor / RBQM lead reviews narrative and decides actions; QTL/KRI breach status is from the validated tool",
+          "value": "Turns a metric wall into a weekly plain-language RBQM narrative with proposed actions — the 'demonstrate, don't just describe' centralized monitoring E6(R3) now expects."
+        },
+        {
+          "name": "Statistical / central-monitoring anomaly signals (site outliers, enrollment & visit anomalies)",
+          "trigger": "scheduled weekly",
+          "what_ai_does": "Validated central statistical monitoring (CSM) computes site-vs-site outlier statistics, unusual variance/means, enrollment and visit-pattern anomalies, and inlier/over-uniformity signals. The LOCAL LLM triages the ranked signals, explains each candidate (operational cause vs data-integrity concern), correlates across KRIs, and drafts a site-level follow-up or a monitoring-trigger memo. Subject/site-level data stays LOCAL; only de-identified statistical summaries may reach CLOUD.",
+          "engine": "Validated CSM engine + Local frozen model for signal triage",
+          "integration": "RBQM/CSM platform, EDC/CTMS, site-monitoring worklist, KRI history in RAG, audit trail",
+          "tier": "AMBER",
+          "human": "Central monitor / lead reviews each signal and decides on a site action; the statistical signal is from the validated engine",
+          "value": "Surfaces data-integrity and operational anomalies a tabular KRI report would bury, with a drafted, explainable rationale for any monitoring trigger."
+        },
+        {
+          "name": "Pre-lock data-review listing generation, diff & sign-off packet",
+          "trigger": "scheduled in the pre-lock window + on-demand before each blinded data review",
+          "what_ai_does": "Validated programs produce the SAP/Data-Review-Plan-defined listings (blinded). The LOCAL LLM diffs the current listings against the prior review run, summarizes what changed and what remains open, maps each open item to its query/disposition, drafts the blinded-data-review meeting package and the lock-readiness checklist, and flags any SAP-required check not yet evidenced. It does not generate or alter the listing values.",
+          "engine": "Validated listing programs + Local frozen model for diff/summary/packet",
+          "integration": "ADaM/SDTM, Data Review Plan + SAP in RAG, blinded-review minutes, lock checklist, audit trail",
+          "tier": "AMBER",
+          "human": "Lead biostatistician chairs the blinded review and signs the lock-readiness decision; blinded decisions are recorded with timestamp before unblinding",
+          "value": "Each blinded data review starts from a what-changed-since-last-time summary and an evidence-mapped lock checklist, compressing pre-lock cleaning and de-risking the lock decision."
+        },
+        {
+          "name": "Discrepancy triage, classification & routing to DM",
+          "trigger": "event (any new flag from any check above) + scheduled sweep",
+          "what_ai_does": "Acts as the unifying triage layer across all validated checks (conformance, edit-check, reconciliation, outlier, timing). The LOCAL LLM de-duplicates overlapping flags, classifies each discrepancy by type, severity, and likely owner, drafts the query/finding text grounded in the relevant SOP/spec via RAG, proposes a route (DM, site, PK, programming, medical coding), and assembles a single ranked DM worklist. It routes and drafts; it does not resolve or close.",
+          "engine": "Local frozen model (subject-level) — orchestrating validated-tool outputs",
+          "integration": "All check outputs, query manager, DM/programming worklists, SOPs/specs in RAG, Outlook/Teams, audit trail",
+          "tier": "AMBER",
+          "human": "DM / data reviewer approves classification and routing; resolution and closure stay human in the validated system",
+          "value": "Replaces fragmented per-tool flag lists with one de-duplicated, classified, pre-routed, draft-query worklist — the single biggest day-to-day time sink in DM oversight."
+        },
+        {
+          "name": "MedDRA / WHODrug auto-coding QC & uncoded-term triage",
+          "trigger": "event (each AE/CM/MH load) + scheduled",
+          "what_ai_does": "The coding system/dictionary (validated, versioned MedDRA/WHODrug) remains the source of coded values. The LOCAL LLM reviews the QC output: flags suspicious auto-codes, surfaces uncoded/queried verbatim terms, suggests candidate codes WITH the dictionary path for a human coder to confirm, and drafts the coding query. Verbatim AE/medication terms are subject-level and stay LOCAL. It proposes; it never assigns the code of record.",
+          "engine": "Validated coding dictionary/tool + Local frozen model for QC triage/suggestion",
+          "integration": "Safety/coding database, MedDRA/WHODrug (versioned), AE/CM/MH SDTM, coder worklist, audit trail",
+          "tier": "AMBER",
+          "human": "Medical coder confirms/assigns every code; the validated coding tool holds the record-of-truth",
+          "value": "Speeds the uncoded-term backlog and catches questionable auto-codes early, while the coded value of record stays under the validated dictionary and a human coder."
+        },
+        {
+          "name": "SDTM<->Phoenix<->ADaM PK numeric cross-traceability reconciliation",
+          "trigger": "event (each PK parameter / ADPP build) + pre-lock",
+          "what_ai_does": "Validated reconciliation checks confirm PK parameters match across PP <-> Phoenix WinNonlin output (engine of record) <-> ADPP, and that RELREC PC<->PP linkage and time-after-dose derivations are consistent. The LOCAL LLM triages any mismatch, localizes where the chain broke (mapping, BLQ rule, rounding, parameter-code mapping), explains it, and drafts the finding to the PK scientist/programmer. The authoritative PK numbers always re-derive from Phoenix — the LLM never computes or 'fixes' a value.",
+          "engine": "Phoenix WinNonlin (engine of record) + validated reconciliation logic + Local frozen model for mismatch triage",
+          "integration": "PP/ADPP datasets, Phoenix output, RELREC, PK plan in RAG, PK/programming worklist, audit trail",
+          "tier": "RED",
+          "human": "PK scientist + lead biostatistician confirm the reconciliation; any reported PK number comes only from the validated engine, LLM out of the decision path",
+          "value": "Guarantees the PK numbers that reach the CSR are identical and traceable across PP, Phoenix, and ADPP — the highest-stakes reconciliation in an early-phase clin-pharm study."
+        }
+      ]
+    },
+    {
+      "area": "Trial Monitoring & RBQM",
+      "usecases": [
+        {
+          "name": "KRI/QTL definition & specification drafting",
+          "what_ai_does": "Drafts KRI/QTL definitions, rationale, numerators/denominators, and starting thresholds from the protocol + risk assessment + SOP library (RAG); proposes the metric catalog and code stubs. Human risk-committee/biostat finalizes thresholds; the validated CSM platform computes them. LLM does not set thresholds of record.",
+          "engine": "Cloud Claude (de-identified protocol text) + RAG",
+          "tier": "AMBER",
+          "trigger": "on-demand at study startup / protocol amendment",
+          "value": "Cuts RBQM plan setup from weeks to days; consistent, traceable KRI/QTL library aligned to CtQ factors",
+          "integration": "RAG (protocol/SOP/risk plan), CSM/RBQM platform, Smartsheet (risk register)",
+          "human": "Risk committee + lead biostatistician approve thresholds and definitions"
+        },
+        {
+          "name": "Threshold-breach signal triage & narrative",
+          "what_ai_does": "Validated CSM/RBQM platform flags KRI/QTL breaches; LLM triages the queue, drafts the breach narrative (what breached, magnitude, trend, candidate causes from history), proposes severity/priority, and routes. The breach determination of record and any QTL excursion logged to the CSR stay human + validated tool.",
+          "engine": "Local (subject-level/unblinded inputs) or Cloud (aggregate de-identified)",
+          "tier": "RED",
+          "trigger": "scheduled (e.g., weekly CSM refresh) + event (breach fired)",
+          "value": "Faster, consistent triage; reviewers focus on real signals instead of dashboard scanning",
+          "integration": "CSM/RBQM platform, EDC export, Smartsheet (action log), Outlook",
+          "human": "Central monitor / medical monitor confirms breach and disposition"
+        },
+        {
+          "name": "Central statistical monitoring signal interpretation (site outliers, digit preference, anomalies)",
+          "what_ai_does": "Statistical engine computes site-outlier scores, digit-preference tests (volcano plots), variance/correlation anomalies, date implausibilities, and AE under-reporting. LLM narrates the ranked findings, clusters by site, and drafts a follow-up hypothesis list. The statistics themselves run in the validated/frozen engine, never the LLM.",
+          "engine": "Validated stats tool computes; Local model narrates (subject-level data)",
+          "tier": "RED",
+          "trigger": "scheduled (data refresh)",
+          "value": "Surfaces fraud/quality/training signals early; turns dense statistical output into actionable, plain-language leads",
+          "integration": "CSM platform / SAS-R stats, EDC, RAG (site history)",
+          "human": "Statistician + central monitor adjudicate each flagged site"
+        },
+        {
+          "name": "Protocol-deviation surveillance & classification",
+          "what_ai_does": "Classifies incoming deviations as major/minor and by category (eligibility, IP, visit-window, consent, procedure), maps to the protocol section, flags likely-important deviations per ICH E6(R3), and drafts the log entry. Human QA confirms major/important classifications; the deviation log of record is updated via validated system + human.",
+          "engine": "Local (subject-identifiable deviation text) frozen model",
+          "tier": "AMBER",
+          "trigger": "event (deviation reported) / scheduled sweep of EDC + emails",
+          "value": "Consistent classification, fewer missed important deviations, audit-ready rationale",
+          "integration": "EDC/CTMS deviation module, RAG (protocol), Smartsheet/CTMS log",
+          "human": "QA/clinical lead confirms major & 'important' deviation classification"
+        },
+        {
+          "name": "Safety signal triage (AE/SAE volume, lab shifts)",
+          "what_ai_does": "Triages aggregate AE/SAE volume trends and lab-shift patterns flagged by validated tools; drafts a triage note and prioritization for medical review. All reported safety numbers come from the validated safety DB/EDC with medical review; LLM is out of the number-generating and causality path.",
+          "engine": "Local model on unblinded/subject-level inputs; validated tool for numbers",
+          "tier": "RED",
+          "trigger": "scheduled + event (SAE received / threshold hit)",
+          "value": "Earlier focus on emerging safety patterns without exposing unblinded data to cloud",
+          "integration": "Safety DB/EDC, lab vendor feed, RAG (protocol safety section)",
+          "human": "Medical monitor / safety physician owns assessment and causality"
+        },
+        {
+          "name": "Site performance & enrollment-metric reporting",
+          "what_ai_does": "Summarizes site scorecards (enrollment vs plan, screen-fail, query aging, deviation rate, data-entry lag) from validated metrics into a narrative + recommended actions; drafts site-by-site commentary. Metrics computed by CTMS/EDC; LLM summarizes de-identified aggregates.",
+          "engine": "Cloud Claude (de-identified aggregate metrics) + RAG",
+          "tier": "GREEN",
+          "trigger": "scheduled (weekly/monthly)",
+          "value": "Standardized site oversight narratives; quick identification of lagging sites",
+          "integration": "CTMS/EDC metrics, Smartsheet/Power BI, Outlook/SharePoint",
+          "human": "Clinical operations lead reviews before distribution"
+        },
+        {
+          "name": "Enrollment & visit-anomaly detection narrative",
+          "what_ai_does": "Validated analytics detect enrollment spikes/clusters, visit-window violations, and implausible visit timing; LLM narrates the anomalies, links to candidate causes, and proposes monitoring follow-up. Detection math is in the validated tool; LLM only explains and routes.",
+          "engine": "Local (subject-level timing data) + validated analytics",
+          "tier": "AMBER",
+          "trigger": "scheduled (data refresh)",
+          "value": "Catches enrollment-pressure and visit-compliance issues early",
+          "integration": "EDC/CTMS, CSM platform, Smartsheet (follow-up)",
+          "human": "Central monitor reviews and assigns follow-up"
+        },
+        {
+          "name": "CAPA drafting & tracking",
+          "what_ai_does": "Drafts CAPA records (problem statement, root-cause options, proposed corrective/preventive actions, owners, due dates) from a signal/finding; tracks open CAPAs, flags overdue/aging items, drafts status updates. Effectiveness checks and CAPA closure of record are human-approved in the validated quality system.",
+          "engine": "Cloud Claude (de-identified) + RAG (CAPA SOP)",
+          "tier": "AMBER",
+          "trigger": "event (finding raised) + scheduled aging sweep",
+          "value": "Faster, better-structured CAPAs; nothing falls through the cracks on due dates",
+          "integration": "Smartsheet/QMS (CAPA tracker, Smartsheet API), Outlook, RAG",
+          "human": "QA owner approves root cause, actions, and closure"
+        },
+        {
+          "name": "DSMB / safety-review packet assembly",
+          "what_ai_does": "Assembles the DSMB/SRC packet shell: pulls validated tables/listings/figures, drafts the cover narrative, blinded vs unblinded section structure, and prior-action follow-up summary. All numbers/TLFs come from validated outputs; unblinded sections built on the LOCAL model only. LLM drafts narrative, never the numbers.",
+          "engine": "Local model for unblinded sections; validated tools for all TLFs",
+          "tier": "RED",
+          "trigger": "scheduled (DSMB meeting cadence)",
+          "value": "Cuts packet assembly time, consistent structure, reduces manual collation errors",
+          "integration": "Stats/TLF outputs, safety DB, SharePoint, RAG (charter)",
+          "human": "Unblinded statistician + medical writer + DSMB chair sign off"
+        },
+        {
+          "name": "Monitoring-visit report (MVR) summarization",
+          "what_ai_does": "Summarizes MVRs into structured findings (open issues, action items, deviations noted, site responsiveness) and a portfolio-level rollup of recurring themes across sites. De-identified MVR text; LLM produces drafts only, CRA/lead confirm findings of record.",
+          "engine": "Cloud Claude (de-identified MVR text) + RAG",
+          "tier": "GREEN",
+          "trigger": "event (MVR filed) + scheduled rollup",
+          "value": "Fast, consistent MVR digests; surfaces cross-site recurring issues",
+          "integration": "CTMS/eTMF (MVR docs), SharePoint, Smartsheet (actions)",
+          "human": "CRA / clinical lead verifies summarized findings"
+        },
+        {
+          "name": "MVR follow-up & action-item tracking",
+          "what_ai_does": "Extracts action items from MVRs, opens/updates tracker entries, links owners and due dates, drafts reminders for aging/overdue items, and flags items needing escalation. Writes go only to the non-regulated action tracker; eTMF record updates remain human + validated.",
+          "engine": "Cloud Claude (de-identified) via MCP connectors",
+          "tier": "AMBER",
+          "trigger": "event (MVR filed) + scheduled aging sweep",
+          "value": "Closes the loop on monitoring actions; reduces overdue follow-ups",
+          "integration": "Smartsheet (Smartsheet API), Outlook, CTMS",
+          "human": "CRA confirms action items and closures"
+        },
+        {
+          "name": "QTL dashboard upkeep & RBQM oversight memo",
+          "what_ai_does": "Keeps the QTL/KRI dashboard annotated: drafts change-log entries, narrates trend movements, flags definitions needing recalibration after amendments, and drafts the periodic RBQM oversight summary. Dashboard values come from the validated platform; LLM annotates de-identified aggregates only.",
+          "engine": "Cloud Claude (de-identified aggregates) + RAG",
+          "tier": "GREEN",
+          "trigger": "scheduled (dashboard refresh / monthly oversight)",
+          "value": "Always-current, well-annotated oversight artifact; less manual dashboard maintenance",
+          "integration": "CSM/RBQM platform, Power BI/Smartsheet, RAG (RBQM plan), SharePoint",
+          "human": "RBQM/risk lead reviews oversight memo before filing"
+        }
+      ]
+    },
+    {
+      "area": "The Hybrid Agentic Platform",
+      "usecases": [
+        {
+          "name": "Model-agnostic gateway (LiteLLM-class) — single OpenAI-compatible front door",
+          "trigger": "n/a (always-on)",
+          "what_ai_does": "Every agent/script calls ONE OpenAI-compatible endpoint; the gateway selects the backend per data-classification tag on the request, enforces per-key/per-model budgets and rate limits, retries/falls back, and emits a structured log line per call. It does not decide clinical content — it is the control plane that makes routing, cost, and audit non-bypassable.",
+          "engine": "Local+Cloud (the gateway fronts both backends)",
+          "integration": "Fronts LOCAL vLLM + CLOUD Claude API; emits to the audit/observability layer; virtual keys per agent/team",
+          "tier": "GREEN (infrastructure; carries GREEN/AMBER/RED traffic but adds no autonomous authority)",
+          "human": "Platform owner sets routing policy, budgets, and key scopes; changes to policy are reviewed/version-controlled",
+          "value": "One choke point for routing, cost, fallback, and audit — swap or add a model without touching any agent; volatility hedge and the single place governance is enforced."
+        },
+        {
+          "name": "Data-classification router + Presidio PII/PHI guardrail (egress firewall)",
+          "trigger": "event (on every inbound request, pre-call)",
+          "what_ai_does": "Presidio scans payloads for identifiers and the policy engine routes by classification: PHI/unblinded/subject-level -> LOCAL only (deny-by-default to cloud); de-identified -> CLOUD-eligible. Misclassified-sensitive text is masked or blocked before egress. The guardrail classifies/redacts; it never interprets clinical meaning.",
+          "engine": "Local+Cloud (decision is infra; payload then runs on the routed backend)",
+          "integration": "Presidio recognizers (NHS/MRN/subject-ID custom entities), gateway policy store, audit trail",
+          "tier": "AMBER (automated classify/redact; sensitive-data routing is safety-critical and is logged + sampled-reviewed)",
+          "human": "DPO/privacy owner curates recognizers + allow/deny lists; periodic human audit of redaction false-negatives",
+          "value": "Makes 'PHI/unblinded never leaves the building' a technical guarantee, not a policy promise — the core of the hybrid trust model."
+        },
+        {
+          "name": "LOCAL frozen open-weight backend (vLLM, air-gapped GPU)",
+          "trigger": "n/a (always-on)",
+          "what_ai_does": "Serves on-prem inference for all sensitive/unblinded/subject-level drafting, classification, and triage with zero egress. Weights + decoding params + prompts are version-pinned so runs are reproducible for inspection. Generates drafts/triage only — never emits a reported number.",
+          "engine": "Local frozen model",
+          "integration": "vLLM OpenAI-compatible server on isolated GPU host; reachable only via the gateway; model-freeze registry",
+          "tier": "GREEN/AMBER depending on task (RED data is allowed here because it never leaves; LLM still stays out of any reported-number decision)",
+          "human": "Stat/IT owner approves each frozen model version into the registry before production use",
+          "value": "Sovereignty + reproducibility: sensitive data stays on-prem and a frozen model lets you re-run an analysis-support task identically years later for an inspector."
+        },
+        {
+          "name": "CLOUD Claude backend (API under BAA, de-identified only)",
+          "trigger": "n/a (always-on)",
+          "what_ai_does": "Handles hard reasoning, summarization, and code drafting on DE-IDENTIFIED text only (SOP Q&A, finding explanations, status-report prose). Reachable only after the classification router clears the payload. Drafts/reasons; humans/validated tools own any regulated output.",
+          "engine": "Cloud Claude",
+          "integration": "Anthropic Claude API with signed BAA; gateway-gated; prompt-caching enabled at the gateway",
+          "tier": "GREEN/AMBER (de-identified drafting + code-with-verify)",
+          "human": "Reviewer accepts/rejects cloud drafts; BAA + DPIA owned by compliance; consumer/Max plans explicitly disallowed",
+          "value": "Frontier reasoning for the non-sensitive 80% of text work without standing up frontier compute on-prem — ROI now, with PHI structurally excluded."
+        },
+        {
+          "name": "RAG knowledge base over SOPs/WIs/study docs (local, permissioned vector store)",
+          "trigger": "event (re-index on document approval/supersede) + on-demand (queries)",
+          "what_ai_does": "Ingests approved SOPs/WIs/protocols/plans, chunks + embeds them into a LOCAL vector store, and answers grounded compliance questions WITH CITATIONS to the source doc + version. Retrieval and synthesis only; it points to the controlled document — the controlled document, not the LLM, is authority.",
+          "engine": "Local+Cloud (LOCAL embeddings/store; de-identified Q&A may use CLOUD; sensitive docs stay LOCAL)",
+          "integration": "Local vector DB; SharePoint/eTMF as document source; permission-filtered by user role/study; version metadata from doc control",
+          "tier": "GREEN (cited answers/summaries; never authoritative on its own)",
+          "human": "QA owns the source-of-truth docs; users verify citations; no answer overrides the controlled document",
+          "value": "Instant, cited 'what does SOP-X require?' across the whole library — cuts time-to-answer and onboarding, with permissions preventing cross-study/role leakage."
+        },
+        {
+          "name": "Orchestration layer (scheduled jobs + agent framework that fires the agents)",
+          "trigger": "scheduled (cron) + event (webhooks: data cut, lock, document filed) + on-demand",
+          "what_ai_does": "Runs the agents on schedule or on study events, chains gateway calls with connector tool-calls, enforces per-agent guardrails/timeouts, and drops anything that touches a record-of-truth into the approval queue instead of acting. Orchestrates; it does not grant agents write authority beyond their tier.",
+          "engine": "Local+Cloud (orchestrator is code; calls models via gateway)",
+          "integration": "cron + Python / n8n / Power Automate; webhooks from EDC/CTMS/eTMF; queue + audit hooks; MCP tool registry",
+          "tier": "AMBER (automation harness; individual jobs carry their own tier; RED actions are intercepted to the queue)",
+          "human": "Ops owner enables/schedules each agent; RED-tier outputs always land in the approval queue, never auto-applied",
+          "value": "Turns one-off prompts into reliable, scheduled, auditable trial-ops automations — the 'always-on coworker' layer."
+        },
+        {
+          "name": "Connector/tool layer via MCP (eTMF, Smartsheet, EDC, CTMS, SharePoint, Outlook, Pinnacle 21)",
+          "trigger": "n/a (always-on) — invoked per agent action",
+          "what_ai_does": "Exposes each system as an MCP tool with explicit, least-privilege scopes (read-mostly; writes gated). Agents read/draft through these tools; any write to a record-of-truth (eTMF filing, Smartsheet plan, EDC) is proposed and queued, not executed. The connector layer brokers and logs access — it does not loosen tier rules.",
+          "engine": "Local+Cloud (tools called by agents on either backend, gateway-mediated)",
+          "integration": "MCP servers for Veeva eTMF API, Smartsheet API, EDC, CTMS, SharePoint, Outlook/Graph, Pinnacle 21; scoped service accounts",
+          "tier": "AMBER/RED (read = AMBER; write to record-of-truth = RED -> validated tool + human)",
+          "human": "System owners grant scopes; record-of-truth writes require approval-queue sign-off and e-signature",
+          "value": "One uniform, least-privilege, fully-logged way to reach every operational system — no brittle per-system glue, and writes can't bypass governance."
+        },
+        {
+          "name": "Unified Part 11 audit & observability trail",
+          "trigger": "n/a (always-on)",
+          "what_ai_does": "Captures, for every gateway call and connector action: who/which-agent, model version + backend, prompt + classification decision, redactions applied, cost/tokens, tool calls, the human approval/e-signature, and before/after of any record change — into ONE tamper-evident, time-stamped store. It records; it never edits or deletes trail entries.",
+          "engine": "Local+Cloud (collector is infra; ingests from both backends + connectors)",
+          "integration": "Central log/trace store; e-signature service; exports for inspectors; immutable/WORM retention",
+          "tier": "AMBER (compliance infrastructure; supports RED actions but takes no clinical decision)",
+          "human": "QA/CSV owner validates the trail; inspectors read it; trail itself is access-controlled and tamper-evident",
+          "value": "Makes the whole AI layer inspectable and 21 CFR Part 11 / ALCOA++-defensible — the difference between a demo and something you can put in front of an FDA inspector."
+        },
+        {
+          "name": "Human-in-the-loop approval queue",
+          "trigger": "event (any agent proposes a RED/record-of-truth or timeline change)",
+          "what_ai_does": "Holds every proposed change to a regulated record/timeline/reported output as a reviewable item: shows the AI draft, its source/citations, the diff, and the classification, and requires an explicit human accept/edit/reject + e-signature before the connector executes. The queue presents; the human decides and signs.",
+          "engine": "Local+Cloud (UI is infra; proposals come from agents)",
+          "integration": "Sits between orchestrator and connector writes; eTMF/Smartsheet/EDC/CTMS; e-signature; feeds audit trail",
+          "tier": "RED gatekeeper (this is the mechanism that keeps the LLM out of the decision path for regulated changes)",
+          "human": "Named reviewer with authority for that record/study approves, edits, or rejects with reason; logged",
+          "value": "Guarantees no LLM autonomously alters a record, timeline, or reported number — humans stay accountable, with a clean approval audit."
+        },
+        {
+          "name": "Model-freeze & engine-of-record registry",
+          "trigger": "n/a (always-on) — consulted per run; updated on change-control",
+          "what_ai_does": "Authoritative registry of (a) which frozen LOCAL model version + decoding params + prompt set is in production for each task (for reproducibility), and (b) which VALIDATED tool is the engine of record for each regulated output (Pinnacle 21 = conformance, Phoenix WinNonlin = PK, EDC/CTMS = operational truth). It pins and records; it does not let an LLM become an engine of record.",
+          "engine": "Validated tool (registry governs validated engines + frozen models)",
+          "integration": "References vLLM model artifacts, Pinnacle 21, Phoenix WinNonlin, EDC/CTMS; tied to change-control + audit",
+          "tier": "RED-governing (defines what may produce reported numbers; LLM explicitly excluded)",
+          "human": "CSV/validation + biostat leads approve every registry change under formal change-control",
+          "value": "Reproducibility for inspection + a hard line that reported numbers come only from validated tools — closes the two biggest regulatory gaps of an AI stack."
+        },
+        {
+          "name": "Caching, cost/budget controls & FinOps metering",
+          "trigger": "n/a (always-on)",
+          "what_ai_does": "Caches identical/near-identical de-identified prompts (e.g., repeated SOP retrievals) and meters tokens/cost per agent, model, study, and team via gateway virtual keys, enforcing budget caps and surfacing spend. It optimizes cost; it never trades off governance (cache is classification-aware, sensitive payloads excluded).",
+          "engine": "Local+Cloud (gateway feature)",
+          "integration": "Gateway cache + budget engine; cost dashboards; per-study/per-team virtual keys; audit trail",
+          "tier": "GREEN (operational efficiency)",
+          "human": "Finance/ops owner sets budgets and alerts; reviews per-study spend",
+          "value": "Predictable, attributable AI spend with cache savings on repetitive de-identified work — makes the ROI case auditable and stops runaway cloud bills."
+        },
+        {
+          "name": "Identity, RBAC & secrets / trust-boundary management",
+          "trigger": "n/a (always-on)",
+          "what_ai_does": "Maps users and agents to roles/studies, enforces least-privilege on gateway keys and connector scopes, holds credentials in a vault, and isolates the air-gapped LOCAL host. It authenticates/authorizes and isolates; it makes no clinical or routing-content decision beyond enforcing who-can-do-what.",
+          "engine": "Local+Cloud (security infrastructure)",
+          "integration": "SSO/IdP (study + role claims), secrets vault, network isolation for the GPU host, connector service accounts, audit trail",
+          "tier": "AMBER (security control plane; underpins RED safeguards)",
+          "human": "Security/IT owner provisions roles, scopes, and access reviews; periodic recertification",
+          "value": "Ensures RAG permissions, connector writes, and unblinded-data access all respect who the user is — prevents cross-study/role leakage and keeps the air gap real."
+        }
+      ]
+    },
+    {
+      "area": "Additional / easily-missed",
+      "usecases": [
+        {
+          "name": "Informed-consent (ICF) version tracking & site-version reconciliation",
+          "trigger": "New ICF version approved; new subject consented; site IRB/EC approval received",
+          "what_ai_does": "Tracks every ICF version (master + site/IRB-EC-approved local versions + translations), maps which version each enrolled subject signed against the version effective on their consent date, and flags re-consent obligations when a new version is approved mid-study. Surfaces mismatches (subject consented on a superseded version) and missing site-level approvals. Under E6(R3) consent is an ongoing dialogue/eConsent, so it tracks re-consent events too.",
+          "engine": "LOCAL (ICF content + subject-level consent dates can be PHI-adjacent/unblinded; stays air-gapped). De-identified version-control logic can burst to CLOUD.",
+          "integration": "eTMF, CTMS, IRB/EC tracker, EDC (consent date)",
+          "tier": "AMBER",
+          "human": "PM/CRA approves any re-consent trigger or flagged mismatch before action",
+          "value": "Consent-version mismatches and missed re-consents are a top-5 GCP inspection finding; manual tracking across sites/languages is error-prone."
+        },
+        {
+          "name": "Site feasibility, selection & activation-readiness tracking",
+          "trigger": "Feasibility responses received; activation checklist item changes; weekly status run",
+          "what_ai_does": "Maintains the site activation checklist (regulatory packet, contract, IRB/EC approval, site-init visit, green-light criteria), computes per-site activation status and cycle time, drafts feasibility questionnaires and summarizes returned responses into a site-ranking matrix, and flags sites stalled on a missing prerequisite. Predicts activation-date slips from outstanding items.",
+          "engine": "CLOUD for de-identified feasibility text synthesis/ranking; LOCAL if site/PI documents contain sensitive contractual/personal data.",
+          "integration": "CTMS, eTMF, Smartsheet, IRB/EC tracker",
+          "tier": "AMBER",
+          "human": "Clin-ops lead approves go/no-go activation decisions",
+          "value": "Slow/uneven site activation is the #1 cause of early-phase timeline slip; readiness gaps are easily missed across many sites."
+        },
+        {
+          "name": "Investigational-product (IP)/drug accountability & reconciliation",
+          "trigger": "IP shipment/dispensing/return event; pre-monitoring-visit run; reconciliation cycle",
+          "what_ai_does": "Reconciles IP shipped vs dispensed vs returned vs destroyed per site against drug-accountability logs and IXRS/IRT dispensing records; flags discrepancies, negative inventory, expiry-window breaches, temperature-excursion-quarantined lots, and missing destruction records. Drafts the accountability-discrepancy memo for CRA follow-up.",
+          "engine": "LOCAL (IP/dispensing records tie to subject-level unblinded randomization data; air-gapped).",
+          "integration": "IXRS/IRT, CTMS, EDC, eTMF",
+          "tier": "RED",
+          "human": "CRA/QA reconciles and signs; the reconciled count of record always comes from the validated IXRS/inventory system, not the LLM",
+          "value": "Drug accountability is a mandatory GCP/Part-11 record and frequent inspection finding; reconciliation across IXRS + paper logs is tedious and error-prone."
+        },
+        {
+          "name": "Randomization / IXRS(IRT) setup-spec & UAT oversight (blinding-safe)",
+          "trigger": "IXRS build/change request; UAT cycle; periodic blinded-anomaly scan",
+          "what_ai_does": "Drafts and QCs the IXRS/IRT user-requirement and randomization spec against the protocol (stratification factors, block size handling, dispensing logic, emergency unblinding workflow), generates and tracks UAT test scripts and defect logs, and monitors live IXRS for stratification imbalance or assignment anomalies WITHOUT exposing treatment codes. Never touches the actual randomization list.",
+          "engine": "LOCAL (randomization/IXRS internals are unblinding-sensitive; strictly air-gapped). De-identified spec drafting may use CLOUD.",
+          "integration": "IXRS/IRT, EDC, CTMS",
+          "tier": "RED",
+          "human": "Unblinded statistician/QA validates randomization; LLM stays out of the unblinding decision path entirely",
+          "value": "IXRS misconfiguration (wrong block/strata) can compromise an entire study; UAT oversight is detail-heavy and easily under-resourced."
+        },
+        {
+          "name": "Lab manual, central-lab spec & kit/supply management",
+          "trigger": "Protocol/lab-manual update; kit-expiry threshold; inventory drawdown",
+          "what_ai_does": "Maintains the lab manual and kit catalog, cross-checks the protocol's schedule-of-assessments against lab requisition panels and kit contents for coverage gaps, monitors per-site kit inventory and expiry to forecast resupply needs, and flags expiring kits or panels missing from the lab spec. Drafts resupply requests.",
+          "engine": "CLOUD for de-identified protocol-vs-lab-manual coverage reasoning; LOCAL for site inventory tied to subject data.",
+          "integration": "Central-lab portal, CTMS, EDC, eTMF",
+          "tier": "AMBER",
+          "human": "Lab-ops/CRA approves resupply orders and spec changes",
+          "value": "Missing/expired kits cause un-drawable samples and protocol deviations at the visit; coverage gaps between protocol and lab spec are a classic easily-missed defect."
+        },
+        {
+          "name": "Regulatory submission & lifecycle tracking (IND/CTA, amendments, annual reports)",
+          "trigger": "Submission milestone; anniversary date approaching; amendment initiated",
+          "what_ai_does": "Tracks IND/CTA and amendment submission status, agency clock dates (e.g., 30-day IND safety-to-proceed, CTA assessment timelines), and recurring obligations: DSUR due on the CTA/IND anniversary, IND annual report, protocol-amendment and safety-report submissions. Maintains a submission calendar, drafts cover letters/forms (e.g., 1571-class), assembles the submission-component checklist, and alerts before deadlines.",
+          "engine": "CLOUD for de-identified submission-document drafting/checklists; LOCAL if drafts contain unredacted subject or proprietary CMC data.",
+          "integration": "Regulatory tracker, eTMF, CTMS, calendar",
+          "tier": "AMBER",
+          "human": "Regulatory affairs approves and signs all submissions; the official submission record is the regulatory system of record",
+          "value": "Missed annual-report/DSUR anniversary dates and amendment-submission lapses are serious compliance failures; the recurring-clock tracking is easily forgotten."
+        },
+        {
+          "name": "Expedited safety-reporting clock tracker (SUSAR/SAE 7- & 15-day)",
+          "trigger": "Day-0 awareness of a reportable case; T-minus reminders; follow-up info received",
+          "what_ai_does": "Starts and tracks the regulatory clock from sponsor awareness for each reportable case: 7 calendar days for fatal/life-threatening SUSARs and 15 calendar days for other serious unexpected related events, plus follow-up-report clocks. Distributes pre-deadline reminders, tracks distribution to IRBs/ECs/investigators/agencies, and flags any case at risk of missing its clock. Drafts the distribution log, not the medical assessment.",
+          "engine": "LOCAL (case safety data is PHI/unblinded; strictly air-gapped).",
+          "integration": "Safety database (PV), eTMF, IRB/EC tracker, regulatory tracker",
+          "tier": "RED",
+          "human": "Pharmacovigilance/medical monitor owns causality/expectedness and the official submission; LLM only tracks/reminds",
+          "value": "Missing a 7/15-day expedited-reporting clock is a severe regulatory finding; clock management across many cases and recipients is precisely the kind of bookkeeping that slips."
+        },
+        {
+          "name": "Audit & inspection logistics / readiness orchestration",
+          "trigger": "Audit/inspection announced; document request issued; finding logged",
+          "what_ai_does": "Manages sponsor-audit and regulatory-inspection logistics: assembles the document request list, builds and tracks the storyboard/agenda, coordinates SME availability, stands up and maintains the inspection-readiness war-room tracker, logs requests during the inspection, and tracks resulting findings to CAPA closure. Drafts responses to audit observations.",
+          "engine": "CLOUD for de-identified logistics/response drafting; LOCAL for any source documents containing PHI.",
+          "integration": "eTMF, CTMS, SharePoint, calendar",
+          "tier": "AMBER",
+          "human": "QA lead approves all inspection responses and document releases",
+          "value": "Inspection logistics are high-stakes, time-compressed, and currently coordinated by hand; complements the existing inspection-readiness gap analysis with live logistics."
+        },
+        {
+          "name": "Training-compliance & qualification tracking (curriculum + delegation)",
+          "trigger": "New training/protocol version assigned; delegation-log change; expiry threshold; periodic run",
+          "what_ai_does": "Maintains per-person required-training matrices by role/study, reconciles LMS completion records against assignments, ties training currency to the delegation-of-authority log (no task delegated without current GCP/protocol training), and alerts on overdue training, expired GCP certs, or delegation entries lacking prerequisite training. Drafts the training-status summary for the eTMF.",
+          "engine": "CLOUD for de-identified compliance reconciliation logic; LOCAL if records carry personal/HR data.",
+          "integration": "LMS, eTMF (delegation log), CTMS",
+          "tier": "AMBER",
+          "human": "Clin-ops/PI approve delegation and training remediation",
+          "value": "Untrained staff performing delegated tasks is a frequent inspection finding; the training-to-delegation linkage is easily overlooked vs simple CV-expiry alerts already on the list."
+        },
+        {
+          "name": "Data-transfer agreement (DTA) scheduling & receipt/reconciliation confirmation",
+          "trigger": "Scheduled transfer due/received; spec mismatch detected",
+          "what_ai_does": "Maintains the transfer calendar from each DTA/transfer spec (vendor, frequency, format, variables), confirms each expected external transfer (central lab, PK bioanalytical, ECG, IXRS, PRO/eCOA) actually arrived on schedule, validates file structure/record counts/checksums against the spec, reconciles counts against EDC, and flags missing/late/malformed transfers. Drafts the transfer-receipt log.",
+          "engine": "LOCAL (transferred clinical/PK data is PHI/unblinded-adjacent; air-gapped). Spec-conformance metadata can use CLOUD.",
+          "integration": "SFTP/transfer system, EDC, DTA/transfer spec, CTMS",
+          "tier": "AMBER",
+          "human": "DM lead confirms acceptance; reported counts come from validated reconciliation, not the LLM",
+          "value": "Silent missed or malformed external data transfers surface late and jeopardize DB-lock timelines; receipt confirmation against the DTA schedule is routinely manual."
+        },
+        {
+          "name": "Contract / CDA / agreement lifecycle tracking (CTA-contract, CDA, MSA, vendor SOWs)",
+          "trigger": "Agreement drafted/executed; expiry/renewal window; new vendor or site onboarding",
+          "what_ai_does": "Tracks the full agreement portfolio (confidentiality/CDAs, clinical-trial-agreement contracts with sites, MSAs, vendor SOWs, change orders) with execution status, effective/expiry dates, auto-renewal and notice windows, and key obligation extraction (deliverables, payment triggers). Alerts on unexecuted agreements blocking site activation and on expiring CDAs before data sharing.",
+          "engine": "CLOUD for de-identified clause extraction/summary; LOCAL for fully-executed contracts with sensitive commercial terms.",
+          "integration": "Contract repository, CTMS, eTMF, SharePoint",
+          "tier": "AMBER",
+          "human": "Legal/contracts approves; LLM extracts and reminds only",
+          "value": "Unexecuted CTAs/CDAs silently block activation and create data-sharing exposure; obligation/expiry tracking is fragmented across legal and ops."
+        },
+        {
+          "name": "Lessons-learned & continuous-improvement knowledge capture",
+          "trigger": "Study close-out; CAPA closure; new study kickoff; periodic mining run",
+          "what_ai_does": "Mines closed studies, CAPAs, deviation trends, query patterns, and meeting minutes to draft a structured lessons-learned register, clusters recurring issues into themes, and at study start-up surfaces relevant prior lessons (via the RAG KB) for the new protocol. Feeds candidate process improvements back to SOP owners.",
+          "engine": "CLOUD for de-identified thematic synthesis; LOCAL for source artifacts containing study-sensitive content.",
+          "integration": "RAG KB, eTMF, CTMS, CAPA tracker",
+          "tier": "GREEN",
+          "human": "QA/process owner curates the register before it becomes guidance",
+          "value": "Lessons-learned is universally intended and almost never systematically done; turns dead artifacts into reusable institutional knowledge feeding E6(R3) continuous quality improvement."
+        },
+        {
+          "name": "Sponsor-update / newsletter & external communication drafting",
+          "trigger": "Scheduled cadence (weekly/monthly); major milestone reached",
+          "what_ai_does": "Auto-drafts recurring sponsor updates and study newsletters by assembling enrollment metrics, milestone status, safety summary headlines, and upcoming events from CTMS/dashboards into the house template; tailors versions for sponsor vs sites; and routes for review. Maintains a distribution log.",
+          "engine": "CLOUD on de-identified aggregate metrics/narrative; LOCAL if any subject-level or unblinded figures are referenced.",
+          "integration": "CTMS, dashboards, Outlook, SharePoint",
+          "tier": "GREEN",
+          "human": "PM reviews and sends; no unblinded data in any externally distributed draft",
+          "value": "Sponsor communications are time-consuming, recurring, and template-driven; a clear win that is easily missed in an ops automation catalog."
+        },
+        {
+          "name": "Subject travel, reimbursement & visit-logistics coordination (early-phase unit ops)",
+          "trigger": "Cohort scheduled; visit-window approaching; capacity conflict detected",
+          "what_ai_does": "For early-phase/Phase-1-unit studies, schedules confinement and ambulatory PK visits against the protocol's strict time windows, tracks bed/slot capacity for confinement cohorts, manages subject travel/stipend/reimbursement workflows, and flags visit-window risks or capacity conflicts across overlapping cohorts. Drafts subject visit reminders.",
+          "engine": "LOCAL (subject identity, travel, payment data is PHI; air-gapped).",
+          "integration": "CTMS, clinic scheduling system, payment/stipend system, EDC",
+          "tier": "AMBER",
+          "human": "Unit coordinator approves schedules and reimbursements",
+          "value": "Phase-1 confinement scheduling and rigid PK-window logistics are operationally intense and unit-specific; entirely absent from the current catalog and core to an early-phase clin-pharm CRO."
+        },
+        {
+          "name": "eCOA / ePRO / wearable-device data oversight & compliance monitoring",
+          "trigger": "ePRO/device data refresh; compliance threshold breach; scheduled run",
+          "what_ai_does": "Monitors eCOA/ePRO and connected-device/wearable data streams for completeness and compliance (missed diary entries, low device-wear time, implausible/curbstoned entry patterns, device sync gaps), reconciles eCOA records against expected visit/diary schedule, and drafts site-level compliance alerts. Flags data-integrity patterns for central monitoring.",
+          "engine": "LOCAL (ePRO/device data is subject-level PHI; air-gapped). De-identified pattern stats may use CLOUD.",
+          "integration": "eCOA/ePRO platform, device data hub, EDC, RBQM dashboard",
+          "tier": "AMBER",
+          "human": "DM/central-monitoring reviews flags; LLM does not adjudicate compliance status",
+          "value": "eCOA/device compliance and entry-integrity gaps are easily missed and directly threaten endpoint validity; distinct from the EDC-centric edit-check and reconciliation items already listed."
+        }
+      ]
+    }
+  ],
+  "facts": [
+    "Smartsheet exposes a REST API with webhooks (now supporting event filtering), cell/row update endpoints, and dependency-enabled sheets that compute critical path from start/end dates, duration, and predecessor links — so a gateway agent can listen for a study event, recompute the plan, write cells, and post notifications programmatically (https://developers.smartsheet.com/api/smartsheet/openapi/webhooks).",
+    "Critical path in Smartsheet is the longest dependency chain that drives the finish date; a milestone slip on any critical-path task cascades downstream, which is exactly the recompute an automation must surface (https://help.smartsheet.com/learning-track/level-3-solutions/critical-summary-and-driving-paths).",
+    "ICH E6(R3) makes RBQM pervasive: trial-level Quality Tolerance Limits / 'acceptable ranges' and site-level Key Risk Indicators feed risk-register and timeline-risk decisions, tying PM directly to quality oversight (https://cluepoints.com/decoding-ich-e6r3-what-it-means-for-risk-based-quality-management-rbqm/).",
+    "Governance routing: PHI/unblinded/IP-sensitive content stays on the LOCAL frozen open-weight model (zero egress, air-gapped); de-identified status text, plans, and reasoning go to CLOUD Claude under BAA — both behind one self-hosted LiteLLM-class OpenAI-compatible gateway.",
+    "Reported/regulated timeline records and budget actuals live in systems of record (CTMS, Smartsheet plan-of-record, finance/ERP); the LLM drafts/classifies/triages/summarizes and never autonomously commits a change to a regulated record — humans approve, with a 21 CFR Part 11 audit trail and ALCOA++.",
+    "Tiering applied here: GREEN = drafts, summaries, RAG status answers; AMBER = classification/triage/critical-path recompute proposals with human verify before the Smartsheet write; RED = anything that finalizes a regulated milestone date, contractual deliverable date, or budget actual of record.",
+    "MCP-style connectors let the orchestration layer reach Smartsheet, Outlook/Exchange, SharePoint, the CTMS/EDC, and the RAG store as tools, while a scheduler (cron/n8n/Power Automate) fires the time-based agents (data cut, weekly status, monthly portfolio rollup).",
+    "A study-document RAG knowledge base (protocol, monitoring plan, contracts, SOWs, charters) grounds status, risk, and vendor-oversight drafting so the agent cites the plan-of-record rather than hallucinating dates or obligations.",
+    "Early-phase clin-pharm programs run many short, parallel cohorts/studies, so cross-study portfolio rollups and shared-resource (PK lab, clinic beds, programmer) capacity conflicts are first-order PM risks the catalog must address.",
+    "Smartsheet update requests / proofs and an explicit human-in-the-loop approval queue provide the Part 11-defensible checkpoint between an AI-proposed plan change and the committed record.",
+    "The DIA TMF Reference Model v3.2.0 (current, MIT-licensed via CDISC stewardship) defines a standardized three-level taxonomy — Zones (top-level, e.g. 01 Trial Oversight, 02 Central Trial Documents, 04 IMP, 05 Site Management), Sections, and ~600+ customizable sub-artifacts, each with a unique artifact ID — and is the de-facto target structure into which any auto-classifier must map a document.",
+    "ICH E6(R3) GCP (effective 2025) reinforces that the TMF must be contemporaneous, complete, and inspection-ready at all times, with ALCOA++ attributes; this makes continuous completeness/QC and gap detection an ongoing obligation, not a pre-inspection scramble.",
+    "21 CFR Part 11 governs the eTMF as an electronic record system: filing/superseding/declaring record-of-truth requires an audit trail, e-signatures, and human-approved actions — so the LLM may classify and propose, but a validated eTMF (e.g. Veeva Vault eTMF, Montrium, Phlexglobal) and a human own the final filing decision (RED/AMBER).",
+    "Routing rule applied throughout: study documents frequently embed PHI/PII (subject IDs on source-linked docs, signed ICFs, monitoring notes, CVs with personal data) — these go to the LOCAL frozen model with zero egress; only confirmed de-identified text is eligible for the CLOUD Claude API under BAA.",
+    "Microsoft Presidio (open-source, GPU-accelerated, now with a MedicalNERRecognizer and DICOM image redaction) is the de-identification/PII-PHI guardrail that runs at the gateway before any cloud call and flags documents that must stay local.",
+    "A permissioned local vector store (RAG) over SOPs, WIs, and study-specific documents is the substrate for compliance Q&A; chunking + embeddings live on-prem, answers cite the source SOP/section, and access mirrors the document-management system's permissions.",
+    "Validated eTMF / DMS platforms expose APIs and metadata (artifact ID, zone, section, version, status, expiry, signature state) that connectors/MCP can read for completeness analytics and write-back of proposed metadata to a staging/approval queue — never directly to the record-of-truth.",
+    "Inspection-readiness is measured against an expected-document index (the TMF plan / artifact-to-milestone map): completeness is the delta between expected artifacts for the current study phase/site and what is actually filed, scored per zone.",
+    "Credential currency (investigator/sub-I CVs, GCP training certs, medical licenses, lab certifications/normal ranges, IATA shipping certs) carries explicit expiry dates extractable from documents; an alerting agent watches these and warns before lapse, a top source of inspection findings.",
+    "Version/superseded control is a structural requirement: when a new SOP/protocol amendment/ICF version is filed, prior versions must be marked superseded and downstream references reconciled — the LLM detects the supersession event and drafts the reconciliation, a human confirms the status change in the validated system.",
+    "Validated tools own pass/fail; the LLM never does. Pinnacle 21 Enterprise (Certara) runs the CDISC conformance ruleset (FDA, PMDA Validation Rules 3.0, and CDISC CORE engine) against SDTMIG v3.4 / ADaMIG v1.3 / Define-XML v2.1 and emits the authoritative findings file (Error/Warning/Notice). The hybrid LLM only triages, explains, clusters, drafts the disposition, and routes that file — it is out of the pass/fail decision path (RED for the report-of-record itself).",
+    "Data-sensitivity routing is absolute: subject-level / unblinded / PHI rows (raw EDC extracts, lab values, PK concentrations, AE narratives, listings) are processed ONLY by the LOCAL frozen open-weight model on the air-gapped GPU box (zero egress). De-identified, aggregate, or metadata-only text (a finding code, a rule description, a count, a SAP rule paraphrase) may go to CLOUD Claude for harder reasoning. Sensitivity is decided before reasoning difficulty.",
+    "ICH E6(R3) RBQM is the governing frame for recurrent QC: Quality Tolerance Limits (QTLs) operate at TRIAL level (now framed as 'acceptable ranges'), Key Risk Indicators (KRIs) at SITE level. E6(R3) expects sponsors to demonstrate centralized statistical monitoring (CSM), not just describe it — which is exactly what scheduled cross-form, outlier, and trend QC delivers.",
+    "ALCOA++ and 21 CFR Part 11: every automated check run, every AI triage suggestion, and every human disposition is captured in one unified Part 11 audit trail (who/what/when/why, attributable, contemporaneous, original, accurate, plus complete/consistent/enduring/available). The LLM's output is an audited suggestion, never an applied change to a regulated record.",
+    "Reported/regulated numbers are never produced or 'corrected' by an LLM: PK parameters come from Phoenix WinNonlin (engine of record), CDISC conformance from Pinnacle 21, the data values of record from the EDC/CTMS. The AI can flag a suspected discrepancy but the authoritative number always re-derives from the validated tool.",
+    "The RAG knowledge base (local, permissioned vector store over SOPs/WIs, the Data Review Plan, the SAP, BLQ/LLOQ rules, edit-check specs, the cSDRG/ADRG) grounds every triage explanation — so a finding is explained against the study's own rules and the prior-finding disposition history, not generic model priors.",
+    "Orchestration is scheduled-job + agent-framework (cron/Python or n8n/Power Automate) firing through the LiteLLM-class gateway; connectors (Pinnacle 21 output share, EDC/CTMS API, IXRS/IRT, the bioanalytical lab transfer, the query manager, SharePoint, Outlook/Teams) are reached as tools, possibly via MCP. Presidio-class PII/PHI guardrails sit at the gateway as a backstop to the routing rule.",
+    "Recurrence is the point: these run at EVERY stage on EVERY data refresh/transfer (not once at lock) — incremental DTA loads, blinded data reviews, dry-runs, and the pre-lock window — so quality is continuous (E6(R3) 'quality by design') rather than an end-of-study scramble. Each run is delta-aware: AI summarizes what changed since the last clean run.",
+    "ICH E6(R3) (Step 4, finalized Jan 2025; effective ~July 2025) makes Risk-Based Quality Management (RBQM) the operating model: identify Critical-to-Quality (CtQ) factors, then monitor risks via Key Risk Indicators (KRIs, site-level) and Quality Tolerance Limits (QTLs, trial-level). QTL breaches are deviations potentially impacting subject safety or result reliability and must be documented in the CSR.",
+    "KRIs compare site-level performance against other sites or benchmarks (e.g., query rate, SAE/AE ratio, deviation rate, missing-data rate, screen-fail rate); QTLs are pre-specified trial-level thresholds on a small set of critical parameters. An LLM can draft/maintain KRI/QTL definitions and triage breach signals, but the breach math/flagging should run in the validated CSM/RBQM platform.",
+    "Central Statistical Monitoring (CSM) detects site outliers, digit preference (e.g., volcano plot: -log10 p-value vs max digit-frequency difference site-vs-rest), values too close/far from means, anomalous variances/correlations, improbable dates, and under-reporting of AEs — statistical methods that are reproducibility-sensitive and belong in a frozen/validated engine, with the LLM only narrating and triaging the outputs.",
+    "DIA TMF Reference Model is the eTMF zone/section taxonomy; monitoring artifacts (MVRs, monitoring plans, communication logs, deviation logs) map to TMF Zone 5 (Trial Management) / Zone 4-5; the eTMF (Veeva Vault) is the record-of-truth and any record change is RED (validated system + human).",
+    "Reported/regulated safety numbers (AE/SAE counts, lab shift tables, exposure) ALWAYS come from validated tools (EDC/safety DB, SAS/Phoenix outputs) with medical review — never an LLM. Pinnacle 21 governs CDISC conformance; Phoenix WinNonlin governs PK; the EDC/CTMS is the system of record.",
+    "Governance routing: unblinded/subject-level/PHI signals -> LOCAL frozen open-weight model (zero egress, air-gapped GPU workstation); de-identified aggregate text and hard reasoning -> CLOUD Claude API under BAA; a self-hosted LiteLLM-class OpenAI-compatible gateway enforces the route by data-sensitivity classification.",
+    "MCP (Model Context Protocol) connectors let agents pull/push to Smartsheet (CAPA/action-tracking, via Smartsheet API), SharePoint/Outlook (distribution, MVR follow-up), the RAG store (SOPs/WIs/monitoring plan/protocol), and the CSM platform/EDC exports — read-mostly, with writes gated to non-regulated trackers and human-approved.",
+    "ALCOA++ and 21 CFR Part 11 audit trail apply to every step: each LLM draft, classification, route decision, and human approval is logged (who/what/when/why, model+version, prompt/version) so monitoring outputs are attributable, contemporaneous, and reconstructable.",
+    "Tiering: GREEN = drafts/summaries/RAG Q&A (MVR summaries, packet narrative drafts); AMBER = classification/triage/code with human verify (deviation classification, signal triage, KRI definition code); RED = anything touching reported numbers, eTMF record-of-truth, QTL-breach determinations of record, or unblinded data -> validated tool + human, LLM out of the decision path.",
+    "LiteLLM is, as of 2026, the de-facto self-hosted OpenAI-compatible LLM gateway/proxy: one OpenAI-shaped API in front of 100+ backends, with built-in fallbacks, per-key/per-model budgets, virtual keys, request logging and caching — so every agent calls one endpoint and routing/cost/audit are enforced centrally, not in each script.",
+    "Microsoft Presidio is the PII/PHI detection-and-redaction engine wired into the gateway as a pre-call guardrail (LiteLLM ships a Presidio guardrail): it detects and masks identifiers before any text can leave the trust boundary, supporting HIPAA/GDPR de-identification. It is the enforcement point for the PHI/unblinded -> LOCAL routing rule.",
+    "Routing is by DATA CLASSIFICATION, not by task: PHI / unblinded / subject-level text is pinned to the LOCAL backend (zero egress, air-gapped); only de-identified text is eligible for the CLOUD Claude backend. The gateway, not the human, makes egress impossible for misclassified-sensitive payloads via Presidio + a deny-by-default policy.",
+    "The LOCAL backend is an open-weight model served by vLLM on a GPU workstation (OpenAI-compatible server), giving high-throughput on-prem inference; the CLOUD backend is the Claude API under a signed BAA. Claude Max/consumer plans are NOT HIPAA-eligible — only the API-with-BAA path is used for any regulated context.",
+    "MCP (Model Context Protocol), open-sourced by Anthropic Nov 2024 and donated to the Linux Foundation's Agentic AI Foundation in Dec 2025, is the de-facto standard for connecting agents to tools/data; it gives the platform a uniform, auditable connector layer (eTMF, Smartsheet, EDC, CTMS, SharePoint, Outlook, Pinnacle 21) instead of bespoke per-system glue.",
+    "Reported/regulated numbers ALWAYS come from a validated engine of record — Pinnacle 21 for CDISC (SDTM/ADaM) conformance, Phoenix WinNonlin for PK, the validated EDC/CTMS — never from an LLM. The engine-of-record registry names which validated tool owns each regulated output so an LLM number can never be mistaken for the source of truth.",
+    "21 CFR Part 11 + ALCOA++ require a secure, attributable, time-stamped, tamper-evident audit trail with e-signatures and human approval of changes to regulated records. The platform routes every gateway call, every connector write, and every human approval into ONE unified Part 11 trail so the AI layer is inspectable end-to-end.",
+    "ICH E6(R3) GCP (final Jan 2025; EU effective Jul 2025; US compliance date pending as of 2026) mandates risk-proportionate oversight (centralized/statistical monitoring, KRIs/QTLs), which is what the orchestration + monitoring agents operationalize — but signal -> human decision stays human, AI only triages.",
+    "Model-freeze: the LOCAL open-weight model is version-pinned (frozen weights + fixed decoding params + fixed prompts) so a given analysis-support run is reproducible and re-runnable years later for inspection — a property a moving cloud model cannot guarantee, which is why frozen-local handles anything that must be reproduced."
+  ]
+}

@@ -1,0 +1,610 @@
+{
+ "assessments": [
+  {
+   "name": "Milestone & critical-path tracking agent",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Per flagged task, emit a one-bucket severity/at-risk label (from a fixed allowed set) and a short templated 'task X moved onto critical path, float now N days' blurb filled ONLY from SAS/R-supplied per-delta values — no free-form 'why it matters' essay, no cross-task prioritization.",
+   "sasr_role": "Pull the Smartsheet plan via API, run all critical-path/float/dependency recompute and the baseline diff, decide which tasks crossed thresholds, RANK the flagged tasks by float deterministically (prioritization is math, not SLM reasoning), validate every bucket label against the allowed set, write nothing without PM approval, and own the audit log.",
+   "note": "Binding constraint: 'why it matters / prioritize' is multi-signal reasoning over a changing dependency graph — a 7B quant model does this only shallowly and will invent rationale, so prioritization must be SAS/R float-ranking and the SLM is confined to per-delta templated blurbs + fixed-bucket labels behind the PM gate.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Study-event timeline auto-update & notification (data cut, DB lock, milestone slip)",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Compose a short, templated notification ('you are now blocked on X; date moved to Y') by slotting SAS/R-supplied blocked-party names and recomputed dates into a fixed template, and tag each alert with the correct role/channel routing bucket — the model copies dates, never derives them.",
+   "sasr_role": "Run the Smartsheet dependency recompute, determine who is downstream/blocked and the new dates, hold all contractual/regulated-milestone commits for lead approval, validate routing labels against the allowed set, and own every write and the audit trail.",
+   "note": "Binding constraint is stakes, not language difficulty: the templated alert + role routing sits in the reliable zone, but regulated/contractual milestone consequences mean the recompute and the blocked-party list must be SAS/R and dates stay proposed-only behind the lead's gate.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Status-report generation (study & program)",
+   "slm_verdict": "Beyond",
+   "slm_role": "None at on-device scale beyond optional single-metric per-slot blurbs; a small quantized model cannot weave milestones + enrollment + risks + aging + vendor status into a faithful program-level narrative without hallucinating cross-section claims.",
+   "sasr_role": "Pull every metric from systems of record, fill the house-template slots deterministically, flag any RED metric for human verification against the source, assemble the report skeleton, and own all numbers — none are ever produced or transformed by the SLM.",
+   "note": "Binding constraint: faithful multi-document synthesis into a long report is exactly where small quantized models degrade and fabricate — keep template-fill deterministic SAS/R and escalate any cross-section narrative to a larger local/cloud model, not an on-device SLM.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Action-item & decision extraction from email/meetings",
+   "slm_verdict": "Ready",
+   "slm_role": "From a SHORT chunked passage, extract action items (owner, due-date, text) and logged decisions as JSON-schema-constrained fields, classify each into the fixed action/decision taxonomy, and flag near-duplicates of existing log rows.",
+   "sasr_role": "Chunk long transcripts/threads so the model never sees long context, run the dedupe/similarity match against the action log, validate every extracted owner/date against allowed values, and write only owner/PM-confirmed rows with full audit.",
+   "note": "Binding constraint is transcript length: field/NER extraction + bucket classification + near-dup grouping over short passages is the canonical SLM-reliable zone, so the only requirement is that SAS/R chunk aggressively to keep the model out of long context — a clean on-device win behind the confirm gate.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Meeting agenda & minutes drafting",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Assemble the agenda by templating SAS/R-retrieved open actions/risks/carryover; for minutes, emit only short per-SEGMENT decision/action extracts from one chunked transcript slice — never a free-form whole-meeting summary.",
+   "sasr_role": "Pull open items/risks/carryover from Smartsheet/RAG, segment the transcript into short slices, cross-link extracted decisions to action rows deterministically, and hold all artifacts as drafts until the chair approves.",
+   "note": "Binding constraint: this component bundles agenda templating (reliable) with faithful full-transcript minutes (a 'faithful long summary' that is genuinely Beyond on-device) — feasible only by amputating minutes down to short per-segment extracts; the free-form-minutes ambition must be escalated, and the chair must review before circulation.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Vendor/CRO oversight & deliverable tracking",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Classify each deliverable into an upcoming/overdue/at-risk bucket given SAS/R-computed dates, and draft a short templated oversight-log entry or vendor follow-up email grounded in the retrieved SOW/SLA clause text.",
+   "sasr_role": "Track deliverable/SLA dates against SOW obligations, compute overdue/at-risk status and all date math deterministically, retrieve the governing contract clause for grounding, validate status labels, and keep escalation/acceptance as human decisions.",
+   "note": "Binding constraint: status bucketing and RAG-grounded chasers are reliable, but SLA-clause INTERPRETATION carries contractual nuance a small model can misread — pin all dates to SAS/R, force every draft to quote the retrieved clause, and gate escalation/acceptance to the oversight lead.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Resourcing & capacity conflict detection",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Given SAS/R-detected over-allocation/contention windows, draft a short candidate leveling suggestion (re-sequence, shift, add) as one human-reviewed option — proposing, never optimizing or reassigning anyone.",
+   "sasr_role": "Read allocations across studies, recompute timelines, deterministically detect over-allocation and contention windows (all date/effort math), and require resource-manager approval before any re-level becomes the plan.",
+   "note": "Binding constraint: conflict detection is pure date/effort math owned entirely by SAS/R; the leveling-recommendation narrative is light reasoning a small model can draft but cannot be trusted to optimize, so it must be presented as one of several human-chosen options, not 'the' answer.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Risk register upkeep & RBQM linkage",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Draft a candidate risk-register entry from an issue/slip or a SAS/R-passed KRI/QTL breach signal, classify status/category into the fixed taxonomy, and PROPOSE (not decide) a likelihood/impact bucket for human confirmation.",
+   "sasr_role": "Receive RBQM KRI/QTL breach signals, compute all thresholds and scoring math, assemble the review packet, validate taxonomy/scoring labels against allowed values, and route QTL-breach actions through the quality decision path with sign-off held to humans.",
+   "note": "Binding constraint: drafting and classifying a candidate entry is reliable, but likelihood/impact scoring and mitigation adequacy are nuanced quality/safety judgement under ICH E6(R3) — the SLM may only propose a bucket; scoring math stays SAS/R and acceptance stays with the quality/PM lead.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Budget & PO / accrual tracking",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Draft short budget-vs-actual commentary and flag-narrative ONLY from variances already computed by SAS/R/ERP, grounded in the retrieved contract/payment-schedule clause — the model touches and restates no numbers it did not receive verbatim.",
+   "sasr_role": "Reconcile invoices/POs against budget lines and milestone-payment schedules, compute every accrual and variance, source all reported actuals from the finance/ERP system of record, validate that the draft's figures match the supplied values, and keep the SLM entirely out of the commit path.",
+   "note": "Binding constraint: RED tier and all-numeric — reconciliation and reported actuals are SAS/R/ERP-only by rule, so the SLM is confined to narrating pre-computed variances behind a finance approval gate; its sole residual risk is the prose, and the validator must reject any figure it altered.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Cross-study portfolio rollup",
+   "slm_verdict": "Beyond",
+   "slm_role": "None at on-device scale beyond a single-study one-liner; a small quantized model cannot cross-correlate milestones, slip, risk heat, enrollment, and budget across many studies into a coherent portfolio narrative and exception list.",
+   "sasr_role": "Aggregate cross-sheet metrics from every study's system of record, compute slip/risk/budget health, rank and select the exceptions deterministically, and build the dashboard table; the cross-study narrative is what exceeds the SLM.",
+   "note": "Binding constraint: many-document, long-context cross-correlation is the precise degrade zone for small quantized models — keep the rollup and exception ranking deterministic SAS/R and escalate any portfolio narrative to a larger local/cloud model.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Action-item SLA chasing & escalation",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft a short, polite reminder email per SAS/R-identified due/overdue action and a brief escalation summary line for SLA-breaching items, routing each to the right owner/queue bucket.",
+   "sasr_role": "Scan the action/decision log, compute due/overdue/SLA-breach status with all date math, validate routing targets against allowed values, send only per policy, and reserve the escalate-or-not decision for the PM.",
+   "note": "Binding constraint is minimal: short templated drafting plus owner/queue routing over SAS/R-computed due-dates is squarely reliable, and the only nuance — whether to escalate — is explicitly held human, leaving low residual risk; a clean on-device win.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Milestone-slip root-cause & schedule-recovery proposal",
+   "slm_verdict": "Beyond",
+   "slm_role": "None reliably on-device: correlating likely drivers across linked actions, risks, vendor deliverables, and status notes is multi-signal diagnostic reasoning a 7B quant model cannot do faithfully.",
+   "sasr_role": "Confirm the slip, gather the linked actions/risks/deliverables/notes, run all recovery impact modeling in Smartsheet (fast-track/re-sequence/resource-add timelines), and hold scenario selection for the PM/lead.",
+   "note": "Binding constraint: root-cause correlation across many heterogeneous signals plus scenario reasoning is genuine frontier-level work — keep the impact math in Smartsheet and escalate the diagnosis/recovery narrative to a larger local or cloud model, not an on-device SLM.",
+   "area": "Project & Timeline Management"
+  },
+  {
+   "name": "Auto-classify & file to the DIA TMF Reference Model",
+   "slm_verdict": "Guardrails",
+   "slm_role": "After SAS/R-invoked OCR, classify the document into ONE allowed TMF Reference Model v3.2.0 Zone>Section>artifact ID via grammar-constrained output, choosing only from a SAS/R-supplied SHORTLIST of candidate IDs (retrieval-narrowed from the full taxonomy), and extract short metadata fields (study, site, country, document date, version) as schema-validated NER, each with its own confidence score for human confirmation",
+   "sasr_role": "Runs/queues OCR, owns the authoritative TMF taxonomy enumeration, retrieval-narrows the hundreds of artifact IDs down to a small candidate shortlist BEFORE the SLM sees them, validates the SLM's proposed artifact ID and every metadata field against allowed values/known site-country lists, computes confidence routing thresholds, writes nothing to the eTMF, and logs the draft filing for the human gate",
+   "note": "Binding constraint is the very large label space (hundreds of artifact IDs) read from whole-document OCR context — that is NOT short-passage bucket classification, so constrained output only guarantees a VALID id, never a CORRECT one; a SAS/R retrieval-narrowed candidate shortlist plus the allowed-value validator and the RED filing gate are mandatory, and mis-classification remains the residual risk.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "TMF completeness / QC & missing-document detection",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Only the templated language wrapper: draft a short, grounded gap-list narrative and QC summary sentence from the missing/overdue artifacts SAS/R already computed (no counting, no percentages of its own)",
+   "sasr_role": "Owns ALL of it numerically — joins filed artifacts to the expected-document index per phase/site, computes per-zone completeness %, enumerates missing/overdue/placeholder items, detects wrong-version/unsigned/wrong-date defects deterministically, and never lets the SLM touch a status field",
+   "note": "This is fundamentally reconciliation and counting, which is SAS/R-only territory; the SLM may only phrase the result, and even then a hallucinated count must be impossible — every number in the narrative is templated from SAS/R-supplied values, so the binding residual is only narrative drift, contained by the bind-the-numbers design and the human gate.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Expiring-document alerts (CV / training / license / certs)",
+   "slm_verdict": "Ready",
+   "slm_role": "Extract the expiry date (and document type/holder) from a SHORT credential document (CV, GCP cert, license, lab cert, IATA cert) as a schema-validated date field, and draft the templated reminder notice text for the responsible role",
+   "sasr_role": "Owns the date arithmetic and 90/60/30-day threshold logic, maintains the credential-currency register, validates extracted dates (format/plausibility) before they drive any alert, schedules/sends alerts, and keeps renewals manual with the audit log",
+   "note": "Squarely in the reliable zone — short-passage date NER plus templated drafting — with all time math owned by SAS/R; the only residual is a mis-read date, caught by SAS/R plausibility checks and the alert-only (no auto-renewal) design, so the binding constraint is extraction accuracy on a short passage, which is the SLM's strength.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "SOP / WI / study-document ingestion into the RAG knowledge base",
+   "slm_verdict": "Ready",
+   "slm_role": "None generative — at most produce local embedding vectors for chunks; it authors nothing and makes no free-text decisions",
+   "sasr_role": "Owns parsing, chunking, the metadata stamp (doc ID, version, effective date, owner, applicable studies), writing to the permissioned vector store, and the supersession logic that retires the prior version's chunks driven by the DMS state of truth",
+   "note": "This is a deterministic indexing pipeline plus embeddings with essentially no generative hallucination surface; the binding constraint is stale-version retrieval, handled by SAS/R tying ingestion/retirement to the validated DMS 'effective' state rather than any model judgement — a clean on-device win.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Compliance Q&A over SOPs/WIs (\"what does SOP-12 require for X?\")",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Read the SAS/R-retrieved current-effective SOP/WI chunks and answer the requirement in short grounded extractive text, quoting and citing the exact doc ID, version, and section, and flagging when multiple/conflicting or superseded documents appear in the retrieved set",
+   "sasr_role": "Owns retrieval and re-ranking from the permissioned vector store, supplies only current-effective chunks, runs a citation validator that verifies every cited doc ID/version/section actually exists in the retrieved set (rejecting any answer that cites outside it), and routes regulatory-binding interpretation to QA/RA",
+   "note": "Grounded extractive Q&A is feasible on-device, but conflicting-document detection and any interpretive edge are where a small model over-claims, so the citation validator, the explicit 'verify against the controlled document' framing, and the QA/RA escalation are the load-bearing guardrails; the binding constraint is over-claim beyond the retrieved text, blocked by the validator.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Version / superseded-document control & reference reconciliation",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Write a short grounded plain-language summary of what changed between old and new versions (strictly from the SAS/R-computed diff) and draft the reconciliation checklist text; propose (not execute) the 'superseded' label",
+   "sasr_role": "Computes the deterministic text diff, finds every downstream document and TMF reference that cites the prior version by exact match/search, determines which trainings re-trigger by rule, and executes the actual supersession status write only after the human approves (RED on the status write)",
+   "note": "The diff and the cite-finding are deterministic and must stay in SAS/R; the SLM only narrates the SAS/R-supplied diff, and because a mischaracterized change has compliance impact, the binding constraint is change-summary fidelity — contained by grounding the summary on the computed diff and gating the status write to the human/validated system.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Inspection-readiness gap analysis",
+   "slm_verdict": "Beyond",
+   "slm_role": "None for the judgement core; at most draft individual templated finding lines from SAS/R-computed signals — but the prioritized, cross-correlated readiness narrative must NOT come from a small quantized model",
+   "sasr_role": "Computes every input signal (zone completeness, overdue/placeholder, unsigned/out-of-window, expiring credentials, superseded references, inspector hot-spot rules) and assembles the prioritized remediation plan with owners deterministically",
+   "note": "This cross-correlates many heterogeneous signals into a nuanced, high-stakes readiness judgement and executive narrative — long-context multi-signal synthesis small models do unreliably; the binding constraint is exactly that synthesis, so keep the scan deterministic SAS/R-only and ESCALATE any generated narrative to a larger local or cloud model on de-identified data.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Redaction / PII-PHI detection before any cloud use",
+   "slm_verdict": "Platform",
+   "slm_role": "None as the gate — Presidio (deterministic, incl. MedicalNER and DICOM/image redaction) is the enforcement point; the on-device SLM only optionally adds context-aware secondary flags and is never the sole arbiter of 'safe'",
+   "sasr_role": "Owns the gateway enforcement: runs Presidio, blocks the cloud route and forces local processing when PII/PHI is found, produces the de-identified variant with a logged mapping, and records the routing decision in the audit log",
+   "note": "This is egress-control infrastructure, not an SLM language task, so it is Platform; in the on-device-SLM+SAS/R variant the control simplifies dramatically — if the box stays fully offline there is no cloud route to gate at all and the control collapses to 'the box stays offline,' with Presidio remaining the technical guarantee plus a human/QA sample check on de-identification adequacy.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Document QC linter (signatures, dates, legibility, completeness fields)",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Extract short presence/identity fields needed for the checks (is a signature/date present, which form version, are required fields populated) as schema-validated outputs, and draft the templated QC finding note routed back to the originator",
+   "sasr_role": "Owns the signature-vs-event date-window arithmetic, page-completeness counts, legibility/scan-quality metrics (deterministic image checks), the correct-version lookup, and setting the official accept/reject QC status only via the validated eTMF after human confirmation",
+   "note": "All numeric/temporal checks (date windows, page counts, scan-quality) are SAS/R; the SLM only does presence-extraction and note drafting, so the binding constraint is mis-extraction of a field, contained by constrained output plus the document-controller accept/reject gate — it explains, it never passes/fails the record.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Email & attachment auto-routing to the eTMF intake",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Classify an incoming email/attachment into a fixed artifact-type bucket (signed form, site cert, vendor-qualification doc, etc.) and extract short study/site context for routing, all grammar-constrained against a SAS/R-supplied bucket list",
+   "sasr_role": "Owns mailbox polling, truncates/segments long or multi-topic threads before the SLM sees them, validates the proposed artifact type and study/site against allowed values, routes the attachment into the downstream classify/QC pipeline with proposed metadata, and keeps actual filing as a separate human-approved step",
+   "note": "Downgraded from Ready: real email bodies are variable-length, noisy, multi-topic threads with mixed attachments, so this is NOT clean short-passage classification and inbox triage is a classic spot where context length and ambiguity degrade a small model; the binding constraint is mis-classification on messy input, mitigated by SAS/R thread-truncation, allowed-value validation, and the intake-queue reviewer — routing is reversible and filing is gated downstream, so stakes stay low.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Translation / certified-copy & localization control",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Detect the document language and type (short schema-validated labels), and draft a ROUGH working translation/summary for reviewer context only (explicitly not of record); it never produces the certified translation",
+   "sasr_role": "Owns the deterministic pairing/cross-link check (is a certified translation present and correctly linked to its source/certified-copy artifact), flags missing or unlinked pairs, and keeps the certified translation of record as a validated human/vendor deliverable in the system of truth",
+   "note": "The deterministic pairing check is the safe load-bearing value; on-device small-model translation is only gist-quality and genuinely unreliable for regulatory text, so the binding constraint is translation fidelity — it stays Guardrails ONLY because the SLM output is firewalled to working/never-of-record and the certified translation remains a vendor deliverable; without that never-of-record framing the translation task itself would be Beyond.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "TMF audit-trail & filing-activity summarizer",
+   "slm_verdict": "Beyond",
+   "slm_role": "At most phrase a few SAS/R-computed bullet metrics into a sentence; the cross-correlated TMF-health narrative over many audit-log rows must NOT come from a small quantized model",
+   "sasr_role": "Reads the immutable Part-11 audit trail, computes ALL metrics (filing volumes, backlog age, who-filed-what, recurring rejection reasons, bottleneck trends) deterministically, and never edits the trail; reported numbers tie back to the system of record",
+   "note": "This is faithful long-summary and multi-signal synthesis over many log records — exactly where small models lose fidelity and invent trends; the binding constraint is faithful long-context aggregation, so keep aggregation deterministic SAS/R-only and ESCALATE the executive narrative to a larger local or cloud model on de-identified data, with the TMF lead reviewing before governance.",
+   "area": "eTMF & Document Control"
+  },
+  {
+   "name": "Scheduled CDISC conformance run + AI finding-triage (SDTM/ADaM/Define-XML)",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Per individual Pinnacle 21 finding (one at a time): emit a rule/domain bucket label, echo the SAS/R-supplied NEW-vs-repeat tag, and draft a short RAG-grounded plain-language explanation plus a candidate disposition label (defect vs explained-in-cSDRG/ADRG) from a closed set — for human confirmation only.",
+   "sasr_role": "Runs the validated Pinnacle 21 report (record-of-truth), computes the diff against the last clean run, does the cross-finding clustering/dedup itself, hands the SLM one finding at a time, validates every cluster/disposition tag against an allowed enum, routes by owner, and writes the audited disposition log.",
+   "note": "Binding constraint is STAKES plus latent synthesis: per-finding labeling and templated drafts are reliable, but 'real defect vs expected' is reviewer-guide nuance and the disposition feeds a regulatory cSDRG/ADRG, so keep clustering in SAS/R, cap the SLM to one finding, and gate every disposition.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Cross-form / edit-check / logical-consistency surveillance",
+   "slm_verdict": "Guardrails",
+   "slm_role": "On ONE pre-flagged subject row at a time, classify error-vs-explainable-protocol-event into a fixed bucket, extract the named fields, and draft a one-paragraph candidate query for human approval.",
+   "sasr_role": "Runs the validated edit-check / cross-form SQL battery that deterministically produces every flag, hands the SLM only the single flagged row, validates bucket/route against allowed values, and issues nothing until DM approves.",
+   "note": "Binding constraint is NUANCE: error-vs-explainable-protocol-event is clinical-judgement-adjacent, so it stays Guardrails — one flag at a time, RAG-grounded in the protocol, every query human-gated — and never promotes to unattended.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "PK timing (actual vs nominal) and BLQ/LLOQ rule checking",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Label each SAS/R-computed timing-deviation/BLQ flag as expected/ambiguous/needs-PK-review against the sampling schedule via RAG, and draft the discrepancy note for the PK scientist — no numeric output.",
+   "sasr_role": "Computes all actual-minus-nominal deviations and applies SAP/PK-plan BLQ/LLOQ handling deterministically; Phoenix WinNonlin re-derives any analysis value; SAS/R validates the SLM's labels against an enum.",
+   "note": "Binding constraint is STAKES via over-confident PK reasoning: the numbers and BLQ logic are firmly SAS/R, so restrict the SLM to flag-labeling plus note drafting behind a PK-scientist gate and keep it out of every analysis value.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Lab / IXRS(IRT) / PK-sample reconciliation",
+   "slm_verdict": "Guardrails",
+   "slm_role": "For one unreconciled record pair, classify the mismatch into a fixed set (missing sample, unit mismatch, duplicate, late transfer, mis-keyed accession), propose a likely root cause, and draft the reconciliation finding plus route.",
+   "sasr_role": "Performs 100% record-count/key/value matching across central-lab, IXRS, and PK manifests (the matched dataset is the validated record), supplies only the unreconciled set one item at a time, validates mismatch-class and route against allowed values, and logs resolutions after human confirmation.",
+   "note": "Binding constraint is root-cause CONFABULATION feeding PK sample accountability: mismatch-type classification over a short record pair is reliable, but a plausible-wrong root-cause guess is a real failure mode, so it stays Guardrails with the closed class set plus mandatory DM/PK confirmation — not Ready.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Query-management oversight, aging & SLA escalation",
+   "slm_verdict": "Beyond",
+   "slm_role": "none for the analytics — the SLM does NOT compute aging buckets, SLA breaches, lock-threat predictions, or summarize the multi-query landscape; if used at all it only verbalizes one already-ranked item into an escalation email behind a human gate.",
+   "sasr_role": "Pulls open-query metadata and deterministically computes aging buckets, SLA-breach flags, milestone-risk ranking, and the prioritized worklist; the SLM is given finished outputs only.",
+   "note": "Binding constraint is FORBIDDEN MATH plus multi-query synthesis: as written the component hands the SLM aging/SLA/lock-threat computation and landscape summarization, so keep ALL analytics DETERMINISTIC SAS/R-only (escalate any cross-query narrative to a larger model) and demote the SLM to at most a single per-item email draft.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Duplicate / outlier / range / digit-preference checks",
+   "slm_verdict": "Guardrails",
+   "slm_role": "For one statistically-flagged value at a time, classify plausible-extreme-physiology vs likely-transcription-error into a fixed bucket against the variable's expected range and the subject's own prior values (RAG), and draft a query or 'no-action, explained' note.",
+   "sasr_role": "Computes all range violations, robust-z/IQR outliers, duplicate detection, and digit-preference statistics deterministically, feeds the SLM one flag plus the subject's trajectory, validates the bucket, and feeds digit-preference results to central monitoring.",
+   "note": "Binding constraint is STAKES: all quantitative work is SAS/R, but calling an extreme-but-real physiological value a transcription error is a genuine failure mode, so it stays Guardrails — short retrieved trajectory, one flag, human confirms each disposition.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Data-quality KRI / QTL trend dashboard upkeep (RBQM)",
+   "slm_verdict": "Beyond",
+   "slm_role": "At most draft a single per-KRI caption from one SAS/R-computed metric row; it does NOT author the cross-KRI RBQM narrative or judge signal-vs-noise across the panel.",
+   "sasr_role": "Computes all KRI/QTL values, breach status against ICH E6(R3) acceptable ranges, and which metric moved; owns the validated metric layer driving every threshold.",
+   "note": "Binding constraint is LONG-CONTEXT MULTI-KRI SYNTHESIS with signal-vs-noise judgement — exactly what a quantized 7-9B model degrades on — so ESCALATE the decision-grade narrative to a larger local or cloud model; on-device, the SLM is limited to single-metric captions.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Statistical / central-monitoring anomaly signals (site outliers, enrollment & visit anomalies)",
+   "slm_verdict": "Beyond",
+   "slm_role": "At most draft a single-signal follow-up memo from one SAS/R-ranked anomaly; it does NOT correlate signals across KRIs or adjudicate data-integrity-vs-operational cause across the site panel.",
+   "sasr_role": "Runs the validated CSM engine computing site-vs-site outlier statistics, variance/mean anomalies, enrollment/visit-pattern and over-uniformity signals, and the ranked signal list; supplies de-identified summaries only.",
+   "note": "Binding constraint is HIGH-STAKES MULTI-SIGNAL CORRELATION on fraud-adjacent signals — cross-KRI integrity-vs-operations adjudication is beyond a small quantized model — so ESCALATE that synthesis to a larger model and restrict the on-device SLM to one memo per already-ranked signal behind a central-monitor gate.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Pre-lock data-review listing generation, diff & sign-off packet",
+   "slm_verdict": "Beyond",
+   "slm_role": "At most draft an individual templated packet line (e.g., one open item mapped to its query) from a SAS/R-supplied diff; it does NOT author the full what-changed summary or judge SAP-completeness.",
+   "sasr_role": "Generates the validated blinded listings, computes the diff against the prior review run, maps open items to queries/dispositions, and deterministically checks which SAP-required checks are evidenced.",
+   "note": "Binding constraint is LONG-CONTEXT SYNTHESIS AT LOCK STAKES: faithful multi-listing diff summarization and lock-readiness/SAP-gap judgement are beyond a small model, so keep the diff and completeness checks DETERMINISTIC SAS/R-only, ESCALATE any prose summary to a larger model, and the biostatistician owns sign-off.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "Discrepancy triage, classification & routing to DM",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Per single discrepancy, classify type/severity/likely-owner into fixed buckets, tag near-duplicates for SAS/R to merge, draft the RAG-grounded query text, and propose a route from a closed set.",
+   "sasr_role": "Aggregates flags from all validated checks, performs the actual cross-flag de-duplication/merge on the SLM's similarity tags, validates class/severity/route against allowed values, assembles and ranks the single DM worklist, and keeps resolution/closure in the validated system.",
+   "note": "Binding constraint is BREADTH of the unifying layer: short-text classification, similarity tagging, and templated drafting are reliable, but this touches many sources, so cap context to one discrepancy, let SAS/R own the cross-flag dedup and ranking, and gate routing — promising but not unattended.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "MedDRA / WHODrug auto-coding QC & uncoded-term triage",
+   "slm_verdict": "Guardrails",
+   "slm_role": "From one short verbatim string, flag a suspicious auto-code, surface the uncoded/queried term, and suggest candidate MedDRA/WHODrug code(s) WITH the dictionary path as a human-confirmation hint, and draft the coding query.",
+   "sasr_role": "Runs the validated versioned dictionary/coding tool holding every code-of-record, supplies the QC output and verbatim terms, validates that any SLM-suggested code is a real path in the loaded dictionary, and never lets the SLM write the assigned code.",
+   "note": "Binding constraint is SAFETY-RELEVANT CONFABULATION: small models invent plausible-wrong codes, so the dictionary-path validation plus mandatory human-coder confirmation are load-bearing, keeping this Guardrails rather than Ready.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "SDTM<->Phoenix<->ADaM PK numeric cross-traceability reconciliation",
+   "slm_verdict": "Guardrails",
+   "slm_role": "On an already-detected SAS/R mismatch, classify WHERE the chain likely broke into a fixed set (mapping, BLQ rule, rounding, parameter-code mapping, RELREC/time-after-dose), explain briefly, and draft the finding to the PK scientist/programmer — never a number.",
+   "sasr_role": "Runs validated reconciliation confirming PK parameters match across PP <-> Phoenix (engine of record) <-> ADPP and that RELREC PC<->PP and time-after-dose are consistent; all PK numbers re-derive from Phoenix and the SLM never computes or alters a value.",
+   "note": "Binding constraint is the HIGHEST STAKES (CSR-bound PK), but the SLM's task is purely qualitative break-point localization on an already-flagged mismatch, so it clears Guardrails only with the closed cause-set, zero numeric authority, and a mandatory PK-scientist plus lead-biostat gate.",
+   "area": "Data Validity & Recurrent QC"
+  },
+  {
+   "name": "KRI/QTL definition & specification drafting",
+   "slm_verdict": "Beyond",
+   "slm_role": "none — the metric-spec drafting genuinely requires synthesizing protocol + risk assessment + SOP library into defensible definitions, numerator/denominator logic, rationale, and candidate thresholds; escalate to a larger local model (or cloud only on de-identified protocol text)",
+   "sasr_role": "RAG retrieval over the protocol/SOP corpus; the validated CSM platform computes every metric and every threshold of record; SAS/R logs provenance and routes any escalated draft to the risk committee and biostat lead. No number, threshold, or definition of record originates in any model.",
+   "note": "Binding constraint is multi-document synthesis plus regulated CtQ judgement across protocol+risk-assessment+SOPs — long-context reasoning that a 7B quantized model degrades on well before its context window, with high adjudication stakes (a wrong KRI definition mis-aims the whole monitoring plan). Keep only deterministic/templated catalog scaffolding local; the real drafting is Beyond on-device.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Threshold-breach signal triage & narrative",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Tag breach severity/priority into a fixed allowed-value bucket set and draft a short templated breach note (what breached, direction of trend) strictly grounded in the validated platform's already-computed flagged record",
+   "sasr_role": "The validated CSM/RBQM platform detects the breach and computes magnitude, trend, and every number; SAS/R validates the SLM's severity tag against the allowed enum, routes to the queue, and writes nothing to the breach-of-record without the human gate. No magnitude or count is ever generated by the model.",
+   "note": "Binding constraint is that the breach numbers and trend must be pre-computed by the validated tool — feasible only with constrained output and the record supplied; residual risk is the SLM inventing candidate causes or restating magnitude, so any cause text stays clearly a draft and numbers never originate in the model.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Central statistical monitoring signal interpretation (site outliers, digit preference, anomalies)",
+   "slm_verdict": "Beyond",
+   "slm_role": "none for the synthesis — cross-correlating outlier scores, digit-preference, variance/correlation, date-implausibility and AE-under-reporting into one fraud/quality story needs frontier reasoning; if any SLM use at all, restrict to one-finding-at-a-time templated captions under separate Guardrails, never the cross-signal narrative",
+   "sasr_role": "The validated/frozen stats engine computes all outlier statistics, digit-preference tests, variance/correlation anomalies and date-implausibility flags; SAS/R clusters findings deterministically by site and supplies only the computed ranking. The model never computes or confirms a statistic.",
+   "note": "Binding constraint is multi-signal correlation into a coherent fraud/integrity narrative with high adjudication stakes — exactly the cross-correlating-many-signals failure mode small quantized models hit. Keep all statistics SAS/R-only and escalate the integrative narrative to a larger model.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Protocol-deviation surveillance & classification",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Classify a single short deviation passage into major/minor and one fixed category (eligibility, IP, visit-window, consent, procedure), flag likely-important per ICH E6(R3), and draft the log-entry text",
+   "sasr_role": "RAG to the protocol section map; SAS/R validates the chosen class/category against the allowed enum, attaches the cited protocol section, and writes only through the validated deviation-log system after QA confirmation. No status of record is set by the model.",
+   "note": "This is short-passage classification into a fixed bucket set — the SLM's reliable zone — but the 'major/important' determination carries direct regulatory weight, so the deterministic enum validator plus the human QA gate are non-negotiable; without them this would slide toward an over-trusted high-stakes call, which is why it is Guardrails not Ready.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Safety signal triage (AE/SAE volume, lab shifts)",
+   "slm_verdict": "Beyond",
+   "slm_role": "none — clinical-safety nuance and causality-adjacent prioritization on unblinded data is explicitly outside small-model competence; either leave triage to deterministic SAS/R ranking + medical review or escalate the note to a larger LOCAL model (never cloud, given unblinded data)",
+   "sasr_role": "The validated safety DB/EDC computes all AE/SAE volumes and lab-shift numbers; SAS/R assembles the flagged inputs, enforces that no number originates in any model, and routes to the safety physician. The model is kept entirely off the causality and number paths.",
+   "note": "Binding constraint is the highest-stakes narrative class in this area — clinical-safety judgement on unblinded data where a small model's hallucination or mis-prioritization is directly patient-relevant. Keep the SLM off it; this is Beyond on-device.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Site performance & enrollment-metric reporting",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Draft one-site-at-a-time scorecard commentary and recommended-action phrasing grounded only in the validated per-site metrics (enrollment vs plan, screen-fail, query aging, deviation rate, entry lag)",
+   "sasr_role": "CTMS/EDC compute all metrics; SAS/R passes de-identified per-site aggregates, validates that the narrative cites only supplied figures, and performs every cross-site/portfolio rollup deterministically before clinical-ops review. The model never aggregates across sites.",
+   "note": "Binding constraint is that the source scope includes a multi-site/portfolio rollup — exactly the multi-row synthesis where small models drop or transpose figures. Per-site templated summarization is in reach, so constrain the SLM to single-site drafting and force all cross-site aggregation into SAS/R; that constraint is what keeps it Guardrails rather than Beyond.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Enrollment & visit-anomaly detection narrative",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Narrate a single already-detected anomaly (enrollment spike/cluster, visit-window violation, implausible timing), suggest candidate causes, and draft a one-line monitoring follow-up",
+   "sasr_role": "Validated analytics perform all detection math and timing checks; SAS/R supplies the one discrete flagged event, validates the routing tag, and assigns follow-up only through the human gate. The model never computes or confirms the anomaly.",
+   "note": "Binding constraint is candidate-cause speculation: detection is fully deterministic so the SLM only explains one pre-found event (within reach), but the speculative cause is the residual hallucination risk, so it stays a clearly-labeled draft and the model must never imply it computed or confirmed the anomaly.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "CAPA drafting & tracking",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Draft a templated CAPA record (problem statement, candidate root-cause options, proposed corrective/preventive actions, owner/due-date placeholders) and short aging-status note text from a single finding",
+   "sasr_role": "RAG to the CAPA SOP; SAS/R computes all overdue/aging dates, tracks open CAPAs, validates owner/date fields, and writes closure only in the validated quality system after QA approval. All date arithmetic is deterministic, never the model's.",
+   "note": "Binding constraint is that root-cause options are suggestions only — single-finding templated drafting grounded in the SOP is in the reliable zone, but effectiveness checks, closure judgement, and every date computation stay deterministic and human so the model never implies a verified root cause or a real due date.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "DSMB / safety-review packet assembly",
+   "slm_verdict": "Beyond",
+   "slm_role": "none on-device — faithful long-form synthesis of the unblinded packet cover narrative and prior-action follow-up summary needs a larger model; escalate to a larger LOCAL model only, never cloud given the unblinded data",
+   "sasr_role": "Validated tools produce every TLF; SAS/R pulls and orders the validated tables/listings/figures, assembles the packet shell deterministically, and keeps all numbers out of any model's hands. The packet structure is templated by SAS/R, not narrated into existence by the SLM.",
+   "note": "Binding constraint is faithful long-form synthesis over an unblinded safety packet — the long-summary + high-stakes territory where small models drop or fabricate findings. Keep collation and TLF assembly deterministic in SAS/R; the cover narrative is Beyond on-device and must stay on-prem if escalated.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Monitoring-visit report (MVR) summarization",
+   "slm_verdict": "Beyond",
+   "slm_role": "single-MVR structured extraction (open issues, action items, deviations noted, site responsiveness) could run under tight Guardrails, but the cross-MVR recurring-theme rollup as scoped needs a larger model — escalate the rollup",
+   "sasr_role": "SAS/R supplies de-identified MVR text, enforces the output schema on any extraction, and stores drafts pending CRA/clinical-lead confirmation of findings of record. SAS/R, not the model, does any cross-report aggregation of themes.",
+   "note": "Binding constraint is faithful long-document summarization plus cross-MVR theme synthesis — small quantized models drop or fabricate findings well before their advertised context limit, and the portfolio rollup is multi-document synthesis. As scoped (full MVR + cross-site rollup) this is Beyond; only a narrow single-MVR schema extraction would be Guardrails.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "MVR follow-up & action-item tracking",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Extract discrete action items, owners, and due dates from a short MVR passage and draft short reminder text for aging items",
+   "sasr_role": "SAS/R computes all aging/overdue dates, opens/updates only the non-regulated tracker via MCP, validates owner/date fields, flags escalations by deterministic rule, and keeps eTMF records human + validated. No date or escalation threshold is computed by the model.",
+   "note": "Binding constraint is extraction recall — field/action-item extraction from short passages is the SLM's reliable zone, but a missed or hallucinated action item is the failure mode, so SAS/R owns every date computation and the human gate confirms each item before it counts.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "QTL dashboard upkeep & RBQM oversight memo",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Draft per-item change-log entries, short single-trend annotations, and recalibration flags grounded in supplied values — explicitly NOT the synthesized whole-portfolio oversight memo, which is held back from the model",
+   "sasr_role": "The validated platform produces all dashboard values; SAS/R computes every trend delta and amendment-triggered recalibration condition, validates that annotations cite only supplied numbers, and assembles the periodic oversight summary structure deterministically before the RBQM lead reviews. The model never computes a trend or synthesizes the multi-KRI picture.",
+   "note": "Binding constraint is that the periodic oversight memo aggregates many KRI/QTL movements into one narrative — multi-signal synthesis that edges toward Beyond. The component stays Guardrails only by amputating that synthesis to SAS/R and limiting the model to per-item annotations; if it were allowed to write the whole oversight picture unaided it would be Beyond.",
+   "area": "Trial Monitoring & RBQM"
+  },
+  {
+   "name": "Model-agnostic gateway (LiteLLM-class) — single OpenAI-compatible front door",
+   "slm_verdict": "Platform",
+   "slm_role": "none — this is the routing/control plane that CALLS the SLM; it performs no language task itself",
+   "sasr_role": "SAS/R is effectively the gateway: PROC HTTP / httr2 posts to ONE local 127.0.0.1 endpoint, applies the data-classification routing rule, enforces budgets/rate limits, retries/falls back, and writes one structured log line per call; SAS/R owns any counting/metering math, never the SLM",
+   "note": "Pure routing/cost/audit choke point, not a language task; binding constraint is that with a single offline local SLM the 'model-agnostic' abstraction collapses to 'SAS/R calls one fixed local 127.0.0.1 endpoint' — the multi-backend routing logic mostly disappears and the value reduces to a single auditable call site.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Data-classification router + Presidio PII/PHI guardrail (egress firewall)",
+   "slm_verdict": "Platform",
+   "slm_role": "none — classification/redaction is deterministic Presidio NER+regex; a hallucination-prone SLM must NEVER be the thing deciding what counts as PHI",
+   "sasr_role": "SAS/R drives Presidio recognizers, applies the allow/deny routing policy, masks/blocks misclassified-sensitive text, logs the routing decision, and samples false-negatives for the privacy audit; SAS/R owns all match/count tallies",
+   "note": "Egress-firewall infrastructure (the framework's named Platform example), not language work; binding constraint is that a single PHI false-negative leaks data so it stays deterministic — and in a strictly-offline single-SLM build there is no cloud egress to firewall at all, the control degenerates to 'the box stays offline,' making Presidio a defense-in-depth/audit layer rather than the live gate.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "LOCAL frozen open-weight backend (vLLM, air-gapped GPU)",
+   "slm_verdict": "Platform",
+   "slm_role": "none — this IS the model-server box; in the on-device variant it is Ollama/llama.cpp/LM Studio serving a 4-8bit quantized 1-9B GGUF on an ordinary workstation, not a vLLM GPU farm",
+   "sasr_role": "SAS/R is the only caller and pins model name+quantization+digest, temperature-0/fixed-seed decoding, and the prompt as a frozen re-runnable artifact; SAS/R keeps the box air-gapped and NEVER lets the model emit a reported/regulated number — all numbers come from validated engines",
+   "note": "Backend infrastructure, not a language task; binding constraint is capability — a quantized 7-9B local model is the realistic on-device backend, so every downstream language verdict inherits its HIGHER hallucination rate and prompt/format sensitivity, and 'frozen + air-gapped' is exactly what buys reproducibility to offset that ceiling.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "CLOUD Claude backend (API under BAA, de-identified only)",
+   "slm_verdict": "Platform",
+   "slm_role": "none — and explicitly OUT OF SCOPE for an on-device SLM; this is the frontier escalation path, not a small local model",
+   "sasr_role": "if kept, SAS/R routes only de-identified text here after the classifier clears it and queues the draft for human accept/reject; in a strictly offline build SAS/R simply has no route to this backend",
+   "note": "Not an SLM Platform at all — it is the larger-model escalation target named in the 'Beyond' guidance; binding constraint is that the on-device-SLM thesis must either DROP this entirely (fully offline) or reserve it explicitly as the escalation for hard reasoning/long-context synthesis a 7-9B quantized local model cannot do reliably; it cannot count as 'realized on-device.'",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "RAG knowledge base over SOPs/WIs/study docs (local, permissioned vector store)",
+   "slm_verdict": "Guardrails",
+   "slm_role": "from a SINGLE retrieved SOP/WI passage, produce a short extractive/templated answer to one narrow compliance question, copying the citation (doc id + version) verbatim from the retrieved chunk's metadata — no cross-passage reasoning, no paraphrase of obligations beyond the cited text",
+   "sasr_role": "SAS/R owns ingestion/chunking/embedding into the local store, permissioned retrieval, and the deterministic citation-verification validator (every cited doc+version MUST exist in the retrieved set and the quoted span must match, else the answer is rejected); SAS/R surfaces the controlled document as authority and counts/ranks retrieval scores — never the SLM",
+   "note": "The ONLY genuine SLM language sub-task in this area, and it sits at the EDGE of the reliable zone; binding constraint is multi-document synthesis — quantized 7-9B models drift and conflate obligations when asked to combine several SOP chunks or reason about long context, so it is safe ONLY single-passage, extractive, citation-constrained, validator-checked, with the controlled document (not the model) as authority and a human verifying the citation; widen scope to multi-SOP synthesis or interpretive 'does this comply?' judgement and it becomes Beyond.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Orchestration layer (scheduled jobs + agent framework that fires the agents)",
+   "slm_verdict": "Platform",
+   "slm_role": "none — scheduling, chaining, timeouts, and queue-interception are deterministic orchestration code, not language work",
+   "sasr_role": "SAS/R IS the orchestrator: cron/batch schedules jobs on study events, sequences local-endpoint calls with connector tool-calls, enforces per-agent timeouts/guardrails, and drops any record-of-truth action into the approval queue instead of executing it; SAS/R owns all control-flow logic and any timing/retry counters",
+   "note": "Pure automation harness, not a language task; binding constraint is that orchestration must be fully deterministic and auditable — exactly what SAS/R scheduling provides — and no SLM belongs anywhere in the control flow, only as a constrained sidecar call SAS/R makes for a single language sub-task.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Connector/tool layer via MCP (eTMF, Smartsheet, EDC, CTMS, SharePoint, Outlook, Pinnacle 21)",
+   "slm_verdict": "Platform",
+   "slm_role": "none — connectors broker and log system access; the language work lives in the agents that call them, not in the connector layer",
+   "sasr_role": "SAS/R reaches each system with least-privilege scopes (PROC HTTP/httr2/native libraries), keeps reads read-only, PROPOSES every record-of-truth write to the approval queue rather than executing, and logs each access; SAS/R owns any reconciliation/diff computation feeding a proposed write",
+   "note": "Access-brokering infrastructure, not a language task; binding constraint is least-privilege + write-gating, which SAS/R native connectors enforce directly — in an on-device build the MCP abstraction often collapses into plain SAS/R API calls, and the hard line is that NO write to a record of truth executes without the human-gated approval queue.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Unified Part 11 audit & observability trail",
+   "slm_verdict": "Platform",
+   "slm_role": "none — recording who/what/when/before-after is logging infrastructure, never a generative task",
+   "sasr_role": "SAS/R writes every call's record (agent, pinned model version+quantization+digest, prompt, classification decision, redactions, tokens/cost, tool calls, human e-signature, before/after of any record change) to one tamper-evident time-stamped store and never edits or deletes entries",
+   "note": "Compliance infrastructure that makes the stack inspectable, not a language task; binding constraint is tamper-evidence and completeness — an SLM has no role and must NEVER be allowed to author, summarize, or alter trail entries (a hallucinated audit line is worse than none); the offline single-model build simplifies it to logging one local endpoint plus connectors.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Human-in-the-loop approval queue",
+   "slm_verdict": "Platform",
+   "slm_role": "none — the queue presents the draft, diff, and citations; the human decides and signs",
+   "sasr_role": "SAS/R holds every proposed regulated change as a reviewable item, renders the AI draft + source/citations + diff + classification, BLOCKS the connector until an explicit human accept/edit/reject + e-signature, then executes and logs; SAS/R computes the diff deterministically",
+   "note": "This is THE human-gate mechanism the whole framework depends on, not a language task; binding constraint is that no SLM output reaches a record of truth without a named reviewer's signature — it is the safeguard that makes every Guardrails verdict in the program tolerable, and it tightens, not loosens, with a higher-hallucination on-device model.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Model-freeze & engine-of-record registry",
+   "slm_verdict": "Platform",
+   "slm_role": "none — and the registry's whole purpose is to EXCLUDE the SLM from ever being an engine of record",
+   "sasr_role": "SAS/R consults the registry to pin which frozen local model version+quantization+digest+decoding+prompt is in production per task (reproducibility) and which VALIDATED tool is the engine of record for each regulated output (Pinnacle 21 = conformance, Phoenix WinNonlin = PK, EDC/CTMS = operational truth); SAS/R refuses to treat any SLM output as a reported number",
+   "note": "The framework's explicit Platform example, not a language task; binding constraint is the hard line that reported/regulated numbers come ONLY from validated engines — the registry exists precisely so a quantized SLM can never become one, and freezing model+quant+digest+seed+prompt is what makes an on-device run re-executable identically for an inspector years later.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Caching, cost/budget controls & FinOps metering",
+   "slm_verdict": "Platform",
+   "slm_role": "none — caching and metering are deterministic gateway features, not language work",
+   "sasr_role": "SAS/R caches identical/near-identical de-identified prompts (classification-aware; sensitive payloads excluded), meters per agent/model/study/team, and enforces budget caps; SAS/R owns all cost/token arithmetic",
+   "note": "Operational-efficiency infrastructure, not a language task; binding constraint is largely MOOT on-device — a single offline local model is fixed-cost hardware with no per-token cloud bill, so FinOps shrinks from runaway-spend control to capacity/throughput/latency tracking (GPU-hours, queue depth) on the one box.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Identity, RBAC & secrets / trust-boundary management",
+   "slm_verdict": "Platform",
+   "slm_role": "none — authentication, authorization, secret-holding, and host isolation are security control-plane functions, not language tasks",
+   "sasr_role": "SAS/R (with the security stack) maps users/agents to roles/studies, enforces least-privilege on local-endpoint keys and connector scopes, pulls credentials from a vault, and keeps the air-gapped local host isolated; no number or decision here originates from an SLM",
+   "note": "Security infrastructure underpinning every RED safeguard, not a language task; binding constraint is keeping the air gap real and permissions per-study — an SLM makes no decision here, and the offline single-box deployment is exactly what makes 'the air gap real' physically enforceable rather than a policy promise.",
+   "area": "The Hybrid Agentic Platform"
+  },
+  {
+   "name": "Informed-consent (ICF) version tracking & site-version reconciliation",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Extract verbatim version IDs, language/translation labels, and printed effective/approval dates from each ICF header/footer or approval stamp (short, located passages) into a structured row as candidate values for human confirmation. The SLM does NOT classify the match/superseded/re-consent-due bucket — that is a date computation, not language.",
+   "sasr_role": "Owns the authoritative version-effective-date table, the consent-date-vs-effective-window comparison and ALL bucketing logic (match / signed-superseded / re-consent-due / missing-site-approval), re-consent triggering, the validator that checks SLM-extracted dates against allowed formats/ranges, every write, and the audit log; runs air-gapped because consent dates are PHI-adjacent/unblinded.",
+   "note": "Binding constraint is stakes plus a hidden numeric step: consent-version mismatch is a top-5 GCP finding, so the date/window comparison must be deterministic SAS/R — the draft let the SLM 'classify into a bucket,' which is the date logic in disguise; pull it back to extraction-only behind a PM/CRA gate.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Site feasibility, selection & activation-readiness tracking",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Draft feasibility questionnaires from a template and extract/normalize individual fields from EACH single returned site response (capacity, equipment, prior-experience flags) into a structured row; optionally a one-line per-site status note. One response at a time, never cross-site.",
+   "sasr_role": "Owns the activation checklist state, per-site cycle-time and status computation, assembly of the ranking matrix from extracted fields, the activation-slip prediction model, scheduling/alerts, schema validation, writes, and audit log.",
+   "note": "Binding constraint is multi-response synthesis and prediction: rolling many free-text feasibility replies into a faithful ranking and forecasting slips is multi-document/quantitative work a small model cannot do reliably, so SAS/R must assemble and score and the SLM is confined to per-response field extraction.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Investigational-product (IP)/drug accountability & reconciliation",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft the accountability-discrepancy memo for CRA follow-up from SAS/R-supplied, already-computed discrepancy figures (templated, grounded drafting only) — the SLM inserts no numbers of its own.",
+   "sasr_role": "Owns the entire reconciliation (shipped vs dispensed vs returned vs destroyed) against IXRS/IRT and accountability logs, negative-inventory/expiry/temperature-excursion/missing-destruction detection, and the count of record from the validated IXRS/inventory system; air-gapped, writes and audit log included.",
+   "note": "Binding constraint is numbers, and they never touch the SLM: every count comes from validated systems, leaving the SLM a clean templated-drafting task behind a CRA/QA signature — a genuine Ready.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Randomization / IXRS(IRT) setup-spec & UAT oversight (blinding-safe)",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Convert UAT outcomes into structured defect-log entries and candidate test-step text for human review, and extract individual protocol-stated parameters (named stratification factors, stated block size, dispensing rules) into a structured spec-input row. The SLM does NOT author the multi-section randomization spec narrative and does NOT QC spec-vs-protocol fidelity — that reasoning is escalated.",
+   "sasr_role": "Owns protocol-parameter extraction validation, assembly of the spec document from validated fields/templates, UAT execution tracking, live stratification-imbalance/assignment-anomaly statistics computed without exposing the randomization list, schema validation, writes, and audit log; strictly air-gapped.",
+   "note": "Binding constraint is spec-fidelity reasoning plus unblinding sensitivity: authoring and QCing a randomization spec (block/strata/unblinding logic) genuinely edges past a small quantized model, so that sub-task escalates to a larger local model or stays human-authored while the SLM is held to UAT structuring and per-field extraction under an unblinded-statistician/QA gate.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Lab manual, central-lab spec & kit/supply management",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Extract and normalize assessment names from the protocol schedule-of-assessments and the analyte/panel/kit-content names from lab requisitions into a controlled-vocabulary structured list; draft templated resupply requests over SAS/R-supplied quantities.",
+   "sasr_role": "Owns the set-difference coverage check (protocol vs lab spec), per-site inventory and expiry tracking, resupply forecasting and all quantities, the validator over normalized names, scheduling/alerts, writes, and audit log.",
+   "note": "Binding constraint is cross-document coverage reasoning: gap detection must be a deterministic SAS/R set comparison over SLM-normalized terms, because letting the model 'decide' coverage invites missed-panel hallucinations on a classic deviation source.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Regulatory submission & lifecycle tracking (IND/CTA, amendments, annual reports)",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft templated cover letters / 1571-class form text and assemble the submission-component checklist from a retrieved template (grounded, narrow drafting); optionally a one-line deadline reminder. No date arithmetic.",
+   "sasr_role": "Owns the submission calendar and all agency-clock/anniversary date arithmetic (30-day safety-to-proceed, DSUR/IND-annual-report anniversaries), deadline alerting, checklist-completeness logic, writes, and audit log; the official record stays the regulatory system of record.",
+   "note": "Binding constraint is the recurring clock math, which is pure SAS/R date arithmetic, leaving the SLM only template-fill drafting behind a regulatory-affairs signature.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Expedited safety-reporting clock tracker (SUSAR/SAE 7- & 15-day)",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft distribution-log entries and pre-deadline reminder notes from SAS/R-supplied case IDs, recipients, and clock status (templated drafting only); explicitly does NOT draft or judge the medical/causality assessment.",
+   "sasr_role": "Owns the 7/15-day clock start from sponsor-awareness date and all clock/follow-up arithmetic, recipient-distribution tracking, at-risk-case flagging, writes, and audit log; air-gapped (case safety data is PHI/unblinded).",
+   "note": "Binding constraint is severe regulatory stakes, mitigated because causality/expectedness and the official submission stay with PV/medical-monitor and SAS/R owns every clock, so the SLM's reminder/log drafting is low-residual-risk.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Audit & inspection logistics / readiness orchestration",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Draft the document-request list and war-room/agenda tracker entries from templates and tag incoming inspection requests to the right SME/queue (routing/triage). The SLM does NOT draft audit-observation response content — not even a 'skeleton' — because narrative response substance is escalated or human-authored.",
+   "sasr_role": "Owns the logistics tracker state, SME-availability and finding-to-CAPA-closure tracking, request logging, routing validation, scheduling, writes, and audit log.",
+   "note": "Binding constraint is the audit-response narrative: composing (or even skeletoning) a defensible regulatory response is nuanced and high-stakes, genuinely beyond a small model and able to plant wrong commitments, so that sub-task escalates to a larger model or stays human-authored while the SLM is confined to logistics tagging under a QA gate.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Training-compliance & qualification tracking (curriculum + delegation)",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft the training-status summary for the eTMF from SAS/R-computed compliance results (templated drafting); optionally normalize free-text course/role names into the controlled training-matrix vocabulary.",
+   "sasr_role": "Owns the required-training matrix, LMS-completion-vs-assignment reconciliation, the training-to-delegation linkage logic, overdue/expired-cert and delegation-without-prerequisite detection, validation, alerts, writes, and audit log.",
+   "note": "Binding constraint is reconciliation logic, which is deterministic SAS/R, so the linkage that catches untrained-but-delegated staff never depends on the model and the SLM only summarizes/normalizes.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Data-transfer agreement (DTA) scheduling & receipt/reconciliation confirmation",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft the transfer-receipt log entries and late/missing-transfer notices from SAS/R-supplied arrival status and validation results (templated drafting only).",
+   "sasr_role": "Owns the transfer calendar derived from each DTA spec, arrival confirmation, file-structure/record-count/checksum validation against spec, count reconciliation against EDC, flagging, writes, and audit log; air-gapped.",
+   "note": "Binding constraint is numeric/structural validation (counts, checksums), entirely SAS/R, so the SLM is confined to drafting the log over already-validated facts.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Contract / CDA / agreement lifecycle tracking (CTA-contract, CDA, MSA, vendor SOWs)",
+   "slm_verdict": "Guardrails",
+   "slm_role": "Over RAG-retrieved short chunks only, extract key fields and obligation/clause snippets (effective/expiry dates, auto-renewal and notice windows, named deliverables, payment triggers) as candidate values for mandatory legal confirmation — every extracted clause is treated as unverified.",
+   "sasr_role": "Owns the agreement portfolio state, all date/notice-window arithmetic and expiry/renewal alerting, the unexecuted-agreement-blocking-activation logic, the validator over extracted fields, writes, and audit log.",
+   "note": "Binding constraint is clause extraction from long, nuanced legal text that runs past the reliable short-passage window — this sits right at the Beyond boundary, so it survives as Guardrails only because RAG chunks the input and legal human-verifies every clause while all date logic stays in SAS/R.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Lessons-learned & continuous-improvement knowledge capture",
+   "slm_verdict": "Beyond",
+   "slm_role": "Per single artifact, can extract a structured issue record and propose one near-duplicate cluster label; but the headline deliverable — faithful thematic synthesis across many closed studies, CAPAs, deviation/query trends, and minutes — is not reliable on a small quantized model.",
+   "sasr_role": "Owns retrieval/RAG indexing, embedding-based similarity grouping of issue records, trend statistics, surfacing prior lessons at study start-up, writes, and audit log.",
+   "note": "Binding constraint is multi-document synthesis: clustering short records is feasible but cross-artifact thematic synthesis needs frontier-level reasoning, so escalate the synthesis step to a larger local/cloud model (de-identified) while SAS/R does retrieval and grouping and a QA/process owner curates before anything becomes guidance.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Sponsor-update / newsletter & external communication drafting",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft the recurring sponsor update / newsletter by filling the house template with SAS/R-supplied enrollment metrics, milestone status, and safety headlines, producing tailored sponsor-vs-site versions (templated drafting grounded in retrieved values).",
+   "sasr_role": "Owns metric/milestone retrieval from CTMS/dashboards, the de-identification/no-unblinded-data egress check, distribution-log maintenance, review routing, writes, and audit log.",
+   "note": "Binding constraint is keeping unblinded figures out of an external draft, enforced by a SAS/R egress/de-id check plus a PM send-gate, leaving the SLM a clean template-fill task it does well.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "Subject travel, reimbursement & visit-logistics coordination (early-phase unit ops)",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft subject visit reminders and reschedule/conflict notices from SAS/R-computed schedules and window-risk flags (templated drafting only).",
+   "sasr_role": "Owns confinement/ambulatory PK scheduling against strict protocol time windows, bed/slot capacity tracking, window-risk and overlapping-cohort conflict detection, stipend/reimbursement workflow state, writes, and audit log; air-gapped (subject identity/travel/payment is PHI).",
+   "note": "Binding constraint is the rigid PK-window/capacity math, which is deterministic SAS/R scheduling, so the SLM never computes timing and only drafts the human-facing reminders behind a unit-coordinator gate.",
+   "area": "Additional / easily-missed"
+  },
+  {
+   "name": "eCOA / ePRO / wearable-device data oversight & compliance monitoring",
+   "slm_verdict": "Ready",
+   "slm_role": "Draft site-level compliance alert text from SAS/R-computed completeness/compliance results (templated drafting); does NOT adjudicate compliance status.",
+   "sasr_role": "Owns the completeness/wear-time/sync-gap statistics, implausible/curbstoned-pattern detection, reconciliation of eCOA records against the expected diary/visit schedule, flagging for central monitoring, writes, and audit log; air-gapped (subject-level PHI).",
+   "note": "Binding constraint is the integrity/pattern statistics, all SAS/R, with the SLM limited to drafting alerts over flags that DM/central-monitoring adjudicates, keeping the model out of any compliance judgement.",
+   "area": "Additional / easily-missed"
+  }
+ ],
+ "distribution": {
+  "Guardrails": 36,
+  "Beyond": 15,
+  "Ready": 12,
+  "Platform": 12
+ }
+}

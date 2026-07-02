@@ -1,0 +1,1 @@
+Second, the on-device participant tier in the validated environment, with the safety logic encoded and alerting wired to the medical monitor.

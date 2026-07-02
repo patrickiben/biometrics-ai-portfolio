@@ -1,0 +1,95 @@
+1
+00:00:00,000 --> 00:00:06,780
+You wanted to see the real thing, so here it is — no graphical interface, just the actual script.
+
+2
+00:00:07,080 --> 00:00:12,826
+There's the listing: the PowerShell file, the one-click macro, and nothing else.
+
+3
+00:00:13,126 --> 00:00:25,504
+And look at what the script itself says it does: it attaches to your already-open Outlook and reads the study folder — it never moves, deletes, or modifies your mail; it only reads.
+
+4
+00:00:25,804 --> 00:00:38,284
+The one function worth seeing is the sanitizer: before any email is saved, it strips out scripts, styles, and tracking — so a note can never run code or phone home when you open it.
+
+5
+00:00:39,284 --> 00:00:42,792
+Now let me run it on a real folder, on this machine.
+
+6
+00:00:43,092 --> 00:00:46,491
+Here's the knowledge base folder, with its drop inbox.
+
+7
+00:00:46,791 --> 00:00:57,866
+The ad-hoc capture — the one you already have — is exactly this: you drop a few study emails into that inbox, which is what the one-click Outlook macro does for you.
+
+8
+00:00:58,166 --> 00:01:01,361
+Three operational emails, ready to file.
+
+9
+00:01:02,361 --> 00:01:03,361
+Run the script.
+
+10
+00:01:03,661 --> 00:01:09,034
+Each email becomes one read-only, structured note, written to the Notes folder.
+
+11
+00:01:09,334 --> 00:01:14,676
+And every one is stamped with its Outlook EntryID, recorded in seen-dot-json.
+
+12
+00:01:14,976 --> 00:01:21,660
+That watermark is what makes it safe to run unattended — it is how the script knows what it has already filed.
+
+13
+00:01:22,660 --> 00:01:30,378
+Here is one of the filed notes — subject, sender, the time it was captured, and the operations-only footer.
+
+14
+00:01:30,678 --> 00:01:33,072
+Now the safety net, made visible.
+
+15
+00:01:33,372 --> 00:01:37,016
+The source email carried a tracking script and a remote pixel.
+
+16
+00:01:37,316 --> 00:01:45,082
+The filed note has neither: the script is gone, and the remote image is neutralized — turned into a dead, blocked link.
+
+17
+00:01:45,382 --> 00:01:47,834
+Every note is sanitized on the way in.
+
+18
+00:01:48,834 --> 00:01:50,705
+And the watermark earns its keep.
+
+19
+00:01:51,005 --> 00:01:56,603
+Drop the very same emails in again, run the script again — and it skips every one.
+
+20
+00:01:56,903 --> 00:01:59,163
+Zero filed, three skipped.
+
+21
+00:01:59,463 --> 00:02:06,339
+It is genuinely idempotent: it never files the same message twice, no matter how often it runs.
+
+22
+00:02:07,339 --> 00:02:15,168
+Finally, the ad-hoc one-click — a small Outlook macro, for the rare email that lives outside your study folder.
+
+23
+00:02:15,468 --> 00:02:23,686
+So that is the whole tool: one Outlook rule to route the mail, one scheduled script to file it, real notes on a real drive.
+
+24
+00:02:23,986 --> 00:02:30,153
+No graphical interface, operations-only — and the validated systems still own every number.

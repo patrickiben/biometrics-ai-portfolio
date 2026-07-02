@@ -1,0 +1,240 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SAS/R Trial-Monitoring Automation</title><style>
+:root{--indigo:#8B86F0;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--amber:#D9A94F;--terra:#E0857A;--sas:#6FA0DC;--bg:#0E1124}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+#wrap{display:flex;min-height:100vh}
+#side{width:280px;flex:0 0 280px;background:#15183A;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #2a2f52}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #2c2f55;margin-bottom:10px}
+#side .brand b{font-family:Georgia,serif;font-size:16px}#side .brand span{display:block;color:#aeb4e0;font-size:11px;margin-top:4px}
+#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #3a3e72;background:#1d2150;color:#fff;font-size:13px}
+#side a{display:block;color:#cfd3f3;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}
+#side a:hover{background:#1d2150}#side a.active{color:#fff;border-left-color:#8b86f0;background:#1d2150;font-weight:600}
+#main{flex:1;max-width:980px;margin:0 auto;padding:34px 48px 80px}
+section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.3}to{opacity:1}}
+h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
+h2{font-family:Georgia,serif;color:#A9A4F5;font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:16.5px;color:#C3CCE4}p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
+code{background:#20284a;color:#A9C6F2;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:#15183A;color:#fff;font-weight:600}tr:nth-child(even) td{background:var(--panel)}
+.callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}
+.callout.warn{background:#2A1614;color:var(--ink);border-left:4px solid var(--terra)}
+.callout.tip{background:#0F262A;color:var(--ink);border-left:4px solid var(--teal)}
+.muted{color:var(--muted);font-size:13px}
+.flow{margin:18px 0}
+.node{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;box-shadow:0 2px 6px rgba(20,20,40,.06)}
+.node b{display:block;font-size:15px}.node span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+.node.out{border-left:5px solid var(--sas)}.node.pa{border-left:5px solid var(--indigo)}.node.sp{border-left:5px solid var(--teal)}.node.cs{border-left:5px solid var(--amber)}
+.arrow{text-align:center;color:var(--indigo);font-size:20px;margin:5px 0;font-weight:700}
+.row{display:flex;gap:14px}.row .node{flex:1}
+.footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+a{color:var(--indigo)}
+.dl{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}
+.btn{display:inline-block;background:var(--sas);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px}
+.btn.ghost{background:transparent;color:var(--sas);border:1.5px solid var(--sas)}
+.btn:hover{opacity:.92}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+.shots figure{margin:0}.shots img{width:100%;border:1px solid var(--line);border-radius:10px;box-shadow:0 3px 12px rgba(20,20,40,.10);display:block}
+.shots figcaption{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
+
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
+
+
+@media (prefers-reduced-motion:reduce){section.show{animation:none}}
+@media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
+</style></head>
+<body><a href="#main" class="skip">Skip to content</a><div id="wrap">
+<nav id="side" aria-label="Wiki sections"><div class="brand"><b>SAS / R Monitoring</b><span>Automated coverage — no AI</span></div>
+<label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off">
+<a href="#start" data-t="start">Start here</a>
+<a href="#arch" data-t="arch">Architecture</a>
+<a href="#checks" data-t="checks">The checks catalog</a>
+<a href="#alerts" data-t="alerts">Reporting &amp; alerting</a>
+<a href="#watch" data-t="watch">&#9654; Coverage while on leave</a>
+<a href="#safeguards" data-t="safeguards">&#9888; Won't fail silently</a>
+<a href="#gov" data-t="gov">Governance &amp; limits</a>
+<a href="#faq" data-t="faq">FAQ</a>
+<a href="#transcript" data-t="transcript">Transcript</a></nav>
+<main id="main" tabindex="-1"><section id="start" aria-label="Start here">
+    <h1>SAS/R Trial-Monitoring Automation &mdash; the coverage you can ship today</h1>
+    <p class="lede">A deterministic, <strong>no-AI</strong> companion to the Claude&nbsp;+&nbsp;Local and M365 Copilot&nbsp;+&nbsp;Local pipelines. It automates trial monitoring using <strong>only validated SAS and/or R, inside the existing environment</strong> &mdash; so a covering team and the manager stay informed while the lead is away, with <strong>no new tools, no new vendor, and no PHI egress</strong>.</p>
+    <div class="callout warn"><strong>Read the one honest framing first.</strong> This reliably <strong>DETECTS</strong> and <strong>DELIVERS</strong> pre-specified facts &mdash; counts, thresholds, deltas, reconciliation breaks, run failures &mdash; to a human, reproducibly. It does <strong>not</strong> triage, narrate, or judge clinical meaning; the medical monitor and humans own every decision. That triage layer is exactly the seam the AI hybrid fills later. <strong>Necessary, not sufficient &mdash; and that is the point: ship this now, layer AI on top when it is approved.</strong></div>
+    <h2>The 60-second version</h2>
+    <ol>
+      <li>A <strong>scheduler</strong> (OS Task Scheduler / cron) fires a <strong>version-controlled SAS or R program</strong> in unattended batch mode, under a <strong>service account</strong>.</li>
+      <li>The program ingests the latest validated extract, runs <strong>deterministic checks</strong>, and renders a <strong>report</strong> (SAS ODS / R Markdown).</li>
+      <li>It <strong>notifies</strong> people in two tiers: a scheduled <strong>digest</strong> (daily to the cover, weekly one-pager to the manager) and an immediate <strong>threshold alert</strong> on any KRI / QTL / DLT / SAE flag.</li>
+      <li>Every run emits a <strong>heartbeat</strong> with a data-freshness timestamp &mdash; so silence is never assumed.</li>
+    </ol>
+    <p>See it end-to-end in <a href="#watch">Coverage while on leave</a> &mdash; a full month on Study CP-101.</p>
+    <h2>Why this is the lowest-risk of the three pipelines</h2>
+    <p>It adds <strong>nothing new</strong>: no LLM, no model to validate, no vendor, no data leaving the validated boundary. Every reported number comes from the same double-programmed, QC&rsquo;d programs the team already uses. So there is <strong>no new approval gate between today and go-live</strong> &mdash; only the team&rsquo;s normal program validation / change control.</p>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="arch" aria-label="Architecture">
+    <h1>The deterministic loop &mdash; scheduler &rarr; program &rarr; report &rarr; notify</h1>
+    <p>Every component already exists and is qualified inside a validated SAS/R environment. Pick whichever scheduler is <em>already approved</em> in your shop &mdash; do not introduce a new orchestrator just for this.</p>
+    <div class="flow">
+      <div class="node out"><b>Scheduler (the clock)</b><span>Windows Task Scheduler / cron &mdash; runs under a <b>service account</b>, survives reboots, logs its own history</span></div>
+      <div class="arrow">&darr;</div>
+      <div class="node pa"><b>SAS / R program (batch, unattended)</b><span>ingest latest extract &rarr; <b>data-freshness gate</b> &rarr; deterministic checks &rarr; render report</span></div>
+      <div class="arrow split">&darr; &nbsp; &nbsp; &darr;</div>
+      <div class="row">
+        <div class="node sp"><b>Report</b><span>SAS ODS (PDF/RTF/HTML) or R Markdown / Quarto / officer / flextable</span></div>
+        <div class="node cs"><b>Notify (2 tiers)</b><span>digest + threshold alert via SAS EMAIL engine or R Microsoft365R/blastula</span></div>
+      </div>
+    </div>
+    <h2>Scheduling options (use what is already validated)</h2>
+    <table>
+      <tr><th>Option</th><th>What it is</th><th>When</th></tr>
+      <tr><td><b>SAS batch via OS scheduler</b> <span class="muted">(the validated default)</span></td><td><code>sas -sysin monitor.sas -log dated.log -batch -noterminal</code>, fired by Task Scheduler / cron. Pure Base SAS 9.4 behaviour that has run validated pipelines for decades.</td><td>The lowest-governance, most defensible choice. Start here.</td></tr>
+      <tr><td><b>cronR / taskscheduleR (R)</b></td><td>R-native wrappers to register Rscript jobs (<code>cronR::cron_add()</code>, <code>taskscheduleR::taskscheduler_create()</code>); pin packages with <code>renv</code> for byte-reproducibility.</td><td>When the report is authored in R (ggplot2 / gt / safetyGraphics eDISH).</td></tr>
+      
+      <tr><td><b>SAS 9.4 EG / Studio / Stored Processes</b></td><td>Export a flow to a deployed job run by Platform/LSF or Task Scheduler; Stored Processes for parameterized server-side runs.</td><td>Legacy-but-valid on a 9.4 stack.</td></tr>
+    </table>
+    <div class="callout warn"><b>The single most common silent-failure cause:</b> running under the lead&rsquo;s personal login. Use a <b>dedicated service / functional account</b>, and confirm <em>before departure</em> that it has the SAS licence, network-share access, and SMTP relay rights. A personal account&rsquo;s credentials/VPN go idle on leave &mdash; and the job dies the moment they do.</div>
+    <h2>Scheduled data ingestion</h2>
+    <p>The job&rsquo;s first step reads the latest validated extract deterministically: SDTM/ADaM <code>.sas7bdat</code>/<code>.xpt</code> (<code>libname xport</code>, <code>haven::read_xpt()</code>), EDC CSV exports, a read-only DB view to the safety/IXRS database (SAS/ACCESS, <code>DBI</code>+<code>odbc</code>). A small macro resolves the newest dated file so &ldquo;latest export&rdquo; is unambiguous. <b>It is only as fresh as the upstream cadence</b> &mdash; document each source&rsquo;s refresh frequency in the report header (see the <a href="#safeguards">freshness gate</a>).</p>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="checks" aria-label="The checks catalog">
+    <h1>The monitoring-checks catalog</h1>
+    <p>A fixed battery of <strong>deterministic flags</strong> that run unattended and give the same answer every time on the same data. Each is a pure data computation in validated SAS (<code>PROC FREQ/MEANS/SQL/REPORT</code>, ODS) or R (<code>dplyr</code> + admiral-style derivations + <code>gt</code>/<code>flextable</code> + <code>safetyGraphics</code> for eDISH). <b>A flag is a prompt to look &mdash; never an adjudication.</b></p>
+    <table>
+      <tr><th>Check</th><th>What it computes</th><th>The honest boundary</th></tr>
+      <tr><td><b>AE / SAE counts &amp; rates</b></td><td>Running tallies by cohort, MedDRA SOC/PT, grade, relatedness; participant-incidence and event counts.</td><td>Participant-incidence vs event counts &mdash; report both. Causality/expectedness come from the safety DB.</td></tr>
+      <tr><td><b>Candidate-DLT tally vs the rule</b></td><td>DLT-flagged events in the evaluation window per cohort vs the 3+3 / BOIN boundary.</td><td>Only against an <em>adjudicated</em> DLT flag &amp; a completed window. Never makes the escalation decision.</td></tr>
+      <tr><td><b>Hy&rsquo;s-Law / eDISH</b></td><td>Peak ALT or AST &gt;3&times;ULN <b>and</b> total bilirubin &gt;2&times;ULN (ALP&lt;2&times; for hepatocellular); the eDISH quadrant plot.</td><td>A <em>screening</em> flag matching the lab criteria &mdash; never a Hy&rsquo;s-Law/DILI diagnosis.</td></tr>
+      <tr><td><b>QTcF prolongation</b></td><td>Absolute &gt;450/480/500 ms tiers and &Delta;QTcF &gt;30/&gt;60 ms (ICH E14), by participant/visit/dose.</td><td>Use the protocol correction (don&rsquo;t mix QTcF/QTcB). Threshold crossing only.</td></tr>
+      <tr><td><b>Labs / vitals out-of-range &amp; shifts</b></td><td>Values outside reference / PCS criteria; baseline-to-worst shift tables by CTCAE grade.</td><td>Reference ranges &amp; PCS criteria are the validated study-specific metadata. Out-of-range is statistical, not clinical.</td></tr>
+      <tr><td><b>PK exposure outliers</b></td><td>Cmax / AUC outliers vs cohort and vs prior cohorts; pre-specified exposure ceilings.</td><td>Thresholds must be pre-specified in the protocol/SAP to stay deterministic.</td></tr>
+      <tr><td><b>Enrollment vs plan &amp; screen-fail</b></td><td>Actual vs planned by cohort &amp; over time; screen-failure rate with reasons; cohort-fill.</td><td>Pure operational counting; depends on disposition data being current.</td></tr>
+      <tr><td><b>Query aging &amp; missing safety data</b></td><td>Open queries by age bucket &amp; site; missing/overdue critical safety fields in the DLT window.</td><td>Flags presence/age of queries, not whether the data is correct.</td></tr>
+      <tr><td><b>Protocol deviations</b></td><td>Counts by category &amp; severity, by site &amp; over time, with a spike trend flag.</td><td>Counts &amp; trends as logged; does not classify severity (a quality/medical judgment).</td></tr>
+      <tr><td><b>Visit compliance</b></td><td>Missed / overdue / out-of-window visits vs the schedule &mdash; critical for DLT-window safety visits &amp; PK timepoints.</td><td>Run-date dependent (uses &ldquo;today&rdquo;), so a daily job keeps &ldquo;overdue&rdquo; current.</td></tr>
+      <tr><td><b>Randomization / IXRS reconciliation</b></td><td>Every randomized participant in both systems; kit/dose matches cohort; drug accountability.</td><td>Discrepancies escalate to a human (DM / unblinded pharmacist); never auto-resolved; blinding preserved.</td></tr>
+    </table>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="alerts" aria-label="Reporting  alerting">
+    <h1>Two-tier reporting &amp; escalation</h1>
+    <p>Entirely inside the validated environment &mdash; zero AI, zero new vendor, zero PHI egress.</p>
+    <h2>Tier 1 &mdash; the scheduled digest</h2>
+    <ul>
+      <li><b>Daily safety-scan digest &rarr; the covering colleague:</b> enrolled/dosed by cohort, new AEs/SAEs, labs out of range, ECG/QTc flags, cohort DLT tally, queries &mdash; with a green/amber status and a <b>heartbeat</b>. <em>Keep a &ldquo;no new flags&rdquo; email firing too &mdash; silence must be a positive confirmation.</em></li>
+      <li><b>Weekly status pack &rarr; the cover</b> (cc the lead&rsquo;s inbox for the return): enrollment vs plan, escalation status, screen-fail, query backlog, deviations, visit compliance.</li>
+      <li><b>Weekly one-pager &rarr; the manager:</b> one status light, enrollment %, count of safety flags this week and their disposition (open/closed/escalated). Strictly numeric &mdash; this is where &ldquo;no AI narrative&rdquo; is a <b>feature</b>: every number traces to a validated program.</li>
+    </ul>
+    <h2>Tier 2 &mdash; the threshold alert &amp; escalation</h2>
+    <ul>
+      <li><b>Immediate urgent email</b> when a pre-specified rule fires &mdash; a DLT-defining grade, an SAE, a QTcF crossing, a KRI breaching its QTL, a stopping-rule count. Distinctly flagged, outside the digest.</li>
+      <li><b>Severity routing.</b> Tier A (SAE/DLT/stopping-rule/Grade-4): immediate to support + backup + role alias, with an explicit <b>&ldquo;CONTACT THE MEDICAL MONITOR NOW&rdquo;</b> and the MM&rsquo;s name/number in the body. The system <em>notifies and instructs whom to call</em> &mdash; it does not contact the MM&rsquo;s clinical decision for them, does not pause dosing, and does not adjudicate causality.</li>
+    </ul>
+    <h2>Delivery mechanics (pick what is in your validated environment)</h2>
+    <table>
+      <tr><th>Stack</th><th>How</th><th>Governance note</th></tr>
+      <tr><td><b>SAS-native</b></td><td><code>FILENAME out EMAIL</code> / the EMAIL access engine &mdash; attach the ODS report, conditional send. No add-on packages.</td><td>Over internal SMTP it keeps everything on-prem with no cloud token.</td></tr>
+      <tr><td><b>R-native</b></td><td><code>Microsoft365R</code> (Graph) for Outlook/Teams/SharePoint, or <code>blastula</code>/<code>sendmailR</code> for richer HTML email.</td><td>Microsoft365R routes through Graph/AAD (cloud auth) &mdash; fine inside the tenant; confirm it suits your data-handling posture.</td></tr>
+    </table>
+    <div class="callout tip"><b>Alert bodies carry de-identified signal only</b> (e.g. &ldquo;Cohort 3: 2 of 6 flagged for Grade&ge;3 ALT shift &mdash; review&rdquo;), not participant-level PHI. Record-level detail stays in the attached report on the validated share, linked, not emailed.</div>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="watch" aria-label="Coverage while on leave">
+    <h1>Coverage while on leave &mdash; a month on Study CP-101</h1>
+    <p class="lede">The deterministic system doing its one job: keeping Phase&nbsp;1 monitoring alive and self-escalating for a month while the lead is unreachable in Europe &mdash; with zero AI and zero new tools.</p>
+    <div class="dl">
+      <a class="btn" href="SAS_R_OnLeave_Example_narrated.mp4">&#9654;&nbsp; Play the narrated walkthrough (~5 min)</a>
+      <a class="btn ghost" href="SAS_R_OnLeave_Example_StepGuide.pdf">&#10515;&nbsp; Step-by-step picture guide (PDF)</a>
+      <a class="btn ghost" href="SAS_R_Coverage_Runbook.pdf">&#10515;&nbsp; The coverage runbook (PDF)</a>
+    </div>
+    <div class="shots">
+      <figure><img src="example_img/beat1.png" alt="Setup"><figcaption><b>Beat 0 &middot; Before leaving</b> &mdash; schedule the already-validated programs under a service account; hand over a one-page coverage runbook (GREEN / AMBER / RED, recipients, escalation).</figcaption></figure>
+      <figure><img src="example_img/beat2.png" alt="Week 1"><figcaption><b>Week 1 &middot; GREEN</b> &mdash; the daily digest is all-clear, and the <b>heartbeat</b> proves the job ran on fresh data. Silence is never assumed.</figcaption></figure>
+      <figure><img src="example_img/beat3.png" alt="Week 2"><figcaption><b>Week 2 &middot; AMBER</b> &mdash; an enrollment KRI dips; it stays in the routine channel, the cover acts, the manager just sees it was handled.</figcaption></figure>
+      <figure><img src="example_img/beat4.png" alt="Week 3 RED"><figcaption><b>Week 3 &middot; RED</b> &mdash; a candidate Hy&rsquo;s-Law lab pattern trips the urgent tier outside the digest &mdash; to primary + backup + alias, with the medical monitor&rsquo;s number and the evidence attached.</figcaption></figure>
+      <figure><img src="example_img/beat5.png" alt="Evidence"><figcaption><b>Week 3 &middot; the evidence is pre-packaged</b> &mdash; eDISH plot, lab trajectory, dosing timeline, the exact rule that fired; the escalation log is time-stamped automatically. <b>Detect, page, package &mdash; humans decide.</b></figcaption></figure>
+      <figure><img src="example_img/beat6.png" alt="Return"><figcaption><b>Week 4 &middot; the lead returns</b> &mdash; a complete, time-stamped, reproducible audit trail. Nothing to reconstruct; no &ldquo;what did the AI decide&rdquo;; no PHI egress to explain.</figcaption></figure>
+    </div>
+    <p class="muted">Illustrative mockups. The honest division of labor throughout: the SAS/R system <b>detected, paged, and packaged</b> pre-specified threshold crossings; the <b>medical monitor and the covering colleague made every clinical decision</b>.</p>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="safeguards" aria-label="Won't fail silently">
+    <h1>Why it won&rsquo;t fail silently</h1>
+    <div class="callout warn"><b>The SOP rule:</b> &ldquo;no news&rdquo; is <b>never</b> interpreted as &ldquo;all clear.&rdquo; A successful, data-fresh run must say so explicitly, and the <em>absence</em> of any message is itself escalated.</div>
+    <table>
+      <tr><th>Failure mode (while the lead is away)</th><th>The SAS/R safeguard</th></tr>
+      <tr><td><b>The scheduled job dies silently</b> &mdash; daemon down, server rebooted, expired service-account password, locked licence, full disk. No red email &rarr; assumed green &rarr; the trial runs unmonitored.</td><td><b>Heartbeat / dead-man&rsquo;s-switch.</b> Every successful run emits a positive &ldquo;ran OK, N records, SYSCC=0&rdquo; ping; an <em>independent</em> watcher (a second tiny cron on a different host) escalates if the ping is missing.</td></tr>
+      <tr><td><b>Stale-data masquerade</b> &mdash; the job runs green daily, but a feed silently stopped refreshing. Checks compute reassuring numbers on an old snapshot; a new SAE/DLT in the source is invisible. <b>Green here is worse than red.</b></td><td><b>Data-freshness gate, run first.</b> Before any safety logic, compare each feed&rsquo;s newest timestamp to now; if a source stopped updating, raise it. Put the freshness times in the report header.</td></tr>
+      <tr><td><b>Alert storm / fatigue</b> &mdash; a mis-set threshold, a units mismatch (mg/dL vs &micro;mol/L), a duplicate record, or one ongoing event fires the same RED dozens of times. The cover mutes the thread; the next real signal is buried.</td><td><b>De-duplication.</b> A persistent seen-flags table keyed by participant+test+event alerts once on first detection; rate-limit and escalate-on-change only.</td></tr>
+      <tr><td><b>Human single-point-of-failure</b> &mdash; the one covering colleague is also on PTO/sick/offline, and the lead is asleep in a European timezone when a 06:07 RED fires. The alert lands in a void.</td><td><b>Primary + backup + role alias</b>, committed pre-departure, with an <b>acknowledgement SLA</b> (reply within 30 min) and a re-page / next-recipient rule if it isn&rsquo;t acknowledged.</td></tr>
+    </table>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="gov" aria-label="Governance  limits">
+    <h1>Governance, validation &amp; honest limits</h1>
+    <h2>Why it is the lowest-risk pipeline</h2>
+    <ul>
+      <li><b>No new validation surface.</b> The DLT tabulations, exposure summaries, lab-shift tables and counts it surfaces are produced by the <b>same validated programs</b> already qualified for the study. The lead is automating the <em>delivery/cadence</em> of validated outputs, not creating a new method.</li>
+      <li><b>Deterministic &amp; reproducible.</b> Same data &rarr; byte-identical result, every run. No sampling, no temperature, no model drift &mdash; nothing to &ldquo;explain.&rdquo; An LLM summary is plausible but not auditable line-by-line; a SAS/R alert is both.</li>
+      <li><b>Zero PHI egress.</b> Everything runs where the data already lives &mdash; no external API, no cloud model, no new vendor. This sidesteps the entire BAA/HIPAA question that constrains the AI pipelines.</li>
+      <li><b>The automation itself is validated</b> like any study program: the thin scheduling wrapper and the threshold logic get the team&rsquo;s normal risk-based SDLC &mdash; spec, independent review, documented testing, change control.</li>
+      <li><b>Double-programming preserved.</b> Anything formally <em>reported</em> (submission, SRC/DSMB pack, sponsor deliverable) is still independently double-programmed. Classify every output as <b>REPORTABLE</b> (QC&rsquo;d before it goes out) or <b>SIGNAL-ONLY</b> (single-program, human-confirmed).</li>
+    </ul>
+    <h2>The honest limit</h2>
+    <div class="callout warn"><b>Deterministic checks only &mdash; no triage, no narrative, no judgment.</b> SAS/R answers well-posed, pre-specified questions and emails the answer reliably. It does not weigh a borderline signal, summarize across signals in plain language, or brief the covering colleague on what a cluster <em>means</em>. That is exactly the seam the <b>AI hybrid</b> fills later &mdash; complementary, not competitive. This guarantees pre-specified signals reach a human reliably and reproducibly; it does not replace the human, the medical monitor, or the DSMB/SRC.</div>
+    <h2>For the manager, in one line</h2>
+    <p>Because there is no AI, no new vendor, and no PHI egress, there is <b>no new approval gate between today and go-live</b> &mdash; only the normal program-validation/change-control the lead already runs before any study output ships.</p>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="faq" aria-label="FAQ">
+    <h1>FAQ</h1>
+    <p><b>How is this different from the AI pipelines?</b> It is deliberately the opposite: deterministic, validated, no AI, no new vendor, no PHI egress &mdash; the layer you can ship <em>today</em>. The Claude+Local and Copilot+Local pipelines add the narrative-triage and knowledge layers on top, later.</p>
+    <p><b>Does it make clinical decisions?</b> No. It detects pre-specified threshold crossings, pages the right people, and packages the evidence. The medical monitor and the covering biostatistician make every call. A flag is a prompt for a human, never a finding.</p>
+    <p><b>What if a job fails while the lead is away?</b> The heartbeat / dead-man&rsquo;s-switch and the data-freshness gate are designed so a dead job or a frozen feed <em>announces itself</em> &mdash; see <a href="#safeguards">Won&rsquo;t fail silently</a>. &ldquo;No news&rdquo; is never &ldquo;good news.&rdquo;</p>
+    <p><b>Do we need new software?</b> No &mdash; use the SAS/R and the scheduler already validated in your environment. Introducing a new orchestrator just for this would re-add the governance cost you are avoiding.</p>
+    <p><b>Is the on-leave example the only use?</b> No &mdash; that is the anchoring scenario, but this is the standing monitoring backbone for any study, any time. Coverage during leave is just where its value is most obvious.</p>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+<section id="transcript" aria-label="Transcript"><h1>Walkthrough transcript</h1><p class="lede">The complete narration of the &ldquo;Coverage while on leave&rdquo; video, as readable text.</p><h2>1. Part 1</h2><p>Here's the third companion pipeline — the one you can ship today. It uses strictly SAS and R, no AI, to keep trial monitoring running while the lead biostatistician is away for a month. Let me walk through a real month on Study CP-101: how it's set up, what the covering colleague and the manager receive, and what happens when a real safety signal fires — all inside the existing validated environment.</p><h2>2. Part 2</h2><p>Before leaving, the lead doesn't write new code — they schedule the monitoring programs that already run on demand. Five jobs: a nightly data refresh with a freshness check, a morning safety scan, a daily digest to the covering colleague, a weekly status pack plus a one-page summary for the manager, and an on-event threshold alert. It all runs under a service account that outlasts the lead's login. And a one-page coverage runbook goes to the support and the manager: what green, amber, and red mean, who does what, and the honest note that a flag is a number crossing a line — not an interpretation.</p><h2>3. Part 3</h2><p>Week one is quiet. Every morning the covering colleague gets the digest — enrollment, new adverse events, liver and QT flags, the cohort DLT tally, queries — all green. The most important line is at the bottom: the heartbeat. It confirms the job ran, on data fresh as of this morning, with no errors. That's the trick to an unattended month: silence is never assumed. A missed job or a frozen feed announces itself, instead of hiding behind a green screen.</p><h2>4. Part 4</h2><p>Week two, an operational signal. Enrollment slips below its KRI floor — seventy-six percent of plan, with a screen-failure cluster at one site. The digest renders that row amber. Notice where it goes: it stays in the routine channel. The covering colleague reviews it and raises a site action with the project manager — it does not cry wolf at the medical monitor. And the manager's Friday one-pager simply shows it was flagged and is being handled.</p><h2>5. Part 5</h2><p>Week three, a real safety signal. Overnight, a participant in the top dose cohort shows a candidate Hy's-Law lab pattern — ALT over three times the upper limit, and bilirubin over twice it. This trips the urgent tier, outside the digest, immediately — to the support, a backup, and a role alias, never just one person. The email carries the medical monitor's number, a thirty-minute acknowledgement requirement, and, crucially, it's honest that this is a screening flag that matches the lab criteria — not a diagnosis. The medical monitor adjudicates.</p><h2>6. Part 6</h2><p>And it doesn't just say something happened — it attaches the evidence, already assembled: the eDISH plot with the participant in the Hy's-Law quadrant, the lab trajectory, the dosing timeline, and the exact rule that fired. On the right is the escalation log, time-stamped automatically: the alert fired at six-oh-seven, was delivered, acknowledged within the SLA, reviewed by the medical monitor — who ordered repeat labs and held dosing — and by Sunday the signal didn't confirm and the cohort was released. The system did three deterministic things: detected, paged, packaged. Every clinical decision was the medical monitor's.</p><h2>7. Part 7</h2><p>Week four, the lead is back. Waiting for them is a complete, time-stamped archive: every daily log, every digest with its heartbeat, the two notable alerts and how they resolved, the auto-built evidence packet, and a heartbeat history proving every run was accounted for. Because the whole system is deterministic and validated, there's nothing to reconstruct — no question of what an AI decided and why, no PHI egress to explain. The loop closed itself: flag, escalate, package, decide, stand down.</p><h2>8. Part 8</h2><p>The reason a manager can trust this is that it's designed so it can't fail silently. Four safeguards. A heartbeat with an independent watcher, so a dead job announces itself. A data-freshness gate that runs first, so a clean green on stale data — which is worse than red — gets caught. Alert de-duplication, so one real event alerts once instead of a storm that buries the next signal. And primary plus backup recipients with an acknowledgement requirement, so a six a.m. alert never lands in a void. The rule in the SOP: no news is never interpreted as good news.</p><h2>9. Part 9</h2><p>So, the bottom line. This is the lowest-risk of the three pipelines — no AI, no new vendor, no PHI egress, no new validation surface — so there's no approval gate between today and go-live. It's deterministic and reproducible, so the audit trail is automatic. It detects, pages, and packages; the humans and the medical monitor still make every call. And it's necessary, not sufficient: the narrative-triage layer is exactly the seam the AI hybrid fills later. Ship this now; add AI on top when it's approved. The peace of mind is simple — monitoring never stops, even silence is verified, and every escalation is automatic and logged, while the lead is unreachable in Europe.</p><div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section></main></div>
+<script>
+const secs=[...document.querySelectorAll('section')];
+const links=[...document.querySelectorAll('#side a[data-t]')];
+function show(id){secs.forEach(s=>s.classList.toggle('show',s.id===id));links.forEach(a=>a.classList.toggle('active',a.dataset.t===id));window.scrollTo(0,0);if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}
+links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.t);}));
+document.querySelectorAll('#main a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href').slice(1);if(document.getElementById(id)){e.preventDefault();show(id);}}));
+const q=document.getElementById('search');
+q.addEventListener('input',()=>{const v=q.value.toLowerCase().trim();links.forEach(a=>{const s=document.getElementById(a.dataset.t);const hit=!v||s.textContent.toLowerCase().includes(v);a.style.display=hit?'block':'none';});});
+show((location.hash||'#start').slice(1)||'start');
+</script><script>(function(){
+var secs=[].slice.call(document.querySelectorAll('section')),links=[].slice.call(document.querySelectorAll('#side a[data-t]'));
+function sync(){var act=links.filter(function(a){return a.classList.contains('active');})[0];var id=act?act.dataset.t:null;secs.forEach(function(s){s.hidden=!(s.id===id);});links.forEach(function(a){if(a.classList.contains('active'))a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});}
+/* wrap the wiki's existing show() so EVERY navigation (click, hash, or programmatic) keeps the
+   hidden attribute + aria-current in sync and moves focus to main -- no desync for screen readers */
+if(typeof window.show==='function'){var _os=window.show;window.show=function(id){_os(id);sync();var m=document.getElementById('main');if(m&&document.hasFocus())m.focus();};}
+
+window.addEventListener('beforeprint',function(){secs.forEach(function(s){s.hidden=false;});});
+window.addEventListener('afterprint',sync);sync();
+})();</script><script>
+/* portable reproducibility kit: copy-buttons on code + Print/PDF + print stylesheet (theme-agnostic) */
+(function(){
+  var css=''
+   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
+   +'.repro-copybtn:hover{opacity:1;background:#4a5680} .repro-copybtn.ok{background:#1f9d55}'
+   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#8B86F0;color:#15183A;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
+   +'.repro-print:hover{background:#A9A4F5}'
+   +'@media print{nav,aside,#side,.sidebar,.skip,.repro-copybtn,.repro-print,[role=\'navigation\']{display:none!important}'
+   +' #wrap,#main,main,article,.content,section,body{display:block!important;width:auto!important;max-width:100%!important;margin:0!important;float:none!important}'
+   +' *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+  var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
+  document.querySelectorAll('pre').forEach(function(pre){
+    if(pre.querySelector('.repro-copybtn'))return;
+    var code=pre.querySelector('code');var t=(code?code.innerText:pre.innerText).trim();if(!t)return;
+    if(getComputedStyle(pre).position==='static')pre.style.position='relative';
+    var b=document.createElement('button');b.className='repro-copybtn';b.type='button';b.textContent='Copy';
+    b.addEventListener('click',function(e){e.preventDefault();
+      var done=function(){b.textContent='Copied \u2713';b.classList.add('ok');setTimeout(function(){b.textContent='Copy';b.classList.remove('ok');},1400);};
+      if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){b.textContent='Ctrl-C';});}
+      else{try{var r=document.createRange();r.selectNodeContents(code||pre);var s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();done();}catch(_){b.textContent='Ctrl-C';}}
+    });
+    pre.appendChild(b);
+  });
+  var p=document.createElement('button');p.className='repro-print';p.type='button';p.textContent='\uD83D\uDDA8 Print / PDF';
+  p.addEventListener('click',function(){window.print();});document.body.appendChild(p);
+})();
+</script>
+</body></html>

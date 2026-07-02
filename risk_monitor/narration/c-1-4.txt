@@ -1,0 +1,1 @@
+It never makes the safety or termination call.

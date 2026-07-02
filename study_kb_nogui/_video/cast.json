@@ -1,0 +1,67 @@
+[
+ {
+  "label": "ls",
+  "cmd": "Get-ChildItem -Name *.ps1, *.vba",
+  "out": "kb_ingest_demo.ps1\nUpdate-StudyKB.ps1\nFileToKB.vba"
+ },
+ {
+  "label": "whatitdoes",
+  "cmd": "Get-Content Update-StudyKB.ps1 | Select-Object -Skip 5 -First 7",
+  "out": "  WHAT IT DOES (the automated path \u2014 the default)\n    Scheduled every few minutes, it ATTACHES to your already-open classic\n    Outlook, reads the study mail folder(s) you point it at, and files EVERY new\n    message as one searchable HTML note \u2014 then rebuilds index.html. You do not\n    drag anything. It is incremental and idempotent: each message is filed once\n    (tracked by Outlook EntryID in .state\\seen.json) and your email is NEVER\n    moved, deleted, or modified \u2014 it only reads."
+ },
+ {
+  "label": "attach",
+  "cmd": "Get-Content Update-StudyKB.ps1 | Select-Object -Skip 117 -First 5",
+  "out": "# attach to the RUNNING classic Outlook only (never launch one under a scheduler)\nfunction Get-RunningOutlook {\n  try { return [System.Runtime.InteropServices.Marshal]::GetActiveObject('Outlook.Application') }\n  catch { return $null }\n}"
+ },
+ {
+  "label": "sanitize_code",
+  "cmd": "Get-Content Update-StudyKB.ps1 | Select-Object -Skip 86 -First 10",
+  "out": "function Sanitize-Html([string]$h){\n  if (-not $h){ return $h }\n  $h = $h -replace '(?is)<script.*?</script>',''\n  $h = $h -replace '(?is)<style.*?</style>',''\n  $h = $h -replace '(?is)<(iframe|object|embed).*?</\\1>',''\n  $h = $h -replace '(?i)<(script|style|iframe|object|embed|link|meta|base)\\b[^>]*>',''\n  $h = $h -replace '(?i)\\son\\w+\\s*=\\s*(\"[^\"]*\"|''[^'']*''|[^\\s>]+)',''   # on*= event handlers\n  $h = $h -replace '(?i)(src|background)\\s*=\\s*(\"|'')\\s*https?:','$1=$2blocked-remote:'  # stop remote fetches\n  $h = $h -replace '(?i)javascript:','blocked:'\n  return $h"
+ },
+ {
+  "label": "inbox",
+  "cmd": "New-Item -ItemType Directory -Force _Inbox | Out-Null; Get-ChildItem -Name",
+  "out": "_Inbox\nFileToKB.vba\nkb_ingest_demo.ps1\nUpdate-StudyKB.ps1"
+ },
+ {
+  "label": "drop",
+  "cmd": "Copy-Item ..\\samples\\*.html .\\_Inbox\\; Get-ChildItem -Name .\\_Inbox\\",
+  "out": "dta03.html\nkick.html\nmv2.html"
+ },
+ {
+  "label": "ingest",
+  "cmd": ".\\kb_ingest_demo.ps1",
+  "out": "    + Notes\\20260622_091400__CP-101_-_Data_transfer_DTA-03_received__640e411e.html\n        EntryID 000000042AEA289417...  read-only  sanitized\n    + Notes\\20260622_091400__CP-101_-_Kickoff_meeting_minutes__38e4fe64.html\n        EntryID 0000000641F95106EE...  read-only  sanitized\n    + Notes\\20260622_091400__CP-101_-_Monitoring_visit_MV-2_report_filed__65156773.html\n        EntryID 0000000FA02CB9E948...  read-only  sanitized\n[StudyKB] done - 3 filed, 0 skipped - seen-set now 3 - operations-only"
+ },
+ {
+  "label": "notes",
+  "cmd": "Get-ChildItem -Name .\\Notes\\; Write-Host '--- .state\\seen.json (the EntryID watermark) ---'; Get-Content .\\.state\\seen.json",
+  "out": "20260622_091400__CP-101_-_Data_transfer_DTA-03_received__640e411e.html\n20260622_091400__CP-101_-_Kickoff_meeting_minutes__38e4fe64.html\n20260622_091400__CP-101_-_Monitoring_visit_MV-2_report_filed__65156773.html\n--- .state\\seen.json (the EntryID watermark) ---\n[\n  \"000000042AEA2894171AF70D0E32FD883CAD230\",\n  \"0000000641F95106EE2726FC973F20A129036C8\",\n  \"0000000FA02CB9E948BEE0D5E30F49E8DBC54B6\"\n]"
+ },
+ {
+  "label": "entry",
+  "cmd": "Get-Content \".\\Notes\\20260622_091400__CP-101_-_Data_transfer_DTA-03_received__640e411e.html\" -TotalCount 7",
+  "out": "<!doctype html><meta charset=\"utf-8\"><title>CP-101 - Data transfer DTA-03 received</title>\n<body style=\"font-family:Segoe UI,Arial,sans-serif;max-width:820px;margin:24px auto;padding:0 16px\">\n<h2>CP-101 - Data transfer DTA-03 received</h2>\n<p style=\"color:#555\"><b>From:</b> Data Management &nbsp;|&nbsp; <b>Captured:</b> 2026-06-22 09:14</p><hr>\n<!doctype html><title>CP-101 - Data transfer DTA-03 received</title>"
+ },
+ {
+  "label": "proof_src",
+  "cmd": "Write-Host 'the source email carried:'; '  <script> present : ' + [bool]((Get-Content -Raw .\\_Inbox\\_processed\\dta03.html) -match '<script'); '  remote pixel    : ' + [regex]::Match((Get-Content -Raw .\\_Inbox\\_processed\\dta03.html),'https://tracker[^\"]+').Value",
+  "out": "the source email carried:\n  <script> present : True\n  remote pixel    : https://tracker.example.com/pixel.gif?u=open"
+ },
+ {
+  "label": "proof_note",
+  "cmd": "Write-Host 'the filed note carries:'; '  <script> present : ' + [bool]((Get-Content -Raw \".\\Notes\\20260622_091400__CP-101_-_Data_transfer_DTA-03_received__640e411e.html\") -match '<script'); '  remote pixel    : ' + [regex]::Match((Get-Content -Raw \".\\Notes\\20260622_091400__CP-101_-_Data_transfer_DTA-03_received__640e411e.html\"),'blocked-remote://tracker[^\"]+').Value",
+  "out": "the filed note carries:\n  <script> present : False\n  remote pixel    : blocked-remote://tracker.example.com/pixel.gif?u=open"
+ },
+ {
+  "label": "rerun",
+  "cmd": "Copy-Item ..\\samples\\*.html .\\_Inbox\\; .\\kb_ingest_demo.ps1",
+  "out": "    . skip (already filed): dta03.html\n    . skip (already filed): kick.html\n    . skip (already filed): mv2.html\n[StudyKB] done - 0 filed, 3 skipped - seen-set now 3 - operations-only"
+ },
+ {
+  "label": "vba",
+  "cmd": "Get-Content FileToKB.vba | Select-Object -Skip 3 -First 13",
+  "out": "' This is the AD-HOC one-click for the rare email that lives outside your study\n' folder. The routine path is automatic: Update-StudyKB.ps1 reads the study\n' folder on a schedule (-StudyFolders) \u2014 you don't click anything. Use this only\n' to capture a stray forwarded thread into the KB inbox in one click.\n'\n' Outlook Quick Steps can only move mail to ANOTHER OUTLOOK FOLDER, not to a\n' disk folder \u2014 so a true one-click-to-disk uses this tiny VBA button instead.\n' (CLASSIC Outlook only; the \"new\" Outlook has no VBA \u2014 there, drag/Save-As the\n'  email as .eml into the synced _Inbox and let the scheduled script file it.)\n'\n' SETUP (once):\n'   1. Outlook \u25b8 Alt+F11 (VBA editor) \u25b8 Project1 \u25b8 right-click \u25b8 Insert \u25b8 Module\n'      \u25b8 paste everything below. Set INBOX to your synced library's _Inbox path."
+ }
+]

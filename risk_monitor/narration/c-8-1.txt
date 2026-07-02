@@ -1,0 +1,1 @@
+Instead of waiting for a threshold to be crossed, it watches for drift and surprise.

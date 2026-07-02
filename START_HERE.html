@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI for Biometrics — Program Home</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="top">
+  <b>AI for Biometrics</b>
+  <div class="nav">
+    <a href="#decision">Decision</a><a href="#ops">Operations</a><a href="#monitor">Monitoring</a>
+    <a href="#deliver">Deliverables</a><a href="#dash">Dashboards</a><a href="#learn">Learning</a>
+  </div>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Program Home · single entry point</div>
+    <h1>Bringing routine biostatistics programming in-house with AI</h1>
+    <p class="sub">One question, answered across every artifact below: can we bring routine biostatistics programming in-house and do it faster, more consistently, and more defensibly &mdash; with AI we control? The recommendation is a <b>hybrid</b> stack (Claude for capability + an on-prem model for sovereignty and reproducibility), with humans and validated tools always in the loop.</p>
+    <div class="qprow">
+      <a class="qp go" href="New_Hire_Start_Here.html">
+        <div class="qe">&#128075; New biostatistician?</div>
+        <div class="qt">Start here &rarr;</div>
+        <div class="qd">How our team works, the rules you follow, what's real today vs proposed, and the order to learn it. The job &mdash; not the business case.</div>
+      </a>
+    </div>
+    <div class="heads"><b>Heads&#8209;up:</b> most of this package is a <b>proposal</b> pending management approval &mdash; <b>not current practice.</b> Today's production runs through validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, EDC) + our in&#8209;house team; the AI tools here are accelerators / skeletons, not validated systems. Everything below is the full library, organized by theme.</div>
+  </header>
+
+  <h2>Curated packages</h2>
+  <div class="pkgs">
+    <div class="pkg"><h3>Operations</h3><p>The ship-today, no-PHI operational layer: monitoring, coverage, self-updating trackers and knowledge bases.</p><a class="btn" href="#ops">View →</a></div>
+    <div class="pkg"><h3>Biostatistician</h3><p>The hands-on build: TLF libraries, interpretation drafter, pipeline, dashboards, and the lifecycle sandbox.</p><a class="btn" href="#deliver">View →</a></div>
+  </div>
+
+
+  <h2 id="ops">1 · Operations wikis <span style="color:var(--mut);text-transform:none;letter-spacing:0;font-weight:400">— low-risk, no new approval gate, no PHI</span></h2>
+  <div class="grid">
+    <div class="card"><h3>Self-updating Study KB — no GUI <span class="pill tmpl">scripts</span></h3><div class="d">Outlook emails become a searchable knowledge base by dragging them into a synced folder — one paste-able PowerShell script. No Power Automate designer, no SharePoint clicking, no Copilot Studio.</div>
+      <div class="links"><a class="code" href="study_kb_nogui/index.html">Study KB (no-GUI)</a></div></div>
+    <div class="card"><h3>Knowledge vault &amp; graph <span class="pill dsgn">proposed</span></h3><div class="d">The Obsidian/Foam idea applied to study ops: the Study KB as a navigable <em>linked-note graph</em> + a clean corpus for the on-prem model. A self-contained interactive graph, a 28-note vault, and the design note. <em>Proposed capability — same governance as the Study KB.</em></div>
+      <div class="links"><a href="knowledge_vault/Knowledge_Vault_Design.html">Design note</a><a href="knowledge_vault/Knowledge_Graph.html">Live graph</a></div></div>
+    <div class="card"><h3>Hybrid trial-ops <span class="pill dsgn">wiki</span></h3><div class="d">The agentic trial-operations layer on the hybrid stack — recurrent QC, SOP RAG, eTMF filing, RBQM.</div>
+      <div class="links"><a href="hybrid_ops_wiki/Hybrid_AI_TrialOps_Wiki.html">Hybrid Ops Wiki</a></div></div>
+    <div class="card"><h3>On-device SLM operating wikis <span class="pill dsgn">wiki</span></h3><div class="d">The local small-model trial-ops stack and the Copilot-free Study Operations knowledge base.</div>
+      <div class="links"><a href="slm_wiki/SLM_SASR_TrialOps.html">SLM × SAS/R</a><a href="slm_operating_wiki/Local_SLM_Operating_Wiki.html">Local-SLM Operating</a><a href="slm_operating_wiki/Study_Operations_KB.html">Study Ops KB</a></div></div>
+    <div class="card"><h3>Self-updating Smartsheet trackers <span class="pill tmpl">scripts</span></h3><div class="d">Smartsheet updates itself from scheduled SAS/R — both the AI-assisted and the no-code/no-AI versions.</div>
+      <div class="links"><a href="smartsheet_sasr/Smartsheet_SASR.html">Smartsheet × SAS/R</a><a href="smartsheet_nocode/Smartsheet_NoCode.html">Smartsheet No-Code</a></div></div>
+  </div>
+
+  <h2 id="monitor">2 · Monitoring, safety &amp; coverage</h2>
+  <div class="grid">
+    <div class="card"><h3>SAS/R monitoring &amp; on-leave coverage <span class="pill tmpl">runnable templates</span></h3><div class="d">Deterministic, no-AI monitoring that detects, packages, and pages humans — including the "covering while on leave" pattern.</div>
+      <div class="links"><a href="sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html">Monitoring Wiki</a><a href="sas_r_automation/SAS_R_Trial_Monitoring_Automation.html">SAS/R Automation</a><a href="sasr_onleave_wiki/On_Leave_Coverage_Playbook.html">On-Leave Playbook</a></div></div>
+    <div class="card"><h3>Participant-safety &amp; risk early-warning <span class="pill run">dashboards</span></h3><div class="d">The TRIALMON participant-safety dashboard (+ field guide) and the 3-tier trial-termination risk dashboard.</div>
+      <div class="links"><a href="sasr_monitoring_wiki/TRIALMON_Dashboard.html">TRIALMON</a><a href="sasr_monitoring_wiki/TRIALMON_Dashboard_Wiki.html">TRIALMON Field Guide</a><a href="risk_monitor/Trial_Risk_EarlyWarning_Dashboard.html">Risk Early-Warning</a></div></div>
+  </div>
+
+  <h2 id="deliver">3 · Core deliverables &amp; pipeline</h2>
+  <div class="grid">
+    <div class="card"><h3>TLF pseudocode libraries <span class="pill tmpl">217 + 217</span></h3><div class="d">ADaM-based Table/Listing/Figure pseudocode for every early-phase design, in both SAS and R (pharmaverse).</div>
+      <div class="links"><a class="code" href="sas_tlf_pseudocode/index.html">SAS library</a><a class="code" href="r_tlf_pseudocode/index.html">R library</a></div></div>
+    <div class="card"><h3>TLF interpretation drafter <span class="pill tmpl">skeleton</span></h3><div class="d">Quarto + on-prem MedGemma drafts the narrative text; the model never sources a number, and every draft is number-validated and human-gated.</div>
+      <div class="links"><a class="code" href="tlf_interpret/index.html">tlf_interpret</a></div></div>
+    <div class="card"><h3>Protocol→CSR biostat pipeline <span class="pill dsgn">register + map</span></h3><div class="d">The complete Phase-1 clin-pharm deliverables pipeline (136 deliverables) with a worked PK example.</div>
+      <div class="links"><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf">Pipeline</a><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pdf">Visual Map</a></div></div>
+    <div class="card"><h3>Study-lifecycle sandbox <span class="pill run">runs/verified</span></h3><div class="d">A public-calibrated synthetic study running all the tools end-to-end (8 ADaM domains, NCA, TLFs, SLM).</div>
+      <div class="links"><a class="code" href="sim_lifecycle/index.html">sim_lifecycle</a></div></div>
+  </div>
+
+  <h2 id="dash">4 · Dashboards</h2>
+  <div class="grid">
+    <div class="card"><h3>Study Lifecycle Monitor <span class="pill run">runs/verified</span></h3><div class="d">The operational study-lifecycle console (portfolio RAG, early-warning signals, milestones, TLF funnel) + its operating-depth field guide.</div>
+      <div class="links"><a href="lifecycle_dashboard/Study_Lifecycle_Monitor.html">Dashboard</a><a href="lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html">Field Guide</a></div></div>
+    <div class="card"><h3>Safety &amp; risk consoles <span class="pill run">runs/verified</span></h3><div class="d">The participant-safety (TRIALMON) and trial-termination risk dashboards — the safety complement to the lifecycle console.</div>
+      <div class="links"><a href="sasr_monitoring_wiki/TRIALMON_Dashboard.html">TRIALMON</a><a href="risk_monitor/Trial_Risk_EarlyWarning_Dashboard.html">Risk Early-Warning</a></div></div>
+  </div>
+
+  <h2 id="learn">5 · Learning &amp; video walkthroughs</h2>
+  <div class="grid">
+    <div class="card"><h3>Training course <span class="pill dsgn">course</span></h3><div class="d">The biostatistics-AI training walkthrough.</div>
+      <div class="links"><a href="courses/Biostatistics_AI_Training.html">Open course</a></div></div>
+    <div class="card"><h3>Narrated walkthroughs <span class="pill run">video</span></h3><div class="d">Every wiki, pitch, and worked example has a narrated walkthrough (true headless-Chrome screencasts for the live tools). A few flagship videos:</div>
+      <div class="links"><a class="vid" href="sas_r_automation/SAS_R_Monitor_Screencast_narrated.mp4">SAS/R monitoring</a><a class="vid" href="risk_monitor/Risk_EarlyWarning_Walkthrough_narrated.mp4">Risk walkthrough</a><a class="vid" href="hybrid_ops_wiki/TrialOps_Day_WorkedExample_narrated.mp4">A day on trial-ops</a></div></div>
+  </div>
+
+  <footer>
+    <b>Scope &amp; housekeeping.</b> This home indexes the company biometrics-AI program only. Older duplicate
+    package snapshots were moved to <code>_archive/</code>, and separate personal research was moved to
+    <code>_personal/</code> — neither is part of this program.<br>
+    <b>Guardrails (apply throughout):</b> operations-only — no PHI, no participant-level data; reported/regulated
+    numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21, EDC/CTMS), never an LLM; every draft is
+    human-signed; the programming team is an in-house capability. Value framed as capacity, cycle-time,
+    quality, and sovereignty — not budget or headcount. Most artifacts are AI-built templates and proofs-of-capability
+    that jump-start validated builds, not validated production systems.
+  </footer>
+</div>
+<script src="site.js" defer></script>
+</body>
+</html>

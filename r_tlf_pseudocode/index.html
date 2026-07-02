@@ -1,0 +1,526 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R TLF Pseudocode Library</title>
+<style>
+  :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--r:12px}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0a0d16 70%);color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:15px;line-height:1.62}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1080px;margin:0 auto;padding:18px 22px 70px}
+  header.hero{padding:24px 0 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
+  .home{color:var(--mut);font-size:12.5px} .home a{color:var(--mut)}
+  h1{font-size:25px;margin:8px 0 6px;font-weight:680}
+  .sub{color:var(--mut);font-size:14.5px;max-width:840px;margin:0}
+  h2{font-size:18px;font-weight:660;margin:26px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  h3{font-size:14.5px;color:#cfe0ff;margin:18px 0 6px}
+  p{margin:9px 0} ul,ol{margin:9px 0;padding-left:22px} li{margin:4px 0} strong{color:#fff}
+  code{background:#0e1422;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:12.8px;color:#cfe3ff;font-family:"SFMono-Regular",Consolas,monospace}
+  pre{background:#0c1426;border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:9px;padding:12px 14px;overflow:auto;font-size:12.6px;line-height:1.5}
+  pre code{background:none;border:none;padding:0;color:#d6e6ff}
+  table.t{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+  table.t th,table.t td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.t th{color:var(--mut);font-weight:600;background:#0e1422}
+  table.t tr:hover td{background:#0e1626}
+  .note,.warn{border-radius:9px;padding:11px 14px;margin:12px 0;font-size:13.6px}
+  .note{background:#0e2230;border:1px solid #235049;border-left:3px solid var(--teal)}
+  .note::before{content:"NOTE";display:block;font-size:10.5px;letter-spacing:.06em;color:var(--teal);font-weight:700;margin-bottom:3px}
+  .warn{background:#241c08;border:1px solid #5a4a1f;border-left:3px solid var(--gold)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#0c1426;border:1px solid var(--line);border-radius:10px;padding:14px;margin:12px 0;font-size:12.8px}
+  .flow .box{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:7px 11px}
+  .flow .arr{color:var(--accent);font-weight:700}
+  .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px;margin:8px 0}
+  .files a{display:block;background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:6px 10px;font-size:12.5px}
+  .files a:hover{background:#24304e;text-decoration:none}
+  .files a code{background:none;border:none;color:var(--teal);padding:0}
+  .files a .d{color:var(--mut);font-size:11px;display:block}
+  .badge{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:20px;background:#15213f;color:#9dbcff;border:1px solid #2b4a86;vertical-align:middle;margin-left:6px}
+  footer{color:var(--mut);font-size:12.3px;margin-top:30px;border-top:1px solid var(--line);padding-top:14px}
+  .ways{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 4px}
+  .ways a{background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:5px 13px;font-size:12.5px;color:#cfe0ff}
+  .ways a:hover{background:#24304e;text-decoration:none}
+  .mini{font-size:12.5px;color:var(--mut)}
+  .fill{color:#7a86a6;border-bottom:1px dotted #4a5878;min-width:150px;display:inline-block}
+  .checklist{list-style:none;padding-left:0;margin:10px 0}
+  .checklist li{position:relative;padding:8px 12px 8px 38px;border:1px solid var(--line);border-radius:8px;margin:6px 0;background:var(--panel);cursor:pointer;font-size:13.6px;user-select:none}
+  .checklist li:hover{border-color:#3a4a6e;background:#161d31}
+  .checklist li::before{content:"";position:absolute;left:11px;top:9px;width:17px;height:17px;border:2px solid #57658a;border-radius:4px;background:#0e1422}
+  .checklist li.done{opacity:.62} .checklist li.done span{text-decoration:line-through}
+  .checklist li.done::before{background:var(--green);border-color:var(--green)}
+  .checklist li.done::after{content:"✓";position:absolute;left:14px;top:8px;color:#04130b;font-weight:900;font-size:12.5px}
+  .copybtn{position:absolute;top:7px;right:7px;background:var(--panel2);border:1px solid var(--line);color:#cfe0ff;border-radius:6px;font-size:11px;padding:3px 9px;cursor:pointer;opacity:.85;font-family:inherit}
+  .copybtn:hover{background:#24304e;opacity:1} .copybtn.ok{background:#10331f;color:#7ee0a6;border-color:#2b5a3a}
+  .tools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+  .tools button{background:var(--panel2);border:1px solid var(--line);color:#cfe0ff;border-radius:20px;padding:6px 14px;font-size:12.5px;cursor:pointer;font-family:inherit}
+  .tools button:hover{background:#24304e}
+  @media print{
+    body{background:#fff !important;color:#1a1a1a !important;font-size:11.5pt}
+    .wrap{max-width:100%;padding:0}
+    a{color:#16357a !important} h1,h2,h3,h4,strong,b,.glance .g h4{color:#000 !important}
+    .sub,.mini,p,li,td,th,.wbody p{color:#222 !important}
+    code{background:#eef0f3 !important;color:#0a2a6a !important;border-color:#ccd !important}
+    pre{background:#f5f6f8 !important;color:#111 !important;border-color:#ccd !important;border-left-color:#16357a !important} pre code{color:#111 !important}
+    .note{background:#eef7f5 !important;border-color:#9ccfc7 !important;color:#173a35 !important}
+    .warn{background:#fdf6e3 !important;border-color:#d9c690 !important;color:#5a4a1f !important}
+    .glance .g{background:#f6f7f9 !important;border-color:#dde !important} .glance .g p{color:#333 !important} .glance .g .n{color:#9a6a10 !important}
+    .checklist li{background:#f6f7f9 !important;border-color:#dde !important;color:#222 !important} .checklist li span{color:#222 !important;text-decoration:none !important}
+    table.t th{background:#eef0f3 !important} table.t th,table.t td{border-color:#dde !important}
+    .wnum{background:#caa24a !important;color:#241500 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .ways,#skb,#try>p,#try>h2+p,.skb-reset,.copybtn,.tools,footer,.checklist li::before,.checklist li::after{display:none !important}
+    #try>h2::after{content:" (interactive — omitted in print)";font-size:12px;color:#777;font-weight:400}
+    .shot,.wstep,.glance .g,table.t,.note,.warn{break-inside:avoid}
+    .badge{color:#333 !important;background:#eee !important;border-color:#ccc !important}
+    h2{break-after:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style></head><body><div class="wrap">
+
+<header class="hero">
+  <div class="home"><a href="../START_HERE.html">&larr; Program home</a></div>
+  <h1>R TLF Pseudocode Library <span class="badge">217 TLF SCRIPTS</span></h1>
+  <p class="sub">ADaM-based R pseudocode for every Table, Listing, and Figure in an early-phase clinical-pharmacology study &mdash; a complete separate set per study design, on the pharmaverse stack (<code>dplyr</code>/<code>tidyr</code>/<code>rtables</code>/<code>ggplot2</code>/<code>emmeans</code>/<code>lme4</code>).</p>
+</header>
+
+<div class="warn"><strong>Status &mdash; illustrative pseudocode / skeleton, NOT validated production software.</strong> These scripts show derivation and layout logic for spec writing and double-programming. Every reported number comes only from validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, EDC) per SOP &mdash; nothing here originates a reported value, and no number is ever produced by an LLM.</div>
+
+<p>R twin of <code>../sas_tlf_pseudocode/</code>. The higher-level <strong>pharmaverse</strong> path (<code>admiral</code> for ADaM, <code>tern</code> for pre-built TLF layouts) is the production route; this library shows the underlying logic explicitly. R runs laptop-only per SOP.</p>
+
+<div class="ways">
+  <a href="#run">▶ Run it</a>
+  <a href="#stack">📦 Stack</a>
+  <a href="#designs">🗂 Designs</a>
+  <a href="#inventory">📋 TLF inventory</a>
+  <a href="#trouble">🆘 Troubleshooting</a>
+  <a href="#browse">💻 Browse the code</a>
+</div>
+
+<div class="note"><strong>Before you start, you'll need:</strong> <strong>R&nbsp;4.2+</strong> (with <code>Rscript</code> on your <code>PATH</code>) &nbsp;·&nbsp; the pharmaverse-style packages each script <code>library()</code>s &mdash; <code>dplyr</code>, <code>tidyr</code>, <code>stringr</code>, <code>purrr</code>, <code>tibble</code>, <code>rtables</code>, <code>ggplot2</code>, <code>emmeans</code>, <code>lme4</code>, <code>broom</code>, <code>broom.mixed</code> (plus <code>haven</code> to read <code>.xpt</code>/<code>.sas7bdat</code> ADaM) &nbsp;·&nbsp; read access to your study's <strong>ADaM</strong> datasets (ADSL, ADAE, ADLB, ADVS, ADEG, ADPC, ADPP, ADPD, ADIS, ADEX), CDISC-conformant &nbsp;·&nbsp; about <strong>5 minutes</strong> to point one script at your data. No internet needed once the packages are installed. <span class="mini">These are <strong>illustrative pseudocode skeletons</strong>: <code>setup()</code> defaults to placeholder paths (<code>/data/adam</code>) and assumes ADaM frames are loaded as tibbles &mdash; you wire in your real read step before a script produces output.</span></div>
+
+<h2 id="run">Run it</h2>
+<p>Each script <code>source()</code>s <code>00_setup_helpers.R</code> (it expects to be run with the design folder as the working directory, e.g. <code>parallel/</code>), calls <code>setup()</code>, gets <code>dv &lt;- design_vars("&lt;DESIGN&gt;")</code>, then builds one TLF. <strong>Install the packages once</strong>, then <code>Rscript</code> a program.</p>
+<p class="mini"><strong>① install packages (once) &nbsp;·&nbsp; ② point <code>setup()</code> / your read step at your ADaM &nbsp;·&nbsp; ③ <code>Rscript</code> the program from inside its design folder.</strong></p>
+
+<p><strong>① Install the packages once</strong> (CRAN; needs internet for this step only):</p>
+<pre><code>Rscript -e 'install.packages(c("dplyr","tidyr","stringr","purrr","tibble","rtables","ggplot2","emmeans","lme4","broom","broom.mixed","haven"))'</code></pre>
+
+<p><strong>② Run a program</strong> &mdash; <code>cd</code> into the design folder first so the relative <code>source("../00_setup_helpers.R")</code> resolves, then:</p>
+<pre><code>cd parallel
+Rscript t_demographics.R</code></pre>
+
+<p><strong>Quick-start checklist</strong> &mdash; click each as you finish it:</p>
+<ul class="checklist" id="qsc">
+  <li><span>Confirm <code>Rscript --version</code> works (R 4.2+ on your <code>PATH</code>)</span></li>
+  <li><span>Install the packages once (the <code>install.packages(...)</code> line above)</span></li>
+  <li><span>Edit <code>setup()</code> / the read step so it loads <em>your</em> ADaM (e.g. <code>haven::read_xpt</code>) instead of the placeholder paths</span></li>
+  <li><span>Pick the right design folder (<code>parallel/</code>, <code>crossover/</code>, <code>single_sequence/</code>, <code>sad/</code>, <code>mad/</code>) and the TLF script you need</span></li>
+  <li><span><code>cd</code> into that design folder, then <code>Rscript &lt;script&gt;.R</code></span></li>
+  <li><span>Compare the output against the validated tool &mdash; this is pseudocode, never the reported source</span></li>
+</ul>
+<div class="tools">
+  <button type="button" onclick="window.print()">🖨 Print / save as PDF</button>
+  <button type="button" id="qscReset">↺ Reset checklist</button>
+</div>
+
+<div class="note"><strong>Parse-only sanity check.</strong> Every script in the library parses under <code>Rscript</code> as shipped. To confirm a script is syntactically intact without touching data, parse it without executing:
+<pre><code>Rscript -e 'invisible(parse("parallel/t_demographics.R")); cat("parses OK\n")'</code></pre></div>
+
+<h2 id="stack">Stack</h2>
+<p><code>dplyr</code>/<code>tidyr</code>/<code>purrr</code> (derivation) &middot; <code>rtables</code> (regulatory table layout) &middot; <code>ggplot2</code> (figures) &middot; <code>emmeans</code> + <code>lme4</code>/<code>nlme</code> (mixed models / BE) &middot; <code>broom</code>/<code>broom.mixed</code> (tidy model output).</p>
+
+<h2 id="designs">Designs (one folder each &mdash; full set per design)</h2>
+<table class="t">
+  <thead><tr><th>Folder</th><th>Design</th><th>Key analysis differences</th></tr></thead>
+  <tbody>
+    <tr><td><code>parallel/</code></td><td>Parallel-group</td><td>Between-group; treatment = <code>TRT01A</code>/<code>TRT01AN</code></td></tr>
+    <tr><td><code>crossover/</code></td><td>Crossover (2&times;2, Williams)</td><td>Within-participant; by <code>APERIOD</code>/<code>TRTSEQP</code>; <strong>BE/ANOVA</strong> = <code>lmer</code> + <code>emmeans</code>, GMR + 90% CI</td></tr>
+    <tr><td><code>single_sequence/</code></td><td>Single-/fixed-sequence (e.g. DDI)</td><td>By <code>APERIOD</code>; fixed order, <strong>no</strong> randomized sequence; ratio + 90% CI vs reference period</td></tr>
+    <tr><td><code>sad/</code></td><td>Single Ascending Dose</td><td>Parallel cohorts (dose = treatment); <strong>dose-proportionality</strong> (power model, <code>lm</code>)</td></tr>
+    <tr><td><code>mad/</code></td><td>Multiple Ascending Dose</td><td>Parallel cohorts, repeated dosing; <strong>accumulation ratio</strong> (Rac), steady-state assessment</td></tr>
+  </tbody>
+</table>
+<p>Design is wired via <code>design_vars("...")</code> in <code>00_setup_helpers.R</code> (returns <code>trtvar/trtnvar</code>, <code>seqvar/seqvarn</code>, <code>byperiod</code>). Programs differ only where the <strong>statistics</strong> genuinely differ (PK comparison, by-period/by-sequence safety, dose escalation); safety Tables/Listings are structurally identical, re-pointed to the design's variables.</p>
+
+<h2>Per-script flow</h2>
+<div class="flow">
+  <span class="box">source <code>00_setup_helpers.R</code></span><span class="arr">&rarr;</span>
+  <span class="box"><code>setup()</code></span><span class="arr">&rarr;</span>
+  <span class="box"><code>dv &lt;- design_vars("&lt;DESIGN&gt;")</code></span><span class="arr">&rarr;</span>
+  <span class="box">read ADaM</span><span class="arr">&rarr;</span>
+  <span class="box">derive (dplyr/tidyr)</span><span class="arr">&rarr;</span>
+  <span class="box">layout (rtables / ggplot2)</span><span class="arr">&rarr;</span>
+  <span class="box">one TLF output</span>
+</div>
+
+<h2 id="inventory">TLF inventory (each = one script per design)</h2>
+
+<h3>Disposition / Demographics / Exposure (ADSL, ADEX, ADCM, ADMH)</h3>
+<p><code>t_disposition</code> &middot; <code>t_demographics</code> &middot; <code>t_baseline_characteristics</code> &middot; <code>t_exposure</code> &middot; <code>t_protocol_deviations</code> &middot; <code>t_prior_con_meds</code> &middot; <code>t_medical_history</code> &middot; <code>l_disposition</code></p>
+
+<h3>Safety &mdash; AE (ADAE)</h3>
+<p><code>t_ae_overview</code> &middot; <code>t_ae_by_soc_pt</code> &middot; <code>t_ae_by_severity</code> &middot; <code>t_ae_by_relationship</code> &middot; <code>t_ae_sae_death_withdrawal</code> &middot; <code>l_ae</code> &middot; <code>l_sae_death</code></p>
+
+<h3>Safety &mdash; Labs (ADLB)</h3>
+<p><code>t_lab_summary</code> &middot; <code>t_lab_shift</code> &middot; <code>t_lab_marked_abnormal</code> &middot; <code>f_lab_lft_scatter</code> &middot; <code>f_lab_change</code> &middot; <code>l_lab_abnormal</code></p>
+
+<h3>Safety &mdash; Vitals / ECG (ADVS, ADEG)</h3>
+<p><code>t_vitals_summary</code> &middot; <code>f_vitals_change</code> &middot; <code>l_vitals</code> &middot; <code>t_ecg_summary</code> &middot; <code>t_ecg_qtc_categorical</code> &middot; <code>f_qtc_change</code> &middot; <code>l_ecg</code></p>
+
+<h3>PK (ADPC, ADPP)</h3>
+<p><code>t_pk_conc_summary</code> &middot; <code>l_pk_conc</code> &middot; <code>f_pk_conc_mean</code> (linear+semilog) &middot; <code>f_pk_conc_individual</code> &middot; <code>t_pk_param_summary</code> &middot; <code>l_pk_param</code> &middot; <code>f_pk_param_boxplot</code> &middot; design-specific <code>t_dose_proportionality</code> (SAD) &middot; <code>t_accumulation</code> (MAD) &middot; <code>t_be_anova</code> (crossover / single-seq)</p>
+
+<h3>PD / Biomarkers (ADPD)</h3>
+<p><code>t_pd_summary</code> &middot; <code>f_pd_change</code> &middot; <code>f_pkpd_overlay</code> &middot; <code>l_pd</code></p>
+
+<h3>Immunogenicity (ADIS)</h3>
+<p><code>t_ada_summary</code> &middot; <code>t_ada_impact_pk</code> &middot; <code>l_ada</code></p>
+
+<h2>Naming &amp; conventions</h2>
+<p><code>t_</code> table &middot; <code>l_</code> listing &middot; <code>f_</code> figure. One script &rarr; one output. Each script <code>source()</code>s <code>00_setup_helpers.R</code>, calls <code>setup()</code>, gets <code>dv &lt;- design_vars("&lt;DESIGN&gt;")</code>, then the TLF body.</p>
+
+<h3>House rules baked in (the same correctness lessons as the SAS twin)</h3>
+<ul>
+  <li><strong>Geometric PK stats on the log scale</strong>: <code>geomean = exp(mean(log(x)))</code>, <code>geocv = 100*sqrt(exp(var(log(x)))-1)</code> &mdash; never <code>exp(mean(raw))</code>.</li>
+  <li><strong>Tmax = Median (Min, Max) only.</strong></li>
+  <li><strong>Safety/AE counts = distinct participants</strong> (<code>n_distinct(USUBJID)</code>), not event rows; <code>%</code> denominator = population N per column from <code>bign()</code>.</li>
+  <li><strong>Per-period denominators come from a period-bearing source</strong> (ADEX/ADIS/ADPD), NOT one-row-per-participant ADSL.</li>
+  <li><strong>Single-sequence participant-level tables key on <code>dv$seqvar</code>/<code>dv$seqvarn</code></strong>; period tables use <code>dv$byperiod</code>.</li>
+  <li><strong>Lab "worst" category = furthest from NORMAL</strong>, with missing-limit guards (<code>!is.na(A1HI)</code> etc.).</li>
+  <li><strong>No "eDISH" / "Hy's Law" terminology</strong> &mdash; neutral liver-safety scatter ("Max ALT vs Total Bilirubin, &times;ULN").</li>
+</ul>
+
+<h2>ADaM variables relied on (no re-derivation)</h2>
+<p>Treatment <code>TRT01A/TRT01AN</code> (parallel) &middot; <code>TRTA/TRTAN</code>+<code>APERIOD/APERIODC</code>+<code>TRTSEQP/TRTSEQPN</code> (crossover/seq); populations <code>SAFFL/PKFL/ITTFL</code>; analysis <code>PARAMCD/AVAL/CHG/PCHG/BASE/AVISIT/ATPTN/ANRIND/BNRIND/A1HI/A1LO/R2ULN</code>; AE <code>TRTEMFL/AESOC/AEDECOD/AESEVN/AREL/AESER/AESDTH/AEACN</code>; PK <code>ADPC AVAL=conc</code>, <code>ADPP PARAMCD=Cmax/Tmax/AUClast/AUCinf/CL/Vz/Rac</code>.</p>
+
+<h2>Status</h2>
+<p>Complete: <strong>217 TLF scripts</strong> across all five design folders + <code>00_setup_helpers.R</code>. Built mirroring the SAS twin with all its QC fixes pre-applied, then re-QC'd (6 family reviewers &rarr; per-finding verification: 24 findings, <strong>14 confirmed P0/P1 fixed</strong>, 0 false-positives), then a deterministic sweep. <strong>All 218 scripts parse under <code>Rscript</code></strong>, <code>design_vars()</code> matches every folder, geometric PK stats compute on the log scale, AE/safety counts are distinct participants, single-sequence participant-level tables key on <code>dv$seqvar</code>, period tables denominate from a period-bearing source, exposure uses ADaM <code>AVAL</code>/<code>TRTDURD</code>/<code>NDOSES</code> (no <code>*DTC</code> arithmetic), and the library is free of <code>eDISH</code>/<code>Hy's Law</code> terminology.</p>
+
+<div class="note">Pseudocode for spec / double-programming. Reported numbers still come from validated tools per SOP; an LLM never sources a number.</div>
+
+<h2 id="trouble">Troubleshooting</h2>
+<table class="t">
+  <thead><tr><th style="width:30%">Symptom</th><th style="width:34%">Why</th><th>Fix</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><code>Error in library(rtables) : there is no package called 'rtables'</code> (or <code>dplyr</code>, <code>emmeans</code>, <code>lme4</code>&hellip;)</td>
+      <td>The pharmaverse packages each script <code>library()</code>s aren't installed in this R library.</td>
+      <td>Run the <code>install.packages(...)</code> line in <a href="#run">Run it</a> once. Needs internet for that step. Confirm with <code>Rscript -e 'library(rtables)'</code>.</td>
+    </tr>
+    <tr>
+      <td><code>cannot open file '../00_setup_helpers.R': No such file or directory</code></td>
+      <td>You ran the script from the wrong directory; the <code>source("../00_setup_helpers.R")</code> path is relative to the design folder.</td>
+      <td><code>cd</code> into the design folder (<code>parallel/</code>, <code>crossover/</code>, etc.) first, then <code>Rscript &lt;script&gt;.R</code> &mdash; so <code>../</code> points back at the shared helper.</td>
+    </tr>
+    <tr>
+      <td><code>object 'adam' not found</code> / <code>object 'adsl' not found</code></td>
+      <td>These are pseudocode skeletons: <code>setup()</code> uses placeholder paths and assumes the ADaM frames are already loaded as tibbles &mdash; nothing actually reads your data yet.</td>
+      <td>Wire in your real read step (e.g. <code>adsl &lt;- haven::read_xpt(file.path(env$adam,"adsl.xpt"))</code>) and point <code>adam</code>/<code>out</code> at your study's ADaM and output paths before expecting output.</td>
+    </tr>
+    <tr>
+      <td>Table runs but every <code>%</code> / count looks wrong or empty</td>
+      <td>Population flag or treatment variable doesn't match your ADaM, so <code>bign()</code> denominators or <code>SAFFL=="Y"</code> filters drop everything.</td>
+      <td>Confirm your ADaM carries the variables the library relies on (<code>SAFFL</code>/<code>PKFL</code>/<code>ITTFL</code>, <code>TRT01A</code>/<code>TRTA</code>, <code>USUBJID</code>); for crossover/single-seq check <code>design_vars()</code> matches your <code>APERIOD</code>/<code>TRTSEQP</code> naming.</td>
+    </tr>
+    <tr>
+      <td>Wrong <code>design_vars()</code> branch (e.g. crossover script keyed on <code>TRT01A</code>)</td>
+      <td>The <code>design_vars("&lt;DESIGN&gt;")</code> argument in the script header doesn't match the folder you copied it from.</td>
+      <td>Use the script from the matching design folder; the argument must be <code>PARALLEL</code>/<code>CROSSOVER</code>/<code>SINGLESEQ</code>/<code>SAD</code>/<code>MAD</code> for that folder.</td>
+    </tr>
+    <tr>
+      <td>Geometric mean / CV% looks identical to the arithmetic mean</td>
+      <td>A modified copy is computing <code>exp(mean(raw))</code> instead of working on the log scale.</td>
+      <td>Keep <code>pkstats()</code>: <code>geomean = exp(mean(log(x)))</code>, <code>geocv = 100*sqrt(exp(var(log(x)))-1)</code>; filter <code>AVAL &gt; 0</code> first. Tmax stays Median (Min, Max).</td>
+    </tr>
+    <tr>
+      <td><code>boundary (singular) fit</code> warning from <code>t_be_anova</code> (crossover / single-seq)</td>
+      <td><code>lmer</code> can't estimate a random effect (too few sequences/periods or a near-degenerate design) &mdash; expected on small or illustrative data.</td>
+      <td>It's a warning, not a failure. On real BE data confirm the model spec against the SAP; the reported GMR + 90% CI still comes from the validated tool, not this skeleton.</td>
+    </tr>
+    <tr>
+      <td>Numbers from a script land in a regulatory deliverable</td>
+      <td>This library is illustrative pseudocode for spec writing / double-programming &mdash; it is not validated and never the reported source.</td>
+      <td>Reported and regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, EDC) per SOP. An LLM never sources a number.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="browse">Browse the code</h2>
+
+<h3>Shared setup</h3>
+<div class="files">
+  <a href="00_setup_helpers.R"><code>00_setup_helpers.R</code><span class="d">setup() &middot; design_vars() &middot; bign() helpers</span></a>
+</div>
+
+<h3>parallel/ &mdash; Parallel-group <span class="badge">42 SCRIPTS</span></h3>
+<div class="files">
+  <a href="parallel/t_disposition.R"><code>t_disposition.R</code></a>
+  <a href="parallel/t_demographics.R"><code>t_demographics.R</code></a>
+  <a href="parallel/t_baseline_characteristics.R"><code>t_baseline_characteristics.R</code></a>
+  <a href="parallel/t_exposure.R"><code>t_exposure.R</code></a>
+  <a href="parallel/t_protocol_deviations.R"><code>t_protocol_deviations.R</code></a>
+  <a href="parallel/t_prior_con_meds.R"><code>t_prior_con_meds.R</code></a>
+  <a href="parallel/t_medical_history.R"><code>t_medical_history.R</code></a>
+  <a href="parallel/l_disposition.R"><code>l_disposition.R</code></a>
+  <a href="parallel/t_ae_overview.R"><code>t_ae_overview.R</code></a>
+  <a href="parallel/t_ae_by_soc_pt.R"><code>t_ae_by_soc_pt.R</code></a>
+  <a href="parallel/t_ae_by_severity.R"><code>t_ae_by_severity.R</code></a>
+  <a href="parallel/t_ae_by_relationship.R"><code>t_ae_by_relationship.R</code></a>
+  <a href="parallel/t_ae_sae_death_withdrawal.R"><code>t_ae_sae_death_withdrawal.R</code></a>
+  <a href="parallel/l_ae.R"><code>l_ae.R</code></a>
+  <a href="parallel/l_sae_death.R"><code>l_sae_death.R</code></a>
+  <a href="parallel/t_lab_summary.R"><code>t_lab_summary.R</code></a>
+  <a href="parallel/t_lab_shift.R"><code>t_lab_shift.R</code></a>
+  <a href="parallel/t_lab_marked_abnormal.R"><code>t_lab_marked_abnormal.R</code></a>
+  <a href="parallel/f_lab_lft_scatter.R"><code>f_lab_lft_scatter.R</code></a>
+  <a href="parallel/f_lab_change.R"><code>f_lab_change.R</code></a>
+  <a href="parallel/l_lab_abnormal.R"><code>l_lab_abnormal.R</code></a>
+  <a href="parallel/t_vitals_summary.R"><code>t_vitals_summary.R</code></a>
+  <a href="parallel/f_vitals_change.R"><code>f_vitals_change.R</code></a>
+  <a href="parallel/l_vitals.R"><code>l_vitals.R</code></a>
+  <a href="parallel/t_ecg_summary.R"><code>t_ecg_summary.R</code></a>
+  <a href="parallel/t_ecg_qtc_categorical.R"><code>t_ecg_qtc_categorical.R</code></a>
+  <a href="parallel/f_qtc_change.R"><code>f_qtc_change.R</code></a>
+  <a href="parallel/l_ecg.R"><code>l_ecg.R</code></a>
+  <a href="parallel/t_pk_conc_summary.R"><code>t_pk_conc_summary.R</code></a>
+  <a href="parallel/l_pk_conc.R"><code>l_pk_conc.R</code></a>
+  <a href="parallel/f_pk_conc_mean.R"><code>f_pk_conc_mean.R</code></a>
+  <a href="parallel/f_pk_conc_individual.R"><code>f_pk_conc_individual.R</code></a>
+  <a href="parallel/t_pk_param_summary.R"><code>t_pk_param_summary.R</code></a>
+  <a href="parallel/l_pk_param.R"><code>l_pk_param.R</code></a>
+  <a href="parallel/f_pk_param_boxplot.R"><code>f_pk_param_boxplot.R</code></a>
+  <a href="parallel/t_pd_summary.R"><code>t_pd_summary.R</code></a>
+  <a href="parallel/f_pd_change.R"><code>f_pd_change.R</code></a>
+  <a href="parallel/f_pkpd_overlay.R"><code>f_pkpd_overlay.R</code></a>
+  <a href="parallel/l_pd.R"><code>l_pd.R</code></a>
+  <a href="parallel/t_ada_summary.R"><code>t_ada_summary.R</code></a>
+  <a href="parallel/t_ada_impact_pk.R"><code>t_ada_impact_pk.R</code></a>
+  <a href="parallel/l_ada.R"><code>l_ada.R</code></a>
+</div>
+
+<h3>crossover/ &mdash; Crossover (2&times;2, Williams) <span class="badge">44 SCRIPTS</span></h3>
+<div class="files">
+  <a href="crossover/t_disposition.R"><code>t_disposition.R</code></a>
+  <a href="crossover/t_demographics.R"><code>t_demographics.R</code></a>
+  <a href="crossover/t_baseline_characteristics.R"><code>t_baseline_characteristics.R</code></a>
+  <a href="crossover/t_exposure.R"><code>t_exposure.R</code></a>
+  <a href="crossover/t_protocol_deviations.R"><code>t_protocol_deviations.R</code></a>
+  <a href="crossover/t_prior_con_meds.R"><code>t_prior_con_meds.R</code></a>
+  <a href="crossover/t_medical_history.R"><code>t_medical_history.R</code></a>
+  <a href="crossover/l_disposition.R"><code>l_disposition.R</code></a>
+  <a href="crossover/t_ae_overview.R"><code>t_ae_overview.R</code></a>
+  <a href="crossover/t_ae_by_soc_pt.R"><code>t_ae_by_soc_pt.R</code></a>
+  <a href="crossover/t_ae_by_severity.R"><code>t_ae_by_severity.R</code></a>
+  <a href="crossover/t_ae_by_relationship.R"><code>t_ae_by_relationship.R</code></a>
+  <a href="crossover/t_ae_sae_death_withdrawal.R"><code>t_ae_sae_death_withdrawal.R</code></a>
+  <a href="crossover/l_ae.R"><code>l_ae.R</code></a>
+  <a href="crossover/l_sae_death.R"><code>l_sae_death.R</code></a>
+  <a href="crossover/t_lab_summary.R"><code>t_lab_summary.R</code></a>
+  <a href="crossover/t_lab_shift.R"><code>t_lab_shift.R</code></a>
+  <a href="crossover/t_lab_marked_abnormal.R"><code>t_lab_marked_abnormal.R</code></a>
+  <a href="crossover/f_lab_lft_scatter.R"><code>f_lab_lft_scatter.R</code></a>
+  <a href="crossover/f_lab_change.R"><code>f_lab_change.R</code></a>
+  <a href="crossover/l_lab_abnormal.R"><code>l_lab_abnormal.R</code></a>
+  <a href="crossover/t_vitals_summary.R"><code>t_vitals_summary.R</code></a>
+  <a href="crossover/f_vitals_change.R"><code>f_vitals_change.R</code></a>
+  <a href="crossover/l_vitals.R"><code>l_vitals.R</code></a>
+  <a href="crossover/t_ecg_summary.R"><code>t_ecg_summary.R</code></a>
+  <a href="crossover/t_ecg_qtc_categorical.R"><code>t_ecg_qtc_categorical.R</code></a>
+  <a href="crossover/f_qtc_change.R"><code>f_qtc_change.R</code></a>
+  <a href="crossover/l_ecg.R"><code>l_ecg.R</code></a>
+  <a href="crossover/t_pk_conc_summary.R"><code>t_pk_conc_summary.R</code></a>
+  <a href="crossover/l_pk_conc.R"><code>l_pk_conc.R</code></a>
+  <a href="crossover/f_pk_conc_mean.R"><code>f_pk_conc_mean.R</code></a>
+  <a href="crossover/f_pk_conc_individual.R"><code>f_pk_conc_individual.R</code></a>
+  <a href="crossover/t_pk_param_summary.R"><code>t_pk_param_summary.R</code></a>
+  <a href="crossover/t_pk_param_by_period.R"><code>t_pk_param_by_period.R</code></a>
+  <a href="crossover/l_pk_param.R"><code>l_pk_param.R</code></a>
+  <a href="crossover/f_pk_param_boxplot.R"><code>f_pk_param_boxplot.R</code></a>
+  <a href="crossover/t_be_anova.R"><code>t_be_anova.R</code><span class="d">lmer + emmeans, GMR + 90% CI</span></a>
+  <a href="crossover/t_pd_summary.R"><code>t_pd_summary.R</code></a>
+  <a href="crossover/f_pd_change.R"><code>f_pd_change.R</code></a>
+  <a href="crossover/f_pkpd_overlay.R"><code>f_pkpd_overlay.R</code></a>
+  <a href="crossover/l_pd.R"><code>l_pd.R</code></a>
+  <a href="crossover/t_ada_summary.R"><code>t_ada_summary.R</code></a>
+  <a href="crossover/t_ada_impact_pk.R"><code>t_ada_impact_pk.R</code></a>
+  <a href="crossover/l_ada.R"><code>l_ada.R</code></a>
+</div>
+
+<h3>single_sequence/ &mdash; Single-/fixed-sequence (DDI) <span class="badge">44 SCRIPTS</span></h3>
+<div class="files">
+  <a href="single_sequence/t_disposition.R"><code>t_disposition.R</code></a>
+  <a href="single_sequence/t_demographics.R"><code>t_demographics.R</code></a>
+  <a href="single_sequence/t_baseline_characteristics.R"><code>t_baseline_characteristics.R</code></a>
+  <a href="single_sequence/t_exposure.R"><code>t_exposure.R</code></a>
+  <a href="single_sequence/t_protocol_deviations.R"><code>t_protocol_deviations.R</code></a>
+  <a href="single_sequence/t_prior_con_meds.R"><code>t_prior_con_meds.R</code></a>
+  <a href="single_sequence/t_medical_history.R"><code>t_medical_history.R</code></a>
+  <a href="single_sequence/l_disposition.R"><code>l_disposition.R</code></a>
+  <a href="single_sequence/t_ae_overview.R"><code>t_ae_overview.R</code></a>
+  <a href="single_sequence/t_ae_by_soc_pt.R"><code>t_ae_by_soc_pt.R</code></a>
+  <a href="single_sequence/t_ae_by_severity.R"><code>t_ae_by_severity.R</code></a>
+  <a href="single_sequence/t_ae_by_relationship.R"><code>t_ae_by_relationship.R</code></a>
+  <a href="single_sequence/t_ae_sae_death_withdrawal.R"><code>t_ae_sae_death_withdrawal.R</code></a>
+  <a href="single_sequence/l_ae.R"><code>l_ae.R</code></a>
+  <a href="single_sequence/l_sae_death.R"><code>l_sae_death.R</code></a>
+  <a href="single_sequence/t_lab_summary.R"><code>t_lab_summary.R</code></a>
+  <a href="single_sequence/t_lab_shift.R"><code>t_lab_shift.R</code></a>
+  <a href="single_sequence/t_lab_marked_abnormal.R"><code>t_lab_marked_abnormal.R</code></a>
+  <a href="single_sequence/f_lab_lft_scatter.R"><code>f_lab_lft_scatter.R</code></a>
+  <a href="single_sequence/f_lab_change.R"><code>f_lab_change.R</code></a>
+  <a href="single_sequence/l_lab_abnormal.R"><code>l_lab_abnormal.R</code></a>
+  <a href="single_sequence/t_vitals_summary.R"><code>t_vitals_summary.R</code></a>
+  <a href="single_sequence/f_vitals_change.R"><code>f_vitals_change.R</code></a>
+  <a href="single_sequence/l_vitals.R"><code>l_vitals.R</code></a>
+  <a href="single_sequence/t_ecg_summary.R"><code>t_ecg_summary.R</code></a>
+  <a href="single_sequence/t_ecg_qtc_categorical.R"><code>t_ecg_qtc_categorical.R</code></a>
+  <a href="single_sequence/f_qtc_change.R"><code>f_qtc_change.R</code></a>
+  <a href="single_sequence/l_ecg.R"><code>l_ecg.R</code></a>
+  <a href="single_sequence/t_pk_conc_summary.R"><code>t_pk_conc_summary.R</code></a>
+  <a href="single_sequence/l_pk_conc.R"><code>l_pk_conc.R</code></a>
+  <a href="single_sequence/f_pk_conc_mean.R"><code>f_pk_conc_mean.R</code></a>
+  <a href="single_sequence/f_pk_conc_individual.R"><code>f_pk_conc_individual.R</code></a>
+  <a href="single_sequence/t_pk_param_summary.R"><code>t_pk_param_summary.R</code></a>
+  <a href="single_sequence/t_pk_param_by_period.R"><code>t_pk_param_by_period.R</code></a>
+  <a href="single_sequence/l_pk_param.R"><code>l_pk_param.R</code></a>
+  <a href="single_sequence/f_pk_param_boxplot.R"><code>f_pk_param_boxplot.R</code></a>
+  <a href="single_sequence/t_be_anova.R"><code>t_be_anova.R</code><span class="d">ratio + 90% CI vs reference period</span></a>
+  <a href="single_sequence/t_pd_summary.R"><code>t_pd_summary.R</code></a>
+  <a href="single_sequence/f_pd_change.R"><code>f_pd_change.R</code></a>
+  <a href="single_sequence/f_pkpd_overlay.R"><code>f_pkpd_overlay.R</code></a>
+  <a href="single_sequence/l_pd.R"><code>l_pd.R</code></a>
+  <a href="single_sequence/t_ada_summary.R"><code>t_ada_summary.R</code></a>
+  <a href="single_sequence/t_ada_impact_pk.R"><code>t_ada_impact_pk.R</code></a>
+  <a href="single_sequence/l_ada.R"><code>l_ada.R</code></a>
+</div>
+
+<h3>sad/ &mdash; Single Ascending Dose <span class="badge">43 SCRIPTS</span></h3>
+<div class="files">
+  <a href="sad/t_disposition.R"><code>t_disposition.R</code></a>
+  <a href="sad/t_demographics.R"><code>t_demographics.R</code></a>
+  <a href="sad/t_baseline_characteristics.R"><code>t_baseline_characteristics.R</code></a>
+  <a href="sad/t_exposure.R"><code>t_exposure.R</code></a>
+  <a href="sad/t_protocol_deviations.R"><code>t_protocol_deviations.R</code></a>
+  <a href="sad/t_prior_con_meds.R"><code>t_prior_con_meds.R</code></a>
+  <a href="sad/t_medical_history.R"><code>t_medical_history.R</code></a>
+  <a href="sad/l_disposition.R"><code>l_disposition.R</code></a>
+  <a href="sad/t_ae_overview.R"><code>t_ae_overview.R</code></a>
+  <a href="sad/t_ae_by_soc_pt.R"><code>t_ae_by_soc_pt.R</code></a>
+  <a href="sad/t_ae_by_severity.R"><code>t_ae_by_severity.R</code></a>
+  <a href="sad/t_ae_by_relationship.R"><code>t_ae_by_relationship.R</code></a>
+  <a href="sad/t_ae_sae_death_withdrawal.R"><code>t_ae_sae_death_withdrawal.R</code></a>
+  <a href="sad/l_ae.R"><code>l_ae.R</code></a>
+  <a href="sad/l_sae_death.R"><code>l_sae_death.R</code></a>
+  <a href="sad/t_lab_summary.R"><code>t_lab_summary.R</code></a>
+  <a href="sad/t_lab_shift.R"><code>t_lab_shift.R</code></a>
+  <a href="sad/t_lab_marked_abnormal.R"><code>t_lab_marked_abnormal.R</code></a>
+  <a href="sad/f_lab_lft_scatter.R"><code>f_lab_lft_scatter.R</code></a>
+  <a href="sad/f_lab_change.R"><code>f_lab_change.R</code></a>
+  <a href="sad/l_lab_abnormal.R"><code>l_lab_abnormal.R</code></a>
+  <a href="sad/t_vitals_summary.R"><code>t_vitals_summary.R</code></a>
+  <a href="sad/f_vitals_change.R"><code>f_vitals_change.R</code></a>
+  <a href="sad/l_vitals.R"><code>l_vitals.R</code></a>
+  <a href="sad/t_ecg_summary.R"><code>t_ecg_summary.R</code></a>
+  <a href="sad/t_ecg_qtc_categorical.R"><code>t_ecg_qtc_categorical.R</code></a>
+  <a href="sad/f_qtc_change.R"><code>f_qtc_change.R</code></a>
+  <a href="sad/l_ecg.R"><code>l_ecg.R</code></a>
+  <a href="sad/t_pk_conc_summary.R"><code>t_pk_conc_summary.R</code></a>
+  <a href="sad/l_pk_conc.R"><code>l_pk_conc.R</code></a>
+  <a href="sad/f_pk_conc_mean.R"><code>f_pk_conc_mean.R</code></a>
+  <a href="sad/f_pk_conc_individual.R"><code>f_pk_conc_individual.R</code></a>
+  <a href="sad/t_pk_param_summary.R"><code>t_pk_param_summary.R</code></a>
+  <a href="sad/l_pk_param.R"><code>l_pk_param.R</code></a>
+  <a href="sad/f_pk_param_boxplot.R"><code>f_pk_param_boxplot.R</code></a>
+  <a href="sad/t_dose_proportionality.R"><code>t_dose_proportionality.R</code><span class="d">power model, lm</span></a>
+  <a href="sad/t_pd_summary.R"><code>t_pd_summary.R</code></a>
+  <a href="sad/f_pd_change.R"><code>f_pd_change.R</code></a>
+  <a href="sad/f_pkpd_overlay.R"><code>f_pkpd_overlay.R</code></a>
+  <a href="sad/l_pd.R"><code>l_pd.R</code></a>
+  <a href="sad/t_ada_summary.R"><code>t_ada_summary.R</code></a>
+  <a href="sad/t_ada_impact_pk.R"><code>t_ada_impact_pk.R</code></a>
+  <a href="sad/l_ada.R"><code>l_ada.R</code></a>
+</div>
+
+<h3>mad/ &mdash; Multiple Ascending Dose <span class="badge">44 SCRIPTS</span></h3>
+<div class="files">
+  <a href="mad/t_disposition.R"><code>t_disposition.R</code></a>
+  <a href="mad/t_demographics.R"><code>t_demographics.R</code></a>
+  <a href="mad/t_baseline_characteristics.R"><code>t_baseline_characteristics.R</code></a>
+  <a href="mad/t_exposure.R"><code>t_exposure.R</code></a>
+  <a href="mad/t_protocol_deviations.R"><code>t_protocol_deviations.R</code></a>
+  <a href="mad/t_prior_con_meds.R"><code>t_prior_con_meds.R</code></a>
+  <a href="mad/t_medical_history.R"><code>t_medical_history.R</code></a>
+  <a href="mad/l_disposition.R"><code>l_disposition.R</code></a>
+  <a href="mad/t_ae_overview.R"><code>t_ae_overview.R</code></a>
+  <a href="mad/t_ae_by_soc_pt.R"><code>t_ae_by_soc_pt.R</code></a>
+  <a href="mad/t_ae_by_severity.R"><code>t_ae_by_severity.R</code></a>
+  <a href="mad/t_ae_by_relationship.R"><code>t_ae_by_relationship.R</code></a>
+  <a href="mad/t_ae_sae_death_withdrawal.R"><code>t_ae_sae_death_withdrawal.R</code></a>
+  <a href="mad/l_ae.R"><code>l_ae.R</code></a>
+  <a href="mad/l_sae_death.R"><code>l_sae_death.R</code></a>
+  <a href="mad/t_lab_summary.R"><code>t_lab_summary.R</code></a>
+  <a href="mad/t_lab_shift.R"><code>t_lab_shift.R</code></a>
+  <a href="mad/t_lab_marked_abnormal.R"><code>t_lab_marked_abnormal.R</code></a>
+  <a href="mad/f_lab_lft_scatter.R"><code>f_lab_lft_scatter.R</code></a>
+  <a href="mad/f_lab_change.R"><code>f_lab_change.R</code></a>
+  <a href="mad/l_lab_abnormal.R"><code>l_lab_abnormal.R</code></a>
+  <a href="mad/t_vitals_summary.R"><code>t_vitals_summary.R</code></a>
+  <a href="mad/f_vitals_change.R"><code>f_vitals_change.R</code></a>
+  <a href="mad/l_vitals.R"><code>l_vitals.R</code></a>
+  <a href="mad/t_ecg_summary.R"><code>t_ecg_summary.R</code></a>
+  <a href="mad/t_ecg_qtc_categorical.R"><code>t_ecg_qtc_categorical.R</code></a>
+  <a href="mad/f_qtc_change.R"><code>f_qtc_change.R</code></a>
+  <a href="mad/l_ecg.R"><code>l_ecg.R</code></a>
+  <a href="mad/t_pk_conc_summary.R"><code>t_pk_conc_summary.R</code></a>
+  <a href="mad/l_pk_conc.R"><code>l_pk_conc.R</code></a>
+  <a href="mad/f_pk_conc_mean.R"><code>f_pk_conc_mean.R</code></a>
+  <a href="mad/f_pk_conc_individual.R"><code>f_pk_conc_individual.R</code></a>
+  <a href="mad/t_pk_param_summary.R"><code>t_pk_param_summary.R</code></a>
+  <a href="mad/l_pk_param.R"><code>l_pk_param.R</code></a>
+  <a href="mad/f_pk_param_boxplot.R"><code>f_pk_param_boxplot.R</code></a>
+  <a href="mad/t_accumulation.R"><code>t_accumulation.R</code><span class="d">accumulation ratio (Rac), steady state</span></a>
+  <a href="mad/t_dose_proportionality_ss.R"><code>t_dose_proportionality_ss.R</code><span class="d">steady-state dose proportionality</span></a>
+  <a href="mad/t_pd_summary.R"><code>t_pd_summary.R</code></a>
+  <a href="mad/f_pd_change.R"><code>f_pd_change.R</code></a>
+  <a href="mad/f_pkpd_overlay.R"><code>f_pkpd_overlay.R</code></a>
+  <a href="mad/l_pd.R"><code>l_pd.R</code></a>
+  <a href="mad/t_ada_summary.R"><code>t_ada_summary.R</code></a>
+  <a href="mad/t_ada_impact_pk.R"><code>t_ada_impact_pk.R</code></a>
+  <a href="mad/l_ada.R"><code>l_ada.R</code></a>
+</div>
+
+<footer>
+  R TLF Pseudocode Library &mdash; 218 R scripts (217 TLF + <code>00_setup_helpers.R</code>) across parallel / crossover / single_sequence / sad / mad. Pharmaverse-style pseudocode for spec writing and double-programming; not validated software. Reported numbers come only from validated tools per SOP &mdash; never from an LLM. Participant-level analysis throughout.
+</footer>
+
+</div>
+<script>
+(function(){
+  // one-click copy on every command block
+  document.querySelectorAll('pre').forEach(function(pre){
+    var code=pre.querySelector('code'); if(!code) return;
+    pre.style.position='relative';
+    var b=document.createElement('button'); b.className='copybtn'; b.type='button'; b.textContent='Copy';
+    b.onclick=function(){
+      var t=code.innerText;
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(ok, fail);
+      } else { fail(); }
+      function ok(){ b.textContent='Copied ✓'; b.classList.add('ok'); setTimeout(function(){b.textContent='Copy'; b.classList.remove('ok');},1400); }
+      function fail(){ try{var r=document.createRange();r.selectNodeContents(code);var s=getSelection();s.removeAllRanges();s.addRange(r);document.execCommand('copy');s.removeAllRanges();ok();}catch(e){b.textContent='Ctrl-C';} }
+    };
+    pre.appendChild(b);
+  });
+  // tickable quick-start checklist (remembers your ticks on this machine)
+  var qsc=document.getElementById('qsc');
+  if(qsc){
+    var KEY='qsc:'+location.pathname, saved={};
+    try{ saved=JSON.parse(localStorage.getItem(KEY)||'{}'); }catch(e){}
+    var items=[].slice.call(qsc.children);
+    items.forEach(function(li,i){
+      if(saved[i]) li.classList.add('done');
+      li.onclick=function(){ li.classList.toggle('done'); saved[i]=li.classList.contains('done'); try{localStorage.setItem(KEY,JSON.stringify(saved));}catch(e){} };
+    });
+    var r=document.getElementById('qscReset');
+    if(r) r.onclick=function(){ items.forEach(function(li){li.classList.remove('done');}); try{localStorage.removeItem(KEY);}catch(e){} };
+  }
+})();
+</script>
+</body></html>

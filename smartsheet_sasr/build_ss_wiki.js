@@ -1,0 +1,254 @@
+// ============================================================================
+// SUPERSEDED -- the shipped .html for this wiki is HAND-ENHANCED beyond what this
+// builder generates: the package DARK theme, inline SVG diagrams, and content
+// updates (2026-06). Rebuilding from this script regenerates the OLD base shell
+// and DROPS all of that. The .html is the SOURCE OF TRUTH.
+// Rebuild is therefore guarded: it aborts unless you deliberately set REBUILD=1
+// (and accept that you must re-apply the diagrams/content yourself).
+// ============================================================================
+if (process.env.REBUILD !== '1') {
+  console.error('[SUPERSEDED] ' + __filename.split('/').pop() + ': out of sync with the hand-enhanced shipped HTML (dark theme + inline diagrams + content). Rebuilding would REGRESS it. The .html is the source of truth. Re-run with REBUILD=1 only if you intend to redo those enhancements.');
+  process.exit(1);
+}
+
+// Self-contained navigable HTML wiki: maximizing Smartsheet for biostatisticians, driven
+// by scheduled SAS/R (NO AI). Anchored by the "tracker updates itself" worked example.
+const fs = require("fs");
+const A11Y = require("../wiki_a11y.js");
+const _tnotes = require("./ss_notes.js");
+
+const sections = [
+  { id: "start", nav: "Start here", html: `
+    <h1>Make Smartsheet update itself &mdash; from SAS/R, no AI</h1>
+    <p class="lede">A deterministic, <strong>no-AI</strong> companion that lets a biostatistician keep a Smartsheet program tracker <strong>perfectly current automatically</strong> &mdash; from the validated SAS and/or R you already run on schedule. No copy-paste, no manual status updates, no new vendor, and <strong>no PHI egress</strong>. It ships with a ready-to-use <a href="#macros">SAS/R helper library</a>.</p>
+    <div class="callout warn"><strong>The one idea that makes it safe.</strong> <strong>Code owns the data; Smartsheet owns the alerts.</strong> Scheduled SAS/R writes the <em>truthful operational status</em> to the sheet by a stable key; Smartsheet&rsquo;s own built-in <strong>Automations</strong> send the notifications. You never email from code &mdash; you write a cell, and the workflow a PM configured once decides who to tell. That split is the whole design.</div>
+    <h2>The 60-second version</h2>
+    <ol>
+      <li>A <strong>scheduler</strong> (Task Scheduler / cron) fires a <strong>version-controlled SAS or R program</strong> after your nightly extract refreshes.</li>
+      <li>The program builds an <strong>ops-only snapshot</strong> (milestone dates, deliverable/QC status, % complete, aggregate counts, ownership) and <strong>upserts it to Smartsheet by a stable key</strong> &mdash; updating rows in place, never duplicating.</li>
+      <li>A Smartsheet <strong>Automation you set up once</strong> &mdash; <em>&ldquo;when Status changes to At&nbsp;Risk &rarr; alert the PM&rdquo;</em> &mdash; fires the email / mobile push / Teams or Slack message.</li>
+      <li>The job <strong>fails loud</strong> on any error and ends with a heartbeat, so a stale tracker can never masquerade as a fresh one.</li>
+    </ol>
+    <p>See it end-to-end in <a href="#watch">The tracker that updates itself</a> &mdash; one nightly run on Study&nbsp;CP-101.</p>
+    <h2>Why a biostatistician wants this</h2>
+    <p>The program tracker stops being a chore you maintain by hand and becomes a <strong>by-product of the pipeline you already run</strong>. The numbers on the sheet are exactly the ones your validated programs computed; the PM gets alerted the moment something slips; and because only <strong>non-sensitive operational</strong> data crosses, there is <strong>no new approval gate</strong> &mdash; just your normal program validation.</p>
+  ` },
+
+  { id: "arch", nav: "How it works (SAS/R + API)", html: `
+    <h1>The loop &mdash; scheduler &rarr; SAS/R &rarr; Smartsheet cells &rarr; Smartsheet alert</h1>
+    <p>Every component already exists. SAS and R talk to the Smartsheet REST API directly; you do <em>not</em> need any add-on product, connector, or middleware.</p>
+    <div class="flow">
+      <div class="node out"><b>Scheduler (the clock)</b><span>Task Scheduler / cron &mdash; runs under a <b>service account</b>, after the validated extract refreshes</span></div>
+      <div class="arrow">&darr;</div>
+      <div class="node pa"><b>SAS / R program (batch, unattended)</b><span>build ops-only snapshot &rarr; <b>allowlist guard</b> &rarr; <b>idempotent upsert by key</b> to the sheet</span></div>
+      <div class="arrow split">&darr; &nbsp; &nbsp; &darr;</div>
+      <div class="row">
+        <div class="node sp"><b>Smartsheet cells</b><span>the tracker rows update in place; an ops-only status PDF can attach to the summary row</span></div>
+        <div class="node cs"><b>Smartsheet Automation</b><span>configured once: on cell change &rarr; email / mobile push / Teams / Slack / update request</span></div>
+      </div>
+    </div>
+    <h2>How SAS talks to Smartsheet</h2>
+    <p><code>PROC HTTP</code> makes the authenticated REST call (Bearer token in the header); the <strong>JSON LIBNAME engine</strong> parses the response straight into datasets. A GET on <code>/2.0/sheets/{id}</code> returns the columns and rows; a <code>PUT</code>/<code>POST</code> on <code>/2.0/sheets/{id}/rows</code> updates or appends. The <a href="#macros">helper library</a> wraps all of this as <code>%ss_*</code> macros.</p>
+    <h2>How R talks to Smartsheet</h2>
+    <p><code>httr2</code> builds the request (<code>req_auth_bearer_token()</code>, <code>req_retry()</code> for throttling) and <code>jsonlite</code> handles the bodies; the same operations are <code>ss_colmap()</code>, <code>ss_get_rows()</code>, <code>ss_upsert()</code>. Pin packages with <code>renv</code>; schedule with <code>cronR</code> / <code>taskscheduleR</code>.</p>
+    <table>
+      <tr><th>Concern</th><th>How the library handles it</th></tr>
+      <tr><td><b>Column ids drift</b> &mdash; titles/order can change; only <code>columnId</code> is a stable address.</td><td>The column map is <b>rebuilt every run</b> from a fresh GET; values are written by id, never by position.</td></tr>
+      <tr><td><b>Rate limits</b> &mdash; ~300 requests/min/token.</td><td><code>%ss_http</code> / <code>req_retry()</code> retry <b>429 &amp; 5xx with exponential backoff</b>; batch writes go in one array, not row-by-row.</td></tr>
+      <tr><td><b>Pagination</b> &mdash; large sheets page their rows.</td><td>Reads request <code>includeAll=true</code> so the key&rarr;row map is complete.</td></tr>
+    </table>
+  ` },
+
+  { id: "usecases", nav: "What to automate", html: `
+    <h1>What a biostatistician should automate</h1>
+    <p>Everything here is <strong>operational</strong> &mdash; status, dates, counts, ownership &mdash; the data that belongs on a tracker. <strong>None of it is participant-level or clinical.</strong></p>
+    <table>
+      <tr><th>Use case</th><th>What the nightly SAS/R job writes</th><th>The alert Smartsheet then sends</th></tr>
+      <tr><td><b>Deliverable &amp; milestone status</b></td><td>RAG status, % complete, planned vs actual dates for each tracked task (DB lock, ADaM, TLFs, CSR sections), keyed by a stable Task code.</td><td>On any task &rarr; At&nbsp;Risk: alert the PM and the task owner.</td></tr>
+      <tr><td><b>QC / double-programming status</b></td><td>Per-output QC state (not&nbsp;started / in&nbsp;progress / passed / discrepancy) rolled up from your validation log.</td><td>On a discrepancy logged: notify the QC reviewer; reminder if it ages.</td></tr>
+      <tr><td><b>Enrollment vs plan (aggregate)</b></td><td>Actual vs planned counts by cohort/site &mdash; <b>counts only</b>, never a participant.</td><td>On actual falling below plan by a threshold: alert the PM &amp; CRA lead.</td></tr>
+      <tr><td><b>Timeline &amp; critical-path dates</b></td><td>Forecast vs baseline dates from your project plan; slippage flags.</td><td>Smartsheet&rsquo;s built-in <b>reminders</b> fire N days before each due date automatically.</td></tr>
+      <tr><td><b>Task ownership &amp; handoffs</b></td><td>Current owner / next action for each row, so coverage is unambiguous.</td><td>On owner change or a handoff date: notify the new owner.</td></tr>
+      <tr><td><b>Run / pipeline health</b></td><td>Last successful run timestamp + record counts (the heartbeat) on a status row.</td><td>If the timestamp goes stale, an automation flags the tracker itself as unfresh.</td></tr>
+    </table>
+    <div class="callout tip"><b>The pattern is always the same:</b> SAS/R writes a <em>truthful operational cell</em>; a Smartsheet Automation turns that change into the right notification. You add a new use case by adding a column to the allowlist and a row to the snapshot &mdash; not by writing new alerting code.</div>
+  ` },
+
+  { id: "notify", nav: "Notifications &amp; reminders", html: `
+    <h1>Notifications: configure once in Smartsheet, not in code</h1>
+    <p>The robust, low-maintenance pattern keeps <em>recipients, channels, escalation, and quiet-hours</em> in Smartsheet &mdash; where a PM can edit them without touching your program &mdash; and keeps your code about <em>data</em>.</p>
+    <h2>Pattern A &mdash; cell change &rarr; alert (the default)</h2>
+    <ol>
+      <li>Your job writes <code>Status = "At Risk"</code> on a row (idempotent, by key).</li>
+      <li>A Smartsheet <b>Automation</b> &mdash; set up once: <em>&ldquo;When Status changes to At&nbsp;Risk &rarr; Alert the PM&rdquo;</em> &mdash; fires the notification (email, mobile push, Teams, Slack).</li>
+    </ol>
+    <p>SAS/R never holds an email list. This is the most maintainable design and the one the worked example uses.</p>
+    <h2>Pattern B &mdash; time-based reminders</h2>
+    <p>Smartsheet&rsquo;s native <b>reminders</b> fire relative to a date cell (&ldquo;3 days before <code>Due</code>&rdquo;). Your job just keeps the <code>Due</code> dates honest; Smartsheet handles the calendar. Zero code.</p>
+    <h2>Pattern C &mdash; the targeted update request</h2>
+    <p>When you need a <em>specific person to act</em> &mdash; &ldquo;please confirm the DB-lock date&rdquo; &mdash; the library can send a Smartsheet <b>update request</b> (<code>%ss_update_request</code> / <code>ss_update_request()</code>): it emails the recipient a link to edit just those rows/columns, and their reply writes straight back to the sheet. Use this sparingly, for human-in-the-loop confirmations.</p>
+    <div class="callout warn"><b>Message bodies carry operational signal only</b> &mdash; &ldquo;CP-101 DB lock now At&nbsp;Risk, due 20&nbsp;Jun&rdquo; &mdash; never anything participant-level. The detail lives in the attached ops status PDF on the validated share, linked, not in the alert.</div>
+  ` },
+
+  { id: "watch", nav: "&#9654; The tracker that updates itself", html: `
+    <h1>The tracker that updates itself &mdash; one nightly run on CP-101</h1>
+    <p class="lede">The deterministic job doing its one job: reading the sheet, writing the truthful status by key, attaching the evidence, and letting Smartsheet send the alert &mdash; with zero AI and zero copy-paste.</p>
+    <div class="dl">
+      <a class="btn" href="SAS_R_Smartsheet_Screencast_narrated.mp4">&#9654;&nbsp; Watch the live screencast &mdash; the scheduled job updates the tracker on screen (~1.5 min)</a>
+      <a class="btn ghost" href="SAS_R_Smartsheet_Example_narrated.mp4">&#9654;&nbsp; Annotated step-by-step version (~3 min)</a>
+      <a class="btn ghost" href="Smartsheet_SASR_Example_StepGuide.pdf">&#10515;&nbsp; Step-by-step picture guide (PDF)</a>
+      <a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; The SAS/R helper library</a>
+    </div>
+    <div class="shots">
+      <figure><img src="example_img/beat1.png" alt="The four-part architecture: scheduler, SAS/R program, Smartsheet cells, Smartsheet automation"><figcaption><b>The loop</b> &mdash; scheduler &rarr; SAS/R &rarr; Smartsheet cells &rarr; the alert Smartsheet sends. Code owns the data; Smartsheet owns the notifications.</figcaption></figure>
+      <figure><img src="example_img/beat2.png" alt="Beat 1: the job reads the sheet, building a fresh column map and the key to row map"><figcaption><b>Beat 1 &middot; Read first</b> &mdash; pull a fresh column map (ids are the only stable address) and read existing rows by the Task code, so the job knows what to update vs append.</figcaption></figure>
+      <figure><img src="example_img/beat3.png" alt="Beat 2: status cells updated in place to At Risk and Watch, marked UPDATED"><figcaption><b>Beat 2 &middot; Write by key</b> &mdash; DB&nbsp;lock slips to <b>At&nbsp;Risk</b>, tables move to <b>Watch</b>. Matched on the key, so re-runs converge &mdash; never a duplicate row.</figcaption></figure>
+      <figure><img src="example_img/beat4.png" alt="Beat 3: one upsert call carries the whole batch, splitting updates from appends"><figcaption><b>Beat 3 &middot; One upsert, whole batch</b> &mdash; a single rows array splits cleanly into updates (existing keys) and appends (new keys). Plain, double-programmed SAS/R.</figcaption></figure>
+      <figure><img src="example_img/beat5.png" alt="Beats 4 and 5: a status PDF attaches to the summary row and Smartsheet sends the alert"><figcaption><b>Beats 4&ndash;5 &middot; Attach &amp; let it notify</b> &mdash; the job attaches the ops status PDF, then stops. The instant Status hit At&nbsp;Risk, the Smartsheet workflow alerted the PM. SAS wrote the fact; Smartsheet chose who to tell.</figcaption></figure>
+      <figure><img src="example_img/beat6.png" alt="The four safeguards: idempotent, ops-only allowlist, secret token, rate-limit aware and fail loud"><figcaption><b>Why it&rsquo;s trustworthy</b> &mdash; idempotent by key &middot; coded ops-only allowlist (no PHI to the cloud) &middot; token from a secret, never logged &middot; rate-limit aware &amp; fails loud.</figcaption></figure>
+    </div>
+    <p class="muted">Illustrative mockups. The division of labor throughout: <b>SAS/R wrote truthful operational cells; Smartsheet sent the notifications; humans made every decision.</b></p>
+  ` },
+
+  { id: "macros", nav: "The SAS/R helper library", html: `
+    <h1>The helper library &mdash; <code>%ss_*</code> macros &amp; R functions</h1>
+    <p>A small, deterministic library so &ldquo;keep the tracker current&rdquo; is a few lines you schedule. It guarantees five things: <b>idempotent</b> (never duplicates), <b>ops-only</b> (coded allowlist), <b>token never logged</b>, <b>rate-limit aware</b>, and <b>fails loud</b>.</p>
+    <div class="dl">
+      <a class="btn ghost" href="macro_library/ss_macros.sas">&#10515;&nbsp; ss_macros.sas</a>
+      <a class="btn ghost" href="macro_library/ss_companion.R">&#10515;&nbsp; ss_companion.R</a>
+      <a class="btn ghost" href="macro_library/tracker_update.sas">&#10515;&nbsp; tracker_update.sas (driver)</a>
+      <a class="btn ghost" href="macro_library/ss_config.sas">&#10515;&nbsp; ss_config.sas</a>
+      <a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; README</a>
+    </div>
+    <h2>The whole nightly job, in SAS</h2>
+    <pre class="code">%include "ss_config.sas";   /* sheet id, key, the ops-only ALLOWLIST */
+%include "ss_macros.sas";
+%ss_init(tokenenv=&amp;CFG_TOKEN_ENV, backup=&amp;CFG_BACKUP, allow=&amp;CFG_ALLOW);
+
+data tracker;
+  length TaskID $40 Status $20;
+  TaskID="CP101-DBL";  Status="At Risk";  PctDone=0.60; output;
+  TaskID="CP101-ADaM"; Status="On Track"; PctDone=0.85; output;
+  label Status="Status" PctDone="% Done";   /* each label = the Smartsheet column TITLE */
+run;
+
+%ss_upsert(sheet=&amp;CFG_SHEET, keycol=TaskID, keycolname=&amp;CFG_KEYCOLNAME, data=tracker);</pre>
+    <h2>The same job, in R</h2>
+    <pre class="code">source("ss_companion.R")
+allow &lt;- c("Task ID","Status","% Done","Owner","Due")
+df &lt;- tibble::tibble(\`Task ID\` = c("CP101-DBL","CP101-ADaM"),
+                     Status   = c("At Risk","On Track"),
+                     \`% Done\` = c(0.60, 0.85))
+ss_upsert(sheet = Sys.getenv("CP101_TRACKER_ID"), key = "Task ID", df = df, allow = allow)</pre>
+    <h2>The toolbox</h2>
+    <table>
+      <tr><th>SAS</th><th>R</th><th>Does</th></tr>
+      <tr><td><code>%ss_init</code></td><td><code>ss_req</code></td><td>Load token (hidden), base URL, allowlist, fail-loud target.</td></tr>
+      <tr><td><code>%ss_http</code></td><td><code>ss_req</code></td><td>One authenticated call; 429/5xx retry + backoff; fail loud on non-2xx.</td></tr>
+      <tr><td><code>%ss_colmap</code></td><td><code>ss_colmap</code></td><td>GET sheet &rarr; fresh column&nbsp;title&nbsp;&rarr;&nbsp;id map (rebuilt every run).</td></tr>
+      <tr><td><code>%ss_get_rows</code></td><td><code>ss_get_rows</code></td><td>GET rows &rarr; the key&nbsp;&rarr;&nbsp;rowId map.</td></tr>
+      <tr><td><code>%ss_guard</code></td><td><code>ss_guard</code></td><td>Enforce the <b>ops-only allowlist</b>; fail loud on any other column.</td></tr>
+      <tr><td><code>%ss_upsert</code></td><td><code>ss_upsert</code></td><td><b>Idempotent</b> update-by-key / add-if-new. The flagship.</td></tr>
+      <tr><td><code>%ss_attach</code></td><td><code>ss_attach</code></td><td>Attach an ops-only status PDF to a row.</td></tr>
+      <tr><td><code>%ss_update_request</code></td><td><code>ss_update_request</code></td><td>Targeted human-in-the-loop ask (Pattern&nbsp;C).</td></tr>
+    </table>
+    <div class="callout tip"><b>To start a new tracker</b> you edit one file (<code>ss_config.sas</code>): the sheet id, the key column, recipients, and the allowlist &mdash; not the code.</div>
+  ` },
+
+  { id: "gov", nav: "Governance &amp; limits", html: `
+    <h1>Governance, security &amp; honest limits</h1>
+    <h2>The data boundary (the reason this can be automated at all)</h2>
+    <ul>
+      <li><b>Ops-only, enforced in code.</b> <code>%ss_guard</code> checks every column against an <b>allowlist</b> before writing; a non-allowlisted column <b>fails the job</b>. Allowed: milestone dates, deliverable/QC status, % complete, aggregate counts, ownership. <b>Never:</b> participant-level, unblinded, PHI, or reported clinical numbers.</li>
+      <li><b>Smartsheet is a tracker, not a system of record.</b> The validated SAS/R outputs remain the source of truth; the sheet is a convenience mirror of <em>operational</em> status. Widening the allowlist is a reviewed change, not a habit.</li>
+      <li><b>Aggregate only.</b> Counts and statuses, never a value attributable to one participant.</li>
+    </ul>
+    <h2>Security</h2>
+    <ul>
+      <li><b>Token never hard-coded or logged.</b> Read at runtime from an env var / perms-<code>600</code> file, inside <code>OPTIONS NOSOURCE</code> (SAS) / <code>req_auth_bearer_token()</code> (R). Rotate it Smartsheet-side; the code never changes.</li>
+      <li><b>Least privilege.</b> Run under a dedicated service account with access to only the sheets it must touch.</li>
+      <li><b>Idempotent &amp; auditable.</b> Upsert-by-key means a re-run can only converge, never corrupt; every write is a deterministic function of validated data.</li>
+    </ul>
+    <h2>The honest limit</h2>
+    <div class="callout warn"><b>This keeps a tracker current and triggers pre-configured alerts &mdash; it does not triage, narrate, or decide.</b> It writes the operational facts your validated programs computed and lets Smartsheet notify the right people, reproducibly. It does not weigh what a slip <em>means</em> or prioritize across signals &mdash; humans and the PM own every decision. Like any program that writes to a shared artifact, validate the library against a non-production sandbox sheet before scheduling it live.</div>
+  ` },
+
+  { id: "faq", nav: "FAQ", html: `
+    <h1>FAQ</h1>
+    <p><b>Do we need to buy a Smartsheet connector or any middleware?</b> No. SAS (<code>PROC HTTP</code> + JSON engine) and R (<code>httr2</code>) call the Smartsheet REST API directly with your token. The helper library is the only thing you add.</p>
+    <p><b>Will re-running the job create duplicate rows?</b> No &mdash; that is the point of the <b>upsert by key</b>. Existing keys update in place; only genuinely new keys append. Run it as often as you like.</p>
+    <p><b>Could this leak PHI to the cloud?</b> The <code>%ss_guard</code> allowlist blocks any non-operational column in code &mdash; the job fails rather than write it. Only aggregate operational status crosses; nothing participant-level.</p>
+    <p><b>Who sends the emails?</b> Smartsheet does. You configure the Automations once; SAS/R just writes the truthful cell. That keeps recipients and escalation editable by the PM, not buried in code.</p>
+    <p><b>What if the token is exposed in a log?</b> It isn&rsquo;t &mdash; it&rsquo;s read inside <code>NOSOURCE</code> and never printed. If a token is ever compromised, rotate it in Smartsheet; no code change is needed.</p>
+    <p><b>Is this AI?</b> No. It is deterministic SAS/R hitting a REST API. It complements the AI pipelines &mdash; the same &ldquo;ship the validated, no-AI layer now&rdquo; philosophy as the SAS/R trial-monitoring companion.</p>
+  ` },
+];
+
+const css = `
+:root{--indigo:#6FA0DC;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--amber:#D9A94F;--terra:#E0857A;--sas:#5B8FD0;--bg:#0E1124}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+#wrap{display:flex;min-height:100vh}
+#side{width:280px;flex:0 0 280px;background:#161B33;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #242a4a}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #2c3257;margin-bottom:10px}
+#side .brand b{font-family:Georgia,serif;font-size:16px}#side .brand span{display:block;color:#9fb4dd;font-size:11px;margin-top:4px}
+#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #353c66;background:#1b2047;color:#fff;font-size:13px}
+#side a{display:block;color:#c8d2ec;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}
+#side a:hover{background:#1b2047}#side a.active{color:#fff;border-left-color:#5a93e0;background:#1b2047;font-weight:600}
+#main{flex:1;max-width:980px;margin:0 auto;padding:34px 48px 80px}
+section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.3}to{opacity:1}}
+h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
+h2{font-family:Georgia,serif;color:#8FB3EA;font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:16.5px;color:#C3CCE4}p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
+code{background:#20284a;color:#A9C6F2;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
+pre.code{background:#080A18;color:#DCE6FB;padding:16px 18px;border-radius:10px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;border:1px solid var(--line)}
+pre.code code{background:none;color:inherit;padding:0}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:#10142E;color:#fff;font-weight:600}tr:nth-child(even) td{background:var(--panel)}
+.callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}
+.callout.warn{background:#2A1614;border-left:4px solid var(--terra)}
+.callout.tip{background:#0F262A;border-left:4px solid var(--teal)}
+.muted{color:var(--muted);font-size:13px}
+.flow{margin:18px 0}
+.node{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.30)}
+.node b{display:block;font-size:15px}.node span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+.node.out{border-left:5px solid var(--sas)}.node.pa{border-left:5px solid var(--indigo)}.node.sp{border-left:5px solid var(--teal)}.node.cs{border-left:5px solid var(--amber)}
+.arrow{text-align:center;color:var(--indigo);font-size:20px;margin:5px 0;font-weight:700}
+.row{display:flex;gap:14px}.row .node{flex:1}
+.footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+a{color:var(--indigo)}
+.dl{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}
+.btn{display:inline-block;background:var(--sas);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px}
+.btn.ghost{background:transparent;color:var(--sas);border:1.5px solid var(--sas)}
+.btn:hover{opacity:.92}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
+.shots figure{margin:0}.shots img{width:100%;border:1px solid var(--line);border-radius:10px;box-shadow:0 3px 12px rgba(20,20,40,.10);display:block}
+.shots figcaption{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
+`;
+
+const js = `
+const secs=[...document.querySelectorAll('section')];
+const links=[...document.querySelectorAll('#side a[data-t]')];
+function show(id){secs.forEach(s=>s.classList.toggle('show',s.id===id));links.forEach(a=>a.classList.toggle('active',a.dataset.t===id));window.scrollTo(0,0);if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}
+links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.t);}));
+document.querySelectorAll('#main a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href').slice(1);if(document.getElementById(id)){e.preventDefault();show(id);}}));
+const q=document.getElementById('search');
+q.addEventListener('input',()=>{const v=q.value.toLowerCase().trim();links.forEach(a=>{const s=document.getElementById(a.dataset.t);const hit=!v||s.textContent.toLowerCase().includes(v);a.style.display=hit?'block':'none';});});
+show((location.hash||'#start').slice(1)||'start');
+`;
+
+sections.push({ id: "transcript", nav: "Transcript", html: `<h1>Walkthrough transcript</h1><p class="lede">The complete narration of the &ldquo;tracker that updates itself&rdquo; video, as readable text.</p>${A11Y.transcript(_tnotes)}` });
+const nav = sections.map(s => `<a href="#${s.id}" data-t="${s.id}">${s.nav}</a>`).join("\n");
+const body = sections.map(s => `<section id="${s.id}" aria-label="${String(s.nav).replace(/&[^;]+;/g,'').replace(/<[^>]+>/g,'').trim()}">${s.html}<div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>`).join("\n");
+
+const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smartsheet for Biostatisticians — SAS/R automation</title><style>${css}</style></head>
+<body><div id="wrap">
+<nav id="side"><div class="brand"><b>Smartsheet &times; SAS/R</b><span>Automated tracking — no AI</span></div>
+<input id="search" placeholder="Search the wiki..." autocomplete="off">
+${nav}</nav>
+<main id="main">${body}</main></div>
+<script>${js}</script></body></html>`;
+
+fs.writeFileSync(__dirname + "/Smartsheet_SASR.html", A11Y.accessibleShell(html));
+console.log("WROTE Smartsheet_SASR.html (" + html.length + " bytes, " + sections.length + " pages)");

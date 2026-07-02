@@ -1,0 +1,1 @@
+Optimal transport measures how far a distribution has moved from a learned reference, in a way that respects clinical severity.

@@ -1,0 +1,1 @@
+It flags candidate dose-limiting toxicities inside the evaluation window: Hy's-Law liver signals, Q-T-c prolongation, P-K exposures beyond the safety margin, and escalating adverse-event clusters.

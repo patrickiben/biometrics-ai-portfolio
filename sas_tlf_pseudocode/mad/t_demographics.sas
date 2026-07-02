@@ -1,0 +1,66 @@
+/******************************************************************************
+* TABLE     : t_demographics  (Multiple Ascending Dose)
+* TITLE     : Demographic and Baseline Characteristics
+* POPULATION: Safety Population (SAFFL='Y')
+* INPUT     : ADSL
+* NOTE      : PSEUDOCODE. Continuous: n, Mean(SD), Median, Min-Max.
+*             Categorical: n (%). MAD: parallel ascending-dose cohorts, one
+*             dose level per participant -> columns = TRT01A/TRT01AN (= dose level,
+*             placebo pooled) + Total, ordered ascending dose. Demographics are
+*             baseline/static, so layout matches parallel; only the column
+*             variable and labelling are re-pointed to the dose-level cohorts.
+******************************************************************************/
+%include "../00_setup_macros.sas";
+%setup(study=CP-101, adam=/data/adam, out=/data/tfl);
+%designvars(design=MAD);               /* -> TRTVAR=TRT01A, TRTNVAR=TRT01AN */
+
+/* column denominators (N=) per dose level + Total */
+%bign(ds=adam.adsl, trtvar=&TRTVAR, trtn=&TRTNVAR, popfl=SAFFL, out=_bign);
+
+data adsl; set adam.adsl(where=(SAFFL='Y')); run;
+
+/*--- continuous characteristics: AGE, HEIGHTBL, WEIGHTBL, BMIBL ----------*/
+%macro contblk(var=, label=, dp=1, ord=);
+  %descstat(ds=adsl, var=&var, class=&TRTVAR &TRTNVAR, dp=&dp, out=_d);
+  data _c_&var; set _d; length charlbl $40 stat $20 value $40;
+    charlbl="&label"; ord=&ord;
+    stat='n';            value=put(n,5.);        output;
+    stat='Mean (SD)';    value=catx(' ',cmean,csd); output;
+    stat='Median';       value=cmed;             output;
+    stat='Min, Max';     value=cminmax;          output;
+  run;
+%mend;
+%contblk(var=AGE,      label=Age (years),     dp=0, ord=1);
+%contblk(var=WEIGHTBL, label=Weight (kg),     dp=1, ord=2);
+%contblk(var=HEIGHTBL, label=Height (cm),     dp=1, ord=3);
+%contblk(var=BMIBL,    label=BMI (kg/m^2),    dp=1, ord=4);
+
+/*--- categorical characteristics: SEX, RACE, ETHNIC, AGEGR1 -------------*/
+%macro catblk(var=, label=, ord=);
+  %catfreq(ds=adsl, var=&var, class=&TRTVAR &TRTNVAR, denom=_bign, out=_f);
+  data _c_&var; set _f; length charlbl $40 stat $40 value $40;
+    charlbl="&label"; ord=&ord; stat=vvalue(&var);
+    value=catx(' ', put(count,5.), cats('(',put(pct,5.1),'%)'));  /* n (xx.x%) */
+  run;
+%mend;
+%catblk(var=SEX,    label=Sex n (%),        ord=5);
+%catblk(var=RACE,   label=Race n (%),       ord=6);
+%catblk(var=ETHNIC, label=Ethnicity n (%),  ord=7);
+
+/*--- stack, transpose to one column per dose level + Total, render -------*/
+data _all; set _c_:; run;
+proc sort data=_all; by ord charlbl stat; run;
+proc transpose data=_all out=_wide;
+  by ord charlbl stat;  id &TRTNVAR;  var value;  /* one col per dose level + Total */
+run;
+
+%tfltitle(num=14.1.2, type=Table, text=Demographic and Baseline Characteristics,
+          pop=Safety Population,
+          foot=%str(Column = assigned dose level (TRT01A); placebo pooled across cohorts, columns ordered by ascending dose. Percentages based on the number of participants in the Safety Population per dose level.));
+proc report data=_wide nowd split='|';
+  columns ord charlbl stat ("Dose Level" _NAME_  /* dose cols + Total */);
+  define ord     / order noprint;
+  define charlbl / order  'Characteristic' width=24;
+  define stat    / display 'Statistic'      width=14;
+  /* define <each dose var> / display center "&header (N=&n)"; ordered ascending dose */
+run;

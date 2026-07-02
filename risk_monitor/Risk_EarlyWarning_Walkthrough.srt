@@ -1,0 +1,247 @@
+1
+00:00:00,000 --> 00:00:04,013
+This is a short walkthrough of the trial-risk early-warning dashboard.
+
+2
+00:00:04,313 --> 00:00:16,398
+The idea is simple: catch the risk that a trial might have to stop — early, and across three levels: the individual participant, the study as a whole, and the client relationship.
+
+3
+00:00:16,698 --> 00:00:22,331
+It runs on a hybrid of cloud Claude (under a BAA) and on-device local models.
+
+4
+00:00:22,631 --> 00:00:27,463
+And throughout, the AI only detects, aggregates, and triages.
+
+5
+00:00:27,763 --> 00:00:30,586
+It never makes the safety or termination call.
+
+6
+00:00:30,886 --> 00:00:32,908
+Let me show you how it works.
+
+7
+00:00:33,908 --> 00:00:38,068
+Early-phase trials can stop for reasons that build up quietly.
+
+8
+00:00:38,368 --> 00:00:40,356
+A participant's safety signal.
+
+9
+00:00:40,656 --> 00:00:44,036
+A cohort's toxicity creeping toward the stopping rule.
+
+10
+00:00:44,336 --> 00:00:46,870
+Or a sponsor going cold on the program.
+
+11
+00:00:47,170 --> 00:00:54,994
+The trouble is that the first formal look is often the cohort review or a governance meeting — and by then we are days or weeks behind.
+
+12
+00:00:55,294 --> 00:01:02,166
+The dashboard watches all three of these continuously, so the earliest mover is visible long before that meeting.
+
+13
+00:01:03,166 --> 00:01:05,142
+Here is the dashboard itself.
+
+14
+00:01:05,442 --> 00:01:16,653
+Three panels — participant, study, and client — each with a simple red, amber, green status, the top signals underneath, and the engine that powers it.
+
+15
+00:01:16,953 --> 00:01:19,741
+Below the panels is a live early-warning feed.
+
+16
+00:01:20,041 --> 00:01:30,933
+Right now everything is amber: a candidate liver signal on one participant, an enrollment limit breached at the study level, and a payment-aging flag on the client side.
+
+17
+00:01:31,233 --> 00:01:39,682
+Each panel rolls its signals up to a status — but that status is a prompt for a human, not a verdict the system reaches on its own.
+
+18
+00:01:40,682 --> 00:01:47,391
+The participant tier is the most sensitive, so it runs entirely on-device, with zero egress.
+
+19
+00:01:47,691 --> 00:02:02,427
+It flags candidate dose-limiting toxicities inside the evaluation window: Hy's-Law liver signals, QTc prolongation, PK exposures beyond the safety margin, and escalating adverse-event clusters.
+
+20
+00:02:02,727 --> 00:02:04,023
+The key word is early.
+
+21
+00:02:04,323 --> 00:02:10,444
+It surfaces the pattern and pre-assembles the safety-committee packet before the formal cohort review.
+
+22
+00:02:10,744 --> 00:02:13,706
+What it does not do is adjudicate the toxicity.
+
+23
+00:02:14,006 --> 00:02:17,276
+That is the medical monitor and the Safety Review Committee.
+
+24
+00:02:18,276 --> 00:02:34,912
+The study tier watches the trial's trajectory against its own rules: the cohort toxicity rate against the stopping rule, enrollment and screen-failure limits, the safety quality-tolerance limits from ICH, and central data-quality signals.
+
+25
+00:02:35,212 --> 00:02:44,893
+These are de-identified, aggregate numbers, so they run on cloud Claude — with any participant-level drill-down dropping back to the on-device model.
+
+26
+00:02:45,193 --> 00:02:50,881
+The project manager owns these calls, with the safety committee on anything safety-related.
+
+27
+00:02:51,881 --> 00:02:58,973
+The third tier is the commercial one — the early warning that a sponsor might cancel, de-scope, or not renew.
+
+28
+00:02:59,273 --> 00:03:07,969
+Payment aging, a drop in communication, scope-reduction change orders, and the sponsor's own financial and pipeline health.
+
+29
+00:03:08,269 --> 00:03:12,737
+This is non-sensitive business data, so it sits on cloud Claude.
+
+30
+00:03:13,037 --> 00:03:15,861
+And I want to be clear about what this tier is.
+
+31
+00:03:16,161 --> 00:03:20,645
+It is decision-support for the account team, surfacing signals.
+
+32
+00:03:20,945 --> 00:03:24,267
+It is never a judgment the system makes about a sponsor.
+
+33
+00:03:25,267 --> 00:03:30,285
+Underneath, one rule decides where everything runs: sensitivity.
+
+34
+00:03:30,585 --> 00:03:37,588
+Participant-level safety and unblinded data go to the on-device model, and never leave the validated environment.
+
+35
+00:03:37,888 --> 00:03:45,309
+Non-sensitive, aggregate operational and commercial data go to cloud Claude, under a business-associate agreement.
+
+36
+00:03:45,609 --> 00:03:48,258
+And here is the rule that governs the whole thing.
+
+37
+00:03:48,558 --> 00:03:56,429
+The AI flags, aggregates, triages, and drafts the alert — it never makes the safety or termination call.
+
+38
+00:03:56,729 --> 00:04:01,592
+The reported numbers come from the validated safety database, never the model.
+
+39
+00:04:01,892 --> 00:04:09,360
+Every flag triggers a human review and a logged disposition, and nothing is paused or terminated by the system itself.
+
+40
+00:04:10,360 --> 00:04:13,702
+There is an optional advanced layer for teams that want it.
+
+41
+00:04:14,002 --> 00:04:19,368
+Instead of waiting for a threshold to be crossed, it watches for drift and surprise.
+
+42
+00:04:19,668 --> 00:04:27,785
+Optimal transport measures how far a distribution has moved from a learned reference, in a way that respects clinical severity.
+
+43
+00:04:28,085 --> 00:04:39,895
+Active inference treats the monitor as a model of the expected trajectory, so rising surprise is itself an early warning — and it can even recommend the most informative next test to run.
+
+44
+00:04:40,195 --> 00:04:51,877
+It is decision-support only: the threshold rules stay authoritative, the methods were independently checked, and it is validated and frozen before it ever informs a regulated decision.
+
+45
+00:04:52,877 --> 00:04:54,674
+Here is how it comes together.
+
+46
+00:04:54,974 --> 00:04:59,921
+Day nine of cohort four: a participant's labs post a Hy's-Law pattern.
+
+47
+00:05:00,221 --> 00:05:10,005
+The on-device model recognizes it, and because it is inside the evaluation window, flags a candidate toxicity — without any data leaving the device.
+
+48
+00:05:10,305 --> 00:05:17,400
+Within minutes it assembles the case and routes it to the medical monitor and the committee chair, ahead of the scheduled review.
+
+49
+00:05:17,700 --> 00:05:25,211
+The humans take it from there: a confirmatory test, the committee convenes, dosing pauses per protocol.
+
+50
+00:05:25,511 --> 00:05:26,981
+The payoff is the timing.
+
+51
+00:05:27,281 --> 00:05:36,034
+This surfaced on day nine, not at the cohort meeting on day twenty-one — with the packet already built, and a human making every call.
+
+52
+00:05:37,034 --> 00:05:38,463
+Building it is staged.
+
+53
+00:05:38,763 --> 00:05:51,217
+First, the safe wins: wire the study and client tiers from existing operational and commercial feeds into cloud Claude, behind a human-review queue, with de-identified data only.
+
+54
+00:05:51,517 --> 00:06:00,398
+Second, the on-device participant tier in the validated environment, with the safety logic encoded and alerting wired to the medical monitor.
+
+55
+00:06:00,698 --> 00:06:11,364
+Third, the scoring, escalation, and audit trail — and, optionally, the advanced engine, validated and frozen before it informs anything.
+
+56
+00:06:11,664 --> 00:06:14,022
+Each phase delivers value on its own.
+
+57
+00:06:15,022 --> 00:06:21,788
+So, in one line: catch termination risk before the meeting, and let humans make every call.
+
+58
+00:06:22,088 --> 00:06:26,572
+It is earlier — a liver signal on day nine, not day twenty-one.
+
+59
+00:06:26,872 --> 00:06:28,999
+It is three tiers on one screen.
+
+60
+00:06:29,299 --> 00:06:38,519
+It is governed by design — sensitive data on-device, validated tools owning the numbers, and the committees and project managers deciding.
+
+61
+00:06:38,819 --> 00:06:47,123
+And it fits the program: a phase-one pilot deliverable on the same hybrid stack — no new principle, just a new target.
+
+62
+00:06:47,423 --> 00:06:48,742
+Thanks for watching.

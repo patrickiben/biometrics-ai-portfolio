@@ -1,0 +1,1 @@
+Each panel rolls its signals up to a status — but that status is a prompt for a human, not a verdict the system reaches on its own.

@@ -1,0 +1,211 @@
+1
+00:00:00,000 --> 00:00:13,571
+This walks through a hybrid AI trial-operations layer — an agentic system, built on the Claude-plus-local stack, that handles the project management, trial management, and monitoring work across a study.
+
+2
+00:00:13,871 --> 00:00:25,977
+Seventy-five automations: recurrent QC checks, document and SOP ingestion, eTMF filing, Smartsheet timeline updates, and risk-based monitoring.
+
+3
+00:00:26,277 --> 00:00:36,124
+And one principle holds throughout: the AI drafts, triages, and routes; validated tools and humans own every regulated number and record.
+
+4
+00:00:37,124 --> 00:00:39,348
+Trial operations are fragmented.
+
+5
+00:00:39,648 --> 00:00:57,770
+The knowledge and the work are spread across the EDC, the eTMF, Smartsheet, Pinnacle 21, email, and a dozen SOPs — and the team spends its time on manual QC triage, document filing, status decks, and chasing action items.
+
+6
+00:00:58,070 --> 00:01:07,349
+It is exactly the kind of repetitive, cross-system busywork that an AI layer can absorb — if, and only if, it is governed properly.
+
+7
+00:01:08,349 --> 00:01:11,355
+So we point the hybrid stack at operations.
+
+8
+00:01:11,655 --> 00:01:19,511
+Seventy-five governed agents, each one routed by data sensitivity, tiered by risk, and gated by a human.
+
+9
+00:01:19,811 --> 00:01:35,112
+The AI reads your systems, reasons over de-identified text on Claude or sensitive data on the local model, and proposes a change — but nothing regulated moves until a person approves it, with a full Part 11 audit trail.
+
+10
+00:01:36,112 --> 00:01:37,601
+Here is how it is wired.
+
+11
+00:01:37,901 --> 00:01:41,851
+An orchestrator fires agents on a schedule or on study events.
+
+12
+00:01:42,151 --> 00:01:52,939
+Every agent calls one gateway, which routes by data classification, runs the Presidio guardrail that blocks patient data from the cloud, and logs everything.
+
+13
+00:01:53,239 --> 00:02:04,339
+Behind it sit three things: the local model for sensitive data, the Claude API for de-identified reasoning, and a RAG knowledge base of your SOPs and study docs.
+
+14
+00:02:04,639 --> 00:02:07,419
+Connectors expose your systems as tools.
+
+15
+00:02:07,719 --> 00:02:12,528
+And every regulated change lands in a human-approval queue before it is written.
+
+16
+00:02:13,528 --> 00:02:15,431
+The governance is the whole point.
+
+17
+00:02:15,731 --> 00:02:34,279
+Three tiers: green for drafts and cited answers; amber for triage and proposed changes with a human verify; red for anything touching a reported number, a record of truth, or unblinded data — where a validated tool and a human decide, and the model is out of the path.
+
+18
+00:02:34,579 --> 00:02:46,568
+Three hard rules: patient data never leaves the local model; every reported number comes from a validated tool; and a human approves every change to a regulated record or timeline.
+
+19
+00:02:47,568 --> 00:02:49,154
+Take project management.
+
+20
+00:02:49,454 --> 00:03:03,875
+When a data cut is declared, an agent recomputes the critical path in Smartsheet, sees what is now driving the finish date, drafts the you-are-now-blocked notifications, and posts the recomputed plan to the approval queue.
+
+21
+00:03:04,175 --> 00:03:12,696
+Smartsheet's engine does the math; the AI explains and proposes; the project manager approves before any committed date is written.
+
+22
+00:03:12,996 --> 00:03:17,271
+And the weekly status report drafts itself from the plan of record.
+
+23
+00:03:18,271 --> 00:03:31,113
+On documents: agents auto-classify incoming files to the TMF Reference Model, flag missing or expiring documents, and propose filings, which the document controller approves.
+
+24
+00:03:31,413 --> 00:03:45,417
+And every approved SOP and work instruction is ingested into the knowledge base — so anyone can ask, what does our SOP require for a derived-variable spec, and get the exact clause, cited.
+
+25
+00:03:46,417 --> 00:03:51,432
+This is the marquee one — recurrent data-validity QC at every stage.
+
+26
+00:03:51,731 --> 00:03:59,284
+Each night, after a new dataset build, Pinnacle 21 produces the authoritative conformance findings.
+
+27
+00:03:59,584 --> 00:04:12,598
+The local agent then clusters them, diffs against the last clean run to surface only what is genuinely new, drafts a disposition grounded in the reviewer guides, and routes each one to the right programmer.
+
+28
+00:04:12,898 --> 00:04:14,700
+It never changes a verdict.
+
+29
+00:04:15,000 --> 00:04:20,273
+A four-hour manual triage becomes a clean, pre-explained queue at eight a.m.
+
+30
+00:04:21,273 --> 00:04:42,256
+For monitoring, under ICH E6(R3) risk-based quality management: agents watch the key risk indicators and quality tolerance limits, detect breaches and central-monitoring signals like site outliers or enrollment anomalies, surveil protocol deviations, and assemble the DSMB packet.
+
+31
+00:04:42,556 --> 00:04:49,802
+Unblinded signals run on the local model; the reported safety numbers come from validated tools with medical review.
+
+32
+00:04:50,802 --> 00:04:54,961
+Every agent follows the same loop, and it is worth seeing once.
+
+33
+00:04:55,261 --> 00:05:17,578
+A trigger fires; the agent gathers context from your systems and the cited knowledge base; it classifies the data and routes to local or cloud; it drafts, triages, or summarizes; it proposes the change to the human queue with its rationale and sources; and only on approval is anything written to the system of record — all of it logged.
+
+34
+00:05:17,878 --> 00:05:22,820
+That loop is what makes seventy-five different automations safe and consistent.
+
+35
+00:05:23,820 --> 00:05:26,792
+You build it in stages, and you start small.
+
+36
+00:05:27,092 --> 00:05:34,739
+Phase zero is the stack — gateway, local model, Claude under a BAA, the guardrail and the approval queue.
+
+37
+00:05:35,039 --> 00:05:44,892
+Phase one is the knowledge base — ingest the SOPs and ship the compliance Q&A agent first; it is pure green, cited, and instantly useful.
+
+38
+00:05:45,192 --> 00:05:50,656
+Phase two adds read-only connectors and the nightly QC-triage and weekly status agents.
+
+39
+00:05:50,956 --> 00:05:55,562
+Phase three turns on the event-driven automations and the monitoring signals.
+
+40
+00:05:55,862 --> 00:05:59,346
+Each agent earns lighter review as it builds a track record.
+
+41
+00:06:00,346 --> 00:06:02,543
+A day in the layer: at two a.m.
+
+42
+00:06:02,843 --> 00:06:09,320
+the QC agent surfaces three genuinely new findings among two hundred forty and pre-triages the rest.
+
+43
+00:06:09,620 --> 00:06:14,452
+At ten-thirty a data cut fires and the timeline cascade updates in minutes.
+
+44
+00:06:14,752 --> 00:06:15,892
+At one p.m.
+
+45
+00:06:16,192 --> 00:06:20,315
+a key risk indicator breaches and the signal is drafted for the monitor.
+
+46
+00:06:20,615 --> 00:06:29,987
+At three, a programmer gets an SOP answer, cited, in seconds, and three documents are filed to the eTMF on approval.
+
+47
+00:06:30,287 --> 00:06:34,190
+At four, the weekly status report drafts itself.
+
+48
+00:06:34,490 --> 00:06:43,142
+Every regulated number came from a validated system; no patient data left the building; a human approved every committed change.
+
+49
+00:06:44,142 --> 00:06:46,195
+So that is the operations layer.
+
+50
+00:06:46,495 --> 00:06:56,909
+Seventy-five governed automations on the hybrid stack, absorbing the cross-system busywork while validated tools and humans keep ownership of everything that is regulated.
+
+51
+00:06:57,209 --> 00:07:05,219
+Start with the knowledge base and the SOP agent, keep everything behind the approval queue, and expand as trust grows.
+
+52
+00:07:05,519 --> 00:07:15,212
+The full catalog — every automation, its engine, its integration, and its human checkpoint — is in the operating wiki alongside this.
+
+53
+00:07:15,512 --> 00:07:16,367
+Thank you.

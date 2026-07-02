@@ -1,0 +1,53 @@
+{
+ "title": "A Morning of On-Device Triage — Study CP-101",
+ "beats": [
+  {
+   "n": 1,
+   "title": "The loop: numbers from SAS/R, words from a small local model",
+   "caption": "One overnight cycle on Study CP-101: a scheduled SAS/R job does every deterministic check; a small on-device model only labels, classifies, and drafts; the biostatistician approves before anything is written.",
+   "narration": "This is one overnight cycle on Study CP-101, a Phase 1 clin-pharm study. A scheduled SAS or R job runs the deterministic checks and Pinnacle 21 produces the conformance findings, exactly as they do today. The only thing that is new is a small open-weight model running locally on the workstation, called by the job to handle the language layer — labeling each finding, sorting it into a queue, and drafting a candidate query. SAS/R owns every number; the model only helps with words; and a human approves before anything touches a record of truth."
+  },
+  {
+   "n": 2,
+   "title": "The offline setup: workstation, Ollama, one pinned model",
+   "caption": "An ordinary validated workstation runs Ollama serving a pinned, quantized 7B model on 127.0.0.1. No GPU farm, no cloud account, no telemetry — the box is offline and the network cable is unplugged.",
+   "narration": "The setup is deliberately boring. An ordinary workstation you already own runs Ollama, serving one quantized model — say Qwen2.5 7B at Q4_K_M, Apache-2.0 licensed — on the loopback address 127.0.0.1. The model name, quantization, and digest are pinned and registered, decoding is fixed at temperature zero with a set seed, so the same input gives the same output every run. The box stays offline: there is no cloud account, no telemetry, and the network cable is unplugged — the data-egress story is simply that nothing can leave."
+  },
+  {
+   "n": 3,
+   "title": "SAS/R runs the deterministic checks — the counts are SAS/R's",
+   "caption": "Overnight the scheduled job runs the Pinnacle 21 CDISC conformance run plus the study's own edit checks and reconciliation; it produces 214 findings, every count and rule owned by validated code, not the model.",
+   "narration": "Overnight, the scheduled job runs the validated work. Pinnacle 21 executes the CDISC conformance run over SDTM and Define-XML, and the study's own SAS or R programs run the cross-form edit checks, the PK timing and BLQ rules, and the lab and IXRS reconciliation. This morning it produces two hundred fourteen findings. Every one of those counts, comparisons, and rule evaluations came from validated, double-programmed code — the small model has not been called yet and will never compute a number."
+  },
+  {
+   "n": 4,
+   "title": "SAS/R calls the local model to triage — JSON out, nothing else",
+   "caption": "Via PROC HTTP / httr2 to 127.0.0.1, SAS/R sends each finding's short text to the model for three narrow decisions — new-vs-known, type/severity, owner/queue — returned as schema-constrained JSON.",
+   "narration": "Now SAS/R calls the local model, one finding at a time, using PROC HTTP or httr2 to the loopback endpoint. For each short finding it asks three narrow, in-envelope questions: is this new or a known recurring issue, what type and severity bucket does it fall in, and which owner or queue should it route to. The model must answer as JSON constrained to a fixed schema with allowed values only — no free prose, no numbers. This is short-text classification and routing, squarely in what a small quantized model can do reliably."
+  },
+  {
+   "n": 5,
+   "title": "Validator + RAG-grounded draft — the safety net around the model",
+   "caption": "SAS/R checks every returned field against an allowlist and drops anything malformed; for valid findings the model drafts a candidate query grounded by RAG over the study's own specs, marked DRAFT and unsent.",
+   "narration": "Before trusting a single word, the SAS/R validator parses the JSON and checks every field against the allowed enum — any malformed or out-of-vocabulary answer is dropped and logged, never guessed. For findings that pass, the model drafts a one-line candidate query, but only grounded by retrieval over the study's own specifications and edit-check definitions, so the wording stays anchored to real source text. Every draft is labeled DRAFT and is unsent; SAS/R then assembles the survivors into a single ranked worklist, ordered by severity and aging."
+  },
+  {
+   "n": 6,
+   "title": "The human gate: the biostatistician approves each draft",
+   "caption": "The biostatistician works the ranked worklist, sees each finding's SAS/R facts beside the model's suggested label and draft text, and approves, edits, or rejects — nothing proceeds without a human decision.",
+   "narration": "At the workstation the biostatistician opens the ranked worklist. Each row shows the deterministic facts from SAS/R — the rule, the records, the counts — next to the model's suggested label and its draft query text. The reviewer approves, edits, or rejects each one; a wrong label is a two-second fix, not a silent error. Nothing the model produced becomes real until a qualified human has signed off on it."
+  },
+  {
+   "n": 7,
+   "title": "Write + Part 11 audit, with the model digest pinned",
+   "caption": "Only after approval does SAS/R write the queries and an audit line per item — prompt, model name, quantization, and digest, the draft, and the human decision — proving offline by the unplugged cable.",
+   "narration": "Only the approved items get written. SAS/R issues the queries to the EDC and writes a 21 CFR Part 11 audit line for each one, recording the prompt, the pinned model name, quantization and digest, the draft text, and who approved it and when. Because the model is frozen and decoding is fixed, that audit line is a re-runnable artifact an inspector can reproduce. And the offline guarantee is physical, not a policy promise — the cable is unplugged, so the only thing that ever left the box was a query you approved into your own EDC."
+  },
+  {
+   "n": 8,
+   "title": "Who did what: SAS/R, the model, and the human",
+   "caption": "The morning's split: SAS/R and Pinnacle 21 owned all data, checks, counts, validation, writes, and the audit; the model only labeled and drafted; the biostatistician approved — a clean, narrow, on-device win.",
+   "narration": "Step back and the division of labor is clean. SAS/R and Pinnacle 21 owned the data, every check and count, the validator, every write, and the audit trail. The small local model did one narrow language job — sorting findings and drafting candidate words — and it never touched a number or a record on its own. The biostatistician made every decision that mattered. That is the honest shape of an on-device win: the model saved triage time on a narrow, validated task, and the truth stayed exactly where it always was."
+  }
+ ]
+}

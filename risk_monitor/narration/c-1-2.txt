@@ -1,0 +1,1 @@
+It runs on a hybrid of cloud Claude (under a B-A-A) and on-device local models.

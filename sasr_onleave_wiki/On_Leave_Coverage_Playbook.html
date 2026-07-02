@@ -1,0 +1,332 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Coverage While On Leave — SAS/R Playbook</title><style>
+:root{--indigo:#8B86F0;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--amber:#D9A94F;--terra:#E0857A;--sas:#6FA0DC;--bg:#0E1124}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
+#wrap{display:flex;min-height:100vh}#side{width:272px;flex:0 0 272px;background:#15183A;color:#fff;border-right:1px solid #2a2f52;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #2c2f55;margin-bottom:10px}#side .brand b{font-family:Georgia,serif;font-size:15px}#side .brand span{display:block;color:#aeb4e0;font-size:11px;margin-top:4px}
+#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #3a3e72;background:#1d2150;color:#fff;font-size:13px}
+#side a{display:block;color:#cfd3f3;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}#side a:hover{background:#1d2150}#side a.active{color:#fff;border-left-color:#8b86f0;background:#1d2150;font-weight:600}
+#main{flex:1;max-width:980px;margin:0 auto;padding:34px 48px 80px}section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.3}to{opacity:1}}
+h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}h2{font-family:Georgia,serif;color:#A9A4F5;font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:16.5px;color:#C3CCE4}p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
+code{background:#20284a;color:#A9C6F2;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
+pre.prompt{background:#080A18;color:#e6e8ff;padding:14px 16px;border-radius:10px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;border:1px solid var(--line);border-left:4px solid var(--sas);white-space:pre-wrap}
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:14px}th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}th{background:#15183A;color:#fff;font-weight:600}tr:nth-child(even) td{background:var(--panel)}
+.callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}.callout.warn{background:#2A1614;border-left:4px solid var(--terra)}.callout.tip{background:#0F262A;border-left:4px solid var(--teal)}
+.muted{color:var(--muted);font-size:13px}.footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}a{color:var(--indigo)}
+.dl{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}.btn{display:inline-block;background:var(--sas);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px}.btn.ghost{background:transparent;color:var(--sas);border:1.5px solid var(--sas)}.btn:hover{opacity:.92}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}.shots figure{margin:0}.shots img{width:100%;border:1px solid var(--line);border-radius:10px;box-shadow:0 3px 12px rgba(20,20,40,.10);display:block}.shots figcaption{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
+
+
+@media (prefers-reduced-motion:reduce){section.show{animation:none}}
+@media print{#side,#search,.a11y,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
+figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid #272D4D;border-radius:10px}figure.diagram figcaption{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.5}figure.diagram figcaption b{color:#C9D2E8}
+</style></head><body><a href="#main" class="skip">Skip to content</a><div id="wrap"><nav id="side" aria-label="Playbook sections"><div class="brand"><b>On-Leave Coverage</b><span>SAS/R monitoring playbook</span></div><label for="search" class="vh">Search the playbook</label><input id="search" type="search" placeholder="Search..." autocomplete="off"><a href="#start" data-t="start">Start here</a>
+<a href="#setup" data-t="setup">Before you leave</a>
+<a href="#watch" data-t="watch">&#9654; Watch it work</a>
+<a href="#transcript" data-t="transcript">Transcript</a>
+<a href="#runbook" data-t="runbook">Coverage runbook</a>
+<a href="#macros" data-t="macros">Macro library</a>
+<a href="#safeguards" data-t="safeguards">&#9888; Won't fail silently</a>
+<a href="#gov" data-t="gov">Governance &amp; limits</a>
+<a href="#faq" data-t="faq">FAQ</a></nav><main id="main" tabindex="-1"><section id="start" aria-label="Start here">
+    <h1>Coverage while on leave &mdash; a SAS/R playbook</h1>
+    <p class="lede">Going on leave for a month? This playbook sets up <strong>deterministic, automated trial monitoring in SAS and/or R</strong> so monitoring never stops, the covering colleague gets the right updates, escalation is automatic, and your manager has <strong>peace of mind</strong> &mdash; with <strong>no AI, no new tools, and no PHI egress</strong>, all inside the existing validated environment.</p>
+    <div class="callout warn"><strong>The honest framing.</strong> This <strong>detects, packages, and emails</strong> pre-specified deterministic flags &mdash; counts, thresholds, deltas, run failures &mdash; to a human, reproducibly. It does <strong>not</strong> triage, interpret, or judge. A flag is a prompt for a human; the medical monitor and the covering biostatistician make every call. Necessary, not sufficient &mdash; and that is the point: it&rsquo;s the layer you can ship <em>today</em>.</div>
+    
+    <figure class="diagram"><svg viewBox="0 0 900 320" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'Segoe UI',Arial,sans-serif">
+  <title>On-leave coverage pipeline: deterministic scheduled SAS/R from scheduler to email digest, branching to Tier-2 alert and heartbeat.</title>
+  <defs>
+    <marker id="ar1" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#6FA0DC"/></marker>
+    <marker id="ar1r" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#E0857A"/></marker>
+    <marker id="ar1g" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C07E"/></marker>
+  </defs>
+  <rect x="0" y="0" width="900" height="320" fill="#0E1124"/>
+  <text x="24" y="34" fill="#E7ECF8" font-size="15" font-weight="600">Coverage pipeline</text>
+  <text x="876" y="34" fill="#9AA6C8" font-size="12" text-anchor="end">Deterministic · no AI · humans decide</text>
+  <rect x="24" y="70" width="128" height="64" rx="9" fill="#181D38" stroke="#272D4D"/>
+  <text x="88" y="96" fill="#E7ECF8" font-size="12.5" font-weight="600" text-anchor="middle">Scheduler</text>
+  <text x="88" y="114" fill="#9AA6C8" font-size="10.5" text-anchor="middle">cron / Task Sched.</text>
+  <rect x="178" y="70" width="118" height="64" rx="9" fill="#181D38" stroke="#272D4D"/>
+  <text x="237" y="96" fill="#E7ECF8" font-size="12.5" font-weight="600" text-anchor="middle">Ingest</text>
+  <text x="237" y="114" fill="#9AA6C8" font-size="10.5" text-anchor="middle">latest data</text>
+  <rect x="322" y="64" width="132" height="76" rx="10" fill="#20264a" stroke="#D9A94F" stroke-width="2"/>
+  <text x="388" y="92" fill="#D9A94F" font-size="12.5" font-weight="700" text-anchor="middle">FRESHNESS GATE</text>
+  <text x="388" y="110" fill="#9AA6C8" font-size="10" text-anchor="middle">stale never looks</text>
+  <text x="388" y="124" fill="#9AA6C8" font-size="10" text-anchor="middle">fresh</text>
+  <rect x="480" y="70" width="132" height="64" rx="9" fill="#181D38" stroke="#272D4D"/>
+  <text x="546" y="92" fill="#E7ECF8" font-size="12" font-weight="600" text-anchor="middle">Safety + ops</text>
+  <text x="546" y="108" fill="#E7ECF8" font-size="12" font-weight="600" text-anchor="middle">checks</text>
+  <text x="546" y="124" fill="#9AA6C8" font-size="10" text-anchor="middle">pre-specified</text>
+  <rect x="638" y="70" width="118" height="64" rx="9" fill="#181D38" stroke="#8B86F0"/>
+  <text x="697" y="96" fill="#E7ECF8" font-size="12.5" font-weight="600" text-anchor="middle">Severity</text>
+  <text x="697" y="114" fill="#8B86F0" font-size="11" text-anchor="middle">roll-up</text>
+  <rect x="782" y="70" width="94" height="64" rx="9" fill="#181D38" stroke="#6FA0DC"/>
+  <text x="829" y="96" fill="#E7ECF8" font-size="12" font-weight="600" text-anchor="middle">Email</text>
+  <text x="829" y="114" fill="#6FA0DC" font-size="11" text-anchor="middle">digest</text>
+  <line x1="152" y1="102" x2="174" y2="102" stroke="#6FA0DC" stroke-width="2" marker-end="url(#ar1)"/>
+  <line x1="296" y1="102" x2="318" y2="102" stroke="#6FA0DC" stroke-width="2" marker-end="url(#ar1)"/>
+  <line x1="454" y1="102" x2="476" y2="102" stroke="#6FA0DC" stroke-width="2" marker-end="url(#ar1)"/>
+  <line x1="612" y1="102" x2="634" y2="102" stroke="#6FA0DC" stroke-width="2" marker-end="url(#ar1)"/>
+  <line x1="756" y1="102" x2="778" y2="102" stroke="#6FA0DC" stroke-width="2" marker-end="url(#ar1)"/>
+  <path d="M697 134 L697 200 L582 200" fill="none" stroke="#E0857A" stroke-width="2" marker-end="url(#ar1r)"/>
+  <rect x="430" y="178" width="148" height="44" rx="9" fill="#181D38" stroke="#E0857A"/>
+  <circle cx="452" cy="200" r="5" fill="#E0857A"/>
+  <text x="466" y="196" fill="#E0857A" font-size="11.5" font-weight="600">Tier-2 alert</text>
+  <text x="466" y="211" fill="#9AA6C8" font-size="10.5">on any RED</text>
+  <path d="M829 134 L829 252 L716 252" fill="none" stroke="#35C07E" stroke-width="2" marker-end="url(#ar1g)"/>
+  <rect x="564" y="230" width="148" height="44" rx="9" fill="#181D38" stroke="#35C07E"/>
+  <circle cx="586" cy="252" r="5" fill="#35C07E"/>
+  <text x="600" y="248" fill="#35C07E" font-size="11.5" font-weight="600">Heartbeat written</text>
+  <text x="600" y="263" fill="#9AA6C8" font-size="10.5">proves the job ran</text>
+</svg><figcaption><b>The whole loop, deterministic and no-AI.</b> The freshness gate runs <em>first</em>, so a clean green on stale data can never slip through; any RED branches to the urgent tier; and every run writes a heartbeat, so silence is never assumed.</figcaption></figure>
+    <div class="callout warn" style="border-left-color:#8B86F0"><b>Accountability does not go on leave.</b> The automation covers the <em>vigilance and the logistics</em> &mdash; running the checks on schedule, paging the right people, packaging the evidence &mdash; but it never covers the <em>decision</em>. The covering biostatistician and the medical monitor own every call; this only makes sure the signal reaches them.</div>
+    <h2>What this playbook gives you</h2>
+    <ol>
+      <li>A <strong>pre-departure checklist</strong> &mdash; schedule the already-validated programs under a service account.</li>
+      <li>A <strong>two-tier notification</strong> design &mdash; a daily digest + an urgent threshold alert &mdash; with a heartbeat so silence is never assumed.</li>
+      <li>A ready <strong>macro library</strong> (<code>tm_macros.sas</code> + a driver, and an R companion) for maximum ease of automation.</li>
+      <li>A <strong>coverage runbook</strong> to hand the covering biostatistician and your manager.</li>
+    </ol>
+    <p>See it run for a full month in <a href="#watch">Watch it work</a>.</p>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="setup" aria-label="Before you leave">
+    <h1>Before you leave &mdash; the pre-departure checklist</h1>
+    <p>You don&rsquo;t write new code &mdash; you <b>schedule</b> the monitoring programs that already run on demand.</p>
+    <figure class="diagram"><svg viewBox="0 0 900 300" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'Segoe UI',Arial,sans-serif">
+  <title>Weekly schedule timeline: recurring daily jobs, a Friday weekly roll-up, and event-driven alert and watchdog checks.</title>
+  <rect x="0" y="0" width="900" height="300" fill="#0E1124"/>
+  <text x="24" y="34" fill="#E7ECF8" font-size="15" font-weight="600">Schedule</text>
+  <rect x="556" y="22" width="11" height="11" rx="2.5" fill="#3FB6C2"/>
+  <text x="572" y="32" fill="#9AA6C8" font-size="10.5">Daily routine</text>
+  <rect x="660" y="22" width="11" height="11" rx="2.5" fill="#6FA0DC"/>
+  <text x="676" y="32" fill="#9AA6C8" font-size="10.5">Weekly</text>
+  <rect x="738" y="22" width="11" height="11" rx="2.5" fill="#E0857A"/>
+  <text x="754" y="32" fill="#9AA6C8" font-size="10.5">Alert</text>
+  <rect x="804" y="22" width="11" height="11" rx="2.5" fill="#D9A94F"/>
+  <text x="820" y="32" fill="#9AA6C8" font-size="10.5">Watchdog</text>
+  <line x1="48" y1="150" x2="852" y2="150" stroke="#272D4D" stroke-width="2"/>
+  <text x="48" y="178" fill="#9AA6C8" font-size="10.5" text-anchor="middle">Mon 00:00</text>
+  <text x="852" y="178" fill="#9AA6C8" font-size="10.5" text-anchor="middle">Fri end</text>
+  <line x1="150" y1="150" x2="150" y2="108" stroke="#3FB6C2" stroke-width="2"/>
+  <circle cx="150" cy="150" r="6" fill="#3FB6C2"/>
+  <rect x="78" y="64" width="144" height="44" rx="8" fill="#181D38" stroke="#3FB6C2"/>
+  <text x="150" y="82" fill="#3FB6C2" font-size="11.5" font-weight="700" text-anchor="middle">02:00</text>
+  <text x="150" y="98" fill="#E7ECF8" font-size="10.5" text-anchor="middle">Refresh + freshness gate</text>
+  <line x1="270" y1="150" x2="270" y2="200" stroke="#3FB6C2" stroke-width="2"/>
+  <circle cx="270" cy="150" r="6" fill="#3FB6C2"/>
+  <rect x="206" y="200" width="128" height="44" rx="8" fill="#181D38" stroke="#3FB6C2"/>
+  <text x="270" y="218" fill="#3FB6C2" font-size="11.5" font-weight="700" text-anchor="middle">06:00</text>
+  <text x="270" y="234" fill="#E7ECF8" font-size="10.5" text-anchor="middle">Safety scan</text>
+  <line x1="350" y1="150" x2="350" y2="108" stroke="#3FB6C2" stroke-width="2"/>
+  <circle cx="350" cy="150" r="6" fill="#3FB6C2"/>
+  <rect x="288" y="64" width="124" height="44" rx="8" fill="#181D38" stroke="#3FB6C2"/>
+  <text x="350" y="82" fill="#3FB6C2" font-size="11.5" font-weight="700" text-anchor="middle">07:00</text>
+  <text x="350" y="98" fill="#E7ECF8" font-size="10.5" text-anchor="middle">Digest sent</text>
+  <path d="M150 256 L150 264 L350 264 L350 256" fill="none" stroke="#272D4D" stroke-width="1.5"/>
+  <text x="250" y="280" fill="#9AA6C8" font-size="10.5" text-anchor="middle" font-style="italic">repeats every weekday</text>
+  <line x1="620" y1="150" x2="620" y2="100" stroke="#6FA0DC" stroke-width="2.5"/>
+  <circle cx="620" cy="150" r="7" fill="#6FA0DC"/>
+  <rect x="540" y="56" width="160" height="44" rx="8" fill="#20264a" stroke="#6FA0DC" stroke-width="2"/>
+  <text x="620" y="74" fill="#6FA0DC" font-size="11.5" font-weight="700" text-anchor="middle">Fri 16:00</text>
+  <text x="620" y="90" fill="#E7ECF8" font-size="10.5" text-anchor="middle">Weekly roll-up + one-pager</text>
+  <line x1="740" y1="150" x2="740" y2="200" stroke="#E0857A" stroke-width="2.5"/>
+  <polygon points="740,142 748,156 732,156" fill="#E0857A"/>
+  <rect x="668" y="200" width="144" height="44" rx="8" fill="#181D38" stroke="#E0857A"/>
+  <text x="740" y="218" fill="#E0857A" font-size="11" font-weight="700" text-anchor="middle">on-event</text>
+  <text x="740" y="234" fill="#E7ECF8" font-size="10.5" text-anchor="middle">Tier-2 alert</text>
+  <line x1="800" y1="150" x2="800" y2="100" stroke="#D9A94F" stroke-width="2.5"/>
+  <polygon points="800,142 808,156 792,156" fill="#D9A94F"/>
+  <rect x="724" y="100" width="152" height="44" rx="8" fill="#181D38" stroke="#D9A94F"/>
+  <text x="800" y="118" fill="#D9A94F" font-size="11" font-weight="700" text-anchor="middle">+15 min</text>
+  <text x="800" y="134" fill="#E7ECF8" font-size="10.5" text-anchor="middle">watchdog checks heartbeat</text>
+</svg><figcaption><b>The unattended week at a glance</b> &mdash; the daily routine jobs, the Friday manager roll-up, and the two event-driven safeguards: the alert, and the watchdog that checks the heartbeat 15 minutes later.</figcaption></figure>
+    <table>
+      <tr><th>&#10003;</th><th>Item</th><th>Why</th></tr>
+      <tr><td>&#9633;</td><td>Run everything under a <b>service / functional account</b> (e.g. <code>SVC-BIOSTAT</code>) &mdash; not your personal login.</td><td>Your credentials/VPN go idle on leave; a personal-owned job dies the moment they do. <b>The #1 silent-failure cause.</b></td></tr>
+      <tr><td>&#9633;</td><td>Confirm the service account has the <b>SAS licence, share access, and SMTP relay rights</b>.</td><td>Verify before you go, not after a missed run.</td></tr>
+      <tr><td>&#9633;</td><td>Schedule the jobs (Task Scheduler / cron): <b>02:00</b> refresh+freshness, <b>06:00</b> safety scan, <b>07:00</b> digest, <b>Fri 16:00</b> weekly + manager one-pager, <b>on-event</b> alert.</td><td>Moves them from &ldquo;run when I remember&rdquo; to &ldquo;run on a clock.&rdquo;</td></tr>
+      <tr><td>&#9633;</td><td>Set <b>thresholds</b> (KRIs/QTLs/DLT/Hy&rsquo;s-Law/QTcF) to the protocol&rsquo;s pre-specified values.</td><td>Deterministic flags must be pre-specified to stay defensible.</td></tr>
+      <tr><td>&#9633;</td><td>Set <b>recipients</b>: primary + <b>backup</b> + a role alias; the medical monitor&rsquo;s name/number; the PM; cc your inbox for the return.</td><td>So a 6 a.m. alert never depends on one inbox.</td></tr>
+      <tr><td>&#9633;</td><td>Hand over the <a href="#runbook"><b>coverage runbook</b></a> (PDF) to the covering biostatistician, cc the manager.</td><td>Plain-language GREEN/AMBER/RED, who does what, the honest limit.</td></tr>
+      <tr><td>&#9633;</td><td>Do a <b>dry run</b> the week before; confirm the heartbeat and a test alert arrive.</td><td>Prove the whole loop fires before you&rsquo;re unreachable.</td></tr>
+    </table>
+    <div class="callout warn"><b>One rule when you set thresholds:</b> use the protocol&rsquo;s pre-specified values &mdash; and <b>never widen a safety threshold just to silence a noisy page</b>. If an alert fires too often, fix the check or the routing, not the safety bar.</div>
+    <h2>When you return &mdash; the hand-back</h2>
+    <p>Re-entry is a checklist too, not a glance at the inbox.</p>
+    <table>
+      <tr><th>&#10003;</th><th>On return</th></tr>
+      <tr><td>&#9633;</td><td>Read the <b>escalation log</b> end to end &mdash; confirm every AMBER/RED and exactly how it resolved.</td></tr>
+      <tr><td>&#9633;</td><td>Check the <b>heartbeat history</b> &mdash; every run accounted for, and any gap explained, not silently missed.</td></tr>
+      <tr><td>&#9633;</td><td>Re-assign <code>backup=</code> from the cover <b>back to you</b>; restore the recipient list.</td></tr>
+      <tr><td>&#9633;</td><td><b>Close out</b> any open AMBER/RED items with the PM and the medical monitor.</td></tr>
+      <tr><td>&#9633;</td><td><b>Debrief the covering biostatistician</b> &mdash; note anything to tune (thresholds, routing) for next time.</td></tr>
+    </table>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="watch" aria-label="Watch it work">
+    <h1>Watch it work &mdash; a month on Study CP-101</h1>
+    <p class="lede">The deterministic system keeping Phase&nbsp;1 monitoring alive and self-escalating for a month while the lead is unreachable in Europe.</p>
+    <div class="dl">
+      <a class="btn" href="SAS_R_OnLeave_Screencast_narrated.mp4">&#9654;&nbsp; Watch the live screencast &mdash; a morning of coverage, on screen (~2 min)</a>
+      <a class="btn ghost" href="OnLeave_Walkthrough.mp4">&#9654;&nbsp; Annotated walkthrough (~5 min)</a>
+      <a class="btn ghost" href="OnLeave_StepGuide.pdf">&#10515;&nbsp; Step-by-step picture guide (PDF)</a>
+      <a class="btn ghost" href="OnLeave_Coverage_Runbook.pdf">&#10515;&nbsp; The coverage runbook (PDF)</a>
+    </div>
+    <div class="shots">
+      <figure><img src="example_img/beat1.png" alt="Setup"><figcaption><b>Beat 0 &middot; Before leaving</b> &mdash; schedule the validated programs under a service account; hand over the runbook.</figcaption></figure>
+      <figure><img src="example_img/beat2.png" alt="Week 1"><figcaption><b>Week 1 &middot; GREEN</b> &mdash; the daily digest is all-clear, and the <b>heartbeat</b> proves the job ran on fresh data.</figcaption></figure>
+      <figure><img src="example_img/beat3.png" alt="Week 2"><figcaption><b>Week 2 &middot; AMBER</b> &mdash; an enrollment KRI dips; it stays in the routine channel; the manager just sees it was handled.</figcaption></figure>
+      <figure><img src="example_img/beat4.png" alt="Week 3 RED"><figcaption><b>Week 3 &middot; RED</b> &mdash; a candidate Hy&rsquo;s-Law pattern trips the urgent tier &mdash; to primary + backup + alias, with the medical monitor&rsquo;s number and the evidence attached.</figcaption></figure>
+      <figure><img src="example_img/beat5.png" alt="Evidence"><figcaption><b>Week 3 &middot; the evidence is pre-packaged</b> &mdash; eDISH plot, lab trajectory, the exact rule that fired; the escalation log is time-stamped. <b>Detect, page, package &mdash; humans decide.</b></figcaption></figure>
+      <figure><img src="example_img/beat6.png" alt="Mockup of a monitoring archive file listing: dated run logs, daily and weekly digests, the AMBER and RED alert PDFs, the evidence packet, and a heartbeat history — a complete time-stamped audit trail."><figcaption><b>Week 4 &middot; the lead returns</b> &mdash; a complete, time-stamped, reproducible audit trail. Nothing to reconstruct.</figcaption></figure>
+    </div>
+    <p class="muted">Prefer text? The full narration is on the <a href="#transcript">Transcript</a> page; the video is captioned, and the PDF of this playbook contains every section in reading order.</p>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="transcript" aria-label="Transcript">
+    <h1>Walkthrough transcript</h1>
+    <p class="lede">The complete narration of the &ldquo;Watch it work&rdquo; video, as readable text &mdash; an alternative to the video and a captioned reference.</p>
+    <h2>1. Intro</h2><p>Here's the third companion pipeline — the one you can ship today. It uses strictly SAS and R, no AI, to keep trial monitoring running while the lead biostatistician is away for a month. Let me walk through a real month on Study CP-101: how it's set up, what the covering colleague and the manager receive, and what happens when a real safety signal fires — all inside the existing validated environment.</p><h2>2. Before leaving — the setup</h2><p>Before leaving, the lead doesn't write new code — they schedule the monitoring programs that already run on demand. Five jobs: a nightly data refresh with a freshness check, a morning safety scan, a daily digest to the covering colleague, a weekly status pack plus a one-page summary for the manager, and an on-event threshold alert. It all runs under a service account that outlasts the lead's login. And a one-page coverage runbook goes to the support and the manager: what green, amber, and red mean, who does what, and the honest note that a flag is a number crossing a line — not an interpretation.</p><h2>3. Week 1 — the GREEN digest & heartbeat</h2><p>Week one is quiet. Every morning the covering colleague gets the digest — enrollment, new adverse events, liver and QT flags, the cohort DLT tally, queries — all green. The most important line is at the bottom: the heartbeat. It confirms the job ran, on data fresh as of this morning, with no errors. That's the trick to an unattended month: silence is never assumed. A missed job or a frozen feed announces itself, instead of hiding behind a green screen.</p><h2>4. Week 2 — the AMBER enrollment dip</h2><p>Week two, an operational signal. Enrollment slips below its KRI floor — seventy-six percent of plan, with a screen-failure cluster at one site. The digest renders that row amber. Notice where it goes: it stays in the routine channel. The covering colleague reviews it and raises a site action with the project manager — it does not cry wolf at the medical monitor. And the manager's Friday one-pager simply shows it was flagged and is being handled.</p><h2>5. Week 3 — the RED urgent alert</h2><p>Week three, a real safety signal. Overnight, a participant in the top dose cohort shows a candidate Hy's-Law lab pattern — ALT over three times the upper limit, and bilirubin over twice it. This trips the urgent tier, outside the digest, immediately — to the support, a backup, and a role alias, never just one person. The email carries the medical monitor's number, a thirty-minute acknowledgement requirement, and, crucially, it's honest that this is a screening flag that matches the lab criteria — not a diagnosis. The medical monitor adjudicates.</p><h2>6. Week 3 — the evidence & escalation</h2><p>And it doesn't just say something happened — it attaches the evidence, already assembled: the eDISH plot with the participant in the Hy's-Law quadrant, the lab trajectory, the dosing timeline, and the exact rule that fired. On the right is the escalation log, time-stamped automatically: the alert fired at six-oh-seven, was delivered, acknowledged within the SLA, reviewed by the medical monitor — who ordered repeat labs and held dosing — and by Sunday the signal didn't confirm and the cohort was released. The system did three deterministic things: detected, paged, packaged. Every clinical decision was the medical monitor's.</p><h2>7. Week 4 — the audit trail</h2><p>Week four, the lead is back. Waiting for them is a complete, time-stamped archive: every daily log, every digest with its heartbeat, the two notable alerts and how they resolved, the auto-built evidence packet, and a heartbeat history proving every run was accounted for. Because the whole system is deterministic and validated, there's nothing to reconstruct — no question of what an AI decided and why, no PHI egress to explain. The loop closed itself: flag, escalate, package, decide, stand down.</p><h2>8. The four safeguards</h2><p>The reason a manager can trust this is that it's designed so it can't fail silently. Four safeguards. A heartbeat with an independent watcher, so a dead job announces itself. A data-freshness gate that runs first, so a clean green on stale data — which is worse than red — gets caught. Alert de-duplication, so one real event alerts once instead of a storm that buries the next signal. And primary plus backup recipients with an acknowledgement requirement, so a six a.m. alert never lands in a void. The rule in the SOP: no news is never interpreted as good news.</p><h2>9. The bottom line</h2><p>So, the bottom line. This is the lowest-risk of the three pipelines — no AI, no new vendor, no PHI egress, no new validation surface — so there's no approval gate between today and go-live. It's deterministic and reproducible, so the audit trail is automatic. It detects, pages, and packages; the humans and the medical monitor still make every call. And it's necessary, not sufficient: the narrative-triage layer is exactly the seam the AI hybrid fills later. Ship this now; add AI on top when it's approved. The peace of mind is simple — monitoring never stops, even silence is verified, and every escalation is automatic and logged, while the lead is unreachable in Europe.</p>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="runbook" aria-label="Coverage runbook">
+    <h1>The coverage runbook</h1>
+    <p>The one page you hand the covering colleague (the <em>covering biostatistician</em>), cc the manager. <a href="OnLeave_Coverage_Runbook.pdf">Download the full runbook (PDF)</a>.</p>
+    <table>
+      <tr><th>Status</th><th>Means</th><th>Who does what</th></tr>
+      <tr><td><b style="color:#46C988">GREEN</b></td><td>All checks within limits.</td><td>No action. The heartbeat still confirms the run happened on fresh data.</td></tr>
+      <tr><td><b style="color:#D9A94F">AMBER</b></td><td>An operational/quality KRI crossed.</td><td>The covering biostatistician reviews &amp; acts (e.g. a site action with the PM). Stays in the routine channel.</td></tr>
+      <tr><td><b style="color:#E0857A">RED</b></td><td>A safety threshold (DLT/SAE/Hy&rsquo;s-Law/QTcF).</td><td>The covering biostatistician acknowledges &le;30 min, then <b>CONTACTS THE MEDICAL MONITOR</b>. Evidence packet attached.</td></tr>
+    </table>
+    <figure class="diagram"><svg viewBox="0 0 900 360" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'Segoe UI',Arial,sans-serif">
+  <title>Four-rung escalation ladder from all clear to no heartbeat.</title>
+  <defs>
+    <marker id="ar3" markerWidth="9" markerHeight="9" refX="6" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#9AA6C8"/></marker>
+  </defs>
+  <rect x="0" y="0" width="900" height="360" fill="#0E1124"/>
+  <text x="24" y="34" fill="#E7ECF8" font-size="15" font-weight="600">Escalation ladder</text>
+  <text x="876" y="34" fill="#9AA6C8" font-size="11.5" text-anchor="end">lowest &#8594; highest</text>
+  <rect x="24" y="280" width="852" height="56" rx="10" fill="#181D38" stroke="#35C07E"/>
+  <rect x="24" y="280" width="6" height="56" rx="3" fill="#35C07E"/>
+  <circle cx="58" cy="308" r="9" fill="#35C07E"/>
+  <text x="84" y="305" fill="#35C07E" font-size="13.5" font-weight="700">GREEN · All clear</text>
+  <text x="84" y="324" fill="#9AA6C8" font-size="11.5">No action &#8212; the daily heartbeat proves the job ran</text>
+  <rect x="24" y="200" width="852" height="56" rx="10" fill="#181D38" stroke="#D9A94F"/>
+  <rect x="24" y="200" width="6" height="56" rx="3" fill="#D9A94F"/>
+  <circle cx="58" cy="228" r="9" fill="#D9A94F"/>
+  <text x="84" y="225" fill="#D9A94F" font-size="13.5" font-weight="700">AMBER · Watch</text>
+  <text x="84" y="244" fill="#9AA6C8" font-size="11.5">Covering biostatistician acts &#8212; routine channel</text>
+  <rect x="24" y="116" width="852" height="60" rx="10" fill="#241A22" stroke="#E0857A" stroke-width="2"/>
+  <rect x="24" y="116" width="7" height="60" rx="3.5" fill="#E0857A"/>
+  <circle cx="58" cy="146" r="10" fill="#E0857A"/>
+  <text x="86" y="142" fill="#E0857A" font-size="14" font-weight="800">RED · Alert</text>
+  <text x="86" y="162" fill="#E7ECF8" font-size="11.5">Acknowledge in &#8804;30 min &#8594; medical monitor decides · evidence packet attached</text>
+  <rect x="24" y="32" width="852" height="60" rx="10" fill="#101220" stroke="#E0857A" stroke-width="2.5"/>
+  <rect x="24" y="32" width="7" height="60" rx="3.5" fill="#5A6080"/>
+  <circle cx="58" cy="62" r="10" fill="#0E1124" stroke="#9AA6C8" stroke-width="2"/>
+  <text x="86" y="58" fill="#E7ECF8" font-size="14" font-weight="800">SILENCE · No heartbeat</text>
+  <text x="86" y="78" fill="#9AA6C8" font-size="11.5">Independent watchdog escalates to RED and pages the backup</text>
+  <line x1="450" y1="280" x2="450" y2="258" stroke="#9AA6C8" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <line x1="450" y1="200" x2="450" y2="178" stroke="#9AA6C8" stroke-width="1.5" marker-end="url(#ar3)"/>
+  <line x1="450" y1="116" x2="450" y2="94" stroke="#9AA6C8" stroke-width="1.5" marker-end="url(#ar3)"/>
+</svg><figcaption><b>Four rungs.</b> GREEN is the heartbeat proving the run happened on fresh data; RED demands a 30-minute acknowledgement and the medical monitor; and SILENCE &mdash; no heartbeat at all &mdash; is itself escalated to RED.</figcaption></figure>
+    <div class="callout warn"><b>If you receive no email:</b> &ldquo;no news&rdquo; is <b>never</b> &ldquo;all clear.&rdquo; A successful run always sends a GREEN digest with a heartbeat. If the 07:00 digest doesn&rsquo;t arrive by 09:00, treat the system as <b>down</b> and notify IT / the backup. A silent system is a RED condition.</div>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="macros" aria-label="Macro library">
+    <h1>The macro library &mdash; maximum ease of automation</h1>
+    <p>A deterministic, no-AI SAS macro library (with an R companion) that implements the whole loop: <b>ingest &rarr; freshness gate &rarr; checks &rarr; roll-up &rarr; digest</b>, plus a tier-2 urgent alert and a heartbeat. Map the placeholder column names to your validated ADaM/SDTM specs.</p>
+    <div class="dl">
+      <a class="btn" href="tm_macros.sas">&#10515;&nbsp; tm_macros.sas (the library)</a>
+      <a class="btn ghost" href="monitor_driver.sas">&#10515;&nbsp; monitor_driver.sas (the daily job)</a>
+    </div>
+    <h2>Quick start</h2>
+    <pre class="prompt">%include "tm_macros.sas";
+%tm_init(study=CP101, root=/opt/trialmon/cp101, smtp=smtp.internal, statelib=.../state);
+%tm_freshness(feeds=adam.adlb adam.adeg adam.adae, maxage=26);   /* GATE first        */
+%tm_chk_hyslaw(in=adam.adlb_edish);   %tm_status(in=_tm_hyslaw); /* deterministic flag */
+%tm_chk_qtcf(in=adam.adeg);           %tm_status(in=_tm_qtcf);
+%tm_chk_enroll(in=adam.enroll, kri=0.80);
+%tm_digest(title=CP-101 Daily Safety Digest, sections=_tm_enroll _tm_qtcf _tm_hyslaw, to=&support);
+%tm_alert(in=_tm_red_new, to=&support, backup=&backup, alias=&alias,
+          mm_name=%str(Dr. Okafor), mm_phone=+1-555-0100, evidence=&packet);
+%tm_heartbeat(records=&n, watcher_to=&backup);</pre>
+    <h2>Schedule it (service account)</h2>
+    <pre class="prompt">:: Windows Task Scheduler
+schtasks /create /tn "CP101_monitor" /tr "run_monitor.bat" /sc DAILY /st 06:00 /ru SVC-BIOSTAT
+# Linux cron
+0 6 * * 1-5  /opt/jobs/run_monitor.sh    # sas -sysin monitor_driver.sas -batch</pre>
+    <p class="muted">The macros cover the safety checks (Hy&rsquo;s-Law/eDISH, QTcF, AE/SAE, DLT-vs-3+3, labs), operational checks (enrollment KRI, query aging, visits, IXRS reconciliation), the two-tier digest/alert, and the four safeguards (heartbeat, freshness gate, de-dup, primary+backup). See the README in the macro library for the full catalog.</p>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="safeguards" aria-label="Won't fail silently">
+    <h1>Why it won&rsquo;t fail silently</h1>
+    <div class="callout warn"><b>The SOP rule:</b> &ldquo;no news&rdquo; is <b>never</b> &ldquo;all clear.&rdquo; A successful, data-fresh run must say so explicitly; the absence of any message is itself escalated.</div>
+    <figure class="diagram"><svg viewBox="0 0 900 340" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'Segoe UI',Arial,sans-serif">
+  <title>Dead-man's-switch heartbeat flow across two separate hosts.</title>
+  <defs>
+    <marker id="ar4" markerWidth="10" markerHeight="10" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#8B86F0"/></marker>
+    <marker id="ar4g" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#35C07E"/></marker>
+    <marker id="ar4r" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3.5 L0,7 Z" fill="#E0857A"/></marker>
+  </defs>
+  <rect x="0" y="0" width="900" height="340" fill="#0E1124"/>
+  <text x="24" y="34" fill="#E7ECF8" font-size="15" font-weight="600">Dead-man's switch</text>
+  <text x="876" y="34" fill="#9AA6C8" font-size="11.5" text-anchor="end">watcher lives on a separate host</text>
+  <rect x="24" y="58" width="270" height="160" rx="10" fill="#181D38" stroke="#272D4D"/>
+  <text x="44" y="84" fill="#E7ECF8" font-size="13" font-weight="700">Monitoring host</text>
+  <text x="44" y="104" fill="#9AA6C8" font-size="11">runs the scheduled job</text>
+  <rect x="44" y="120" width="230" height="76" rx="8" fill="#20264a" stroke="#3FB6C2"/>
+  <text x="159" y="146" fill="#3FB6C2" font-size="11.5" font-weight="600" text-anchor="middle">writes heartbeat file</text>
+  <text x="159" y="166" fill="#E7ECF8" font-size="10.5" text-anchor="middle">timestamp + status</text>
+  <text x="159" y="182" fill="#9AA6C8" font-size="10.5" text-anchor="middle">after every run</text>
+  <line x1="294" y1="138" x2="360" y2="138" stroke="#8B86F0" stroke-width="2.5" marker-end="url(#ar4)"/>
+  <text x="327" y="128" fill="#8B86F0" font-size="10" text-anchor="middle">heartbeat</text>
+  <line x1="327" y1="58" x2="327" y2="300" stroke="#272D4D" stroke-width="1.5" stroke-dasharray="4 5"/>
+  <text x="327" y="316" fill="#9AA6C8" font-size="10" text-anchor="middle" font-style="italic">separate hosts</text>
+  <rect x="362" y="58" width="270" height="160" rx="10" fill="#181D38" stroke="#272D4D"/>
+  <text x="382" y="84" fill="#E7ECF8" font-size="13" font-weight="700">Independent watcher</text>
+  <text x="382" y="104" fill="#9AA6C8" font-size="11">second host / service</text>
+  <rect x="382" y="120" width="230" height="76" rx="8" fill="#20264a" stroke="#D9A94F"/>
+  <text x="497" y="148" fill="#D9A94F" font-size="11.5" font-weight="600" text-anchor="middle">reads the heartbeat</text>
+  <text x="497" y="168" fill="#9AA6C8" font-size="10.5" text-anchor="middle">on its own schedule</text>
+  <polygon points="497,236 585,272 497,308 409,272" fill="#181D38" stroke="#8B86F0" stroke-width="1.5"/>
+  <text x="497" y="266" fill="#E7ECF8" font-size="10" text-anchor="middle">Present, recent,</text>
+  <text x="497" y="280" fill="#E7ECF8" font-size="10" text-anchor="middle">status = OK?</text>
+  <line x1="497" y1="196" x2="497" y2="234" stroke="#9AA6C8" stroke-width="1.5" marker-end="url(#ar4)"/>
+  <line x1="585" y1="272" x2="654" y2="272" stroke="#35C07E" stroke-width="2" marker-end="url(#ar4g)"/>
+  <text x="600" y="262" fill="#35C07E" font-size="10.5" font-weight="600">YES</text>
+  <rect x="658" y="248" width="218" height="48" rx="9" fill="#181D38" stroke="#35C07E"/>
+  <text x="767" y="270" fill="#35C07E" font-size="12" font-weight="600" text-anchor="middle">Stay quiet</text>
+  <text x="767" y="286" fill="#9AA6C8" font-size="10.5" text-anchor="middle">job is healthy</text>
+  <path d="M497 308 L497 330 L770 330 L770 304" fill="none" stroke="#E0857A" stroke-width="2"/>
+  <text x="455" y="326" fill="#E0857A" font-size="10.5" font-weight="600">NO</text>
+  <text x="540" y="326" fill="#9AA6C8" font-size="10">missing / stale / FAILED</text>
+  <rect x="658" y="206" width="218" height="34" rx="9" fill="#241A22" stroke="#E0857A" stroke-width="2"/>
+  <text x="767" y="227" fill="#E0857A" font-size="11.5" font-weight="700" text-anchor="middle">Page backup · treat as RED</text>
+  <path d="M770 304 L770 240" fill="none" stroke="#E0857A" stroke-width="2" marker-end="url(#ar4r)"/>
+</svg><figcaption><b>The dead-man&rsquo;s switch.</b> The watcher lives on a <em>separate host</em>, so a dead monitoring machine cannot quietly hide its own failure &mdash; missing, stale, or failed, the heartbeat pages the backup.</figcaption></figure>
+    <table>
+      <tr><th>Failure mode</th><th>The safeguard</th></tr>
+      <tr><td><b>The job dies silently</b> (daemon down, expired password, locked licence, full disk).</td><td><b>Heartbeat / dead-man&rsquo;s switch</b> &mdash; every run pings &ldquo;ran OK&rdquo;; an <em>independent</em> watcher on a second host escalates if the ping is missing.</td></tr>
+      <tr><td><b>Stale-data masquerade</b> &mdash; green daily, but a feed stopped refreshing. <b>Green here is worse than red.</b></td><td><b>Data-freshness gate, run first</b> &mdash; compare each feed&rsquo;s newest timestamp to now; raise it if a source stopped.</td></tr>
+      <tr><td><b>Alert storm</b> &mdash; a mis-set threshold or duplicate fires the same RED dozens of times; the cover mutes the thread.</td><td><b>De-duplication</b> &mdash; a persistent seen-flags table alerts each finding once.</td></tr>
+      <tr><td><b>Human single-point-of-failure</b> &mdash; the one cover is also away when a 06:07 RED fires.</td><td><b>Primary + backup + role alias</b> with an acknowledgement SLA and a re-page rule.</td></tr>
+    </table>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="gov" aria-label="Governance  limits">
+    <h1>Governance &amp; honest limits</h1>
+    <h2>Why this is the lowest-risk option</h2>
+    <ul>
+      <li><b>No new validation surface.</b> It surfaces outputs from the <b>same validated programs</b> &mdash; it automates the delivery/cadence, not the method.</li>
+      <li><b>Deterministic &amp; reproducible.</b> Same data &rarr; byte-identical result, every run. Nothing to &ldquo;explain&rdquo;; the audit trail is automatic.</li>
+      <li><b>Zero PHI egress.</b> Everything runs where the data already lives &mdash; no external API, no cloud model, no new vendor. (Alert bodies carry de-identified signal only; detail is in the attached report.)</li>
+      <li><b>Validated like any study program</b> (spec &rarr; review &rarr; test &rarr; change control); anything <em>reported</em> stays independently double-programmed. <b>A flag is a prompt, not a result</b> &mdash; every reported number comes from the validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, the double-programmed SAS/R), never from a monitoring flag.</li>
+      <li><b>No new approval gate</b> between today and go-live &mdash; only the normal program validation you already run.</li>
+    </ul>
+    <div class="callout warn"><b>The honest limit:</b> deterministic checks only &mdash; no triage, narrative, or judgment. It guarantees pre-specified signals reach a human reliably and reproducibly; it does not replace the human, the medical monitor, or the DSMB/SRC. That triage layer is the seam the AI hybrid fills later.</div>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section>
+<section id="faq" aria-label="FAQ">
+    <h1>FAQ</h1>
+    <p><b>Do we need new software?</b> No &mdash; use the SAS/R and scheduler already validated in your environment. Introducing a new orchestrator just for this re-adds the governance cost you&rsquo;re avoiding.</p>
+    <p><b>Does it make clinical decisions?</b> No. It detects threshold crossings, pages the right people, and packages the evidence. The medical monitor and covering biostatistician decide.</p>
+    <p><b>Is it only for leave coverage?</b> No &mdash; that&rsquo;s the anchoring scenario, but it&rsquo;s the standing monitoring backbone for any study, any time.</p>
+    <p><b>What if a job fails while I&rsquo;m away?</b> The heartbeat and freshness gate make a dead job or a frozen feed <em>announce itself</em>. &ldquo;No news&rdquo; is never &ldquo;good news.&rdquo;</p>
+  <div class="footer">Coverage while on leave &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; June 2026.</div></section></main></div><script>const secs=[...document.querySelectorAll('section')],links=[...document.querySelectorAll('#side a[data-t]')];function show(id){secs.forEach(s=>{const on=s.id===id;s.classList.toggle('show',on);s.hidden=!on;});links.forEach(a=>{const on=a.dataset.t===id;a.classList.toggle('active',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});window.scrollTo(0,0);const m=document.getElementById('main');if(m)m.focus();if(location.hash!=='#'+id)history.replaceState(null,'','#'+id);}links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.t);}));document.querySelectorAll('#main a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href').slice(1);if(document.getElementById(id)){e.preventDefault();show(id);}}));const q=document.getElementById('search');q.addEventListener('input',()=>{const v=q.value.toLowerCase().trim();links.forEach(a=>{const s=document.getElementById(a.dataset.t);a.style.display=(!v||s.textContent.toLowerCase().includes(v))?'block':'none';});});show((location.hash||'#start').slice(1)||'start');window.addEventListener('beforeprint',()=>secs.forEach(s=>s.hidden=false));window.addEventListener('afterprint',()=>show((location.hash||'#start').slice(1)||'start'));</script></body></html>

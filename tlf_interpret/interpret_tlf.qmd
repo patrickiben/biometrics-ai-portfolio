@@ -1,0 +1,95 @@
+---
+title: "TLF Interpretation — DRAFT (biostatistician review required)"
+params:
+  tlf_id: "t_ae_overview"
+format: html
+---
+
+```{r setup}
+source("R/slm_client.R")
+source("R/extract_facts.R")
+source("R/validate_interpretation.R")
+source("R/interpret.R")
+suppressPackageStartupMessages(library(gt))
+```
+
+```{r run}
+# PRODUCTION: read the VALIDATED result dataset for params$tlf_id (the aggregate
+# numeric summary the TLF program emitted — n's, %'s, geo-means; no PHI).
+# SKELETON: a synthetic AE-overview result so this renders end-to-end offline.
+ae_result <- data.frame(
+  category = c("Any TEAE","Related TEAE","Severe TEAE","SAE",
+               "TEAE leading to discontinuation","Death"),
+  n   = c(24L, 15L, 2L, 1L, 0L, 0L),
+  pct = c(80.0, 50.0, 6.7, 3.3, 0.0, 0.0))
+
+facts <- extract_facts(params$tlf_id, ae_result, arm = "Active 100 mg", N = 30L)
+res   <- interpret_tlf(params$tlf_id, facts)   # uses local SLM, or STUB if none installed
+
+badge <- c(DRAFT_OK = "✅ DRAFT_OK", FLAGGED = "⚠️ FLAGGED", REJECTED = "⛔ REJECTED")[res$status]
+callout <- c(DRAFT_OK = "note", FLAGGED = "warning", REJECTED = "important")[res$status]
+```
+
+## The validated output (source of truth)
+
+The table/figure shown here is the **validated TLF result** — not anything the model produced.
+
+```{r table}
+ae_result |>
+  gt() |>
+  tab_header(title = "Overview of Treatment-Emergent Adverse Events",
+             subtitle = "Active 100 mg (N = 30) — Safety Population") |>
+  cols_label(category = "Category", n = "Participants (n)", pct = "%") |>
+  tab_source_note("Validated result dataset. Reported numbers from validated tools per SOP.")
+```
+
+## Draft interpretation  `r badge`
+
+::: {.callout-`r callout`}
+## Draft — biostatistician review and sign-off required
+
+`r res$draft`
+:::
+
+```{r status, results="asis"}
+m <- res$audit
+cat(sprintf(
+"- **Status:** %s\n- **Backend:** %s\n- **Model:** %s%s  ·  seed %s · temp %s\n- **Prompt SHA1:** `%s`  ·  **Facts SHA1:** `%s`\n",
+  res$status, m$backend, m$model_name,
+  if (isTRUE(m$stub)) "  *(STUB — no local model installed)*" else "",
+  m$seed, m$temperature, substr(m$prompt_sha1,1,12), substr(m$facts_sha1,1,12)))
+```
+
+## Grounding facts + automated checks
+
+```{r checks}
+fct <- data.frame(fact = names(facts),
+                  value = vapply(facts, function(x) format(x, trim = TRUE), character(1)),
+                  row.names = NULL)
+gt(fct) |> tab_header("Facts the draft was grounded on (the only numbers permitted)")
+```
+
+```{r checks2, results="asis"}
+v <- res$validation
+cat(sprintf("- **Numeric-consistency:** %s — %d numbers checked%s\n",
+            ifelse(v$numbers$ok, "PASS", "FAIL"), v$numbers$n_checked,
+            if (length(v$numbers$unmatched)) paste0("; UNMATCHED (not in facts): ",
+                paste(v$numbers$unmatched, collapse = ", ")) else ""))
+cat(sprintf("- **Claim guard:** %s%s\n", ifelse(v$claims$ok, "PASS", "FLAGGED"),
+            if (length(v$claims$flagged)) paste0(" — ", paste(v$claims$flagged, collapse="; ")) else ""))
+cat(sprintf("- **Template:** %s (%d words, %d sentences)%s\n",
+            ifelse(v$template$ok, "PASS", "ISSUE"), v$template$n_words, v$template$n_sent,
+            if (length(v$template$issues)) paste0(" — ", paste(v$template$issues, collapse="; ")) else ""))
+```
+
+## Human gate (sign-off)
+
+Nothing is `APPROVED` automatically. The biostatistician edits the draft as needed and records
+sign-off; only an approved interpretation flows to the CSR narrative. The audit record
+(`res$audit`) — model digest, seed, prompt/facts hashes, timestamps — is written to the sign-off store.
+
+```r
+# approve_interpretation(res, approver = "P. Iben", final_text = "<edited text>")
+#   -> writes res$audit + final_text + approver + timestamp to the audit log,
+#      sets approved = TRUE. (Implement against your validated-doc store.)
+```

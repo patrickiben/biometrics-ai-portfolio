@@ -1,0 +1,143 @@
+1
+00:00:00,000 --> 00:00:04,170
+Let me walk through a single day on the hybrid trial-ops platform.
+
+2
+00:00:04,470 --> 00:00:15,321
+Five automations fire across the day — recurrent QC, SOP knowledge, eTMF filing, a timeline cascade, and risk-based monitoring.
+
+3
+00:00:15,621 --> 00:00:22,427
+Every one follows the same shape: a trigger, an AI-drafted proposal, and a human who approves.
+
+4
+00:00:22,727 --> 00:00:26,630
+Nothing reaches a validated system of record without that approval.
+
+5
+00:00:27,630 --> 00:00:31,991
+That is the rule across all seventy-five automations on the platform.
+
+6
+00:00:32,291 --> 00:00:42,133
+The agent drafts a proposal into a human-approval queue; nothing is filed, sent, or changed in a validated system until a human approves it.
+
+7
+00:00:42,433 --> 00:00:51,038
+And the same sensitivity routing applies — participant-level data stays on the local model; non-sensitive work goes to cloud.
+
+8
+00:00:52,038 --> 00:00:52,853
+Eight a.m.
+
+9
+00:00:53,153 --> 00:01:02,695
+The nightly QC run catches a data discrepancy — an adverse-event onset date that falls after its resolution date, for one participant.
+
+10
+00:01:02,995 --> 00:01:14,374
+Because it is participant-level data, the agent drafts the data query on the local model, zero egress — a clear, specific query citing the fields and the rule.
+
+11
+00:01:14,674 --> 00:01:20,269
+The data manager reviews it, edits if needed, and issues it in the validated EDC.
+
+12
+00:01:20,569 --> 00:01:23,607
+The agent never writes to the EDC itself.
+
+13
+00:01:24,607 --> 00:01:25,508
+Ten-thirty.
+
+14
+00:01:25,808 --> 00:01:30,524
+A CRA asks: what is our process for a missed PK sample?
+
+15
+00:01:30,824 --> 00:01:36,335
+The assistant is grounded on the SOP library — non-sensitive, so cloud.
+
+16
+00:01:36,635 --> 00:01:40,956
+It answers in plain language and cites the exact SOP and version.
+
+17
+00:01:41,256 --> 00:01:50,102
+The CRA checks the cited SOP before acting; the controlled document stays the source of truth, not the model's paraphrase.
+
+18
+00:01:51,102 --> 00:01:52,020
+One p.m.
+
+19
+00:01:52,320 --> 00:01:55,480
+A monitoring visit report lands in the shared drive.
+
+20
+00:01:55,780 --> 00:02:05,947
+The agent classifies it against the TMF reference model, proposes the filing location, and pre-fills the metadata — on the non-sensitive document.
+
+21
+00:02:06,247 --> 00:02:13,923
+Nothing is filed yet: the TMF specialist confirms the classification and files it in the validated eTMF.
+
+22
+00:02:14,223 --> 00:02:17,029
+The proposal is a draft in the approval queue.
+
+23
+00:02:18,029 --> 00:02:19,058
+Three p.m.
+
+24
+00:02:19,358 --> 00:02:26,965
+A confirmed change — the data cut moves from the seventeenth to the nineteenth — means downstream dates must shift.
+
+25
+00:02:27,265 --> 00:02:38,012
+The agent computes the dependent cascade: soft-lock, dry-run TLFs, the DSMB pack, and drafts the Smartsheet update and a notification.
+
+26
+00:02:38,312 --> 00:02:42,316
+The project manager reviews, adjusts, and applies it.
+
+27
+00:02:42,616 --> 00:02:44,470
+The PM owns the timeline.
+
+28
+00:02:45,470 --> 00:02:46,418
+Four-thirty.
+
+29
+00:02:46,718 --> 00:02:53,570
+A risk-based-monitoring KRI crosses its quality tolerance limit — a site's query rate is too high.
+
+30
+00:02:53,870 --> 00:03:00,159
+The agent packages the breach with its trend and the contributing records, and drafts the action note.
+
+31
+00:03:00,459 --> 00:03:08,295
+The PM, or the central monitor, reviews the packaged signal and decides the response — perhaps a targeted visit.
+
+32
+00:03:08,595 --> 00:03:11,659
+The system flags; the human decides.
+
+33
+00:03:12,659 --> 00:03:20,297
+So across the day, the platform did the drafting; the humans approved; the validated systems owned the records.
+
+34
+00:03:20,597 --> 00:03:24,743
+One shape every time — trigger, draft, approval.
+
+35
+00:03:25,043 --> 00:03:36,989
+Sensitivity routed the engine, and the validated systems stayed authoritative: the EDC issued the query, the eTMF filed the document, Smartsheet held the timeline.
+
+36
+00:03:37,289 --> 00:03:41,804
+The busywork is automated; judgment and accountability stay human.

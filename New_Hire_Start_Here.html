@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Biostatistician — Start Here</title>
+<link rel="stylesheet" href="site.css">
+<style>
+  /* New-hire onboarding — page-specific modules in the Mission Control idiom.
+     All colors/spacing pull from site.css tokens so this page flows with the site. */
+  .wrap{max-width:1040px}
+  .hero h1{font-size:28px}
+  h3{font-size:15px;color:var(--ink);margin:18px 0 6px;font-weight:650}
+  p{margin:9px 0} ul,ol{margin:9px 0;padding-left:22px} li{margin:5px 0}
+  strong{color:var(--ink)} em{color:var(--mut)}
+  code{background:#0e141f;border:1px solid var(--line2);border-radius:4px;padding:1px 5px;font-size:12.6px;color:#9ef0e6;font-family:var(--mono)}
+
+  /* quick-nav console chips */
+  .ways{display:flex;flex-wrap:wrap;gap:7px;margin:18px 0 6px}
+  .ways a{font-family:var(--mono);background:#0e141f;border:1px solid var(--line2);color:#bfe9e3;font-size:11px;letter-spacing:.02em;padding:5px 11px;border-radius:5px}
+  .ways a::before{content:"\25B8 ";color:var(--accent);opacity:.7}
+  .ways a:hover{background:#13202b;border-color:rgba(52,227,212,.4);box-shadow:0 0 12px rgba(52,227,212,.12);text-decoration:none}
+
+  /* callouts */
+  .note,.warn,.stop{position:relative;border-radius:var(--r);padding:12px 15px;margin:14px 0;font-size:13.6px;background:var(--panel);border:1px solid var(--line2)}
+  .note{border-left:3px solid var(--accent)}
+  .warn{border-left:3px solid var(--gold);background:linear-gradient(160deg,#15120a,#0c0f17)}
+  .stop{border-left:3px solid var(--red);background:linear-gradient(160deg,#1a0f12,#0c0f17)}
+  .note::before,.warn::before,.stop::before{font-family:var(--mono);display:block;font-size:9.5px;letter-spacing:.14em;font-weight:700;margin-bottom:4px}
+  .note::before{content:"\25B8 NOTE";color:var(--accent)}
+  .warn::before{content:"\25B2 READ FIRST";color:var(--gold)}
+  .stop::before{content:"\25A0 THE RULE";color:var(--red)}
+  .note strong,.warn strong,.stop strong{color:var(--ink)}
+
+  /* rules table */
+  table.t{width:100%;border-collapse:collapse;font-size:13.2px;margin:13px 0;border:1px solid var(--line)}
+  table.t th,table.t td{text-align:left;padding:8px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+  table.t th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);font-weight:700;background:#0c1018}
+  table.t tr:last-child td{border-bottom:0}
+  table.t tr:hover td{background:#0e141f}
+  table.t code{white-space:nowrap}
+
+  /* real-vs-proposed lanes */
+  .lane{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:13px 0}
+  .lane .col{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+  .lane .col.you{border-left:3px solid var(--green)} .lane .col.lead{border-left:3px solid var(--dim)}
+  .lane .col h4{margin:6px 0 7px;font-size:14.5px;color:var(--ink)}
+  .lane .col .tag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+  .lane .you .tag{color:var(--green)} .lane .lead .tag{color:var(--mut)}
+
+  /* learning path */
+  .pathstep{display:flex;gap:14px;margin:13px 0;align-items:stretch}
+  .pn{flex:0 0 auto;min-width:96px;display:flex;flex-direction:column;justify-content:center;text-align:center;font-family:var(--mono);
+      background:rgba(230,178,76,.1);border:1px solid rgba(230,178,76,.4);color:var(--gold);font-weight:700;font-size:12px;letter-spacing:.06em;border-radius:var(--r);padding:8px 6px;line-height:1.3}
+  .pn small{display:block;font-weight:600;font-size:9.5px;opacity:.85;letter-spacing:.04em;text-transform:uppercase;margin-top:3px;color:var(--mut)}
+  .pb{position:relative;flex:1;min-width:0;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 15px}
+  .pb::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--accent),transparent 70%);opacity:.4;border-radius:var(--r) 0 0 var(--r)}
+  .pb h4{margin:0 0 5px;font-size:14.5px;color:var(--ink)} .pb p{margin:5px 0;font-size:13.3px}
+
+  /* status tags */
+  .real{font-family:var(--mono);display:inline-block;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border-radius:4px;padding:2px 7px;margin-left:5px;vertical-align:middle}
+  .real::before{content:"\25CF ";font-size:7px;vertical-align:middle}
+  .real.now{background:rgba(70,208,138,.12);color:var(--green);border:1px solid rgba(70,208,138,.4)}
+  .real.prop{background:rgba(230,178,76,.12);color:var(--gold);border:1px solid rgba(230,178,76,.4)}
+  .real.ref{background:rgba(91,140,255,.12);color:#9dbcff;border:1px solid rgba(91,140,255,.4)}
+
+  /* glossary */
+  .gloss{columns:2;column-gap:28px;font-size:13px;margin:10px 0} .gloss div{break-inside:avoid;margin:0 0 8px}
+  .gloss b{font-family:var(--mono);font-size:11.5px;color:#9ef0e6;letter-spacing:.02em}
+
+  /* console buttons */
+  .tools{display:flex;gap:9px;flex-wrap:wrap;margin:18px 0 6px}
+  .tools button{font-family:var(--mono);background:rgba(52,227,212,.08);border:1px solid rgba(52,227,212,.4);color:var(--accent);border-radius:5px;padding:7px 13px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+  .tools button:hover{background:rgba(52,227,212,.16);box-shadow:0 0 12px rgba(52,227,212,.18)}
+
+  @media(max-width:740px){.lane{grid-template-columns:1fr}.gloss{columns:1}.pathstep{flex-direction:column}}
+
+  /* print — clean light PDF (this page gets printed for onboarding) */
+  @media print{
+    body{background:#fff!important;color:#1a1a1a!important;font-size:11.5pt}
+    .top,.ways,.tools{display:none!important}
+    .wrap{max-width:100%;padding:0}
+    a{color:#16357a!important} h1,h2,h3,h4,strong,b{color:#000!important} h2::before{content:""!important}
+    .sub,p,li,td,th,em{color:#222!important}
+    code{background:#eef0f3!important;color:#0a2a6a!important;border-color:#ccd!important;font-family:Consolas,monospace!important}
+    .note,.warn,.stop,.lane .col,.pb{background:#f6f7f9!important;border-color:#dde!important;color:#1a1a1a!important}
+    .note{border-left-color:#2a8a80!important}.warn{border-left-color:#caa24a!important}.stop{border-left-color:#c0394b!important}
+    .note::before{color:#2a8a80!important}.warn::before{color:#9a7a26!important}.stop::before{color:#c0394b!important}
+    .pb::before{display:none!important}
+    .pn{background:#f0e7cf!important;color:#5a4412!important;border-color:#d9c690!important}.pn small{color:#5a4412!important}
+    table.t th{background:#eef0f3!important;color:#333!important} table.t th,table.t td{border-color:#dde!important}
+    .real.now{background:#eaf6ef!important;color:#1f6b42!important}.real.prop{background:#f7efdc!important;color:#7a5a18!important}.real.ref{background:#e9eff9!important;color:#26478a!important}
+    .gloss b{color:#0a2a6a!important} footer{color:#444!important}
+    .pathstep,.lane .col,.note,.warn,.stop,table.t{break-inside:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style></head><body>
+<div class="top">
+  <b>AI for Biometrics</b>
+  <div class="nav">
+    <a href="index.html">Home</a>
+    <a href="Operations.html">Operations</a>
+    <a href="Biostatistics.html">Biostatistics</a>
+    <a href="START_HERE.html">Full library</a>
+  </div>
+</div>
+<div class="wrap">
+
+<header class="hero">
+  <a class="back" href="START_HERE.html">&larr; Program home</a>
+  <div class="eyebrow" style="color:var(--green)">New biostatistician &middot; onboarding</div>
+  <h1>New here? Start with this.</h1>
+  <p class="sub">Onboarding for a <strong>new biostatistician</strong> in our early-phase clinical-pharmacology biometrics group. This page is for <strong>you, the person doing the work</strong> &mdash; it tells you how our team operates, the rules you must follow, what's real today versus proposed, and the order to learn it in. (The decks, business case, and tool comparisons elsewhere are for <em>leadership deciding on the AI program</em> &mdash; you don't need them to do the job.)</p>
+</header>
+
+<div class="warn"><strong>Read this once before anything else:</strong> most of this package is a <strong>proposal</strong> to bring more programming in&#8209;house with AI &mdash; it is <em>pending management approval, not how we produce deliverables today</em>. Today's real production runs through <strong>validated tools and our programming team</strong> (below). The AI tools here are <strong>accelerators, skeletons, and proofs &mdash; not validated production systems.</strong> Where it matters, each item below is tagged <span class="real now">SHIP TODAY</span> <span class="real prop">PROPOSED</span> or <span class="real ref">REFERENCE</span>.</div>
+
+<div class="ways">
+  <a href="#team">&#9312; How our team works</a>
+  <a href="#rules">&#9313; Your rules of the road</a>
+  <a href="#real">&#9314; Real today vs proposed</a>
+  <a href="#path">&#9315; Your learning path</a>
+  <a href="#gloss">&#9316; Glossary</a>
+</div>
+
+<h2 id="team">&#9312; How our team works</h2>
+<p>The single most important thing to understand on day one &mdash; and the thing most easily misread:</p>
+<ul>
+  <li><strong>Statistical programming is an in-house programming team (not outsourced).</strong> Years ago the company relocated programming in-house; it is <em>our</em> team, in&#8209;house, under our processes.</li>
+  <li><strong>The accountable statisticians own the science, the specs, and the QC, and sign every output.</strong> You (NA) own the science, the specs, the QC, and you <strong>sign every output</strong>. Programming is handled by the in-house team.</li>
+  <li><strong>Work runs through a ~12&#8209;hour coordination loop.</strong> A question asked here in the afternoon is answered the next morning. That handoff is the rhythm of the job (and the friction the AI proposal is trying to reduce).</li>
+  <li><strong>Blinded vs unblinded roles are real and enforced.</strong> Most of the team &mdash; including you, by default &mdash; works <strong>blinded</strong>. Unblinded data (treatment assignments, randomization, certain safety/PK) is walled off to specific unblinded roles (an unblinded statistician/pharmacist, the IVRS/randomization system, safety/PV). <strong>If you're blinded, you must not seek or handle unblinded data</strong>, and you keep it out of any shared tool.</li>
+</ul>
+<div class="note">Why this matters for everything else: because programming is in&#8209;house and you are the signer, <strong>you</strong> are accountable for what ships &mdash; which is why the rules below are non&#8209;negotiable, and why AI here only ever <em>drafts</em> behind a human and validated tools.</div>
+
+<h2 id="rules">&#9313; Your rules of the road</h2>
+<p>These are not "what makes the program safe to adopt." They are <strong>the rules you personally follow, from day one</strong>:</p>
+<div class="stop"><strong>Reported or regulated numbers come ONLY from validated tools</strong> &mdash; Phoenix WinNonlin (PK/NCA), Pinnacle 21 (CDISC conformance), the EDC/CTMS, the validated SAS/R pipeline. <strong>A number is never sourced from an LLM, a Knowledge&#8209;Base note, or a draft.</strong> AI may draft <em>words around</em> the numbers; it never produces the numbers.</div>
+<div class="stop"><strong>Operations content only in any AI/shared tool &mdash; never PHI, never participant&#8209;level data, never unblinded assignments or randomization, never sponsor&#8209;restricted IP.</strong> If you're unsure whether something is operational, treat it as restricted.</div>
+<table class="t">
+  <thead><tr><th style="width:30%">Rule</th><th>What it means for you</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Say "participant," not "subject"</strong></td><td>In all prose/deliverables. <em>But keep CDISC variables exactly</em> &mdash; <code>USUBJID</code>, <code>SUBJID</code> never change.</td></tr>
+    <tr><td><strong>Blinding integrity</strong></td><td>If you're blinded, don't seek, view, or route unblinded data. Keep it out of the Study KB and any shared/AI tool.</td></tr>
+    <tr><td><strong>Independent double&#8209;programming</strong></td><td>Key derivations/outputs are produced twice, independently, and reconciled &mdash; that's how we trust a number, not because one program ran.</td></tr>
+    <tr><td><strong>A qualified human signs every output</strong></td><td>AI and automation <em>draft and check</em>; a named biostatistician reviews, signs, and is accountable. Nothing ships on a tool's say&#8209;so.</td></tr>
+    <tr><td><strong>Cloud AI needs the compliant path</strong></td><td>Consumer "Claude/ChatGPT" plans are <strong>not</strong> HIPAA&#8209;eligible. The compliant route is the API under a signed BAA &mdash; and in practice PHI never goes to the cloud at all.</td></tr>
+  </tbody>
+</table>
+
+<h2 id="real">&#9314; What's real today vs proposed</h2>
+<p>So you never mistake a polished proposal for current practice:</p>
+<div class="lane">
+  <div class="col you"><div class="tag">&#10003; Real today &mdash; usable now, no approval gate</div>
+    <h4>The validated way we work + the no&#8209;AI accelerators</h4>
+    <ul>
+      <li>The validated pipeline + tools (Phoenix WinNonlin, Pinnacle 21, EDC) and the programming handoff &mdash; <strong>this is production.</strong></li>
+      <li>The deterministic <strong>SAS/R monitoring &amp; on&#8209;leave coverage</strong> and <strong>Smartsheet no&#8209;code</strong> automations &mdash; no AI, no new approval.</li>
+      <li>The <strong>Study Knowledge Base</strong> (no&#8209;GUI, no&#8209;AI file&#8209;mover) &mdash; a reference build you can stand up.</li>
+    </ul>
+  </div>
+  <div class="col lead"><div class="tag">&#9719; Proposed &mdash; pending approval, NOT in production</div>
+    <h4>The AI program being pitched to leadership</h4>
+    <ul>
+      <li>The <strong>hybrid AI stack</strong> (cloud Claude + on&#8209;prem local model behind one gateway), the human&#8209;approval queue, the phased pilot &mdash; a <em>recommendation</em>, not today's process.</li>
+      <li>The polished <strong>operations wikis</strong> (e.g. the 75&#8209;automation hybrid platform, the SLM operating wikis) describe a <em>proposed future state</em>.</li>
+      <li>The <strong>TLF libraries, the interpretation drafter, the simulation sandbox</strong> are <em>skeletons / proofs&#8209;of&#8209;capability</em> &mdash; accelerators to jump&#8209;start validated builds, not validated systems.</li>
+    </ul>
+  </div>
+</div>
+<div class="note">A simple test: if a thing would put a <strong>number</strong> or a <strong>regulated output</strong> into the world, it goes through the validated path and a human signer &mdash; never an AI tool, no matter how finished the demo looks.</div>
+
+<h2 id="path">&#9315; Your learning path</h2>
+<p>Do it in this order. Each step links to the real material.</p>
+
+<div class="pathstep"><div class="pn">DAY 1<small>orient</small></div><div class="pb">
+  <h4>This page &mdash; team + rules</h4>
+  <p>Re&#8209;read <a href="#team">&#9312;</a> and <a href="#rules">&#9313;</a> until the rules are reflex. They govern everything you'll touch.</p>
+</div></div>
+<div class="pathstep"><div class="pn">WEEK 1<small>the work</small></div><div class="pb">
+  <h4>What we actually deliver &mdash; Protocol &rarr; CSR</h4>
+  <p>Read the deliverables map <a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline.md">EarlyPhase_Biostat_Pipeline.md</a> (the readable version) and skim the filterable <a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline_Register.xlsx">register</a>. Then watch the end&#8209;to&#8209;end PK example: <a href="biostat_pipeline/Pipeline_PK_WorkedExample_narrated.mp4">Pipeline_PK_WorkedExample (video)</a>. This is the shape of the job.</p>
+</div></div>
+<div class="pathstep"><div class="pn">WEEK 1<small>the tables</small></div><div class="pb">
+  <h4>How TLFs get built <span class="real ref">REFERENCE</span></h4>
+  <p>Open the TLF pseudocode libraries &mdash; <a href="sas_tlf_pseudocode/index.html">SAS</a> or <a href="r_tlf_pseudocode/index.html">R (pharmaverse)</a>. Follow one guide's "Run it" steps to run a single program against ADaM. These show the derivation/layout logic; they're reference skeletons, not the validated production route.</p>
+</div></div>
+<div class="pathstep"><div class="pn">WEEK 1<small>set it up</small></div><div class="pb">
+  <h4>Stand up the Study Knowledge Base <span class="real now">SHIP TODAY</span></h4>
+  <p>Follow <a href="study_kb_nogui/index.html">study_kb_nogui</a> end&#8209;to&#8209;end (it's fully visual, step&#8209;by&#8209;step). It teaches the source&#8209;routing / ops&#8209;only governance reflex hands&#8209;on &mdash; and it's real, no&#8209;AI, usable now.</p>
+</div></div>
+<div class="pathstep"><div class="pn">MONTH 1<small>safety reflexes</small></div><div class="pb">
+  <h4>Monitoring &amp; on&#8209;leave coverage <span class="real now">SHIP TODAY</span></h4>
+  <p>Work through the deterministic <a href="sas_r_automation/SAS_R_Trial_Monitoring_Automation.html">SAS/R monitoring</a> + <a href="sasr_onleave_wiki/On_Leave_Coverage_Playbook.html">on&#8209;leave coverage playbook</a>, and the <a href="lifecycle_dashboard/Study_Lifecycle_Monitor.html">study lifecycle monitor</a>. These teach the team's actual safety/operational reflexes (freshness gates, escalation, who decides). <strong>Note who acts:</strong> these flag and package; the medical monitor / DSMB / unblinded roles decide.</p>
+</div></div>
+<div class="pathstep"><div class="pn">MONTH 1<small>the AI aids</small></div><div class="pb">
+  <h4>The proposed AI aids &mdash; in context <span class="real prop">PROPOSED</span></h4>
+  <p>Now that the rules are reflex, see the AI accelerators behind them: the <a href="tlf_interpret/index.html">local interpretation drafter</a> (drafts narrative text &mdash; never a number) and the <a href="sim_lifecycle/index.html">synthetic study sandbox</a>. Optionally take the <a href="courses/Biostatistics_AI_Training.html">AI Operations course</a> &mdash; it introduces the proposed AI tooling (it is <em>not</em> the whole job; this path is).</p>
+</div></div>
+
+<h2 id="gloss">&#9316; Glossary &mdash; the acronyms you'll hit</h2>
+<div class="gloss">
+  <div><b>TLF</b> &mdash; Tables, Listings &amp; Figures: the statistical outputs of a study.</div>
+  <div><b>SDTM / ADaM</b> &mdash; CDISC standards: SDTM = collected data; ADaM = analysis&#8209;ready datasets derived from it.</div>
+  <div><b>NCA</b> &mdash; Non&#8209;Compartmental Analysis: the standard PK parameter derivation (Cmax, AUC, t&frac12;&hellip;), done in Phoenix WinNonlin.</div>
+  <div><b>Phoenix WinNonlin</b> &mdash; the validated PK/NCA tool of record.</div>
+  <div><b>Pinnacle 21</b> &mdash; the validated CDISC (SDTM/ADaM) conformance checker.</div>
+  <div><b>pharmaverse</b> &mdash; open R packages for clinical work; <b>admiral</b> (ADaM) + <b>tern/rtables</b> (TLFs).</div>
+  <div><b>DB&#8209;lock / DBL</b> &mdash; Database Lock: the data is frozen for analysis.</div>
+  <div><b>USUBJID / SUBJID</b> &mdash; CDISC participant identifiers (keep the variable names exactly).</div>
+  <div><b>DLT</b> &mdash; Dose&#8209;Limiting Toxicity (dose&#8209;escalation safety).</div>
+  <div><b>SRC / DSMB</b> &mdash; Safety Review Committee / Data Safety Monitoring Board &mdash; the bodies that <em>decide</em> on safety signals.</div>
+  <div><b>QTL / KRI</b> &mdash; Quality Tolerance Limit / Key Risk Indicator (risk&#8209;based monitoring thresholds).</div>
+  <div><b>eDISH / Hy's Law</b> &mdash; liver&#8209;safety screening views (note: not used in our TLF libraries).</div>
+  <div><b>BLQ / LLOQ</b> &mdash; Below Limit of Quantification / Lower Limit (PK concentration handling).</div>
+  <div><b>BAA</b> &mdash; Business Associate Agreement: the contract that makes a cloud service HIPAA&#8209;eligible.</div>
+  <div><b>PHI</b> &mdash; Protected Health Information (never goes in a shared/AI tool).</div>
+  <div><b>eTMF / RBQM</b> &mdash; electronic Trial Master File / Risk&#8209;Based Quality Management (operations).</div>
+  <div><b>SLM / GGUF</b> &mdash; Small Language Model / its on&#8209;disk file format (the on&#8209;prem model).</div>
+  <div><b>CSR</b> &mdash; Clinical Study Report: the end of the Protocol&rarr;CSR pipeline.</div>
+</div>
+
+<div class="tools">
+  <button type="button" onclick="window.print()">&#128424; Print / save as PDF</button>
+  <button type="button" onclick="location.href='START_HERE.html'">&#8618; Full program index (incl. leadership material)</button>
+</div>
+
+<footer>New&#8209;biostatistician onboarding &middot; operations&#8209;only, no PHI. Today's production runs through validated tools (Phoenix WinNonlin, Pinnacle 21, EDC) and our in&#8209;house team; the AI program here is a proposal, and every AI output is human&#8209;signed. The decks and business case under <a href="START_HERE.html">Program home</a> are for leadership deciding on the program &mdash; not required to do the job.</footer>
+
+</div>
+<script src="site.js" defer></script>
+</body></html>

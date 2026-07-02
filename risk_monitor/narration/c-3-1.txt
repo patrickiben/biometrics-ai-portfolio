@@ -1,0 +1,1 @@
+Three panels — participant, study, and client — each with a simple red, amber, green status, the top signals underneath, and the engine that powers it.

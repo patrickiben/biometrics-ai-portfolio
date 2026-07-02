@@ -1,0 +1,1 @@
+Non-sensitive, aggregate operational and commercial data go to cloud Claude, under a business-associate agreement.

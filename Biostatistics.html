@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Biostatistics — AI for Biometrics</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="top">
+  <b>AI for Biometrics</b>
+  <div class="nav">
+    <a href="index.html">Home</a>
+    <a href="Operations.html">Operations</a>
+    <a href="Biostatistics.html" class="here">Biostatistics</a>
+    <a href="START_HERE.html">Full library</a>
+  </div>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <a class="back" href="index.html">&larr; Home</a>
+    <div class="eyebrow" style="color:var(--green)">For the biostatistician</div>
+    <h1>Biostatistics</h1>
+    <p class="sub">The hands-on build &mdash; the artifacts a biostatistician actually uses. ADaM-based TLF pseudocode in both SAS and R, a narrative-interpretation drafter that never sources a number, the full Protocol&rarr;CSR deliverables pipeline, an end-to-end synthetic study sandbox, and the training course. These are AI-built <em>skeletons and proofs-of-capability</em> that jump-start a validated build &mdash; not validated production systems.</p>
+  </header>
+
+  <h2>Core deliverables &amp; pipeline</h2>
+  <div class="grid">
+    <div class="card"><h3>TLF pseudocode libraries <span class="pill tmpl">217 + 217</span></h3><div class="d">ADaM-based Table/Listing/Figure pseudocode for every early-phase design (parallel, crossover, single-sequence, SAD/MAD), in both SAS and R (pharmaverse: dplyr + rtables + ggplot2 + emmeans). Geometric PK on the log scale, participants-not-rows, period denominators.</div>
+      <div class="links"><a class="code" href="sas_tlf_pseudocode/index.html">SAS library</a><a class="code" href="r_tlf_pseudocode/index.html">R library</a></div></div>
+    <div class="card"><h3>TLF interpretation drafter <span class="pill tmpl">skeleton</span></h3><div class="d">A Quarto + on-prem small-model skeleton that auto-drafts TLF narrative text. The model <em>never</em> sources a number &mdash; deterministic facts feed a number-validated draft, behind a human gate. The self-test rejects hallucinated numbers.</div>
+      <div class="links"><a class="code" href="tlf_interpret/index.html">tlf_interpret</a></div></div>
+    <div class="card"><h3>Protocol&rarr;CSR biostat pipeline <span class="pill dsgn">register + map</span></h3><div class="d">The complete Phase-1 clin-pharm deliverables pipeline &mdash; 136 deliverables from protocol to CSR &mdash; as a register, a reference doc, and a visual map, with a worked PK example.</div>
+      <div class="links"><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf">Pipeline</a><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pdf">Visual map</a><a class="vid" href="biostat_pipeline/Pipeline_PK_WorkedExample_narrated.mp4">PK example</a></div></div>
+    <div class="card"><h3>Study-lifecycle sandbox <span class="pill run">runs / verified</span></h3><div class="d">A public-calibrated synthetic early-phase study running all the tools end-to-end &mdash; 8 ADaM domains, a 1-compartment PK + NCA, AE / vitals / labs / ECG, the TLFs, and the SLM &mdash; with a Monte-Carlo calibration check.</div>
+      <div class="links"><a class="code" href="sim_lifecycle/index.html">sim_lifecycle</a></div></div>
+  </div>
+
+  <h2>Learn it</h2>
+  <div class="grid">
+    <div class="card"><h3>Training course <span class="pill dsgn">course</span></h3><div class="d">The biostatistics-AI training walkthrough &mdash; lessons, worked examples, a quiz, and a completion certificate. Built to be taken in multiple modalities.</div>
+      <div class="links"><a href="courses/Biostatistics_AI_Training.html">Open course</a></div></div>
+    <div class="card"><h3>Narrated walkthroughs <span class="pill run">video</span></h3><div class="d">Every library, pipeline, and worked example has a narrated walkthrough (true headless-Chrome screencasts for the live tools). The new-hire path puts them in the order to learn.</div>
+      <div class="links"><a href="New_Hire_Start_Here.html">New-hire path</a><a class="vid" href="biostat_pipeline/Pipeline_PK_WorkedExample_narrated.mp4">PK worked example</a><a class="vid" href="slm_wiki/SLM_OnDevice_Example_narrated.mp4">On-device SLM example</a></div></div>
+  </div>
+
+  <footer>
+    <b>Biostatistics guardrails:</b> reported/regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21), never an LLM; "participant" not "subject" (CDISC USUBJID/SUBJID preserved); every AI draft is human-signed. The libraries are pseudocode skeletons &mdash; point a LIBNAME at your ADaM and complete the spec; don't expect a clean run out of the box. &nbsp;·&nbsp; <a href="index.html">&larr; Home</a> &nbsp;·&nbsp; <a href="START_HERE.html">Full library</a>
+  </footer>
+</div>
+<script src="site.js" defer></script>
+</body>
+</html>

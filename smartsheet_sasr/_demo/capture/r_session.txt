@@ -1,0 +1,31 @@
+
+== read the sheet first: fresh column map + rows, keyed by the Task code ==
+column map (title -> columnId):
+ TASKID    TASK  STATUS PCTDONE   OWNER     DUE 
+    101     102     103     104     105     106 
+  rowId     TASKID   STATUS PCTDONE     DUE
+1  1001  CP101-ENR On Track      NA ongoing
+2  1002 CP101-ADPC On Track     0.6  15 Jun
+3  1003  CP101-CUT On Track      NA  17 Jun
+4  1004  CP101-TLF On Track     0.1  24 Jun
+5  1005 CP101-DSMB On Track     0.0  30 Jun
+
+== compute tonight's operational status from the validated extract ==
+      TaskID              Task   Status PctDone   Owner     Due
+1  CP101-ENR              <NA>  At Risk      NA    <NA> ongoing
+2 CP101-ADPC              <NA> On Track    0.85    <NA>  15 Jun
+3  CP101-CUT              <NA>    Watch      NA    <NA>  19 Jun
+4  CP101-TLF              <NA> On Track    0.10    <NA>  26 Jun
+5  CP101-CSR CSR shell - build  Planned    0.00 Biostat  10 Jul
+
+== push by key: idempotent upsert (ops-only allowlist enforced in code) ==
+[SHEETLINK] upsert sheet 5500: 4 updated, 1 added (idempotent by TaskID)
+
+== attach last night's one-page status PDF to the data-cut row ==
+[SHEETLINK] attached CP101_status.pdf to row 1003
+
+== re-run the SAME job: matched by key, it converges and never duplicates ==
+[SHEETLINK] upsert sheet 5500: 5 updated, 0 added (idempotent by TaskID)
+
+== try to push a non-allowlisted column: the guard blocks it (no PHI to cloud) ==
+[SHEETLINK] BLOCKED non-allowlisted column(s): PARTICIPANTALT - possible PHI/sensitive leak 

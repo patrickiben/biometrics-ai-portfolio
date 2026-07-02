@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations — AI for Biometrics</title>
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<div class="top">
+  <b>AI for Biometrics</b>
+  <div class="nav">
+    <a href="index.html">Home</a>
+    <a href="Operations.html" class="here">Operations</a>
+    <a href="Biostatistics.html">Biostatistics</a>
+    <a href="START_HERE.html">Full library</a>
+  </div>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <a class="back" href="index.html">&larr; Home</a>
+    <div class="eyebrow" style="color:var(--teal)">For trial operations</div>
+    <h1>Operations</h1>
+    <p class="sub">The ship-today operational layer &mdash; <b>no PHI, no new approval gate, no AI sourcing a number</b>. Self-updating trackers and knowledge bases, deterministic SAS/R monitoring with on-leave coverage, the participant-safety and risk dashboards, and the hybrid / on-device trial-ops wikis. Every wiki has a narrated walkthrough; the dashboards are live and interactive.</p>
+  </header>
+
+  <h2>Self-updating trackers &amp; knowledge bases</h2>
+  <div class="grid">
+    <div class="card"><h3>Self-updating Smartsheet trackers <span class="pill tmpl">scripts</span></h3><div class="d">Smartsheet keeps itself current from scheduled SAS/R &mdash; both the AI-assisted version and the no-code / no-AI version. Code owns the data; Smartsheet owns the alerts.</div>
+      <div class="links"><a href="smartsheet_sasr/Smartsheet_SASR.html">Smartsheet &times; SAS/R</a><a href="smartsheet_nocode/Smartsheet_NoCode.html">Smartsheet No-Code</a><a class="vid" href="smartsheet_sasr/SAS_R_Smartsheet_Screencast_narrated.mp4">2-min overview</a></div></div>
+    <div class="card"><h3>Self-updating Study KB &mdash; no GUI <span class="pill tmpl">scripts</span></h3><div class="d">Outlook emails become a searchable knowledge base by dragging them into a synced folder &mdash; one paste-able PowerShell script. No Power Automate designer, no SharePoint clicking, no Copilot Studio.</div>
+      <div class="links"><a class="code" href="study_kb_nogui/index.html">Study KB (no-GUI)</a><a class="vid" href="study_kb_nogui/Study_KB_NoGUI_Screencast_narrated.mp4">Screencast</a></div></div>
+    <div class="card"><h3>Knowledge vault &amp; graph <span class="pill dsgn">proposed</span></h3><div class="d">The Obsidian/Foam idea applied to study ops: the Study KB as a navigable <em>linked-note graph</em> + a clean corpus for the on-prem model. A self-contained interactive graph, a 28-note vault, and the design note.</div>
+      <div class="links"><a href="knowledge_vault/Knowledge_Vault_Design.html">Design note</a><a class="dash" href="knowledge_vault/Knowledge_Graph.html">Live graph</a></div></div>
+    <div class="card"><h3>Hybrid &amp; on-device trial-ops wikis <span class="pill dsgn">wikis</span></h3><div class="d">The agentic trial-operations layer on the hybrid stack (recurrent QC, SOP RAG, eTMF filing, RBQM), plus the on-device small-model stack and the Copilot-free Study Operations KB.</div>
+      <div class="links"><a href="hybrid_ops_wiki/Hybrid_AI_TrialOps_Wiki.html">Hybrid Ops</a><a href="slm_wiki/SLM_SASR_TrialOps.html">SLM &times; SAS/R</a><a href="slm_operating_wiki/Local_SLM_Operating_Wiki.html">Local-SLM Operating</a><a href="slm_operating_wiki/Study_Operations_KB.html">Study Ops KB</a></div></div>
+  </div>
+
+  <h2>Monitoring, safety &amp; coverage</h2>
+  <div class="grid">
+    <div class="card"><h3>SAS/R monitoring &amp; on-leave coverage <span class="pill tmpl">runnable templates</span></h3><div class="d">Deterministic, no-AI monitoring that detects, packages, and pages humans &mdash; freshness gate &rarr; checks &rarr; roll-up &rarr; digest &rarr; tier-2 alert &rarr; heartbeat, including the "covering while on leave" pattern (service account, named backup, dead-man's switch).</div>
+      <div class="links"><a href="sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html">Monitoring Wiki</a><a href="sas_r_automation/SAS_R_Trial_Monitoring_Automation.html">SAS/R Automation</a><a href="sasr_onleave_wiki/On_Leave_Coverage_Playbook.html">On-Leave Playbook</a><a class="vid" href="sas_r_automation/SAS_R_Monitor_Screencast_narrated.mp4">Screencast</a></div></div>
+    <div class="card"><h3>Participant-safety dashboard (TRIALMON) <span class="pill run">dashboard</span></h3><div class="d">The deterministic safety-monitoring backbone made visible: per-visit LFT/QTcF/heme trajectories, the eDISH Hy's-Law screen, the 3+3 ladder, AE by SOC&times;grade, and the disposition KRIs &mdash; click a participant for the full evidence packet. Synthetic data; a screening lens, never a reported number.</div>
+      <div class="links"><a class="dash" href="sasr_monitoring_wiki/TRIALMON_Dashboard.html">Open dashboard</a><a href="sasr_monitoring_wiki/TRIALMON_Dashboard_Wiki.html">Field guide</a><a class="vid" href="sasr_monitoring_wiki/TRIALMON_Dashboard_Screencast_narrated.mp4">Watch (2 min)</a></div></div>
+    <div class="card"><h3>Trial-risk early-warning <span class="pill run">dashboard</span></h3><div class="d">The 3-tier (participant DLT / study / client) trial-termination early-warning console &mdash; 65 signals, daily&rarr;incident escalation, scenarios.</div>
+      <div class="links"><a class="dash" href="risk_monitor/Trial_Risk_EarlyWarning_Dashboard.html">Open dashboard</a><a class="vid" href="risk_monitor/Risk_EarlyWarning_Walkthrough_narrated.mp4">Walkthrough</a></div></div>
+    <div class="card"><h3>Study Lifecycle Monitor <span class="pill run">dashboard</span></h3><div class="d">The operational study-lifecycle console &mdash; portfolio RAG heatmap, early-warning signals, milestone track, data readiness, TLF funnel, deliverables pipeline &mdash; with an operating-depth field guide.</div>
+      <div class="links"><a class="dash" href="lifecycle_dashboard/Study_Lifecycle_Monitor.html">Open dashboard</a><a href="lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html">Field guide</a></div></div>
+  </div>
+
+  <footer>
+    <b>Operations guardrails:</b> operations-only &mdash; no PHI, no participant-level data; reported/regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21, EDC/CTMS), never an LLM; the tools detect, package, and page &mdash; humans and the medical monitor decide. Dashboards run on synthetic/representative data. &nbsp;·&nbsp; <a href="index.html">&larr; Home</a> &nbsp;·&nbsp; <a href="START_HERE.html">Full library</a>
+  </footer>
+</div>
+<script src="site.js" defer></script>
+</body>
+</html>

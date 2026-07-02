@@ -1,0 +1,187 @@
+1
+00:00:00,000 --> 00:00:04,258
+Here's the third companion pipeline — the one you can ship today.
+
+2
+00:00:04,558 --> 00:00:12,734
+It uses strictly SAS and R, no AI, to keep trial monitoring running while the lead biostatistician is away for a month.
+
+3
+00:00:13,034 --> 00:00:27,583
+Let me walk through a real month on Study CP-101: how it's set up, what the covering colleague and the manager receive, and what happens when a real safety signal fires — all inside the existing validated environment.
+
+4
+00:00:28,583 --> 00:00:35,515
+Before leaving, the lead doesn't write new code — they schedule the monitoring programs that already run on demand.
+
+5
+00:00:35,815 --> 00:00:50,440
+Five jobs: a nightly data refresh with a freshness check, a morning safety scan, a daily digest to the covering colleague, a weekly status pack plus a one-page summary for the manager, and an on-event threshold alert.
+
+6
+00:00:50,740 --> 00:00:54,736
+It all runs under a service account that outlasts the lead's login.
+
+7
+00:00:55,036 --> 00:01:08,146
+And a one-page coverage runbook goes to the support and the manager: what green, amber, and red mean, who does what, and the honest note that a flag is a number crossing a line — not an interpretation.
+
+8
+00:01:09,146 --> 00:01:10,517
+Week one is quiet.
+
+9
+00:01:10,817 --> 00:01:22,093
+Every morning the covering colleague gets the digest — enrollment, new adverse events, liver and QT flags, the cohort DLT tally, queries — all green.
+
+10
+00:01:22,393 --> 00:01:25,793
+The most important line is at the bottom: the heartbeat.
+
+11
+00:01:26,093 --> 00:01:31,239
+It confirms the job ran, on data fresh as of this morning, with no errors.
+
+12
+00:01:31,539 --> 00:01:35,854
+That's the trick to an unattended month: silence is never assumed.
+
+13
+00:01:36,154 --> 00:01:42,332
+A missed job or a frozen feed announces itself, instead of hiding behind a green screen.
+
+14
+00:01:43,332 --> 00:01:45,818
+Week two, an operational signal.
+
+15
+00:01:46,118 --> 00:01:54,340
+Enrollment slips below its KRI floor — seventy-six percent of plan, with a screen-failure cluster at one site.
+
+16
+00:01:54,640 --> 00:01:56,624
+The digest renders that row amber.
+
+17
+00:01:56,924 --> 00:02:00,467
+Notice where it goes: it stays in the routine channel.
+
+18
+00:02:00,767 --> 00:02:08,208
+The covering colleague reviews it and raises a site action with the project manager — it does not cry wolf at the medical monitor.
+
+19
+00:02:08,508 --> 00:02:13,398
+And the manager's Friday one-pager simply shows it was flagged and is being handled.
+
+20
+00:02:14,398 --> 00:02:17,046
+Week three, a real safety signal.
+
+21
+00:02:17,346 --> 00:02:27,514
+Overnight, a participant in the top dose cohort shows a candidate Hy's-Law lab pattern — ALT over three times the upper limit, and bilirubin over twice it.
+
+22
+00:02:27,814 --> 00:02:37,298
+This trips the urgent tier, outside the digest, immediately — to the support, a backup, and a role alias, never just one person.
+
+23
+00:02:37,598 --> 00:02:50,806
+The email carries the medical monitor's number, a thirty-minute acknowledgement requirement, and, crucially, it's honest that this is a screening flag that matches the lab criteria — not a diagnosis.
+
+24
+00:02:51,106 --> 00:02:53,194
+The medical monitor adjudicates.
+
+25
+00:02:54,194 --> 00:03:08,756
+And it doesn't just say something happened — it attaches the evidence, already assembled: the eDISH plot with the participant in the Hy's-Law quadrant, the lab trajectory, the dosing timeline, and the exact rule that fired.
+
+26
+00:03:09,056 --> 00:03:27,529
+On the right is the escalation log, time-stamped automatically: the alert fired at six-oh-seven, was delivered, acknowledged within the SLA, reviewed by the medical monitor — who ordered repeat labs and held dosing — and by Sunday the signal didn't confirm and the cohort was released.
+
+27
+00:03:27,829 --> 00:03:33,401
+The system did three deterministic things: detected, paged, packaged.
+
+28
+00:03:33,701 --> 00:03:36,687
+Every clinical decision was the medical monitor's.
+
+29
+00:03:37,687 --> 00:03:39,697
+Week four, the lead is back.
+
+30
+00:03:39,997 --> 00:03:55,985
+Waiting for them is a complete, time-stamped archive: every daily log, every digest with its heartbeat, the two notable alerts and how they resolved, the auto-built evidence packet, and a heartbeat history proving every run was accounted for.
+
+31
+00:03:56,285 --> 00:04:06,991
+Because the whole system is deterministic and validated, there's nothing to reconstruct — no question of what an AI decided and why, no PHI egress to explain.
+
+32
+00:04:07,291 --> 00:04:13,745
+The loop closed itself: flag, escalate, package, decide, stand down.
+
+33
+00:04:14,745 --> 00:04:19,701
+The reason a manager can trust this is that it's designed so it can't fail silently.
+
+34
+00:04:20,001 --> 00:04:21,332
+Four safeguards.
+
+35
+00:04:21,632 --> 00:04:26,394
+A heartbeat with an independent watcher, so a dead job announces itself.
+
+36
+00:04:26,694 --> 00:04:34,406
+A data-freshness gate that runs first, so a clean green on stale data — which is worse than red — gets caught.
+
+37
+00:04:34,706 --> 00:04:41,674
+Alert de-duplication, so one real event alerts once instead of a storm that buries the next signal.
+
+38
+00:04:41,974 --> 00:04:47,781
+And primary plus backup recipients with an acknowledgement requirement, so a six a.m.
+
+39
+00:04:48,081 --> 00:04:49,836
+alert never lands in a void.
+
+40
+00:04:50,136 --> 00:04:54,814
+The rule in the SOP: no news is never interpreted as good news.
+
+41
+00:04:55,814 --> 00:04:57,658
+So, the bottom line.
+
+42
+00:04:57,958 --> 00:05:09,924
+This is the lowest-risk of the three pipelines — no AI, no new vendor, no PHI egress, no new validation surface — so there's no approval gate between today and go-live.
+
+43
+00:05:10,224 --> 00:05:14,882
+It's deterministic and reproducible, so the audit trail is automatic.
+
+44
+00:05:15,182 --> 00:05:21,929
+It detects, pages, and packages; the humans and the medical monitor still make every call.
+
+45
+00:05:22,229 --> 00:05:29,465
+And it's necessary, not sufficient: the narrative-triage layer is exactly the seam the AI hybrid fills later.
+
+46
+00:05:29,765 --> 00:05:33,120
+Ship this now; add AI on top when it's approved.
+
+47
+00:05:33,420 --> 00:05:44,309
+The peace of mind is simple — monitoring never stops, even silence is verified, and every escalation is automatic and logged, while the lead is unreachable in Europe.

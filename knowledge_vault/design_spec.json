@@ -1,0 +1,103 @@
+{
+ "name": "Observatory Atlas — a dark cartographic knowledge graph for clinical study operations",
+ "philosophy": "A calm, premium dark observatory that you navigate like a surveyed territory. The constellation's living, luminous depth (deep blue-black canvas, hand-tuned harmonious hues, soft additive glow) is fused with editorial restraint (generous negative space, impeccable type doing the communicative work, one channel per meaning) and cartographic wayfinding (each of the 8 clusters owns a stable, named region anchored by per-cluster gravity, so spatial memory works: the SAP is in the same place this week as last). The hub is the capital — the warm focal accent, the largest marker, dead-center, with the densest spoke fan — so 'start here' is answered three redundant ways before anyone reads a label. At rest the field is still, evenly readable, and screenshot-ready for an exec deck; in motion it settles fast and parks. Light is never decoration: a lit element always means 'this is active.' The emotional target is quiet authority — a system that visibly knows where everything is and invites you to look. Plain-English everywhere (the audience is senior biostatisticians, not graph engineers), and a persistent governance line keeps the artifact honest: ops-only, no PHI, numbers come from validated tools.",
+ "palette": {
+  "background": "#0B0E14",
+  "panel": "#141925",
+  "text": "#E6EAF2",
+  "muted": "#7C879B",
+  "edge": "#2A3242",
+  "accent": "#F2C14E",
+  "nodeTypes": [
+   {
+    "type": "hub",
+    "color": "#F2C14E"
+   },
+   {
+    "type": "design",
+    "color": "#7AA2F7"
+   },
+   {
+    "type": "stats",
+    "color": "#9D7CD8"
+   },
+   {
+    "type": "data",
+    "color": "#56C2C0"
+   },
+   {
+    "type": "ops",
+    "color": "#E0A458"
+   },
+   {
+    "type": "safety",
+    "color": "#E5677B"
+   },
+   {
+    "type": "supply",
+    "color": "#6FCF97"
+   },
+   {
+    "type": "program",
+    "color": "#E08FB8"
+   },
+   {
+    "type": "reference",
+    "color": "#8A93A6"
+   }
+  ]
+ },
+ "layout": "Force-directed (d3-force), 2D, deterministic seed so the composition is byte-identical on every load for demo repeatability. Each of the 8 cluster centroids is seeded onto a deliberate radial map composition: hub dead-center; related regions placed adjacent (design and stats neighbor each other; data sits between design and ops; safety and supply flank the operational side; program and reference on the outer rim) so the territory is legible, not random. Forces: forceManyBody charge ≈ -340, theta 0.85, with a distanceMax cap (~360px) so repulsion stays local and the canvas never blows apart; forceLink distance keyed to edge type (intra-cluster ~70px, hub-spoke ~150px so the capital gets a clear clearance ring, cross-cluster ~120px), link strength 0.18 so clusters hold shape without snapping rigid; per-cluster forceX/forceY pulling members toward their region centroid (strength ~0.10) so the 8 communities settle into distinct, stable territories; a gentle radial/centering pull on the hub (~0.06) plus weak global x/y centering (~0.03) to keep the figure framed; forceCollide at nodeRadius + 6px to guarantee zero label/node overlap at rest. velocityDecay 0.45 (damped, weighted, viscous deceleration — never springy), alphaDecay 0.025 → settles in ~1.5–2.0s then reaches alphaMin and PARKS (zero idle CPU/jitter for clean screenshots). Pre-warm the sim headless for ~120 ticks off-screen, then fade nodes in over ~600ms so the user never sees the explosive scramble — the map 'develops' like a print exposure, already ~90% relaxed at first paint. Drag re-heats locally only, then re-freezes; dragged positions persist for the session to respect spatial memory.",
+ "nodeEncoding": "Size encodes degree (importance) and ONLY degree, on a gentle sqrt scale: radius = 7 + 3.2*sqrt(degree), so leaves read ~8–9px, mid-connectors ~12–14px, and the degree-15 hub ~19–22px — unmistakably the largest but only ~2.5–3x a leaf, never a cartoonish blob; the eye's prominence ranking matches actual graph degree. Color encodes node type and ONLY type, from the 9-hue palette, applied consistently to fill, glow, legend dot, and detail-panel chip so a biostatistician learns the palette once (gold=home, blue=design, purple=stats, teal=data, amber=ops, red=safety, green=supply, pink=program, slate=reference). Fill is the type hue at ~90% opacity over a 1px inner darker ring of the same hue (a crisp coin edge against the glow). At rest, glow is reserved: only the hub carries a faint warm bloom plus a 1px gold outer corona ring to crown it as study home — every other node's glow is OFF, so an ignited halo always means 'active' (hover/select/search-hit), never decoration. Glow, when it fires, is a soft additive radial bloom (~2.2x node radius) in the node's hue at low alpha (~0.30) so overlapping halos in a focused cluster pool into a faint nebula, with bigger/more-connected nodes glowing larger and brighter (glow as a second importance cue). Labels: shown for the hub and the 8 cluster anchors (degree ≥ ~5) at rest in 13px; leaf labels hidden at rest and revealed by hover/zoom (label level-of-detail) to keep the field uncluttered. Label text is #E6EAF2 set BELOW the node in a clean humanist sans, with a 2px #0B0E14 text-halo so type punches cleanly through edges and glow; hub/anchor labels at 13px semibold, leaves 11px muted #7C879B. Hovered/selected label bumps to 14px semibold.",
+ "edgeEncoding": "Edges are roads drawn BEHIND all nodes and labels as gently-curved hairlines (consistent quadratic sag ~8–12% so parallel links read as a clean bundle, never spaghetti, and to soften the rigid-web look). Two tiers: intra-cluster lanes are 1px #2A3242 at ~0.5 alpha (local streets that recede); inter-cluster trunk routes are 1.5px and slightly brighter, carrying a soft gradient interpolating between the two endpoint region hues so a glance tells you which two domains a road joins; intra-cluster edges are kept a hair warmer/more-saturated than inter-cluster ones so cluster membership is quietly encoded in the mesh itself. Hub-incident edges are the most prominent (1.75px, ~0.7 alpha, faintly warmer #37425A) — the radiating arterial fan that visually crowns the capital without any label. No arrowheads at rest (keeps it calm; the hub-centric layout implies direction). On hover/select, the focused node's incident edges brighten to a hue-blend of their endpoints (or the accent) at full opacity and thicken to ~2px while every other edge drops to ~12% — the map highlights your route — and a one-shot directional shimmer (a soft light pulse traveling focus→neighbor) carries relationship direction kinesthetically instead of with busy arrowheads. No constant 'data-flow' dashes; motion is reserved for the breathing corona and the on-hover shimmer only.",
+ "interactions": [
+  "Hover a node → focus lens: the node and its direct neighbors raise to full opacity, their glow ignites in-hue, incident edges brighten and fire a one-shot focus→neighbor shimmer, neighbor labels fade in, and everything else dims to ~12% and desaturates. A compact tooltip card (panel #141925, hairline border, a left spine in the node's type hue) shows title, type label + color swatch, region name, degree, and the note's first line.",
+  "Hover an edge → both endpoints and the edge highlight and a tooltip shows the relationship in plain English (e.g. 'Statistics → SAP') so links are self-explaining.",
+  "Click a node → pin focus (stays lit after the mouse leaves) and slide in the right detail panel (~320px, #141925): title, type chip, STATUS, OWNER, region/cluster, the note's summary/first lines, and two clickable link lists — Outgoing links and Incoming links (backlinks) — each row clickable to fly-to that note. The selected node eases off-center so it is never hidden behind the panel. Click empty canvas to deselect and restore the full field.",
+  "Double-click a node → soft zoom-and-center on it and expand its local neighborhood; double-click background → reset view (animated ease ~450ms).",
+  "Search box (top-left, with magnifier) → type-ahead over titles + types; matching nodes pulse once and stay lit while non-matches dim and desaturate toward the background; the canvas auto-frames the match set; Enter centers/flies to the top hit; Esc clears. Result rows show region + type swatch so you pick by place.",
+  "Clickable legend filter → click a type swatch/row to toggle that node type; toggled-off nodes fade to ghost (~8–10% opacity, non-interactive), drop out of the simulation, and their dangling edges hide so the remaining structure re-settles calmly. Shift-click isolates a single type. A 'reset' clears all filters.",
+  "Cluster focus → click a region name in the legend (or double-click any node) to spotlight that whole constellation: its region tint deepens, others recede, and the view zooms-to-fit its bounds — for 'show me everything about Safety.'",
+  "Edge declutter toggle → 'edges: all / trunk-only / hub-only' to thin the road network on demand.",
+  "Zoom (scroll/pinch, 0.4x–4x, cursor-centered) & pan (drag background) → smooth, momentum-damped; level-of-detail fades leaf labels and intra-cluster lanes in/out by zoom; a 'fit to screen' / 'fly home (H)' control and a small overview minimap (bottom-right) with a viewport rectangle.",
+  "Drag a node → weighted 'token slide': the node follows the cursor with neighbors easing behind via local re-heat, then the sim settles and re-freezes; positions persist for the session. Dragging the hub gently re-balances the whole field.",
+  "Keyboard → '/' focuses search, 'H' flies to hub, 'F' fit-to-screen, 'L' toggles all labels, Esc clears selection/filters, arrow/Tab walks the selection along incident roads to adjacent notes, number keys 1–9 toggle types."
+ ],
+ "legend": "A docked, low-key map-key card, bottom-left, on the #141925 panel surface at ~92% opacity with a 1px #2A3242 hairline border, 8px radius, and soft shadow; screen-anchored so it never scrolls away during pan/zoom and is always present for the demo screenshot. Header line: '28 notes · 59 links · 8 clusters'. Section 1 — 'Note types / regions' in 11px tracked-uppercase muted caps, then nine rows, each a small filled dot in the exact type hue + the plain-English label ('Study home (capital)', 'Protocol & data-collection specs', 'Statistics & programming', 'Data management & flow', 'Process gate — e.g. database lock', 'Safety & oversight', 'Randomization / blinding / drug supply', 'Deliverables & timeline', 'People / standards / vendors') + a right-aligned count badge of nodes of that type; each row is a live filter toggle (active = full; off = hollow ring + struck-through, ~0.4 alpha). Section 2 — a thin divider, then a 'read-the-graph' micro-legend in 11px muted italic: 'circle size = number of links', 'glow = active / important', 'curved line = cross-domain link', 'gradient road = the two domains it joins'. The card is collapsible to a single icon so it never blocks a screenshot and an exec can expand on demand. Type labels use #E6EAF2; micro-legend keys use #7C879B.",
+ "intuitionPrinciples": [
+  "One channel, one meaning: color is type and ONLY type, size is degree and ONLY degree, position is cluster/region and ONLY cluster — no encoding does double duty, so a viewer decodes nothing.",
+  "The capital announces itself three ways at once — largest marker, dead-center, densest spoke fan (plus the warm gold hue and corona) — so 'where is study home' is answered before anyone reads a label.",
+  "Stable geography: per-cluster gravity settles each domain into its own region, the layout is seeded and freezes, and dragged positions persist — so the SAP is in the same place every week. Spatial memory only works if the territory holds still.",
+  "Brightness equals relevance, on demand: at rest the field is evenly readable; the instant you hover, light collapses onto exactly what's connected and everything else recedes — 'what relates to this?' is answered by where the light goes, with zero reading.",
+  "Color means category, consistently and everywhere: each domain owns one hue across fill, glow, legend dot, region tint, and detail chip, so the palette is learned once and scanned at a glance.",
+  "Roads read as importance: hairline local lanes recede; gradient trunk routes and hub arterials advance — so the structure (what's central, what bridges domains) is legible before a single label is read.",
+  "Light is never decoration: glow and full saturation appear only on hover/select/search, so a lit element always means 'you're looking at this,' keeping the resting map calm and screenshot-clean.",
+  "Plain-English everywhere: legend, tooltips, and chips say 'Process gate — database lock,' not 'ops' — the senior biostatistician reads meaning, not jargon, with zero onboarding."
+ ],
+ "signatureDetails": [
+  "The hub's gold corona: a single faint 1px gold ring orbiting the study-home node at ~1.6x its radius, slowly breathing in opacity (8s ease, ±0.06 alpha) — the one subtle motion in the resting graph, signaling 'live system' without distraction.",
+  "Region tints as soft constellations/landmasses: each cluster sits on a very-low-opacity (~6–8%) blurred convex-hull blob in its hue with a feathered edge, so the 8 domains read as distinct regions of the sky/territory — present enough to group, quiet enough never to fight nodes or labels; additive glow pooling deepens dense domains into faint nebulae.",
+  "Endpoint-gradient trunk roads: inter-cluster edges blend the two region hues along their length (and run a hair more desaturated than intra-cluster lanes), so a glance at a road tells you which two domains it joins and cluster structure is quietly encoded in the mesh.",
+  "Directional edge shimmer on hover: a one-shot light pulse travels focus→neighbor along each lit road, so relationship direction is felt kinesthetically instead of shown with busy arrowheads.",
+  "Paper-halo labels in the dark: every label carries a 2px #0B0E14 text-stroke so place names punch cleanly through edges, glow, and region tints — the legibility trick of a real map, ported to a night-mode canvas.",
+  "Pre-warmed, seeded, develops-like-an-exposure settle: the graph fades in already ~90% relaxed from a fixed seed and lands in the identical, balanced composition every load — never thrashes, always demo-perfect.",
+  "Weighted-settle physics: dragging feels like sliding a brass token across a map table — momentum, neighbors easing behind, then a calm magnetic settle and re-freeze — a tactile premium feel absent from typical bouncy force graphs.",
+  "Micro-physics on the detail panel: opening the side panel eases the selected node off-center so it is never hidden behind the panel — the layout politely makes room for what you're reading.",
+  "Label level-of-detail on zoom: leaf titles emerge as you zoom in and fade as you zoom out, so one view serves both the 30,000-ft exec overview and the analyst drilling into a single note — no mode switch.",
+  "Persistent governance footer: a thin, fixed, full-width hairline strip across the very bottom on the #141925 panel surface, ~11px muted #7C879B, reading 'ops-only · no PHI · numbers come from validated tools' — always visible, never blocking the graph, quietly committing the artifact to its governance."
+ ],
+ "avoid": [
+  "Rainbow chaos — loud, equally-saturated primaries on every type; the palette must read as one designed family, not a default category20 scheme.",
+  "Pure black (#000) or flat muddy gray canvas — both kill the glow and look cheap; use the deep blue-black #0B0E14 so blooms have somewhere to live.",
+  "Hairball at rest — all 59 edges at full opacity with every label on; the resting state must be calm, edges tiered and recessed, leaf labels hidden.",
+  "Bouncy/jittery physics that never settles, or a layout that re-scrambles each load — settle fast, seed deterministically, then park the sim; a territory that won't hold still destroys spatial memory and screenshots badly.",
+  "Cartoonishly oversized hub (linear-degree sizing → giant blob) — keep the ratio tight (~2.5–3x a leaf) on a sqrt scale so size stays an honest connectivity cue and the page stays calm.",
+  "Hard drop-shadows, skeuomorphic bevels, 3D node spheres, or neon cyber-grid backgrounds — dated data-viz clichés that undercut senior credibility.",
+  "Glow/arrowheads/tooltips as ambient default decoration — over-labeling that turns a constellation into a wiring diagram and erases the 'lit = active' signal; reserve glow for interaction, arrows for genuine direction on hover.",
+  "Raw jargon as labels ('ops', 'stats', 'ref') — always plain-English region/type names; the audience is biostatisticians, not graph engineers.",
+  "Reusing a hue for two types, or letting any encoding do double duty — color must map 1:1 to type/region or the whole wayfinding premise collapses.",
+  "Constant animated edge 'data-flow' dashes or a whole-graph idle 'breathing' — perpetual motion is tiring and un-screenshot-friendly; reserve motion for the single corona breath and the on-hover shimmer only.",
+  "More than ~2 simultaneous attention cues at rest — if everything glows and pulses, nothing is the center.",
+  "Burying the legend or governance footer in a hidden menu, or letting either scroll away on pan/zoom — the map-key and the 'ops-only · no PHI · numbers come from validated tools' line must stay visible for the demo to teach and govern itself."
+ ]
+}

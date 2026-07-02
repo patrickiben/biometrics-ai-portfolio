@@ -1,0 +1,1 @@
+Active inference treats the monitor as a model of the expected trajectory, so rising surprise is itself an early warning — and it can even recommend the most informative next test to run.

@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CP-101 — Study Knowledge Graph</title>
+<style>
+:root{
+  --bg:#0B0E14; --panel:#141925; --panel2:#1b2230; --text:#E6EAF2; --muted:#7C879B;
+  --edge:#2A3242; --accent:#F2C14E; --line:#27303f;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:radial-gradient(ellipse 80% 70% at 50% 42%,#111626 0%,#0B0E14 68%);
+  color:var(--text);font-family:-apple-system,"Segoe UI",Inter,Roboto,Arial,sans-serif;overflow:hidden;
+  user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+/* the note panel stays selectable so you can copy note text */
+#panel,#panel *{user-select:text;-webkit-user-select:text}
+#stage{position:fixed;inset:0}
+svg#graph{width:100%;height:100%;display:block;cursor:grab}
+svg#graph.grabbing{cursor:grabbing}
+.edge{fill:none;stroke:var(--edge);stroke-width:1;stroke-opacity:.5;transition:stroke-opacity .18s,stroke-width .18s}
+.edge.inter{stroke-width:1.4}
+.edge.hub{stroke-width:1.7;stroke-opacity:.62}
+.edge.lit{stroke-opacity:1 !important;stroke-width:2.1 !important}
+.edge.faded{stroke-opacity:.06 !important}
+.region{fill:var(--muted);font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
+  opacity:.16;text-anchor:middle;pointer-events:none;font-family:"Segoe UI",Arial,sans-serif}
+.node{cursor:pointer}
+.node .halo{opacity:0;transition:opacity .2s}
+.node.lit .halo{opacity:.34}
+.node .ring{fill:none;stroke-opacity:.0}
+.node .dot{stroke:#0B0E14;stroke-width:1;transition:opacity .18s}
+.node .lbl{fill:var(--text);font-size:11px;text-anchor:middle;pointer-events:none;
+  paint-order:stroke;stroke:#0B0E14;stroke-width:3px;stroke-linejoin:round;opacity:0;transition:opacity .18s}
+.node .lbl.anchor{font-size:12.5px;font-weight:600;opacity:1}
+.node.lit .lbl{opacity:1;font-weight:600}
+.node.faded{opacity:.12}
+.node.faded .lbl{opacity:0 !important}
+.node.hidden{display:none}
+.edge.hidden{display:none}
+
+/* top bar */
+#bar{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:16px;
+  padding:13px 20px;z-index:20;
+  background:linear-gradient(#0b0e14f2,#0b0e14c2 70%,#0b0e1400);pointer-events:none}
+#bar>*{pointer-events:auto}
+.brand{display:flex;flex-direction:column;line-height:1.15;margin-right:4px}
+.brand b{font-family:Georgia,"Times New Roman",serif;font-size:17px;letter-spacing:.2px}
+.brand span{font-size:10.5px;color:var(--muted);letter-spacing:.04em}
+.search{position:relative}
+.search input{background:#10141e;border:1px solid var(--line);color:var(--text);border-radius:9px;
+  padding:8px 12px 8px 30px;font-size:13px;width:210px;outline:none;transition:border-color .15s,width .2s}
+.search input:focus{border-color:#3d4a66;width:240px}
+.search svg{position:absolute;left:9px;top:8px;width:14px;height:14px;stroke:var(--muted);fill:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto;max-width:62%;justify-content:flex-end}
+.chip{display:inline-flex;align-items:center;gap:6px;background:#10141e;border:1px solid var(--line);
+  border-radius:20px;padding:4px 10px 4px 8px;font-size:11.5px;color:#cdd4e1;cursor:pointer;user-select:none;
+  transition:opacity .15s,border-color .15s}
+.chip .sw{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+.chip.off{opacity:.34}.chip.off .lab{text-decoration:line-through}
+.chip:hover{border-color:#3d4a66}
+.btn{background:#10141e;border:1px solid var(--line);color:#cdd4e1;border-radius:9px;padding:8px 11px;
+  font-size:12.5px;cursor:pointer;transition:border-color .15s}
+.btn:hover{border-color:#3d4a66}
+
+/* tooltip */
+#tip{position:fixed;z-index:30;pointer-events:none;max-width:280px;background:#141925f2;
+  border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:9px;padding:9px 12px;
+  font-size:12.5px;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s;
+  box-shadow:0 10px 30px #00000066}
+#tip.on{opacity:1;transform:translateY(0)}
+#tip .t{font-weight:700;font-size:13px;margin-bottom:2px}
+#tip .meta{color:var(--muted);font-size:11px;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+#tip .meta .sw{width:8px;height:8px;border-radius:50%}
+#tip .sum{color:#c4ccda;line-height:1.4}
+
+/* side panel */
+#panel{position:fixed;top:0;right:0;height:100%;width:340px;background:linear-gradient(#161c29,#121723);
+  border-left:1px solid var(--line);z-index:25;transform:translateX(105%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;box-shadow:-18px 0 40px #00000055}
+#panel.open{transform:translateX(0)}
+#panel .ph{padding:20px 22px 14px;border-bottom:1px solid var(--line)}
+#panel .close{position:absolute;top:14px;right:16px;background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
+#panel .close:hover{color:var(--text)}
+#panel .chiprow{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:11px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;border-radius:20px;padding:3px 10px;border:1px solid var(--line)}
+.tag .sw{width:8px;height:8px;border-radius:50%}
+.tag.status{color:#cdd4e1}
+#panel h2{font-family:Georgia,serif;font-size:20px;margin:2px 0 4px;line-height:1.2}
+#panel .owner{color:var(--muted);font-size:12px}
+#panel .body{padding:16px 22px;overflow:auto;flex:1}
+#panel .sum{font-size:13.5px;color:#cfd6e3;line-height:1.5;margin:0 0 18px}
+#panel .lk h4{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:16px 0 7px}
+#panel .lk a{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;color:#dbe1ee;
+  text-decoration:none;font-size:13px;cursor:pointer;border:1px solid transparent}
+#panel .lk a:hover{background:#1d2433;border-color:var(--line)}
+#panel .lk a .sw{width:8px;height:8px;border-radius:50%;flex:0 0 8px}
+#panel .lk a .ty{margin-left:auto;color:var(--muted);font-size:10.5px}
+#panel .pf{padding:11px 22px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+
+/* footer governance */
+#gov{position:fixed;bottom:0;left:0;right:0;z-index:18;text-align:center;font-size:11px;color:#6b7488;
+  padding:7px 12px;background:linear-gradient(#0b0e1400,#0b0e14e8 55%);pointer-events:none}
+#gov b{color:#9aa3b6;font-weight:600}
+#hint{position:fixed;left:20px;bottom:30px;z-index:18;font-size:11.5px;color:var(--muted);
+  background:#10141ecc;border:1px solid var(--line);border-radius:8px;padding:7px 11px;pointer-events:none;
+  transition:opacity .4s}
+/* respect reduced-motion: no fades/transitions, calmer interaction */
+@media (prefers-reduced-motion:reduce){
+  .edge,.node,.node .dot,.node .lbl,.node .halo,#tip,#panel,#hint{transition:none !important}
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg id="graph" role="img" aria-label="Interactive knowledge graph of the CP-101 study operations vault">
+    <defs>
+      <filter id="soft" x="-80%" y="-80%" width="260%" height="260%">
+        <feGaussianBlur stdDeviation="5"/>
+      </filter>
+    </defs>
+    <g id="viewport">
+      <g id="regions"></g>
+      <g id="edges"></g>
+      <g id="nodes"></g>
+    </g>
+  </svg>
+</div>
+
+<div id="bar">
+  <div class="brand"><b>CP-101 · Study Knowledge Graph</b><span>operations vault — 28 linked notes</span></div>
+  <div class="search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="M16 16l5 5" stroke-width="2"/></svg>
+    <input id="q" type="search" placeholder="Search notes…" autocomplete="off" aria-label="Search notes">
+  </div>
+  <button class="btn" id="reset">Reset view</button>
+  <div class="legend" id="legend"></div>
+</div>
+
+<div id="tip"></div>
+
+<aside id="panel" aria-live="polite">
+  <div class="ph">
+    <button class="close" id="pclose" aria-label="Close">×</button>
+    <div class="chiprow" id="pchips"></div>
+    <h2 id="ptitle"></h2>
+    <div class="owner" id="powner"></div>
+  </div>
+  <div class="body">
+    <p class="sum" id="psum"></p>
+    <div class="lk" id="pout"></div>
+    <div class="lk" id="pin"></div>
+  </div>
+  <div class="pf">Informational ops support — <b>not a source of record</b>.</div>
+</aside>
+
+<div id="hint">Hover to focus · click a note for detail · scroll to zoom · drag to pan</div>
+<div id="gov"><b>Operations only</b> · no PHI, participant-level, or unblinded data · reported numbers come from validated tools — never this vault</div>
+
+<script>
+const DATA = {"study":"CP-101","palette":{"background":"#0B0E14","panel":"#141925","text":"#E6EAF2","muted":"#7C879B","edge":"#2A3242","accent":"#F2C14E","nodeTypes":[{"type":"hub","color":"#F2C14E"},{"type":"design","color":"#7AA2F7"},{"type":"stats","color":"#9D7CD8"},{"type":"data","color":"#56C2C0"},{"type":"ops","color":"#E0A458"},{"type":"safety","color":"#E5677B"},{"type":"supply","color":"#6FCF97"},{"type":"program","color":"#E08FB8"},{"type":"reference","color":"#8A93A6"}]},"types":[{"type":"hub","label":"Study home","color":"#F2C14E"},{"type":"design","label":"Study design & data collection","color":"#7AA2F7"},{"type":"stats","label":"Statistics & programming","color":"#9D7CD8"},{"type":"data","label":"Data management & flow","color":"#56C2C0"},{"type":"ops","label":"Process gate","color":"#E0A458"},{"type":"safety","label":"Safety & oversight","color":"#E5677B"},{"type":"supply","label":"Randomization, blinding & drug","color":"#6FCF97"},{"type":"program","label":"Deliverables & timeline","color":"#E08FB8"},{"type":"reference","label":"People, standards & vendors","color":"#8A93A6"}],"clusters":["Foundation","PK & Statistics","Data build","Transfers & lock","Safety & oversight","Supply & blinding","Program & timeline","Reference"],"nodes":[{"id":"hub","title":"CP-101 Knowledge Hub","type":"hub","status":"Active","owner":"Project Manager","degree":15,"cluster":"Foundation","links":["protocol","sap","dmp","monitoring","randomization","db-lock","csr-plan","milestones","roles","conventions","glossary","vendors","lessons"],"summary":"Single entry point for the CP101 biostatistics and studyoperations knowledge base. Start here to navigate the study's design, analysis, data, and delivery artifacts."},{"id":"protocol","title":"Protocol","type":"design","status":"Final","owner":"Clinical Pharmacology Lead","degree":6,"cluster":"Foundation","links":["hub","sap","ecrf","schedule","monitoring","randomization"],"summary":"Authoritative description of the CP101 firstinhuman SAD/MAD design in healthy participants; the source document all downstream specs must trace to."},{"id":"schedule","title":"Schedule of Assessments","type":"design","status":"Final","owner":"Clinical Pharmacology Lead","degree":3,"cluster":"Foundation","links":["protocol","ecrf","pk-sampling"],"summary":"Defines what is assessed at each CP101 visit and timepoint, by cohort and dosing day, for both the SAD and MAD phases."},{"id":"ecrf","title":"eCRF Specification","type":"design","status":"Final","owner":"Data Management Lead","degree":4,"cluster":"Foundation","links":["protocol","dmp","edc-build","schedule"],"summary":"Fieldlevel specification for CP101 electronic data capture: forms, variables, controlled terminology, and editcheck intent."},{"id":"pk-sampling","title":"PK Sampling Plan","type":"design","status":"Final","owner":"Clinical Pharmacology Lead","degree":3,"cluster":"PK & Statistics","links":["schedule","sap","lab-transfers"],"summary":"Defines the PK bloodsampling strategy for CP101 across the SAD and MAD cohorts, including nominal timepoints, window tolerances, and handling of deviations."},{"id":"sap","title":"Statistical Analysis Plan","type":"stats","status":"Final","owner":"Lead Biostatistician (NA)","degree":7,"cluster":"PK & Statistics","links":["hub","protocol","tlf-shells","adam","interim"],"summary":"The master statistical methods document for CP101, governing analysis populations, endpoints, and the planned summaries for the SAD/MAD firstinhuman design."},{"id":"tlf-shells","title":"TLF Shells","type":"stats","status":"Draft","owner":"Lead Biostatistician (NA)","degree":5,"cluster":"PK & Statistics","links":["hub","sap","adam","db-lock","csr-plan"],"summary":"Mock tables, listings, and figures for CP101 — the emptybutfullyformatted output templates that define titles, structure, footnotes, and population labels with no data po…"},{"id":"adam","title":"ADaM Specifications","type":"stats","status":"Draft","owner":"Statistical Programming","degree":4,"cluster":"PK & Statistics","links":["sap","tlf-shells","edc-build","conventions"],"summary":"Analysis dataset specifications for CP101 — the ADaMlevel metadata defining derived variables, parameters, and traceability from collected data to analysisready structure…"},{"id":"dmp","title":"Data Management Plan","type":"data","status":"Active","owner":"Data Management Lead","degree":6,"cluster":"Data build","links":["hub","ecrf","edc-build","data-transfers","db-lock"],"summary":"Governs how CP101 clinical data are captured, cleaned, transferred, and locked across the study lifecycle."},{"id":"edc-build","title":"EDC Build","type":"data","status":"Active","owner":"Data Management Lead","degree":4,"cluster":"Data build","links":["ecrf","dmp","edit-checks","adam"],"summary":"Tracks configuration of the CP101 EDC system from approved specs through golive and migration control."},{"id":"edit-checks","title":"Edit Checks","type":"data","status":"Active","owner":"Data Management Lead","degree":2,"cluster":"Data build","links":["edc-build","dmp"],"summary":"Specifies the automated and manual datavalidation rules applied in the CP101 EDC to flag discrepancies at or near entry."},{"id":"data-transfers","title":"Data Transfers","type":"data","status":"Active","owner":"Data Management Lead","degree":5,"cluster":"Transfers & lock","links":["dmp","lab-transfers","db-lock","vendors"],"summary":"Governs how external data reaches CP101's clinical database, including transfer formats, frequency, file naming, and reconciliation."},{"id":"lab-transfers","title":"Lab Data Transfers","type":"data","status":"Active","owner":"Data Management Lead","degree":3,"cluster":"Transfers & lock","links":["data-transfers","pk-sampling","central-lab"],"summary":"Governs the operational handling of central laboratory data transfers into CP101 (safety chemistry/hematology, urinalysis, and PK bioanalytical results)."},{"id":"db-lock","title":"Database Lock","type":"ops","status":"Planned","owner":"Project Manager","degree":7,"cluster":"Transfers & lock","links":["hub","dmp","data-transfers","tlf-shells","milestones"],"summary":"Defines the readiness criteria and sequencing for CP101 database lock(s), including any SAD/MAD interim locks ahead of the final lock."},{"id":"monitoring","title":"Monitoring Plan","type":"safety","status":"Active","owner":"Medical Monitor / Safety","degree":4,"cluster":"Safety & oversight","links":["hub","protocol","risk-signals","lessons"],"summary":"Defines how CP101 safety and conduct are monitored across the SAD and MAD dosing periods."},{"id":"risk-signals","title":"Risk Signals","type":"safety","status":"Active","owner":"Medical Monitor / Safety","degree":2,"cluster":"Safety & oversight","links":["monitoring","dsmb"],"summary":"Catalogs the predefined safety and conduct signals that trigger escalation in CP101."},{"id":"dsmb","title":"DSMB Operations","type":"safety","status":"Active","owner":"Medical Monitor / Safety","degree":3,"cluster":"Safety & oversight","links":["hub","risk-signals","interim"],"summary":"Describes how the Data Safety Monitoring Board is convened and serviced for CP101."},{"id":"interim","title":"Interim Analysis (ops)","type":"safety","status":"Planned","owner":"Lead Biostatistician (NA)","degree":4,"cluster":"Safety & oversight","links":["dsmb","sap","db-lock"],"summary":"Plans the operational mechanics of any interim safety look in CP101."},{"id":"randomization","title":"Randomization & Blinding","type":"supply","status":"Final","owner":"Project Manager","degree":3,"cluster":"Supply & blinding","links":["hub","protocol","drug-supply"],"summary":"Defines how participants are assigned to active or placebo and how the blind is maintained across the CP101 SAD/MAD program."},{"id":"drug-supply","title":"Drug Supply & Accountability","type":"supply","status":"Active","owner":"Project Manager","degree":2,"cluster":"Supply & blinding","links":["randomization","vendors"],"summary":"Tracks investigational product receipt, storage, dispensing, reconciliation, and return for CP101."},{"id":"csr-plan","title":"CSR Plan","type":"program","status":"Planned","owner":"Lead Biostatistician (NA)","degree":5,"cluster":"Program & timeline","links":["hub","sap","tlf-shells","db-lock"],"summary":"Defines how CP101 moves from final TLF outputs to a completed Clinical Study Report."},{"id":"milestones","title":"Milestones","type":"program","status":"Active","owner":"Project Manager","degree":4,"cluster":"Program & timeline","links":["hub","db-lock","interim","csr-plan"],"summary":"Single tracked timeline of CP101 statistical and reporting milestones."},{"id":"lessons","title":"Lessons Learned","type":"program","status":"Active","owner":"Project Manager","degree":3,"cluster":"Program & timeline","links":["hub","monitoring","data-transfers"],"summary":"Running log of what worked, what slipped, and what to change for the next CP101 cohort and future protocols."},{"id":"roles","title":"Roles & Responsibilities","type":"reference","status":"Active","owner":"Project Manager","degree":2,"cluster":"Reference","links":["hub","conventions"],"summary":"Defines who owns each deliverable, decision, and signoff across the CP101 biostatistics workstream."},{"id":"conventions","title":"Naming Conventions","type":"reference","status":"Active","owner":"Statistical Programming","degree":4,"cluster":"Reference","links":["hub","roles","glossary","adam"],"summary":"Sets the file, dataset, variable, and output naming standards every CP101 deliverable must follow."},{"id":"glossary","title":"Glossary","type":"reference","status":"Active","owner":"Lead Biostatistician (NA)","degree":2,"cluster":"Reference","links":["hub","conventions"],"summary":"Single source of truth for CP101 abbreviations, role labels, and studyspecific terms."},{"id":"vendors","title":"Vendors","type":"reference","status":"Active","owner":"Project Manager","degree":4,"cluster":"Reference","links":["hub","data-transfers","central-lab","drug-supply"],"summary":"Lists the external service providers supporting CP101 and the biostatisticsrelevant interfaces with each."},{"id":"central-lab","title":"Central Lab","type":"reference","status":"Active","owner":"Data Management Lead","degree":2,"cluster":"Transfers & lock","links":["lab-transfers","vendors"],"summary":"Reference note for the central safety laboratory vendor for CP101. (PK bioanalysis — e.g."}],"edges":[{"source":"adam","target":"conventions"},{"source":"adam","target":"edc-build"},{"source":"adam","target":"sap"},{"source":"adam","target":"tlf-shells"},{"source":"central-lab","target":"lab-transfers"},{"source":"central-lab","target":"vendors"},{"source":"conventions","target":"glossary"},{"source":"conventions","target":"hub"},{"source":"conventions","target":"roles"},{"source":"csr-plan","target":"db-lock"},{"source":"csr-plan","target":"hub"},{"source":"csr-plan","target":"milestones"},{"source":"csr-plan","target":"sap"},{"source":"csr-plan","target":"tlf-shells"},{"source":"data-transfers","target":"db-lock"},{"source":"data-transfers","target":"dmp"},{"source":"data-transfers","target":"lab-transfers"},{"source":"data-transfers","target":"lessons"},{"source":"data-transfers","target":"vendors"},{"source":"db-lock","target":"dmp"},{"source":"db-lock","target":"hub"},{"source":"db-lock","target":"interim"},{"source":"db-lock","target":"milestones"},{"source":"db-lock","target":"tlf-shells"},{"source":"dmp","target":"ecrf"},{"source":"dmp","target":"edc-build"},{"source":"dmp","target":"edit-checks"},{"source":"dmp","target":"hub"},{"source":"drug-supply","target":"randomization"},{"source":"drug-supply","target":"vendors"},{"source":"dsmb","target":"hub"},{"source":"dsmb","target":"interim"},{"source":"dsmb","target":"risk-signals"},{"source":"ecrf","target":"edc-build"},{"source":"ecrf","target":"protocol"},{"source":"ecrf","target":"schedule"},{"source":"edc-build","target":"edit-checks"},{"source":"glossary","target":"hub"},{"source":"hub","target":"lessons"},{"source":"hub","target":"milestones"},{"source":"hub","target":"monitoring"},{"source":"hub","target":"protocol"},{"source":"hub","target":"randomization"},{"source":"hub","target":"roles"},{"source":"hub","target":"sap"},{"source":"hub","target":"tlf-shells"},{"source":"hub","target":"vendors"},{"source":"interim","target":"milestones"},{"source":"interim","target":"sap"},{"source":"lab-transfers","target":"pk-sampling"},{"source":"lessons","target":"monitoring"},{"source":"monitoring","target":"protocol"},{"source":"monitoring","target":"risk-signals"},{"source":"pk-sampling","target":"sap"},{"source":"pk-sampling","target":"schedule"},{"source":"protocol","target":"randomization"},{"source":"protocol","target":"sap"},{"source":"protocol","target":"schedule"},{"source":"sap","target":"tlf-shells"}]};
+
+/* ---------- world + helpers ---------- */
+const W=1140, H=780, CX=W/2, CY=H/2-6, R=300;
+const REDUCE=(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches);
+const SVG="http://www.w3.org/2000/svg";
+const el=(t,a)=>{const e=document.createElementNS(SVG,t);for(const k in(a||{}))e.setAttribute(k,a[k]);return e;};
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hex2rgb(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+function blend(a,b,t){const x=hex2rgb(a),y=hex2rgb(b);return`rgb(${Math.round(x[0]+(y[0]-x[0])*t)},${Math.round(x[1]+(y[1]-x[1])*t)},${Math.round(x[2]+(y[2]-x[2])*t)})`;}
+
+const colorOf={}, labelOf={};
+DATA.types.forEach(t=>{colorOf[t.type]=t.color;labelOf[t.type]=t.label;});
+const byId={}, byTitle={};
+DATA.nodes.forEach(n=>{byId[n.id]=n;byTitle[n.title]=n;});
+
+/* cluster centroids on a radial map */
+const CLUSTER_ANGLE={
+ "Foundation":-90,"PK & Statistics":-45,"Data build":0,"Transfers & lock":45,
+ "Safety & oversight":90,"Supply & blinding":135,"Program & timeline":180,"Reference":-135};
+const centroid={};
+DATA.clusters.forEach(c=>{
+  const a=CLUSTER_ANGLE[c]*Math.PI/180;
+  const rad = c==="Foundation"? R*0.52 : R;
+  centroid[c]={x:CX+rad*Math.cos(a), y:CY+rad*Math.sin(a)};
+});
+
+/* adjacency + incoming/outgoing */
+const adj={};
+DATA.nodes.forEach(n=>adj[n.id]=new Set());
+DATA.edges.forEach(e=>{adj[e.source].add(e.target);adj[e.target].add(e.source);});
+function outgoing(n){return n.links.map(id=>byId[id]).filter(Boolean);}
+function incoming(n){return DATA.nodes.filter(m=>m.links.includes(n.id));}
+
+/* ---------- init positions (deterministic) ---------- */
+const rnd=mulberry32(20260625);
+DATA.nodes.forEach((n,i)=>{
+  n.r = 8 + 3.3*Math.sqrt(n.degree);
+  if(n.id==="hub"){n.x=CX;n.y=CY;n.fx=CX;n.fy=CY;}
+  else{const c=centroid[n.cluster];const ang=rnd()*Math.PI*2,d=18+rnd()*40;
+       n.x=c.x+Math.cos(ang)*d;n.y=c.y+Math.sin(ang)*d;}
+  n.vx=0;n.vy=0;
+});
+
+/* ---------- force simulation ---------- */
+function linkTarget(e){const s=byId[e.source],t=byId[e.target];
+  if(s.id==="hub"||t.id==="hub")return 172;
+  return s.cluster===t.cluster?82:158;}
+let alpha=1;
+function tick(){
+  const nodes=DATA.nodes;
+  // charge repulsion (capped, local)
+  for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+    const a=nodes[i],b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y;let d2=dx*dx+dy*dy||1;
+    let d=Math.sqrt(d2); if(d>440)continue;
+    let f=(3600/d2); if(f>12)f=12; const ux=dx/d,uy=dy/d;
+    a.vx+=ux*f*alpha;a.vy+=uy*f*alpha;b.vx-=ux*f*alpha;b.vy-=uy*f*alpha;
+  }
+  // links
+  DATA.edges.forEach(e=>{const a=byId[e.source],b=byId[e.target];
+    let dx=b.x-a.x,dy=b.y-a.y;let d=Math.sqrt(dx*dx+dy*dy)||1;const L=linkTarget(e);
+    let f=(d-L)*0.045*alpha;const ux=dx/d,uy=dy/d;
+    a.vx+=ux*f;a.vy+=uy*f;b.vx-=ux*f;b.vy-=uy*f;});
+  // cluster gravity + framing
+  nodes.forEach(n=>{const c=centroid[n.cluster];
+    n.vx+=(c.x-n.x)*0.028*alpha; n.vy+=(c.y-n.y)*0.028*alpha;
+    n.vx+=(CX-n.x)*0.0036*alpha; n.vy+=(CY-n.y)*0.0036*alpha;});
+  // integrate — viscous: drag adds damping + a hard per-tick speed clamp so nothing can lurch/strobe
+  const DAMP=drag?0.34:0.5, MAXV=drag?10:22;
+  nodes.forEach(n=>{
+    if(drag&&drag.node===n&&drag.tx!=null){var ddx=drag.tx-n.fx,ddy=drag.ty-n.fy,dl=Math.hypot(ddx,ddy)||1,st=Math.min(dl*0.26,22);n.fx+=ddx/dl*st;n.fy+=ddy/dl*st;} // dragged node eases toward cursor, capped (weighty, never jumps)
+    if(n.fx!=null){n.x=n.fx;n.y=n.fy;n.vx=0;n.vy=0;return;}
+    n.vx*=DAMP;n.vy*=DAMP;
+    var sp=Math.hypot(n.vx,n.vy);if(sp>MAXV){n.vx=n.vx/sp*MAXV;n.vy=n.vy/sp*MAXV;}
+    n.x+=n.vx;n.y+=n.vy;});
+  // collision
+  for(let k=0;k<2;k++)for(let i=0;i<nodes.length;i++)for(let j=i+1;j<nodes.length;j++){
+    const a=nodes[i],b=nodes[j];let dx=a.x-b.x,dy=a.y-b.y;let d=Math.sqrt(dx*dx+dy*dy)||1;
+    const min=a.r+b.r+7; if(d<min){const o=Math.min((min-d)/2,5.5),ux=dx/d,uy=dy/d;
+      if(a.fx==null){a.x+=ux*o;a.y+=uy*o;} if(b.fx==null){b.x-=ux*o;b.y-=uy*o;}}}
+  alpha*=0.978; if(alpha<0.005)alpha=0.005;
+}
+function prewarm(n){for(let i=0;i<n;i++)tick();}
+
+/* ---------- render ---------- */
+const gEdges=document.getElementById('edges'), gNodes=document.getElementById('nodes'), gReg=document.getElementById('regions');
+DATA.clusters.forEach(c=>{const p=centroid[c];
+  let dx=p.x-CX,dy=p.y-CY,d=Math.hypot(dx,dy)||1;
+  const lx=p.x+dx/d*48, ly=p.y+dy/d*48+(dy>=0?7:-1);
+  const t=el('text',{x:lx,y:ly,class:'region'});t.textContent=c.toUpperCase();gReg.appendChild(t);});
+
+const edgeEls=DATA.edges.map(e=>{
+  const s=byId[e.source],t=byId[e.target];
+  const inter=s.cluster!==t.cluster, hub=s.id==="hub"||t.id==="hub";
+  let stroke="var(--edge)";
+  if(hub)stroke=blend("#2A3242","#F2C14E",.22);
+  else if(inter)stroke=blend(colorOf[s.type],colorOf[t.type],.5);
+  const p=el('path',{class:'edge'+(hub?' hub':inter?' inter':''),stroke});
+  p.__e=e;gEdges.appendChild(p);return p;});
+
+const nodeEls=DATA.nodes.map(n=>{
+  const g=el('g',{class:'node','data-id':n.id});
+  const col=colorOf[n.type];
+  const halo=el('circle',{class:'halo',r:n.r*2.1,fill:col,filter:'url(#soft)'});
+  g.appendChild(halo);
+  if(n.id==="hub"){const cor=el('circle',{class:'corona',r:n.r+5,fill:'none',stroke:'#F2C14E','stroke-opacity':.55,'stroke-width':1.4});g.appendChild(cor);halo.style.opacity=.14;}
+  const dot=el('circle',{class:'dot',r:n.r,fill:col});g.appendChild(dot);
+  const ly=n.id==="hub"?-(n.r+11):n.r+14;
+  const lbl=el('text',{class:'lbl',y:ly});lbl.textContent=n.title;g.appendChild(lbl);
+  g.__n=n;gNodes.appendChild(g);return g;});
+
+function place(){
+  edgeEls.forEach(p=>{const e=p.__e,a=byId[e.source],b=byId[e.target];
+    const mx=(a.x+b.x)/2,my=(a.y+b.y)/2,dx=b.x-a.x,dy=b.y-a.y;
+    const cx=mx-dy*0.09,cy=my+dx*0.09;
+    p.setAttribute('d',`M${a.x} ${a.y}Q${cx} ${cy} ${b.x} ${b.y}`);});
+  nodeEls.forEach(g=>{const n=g.__n;g.setAttribute('transform',`translate(${n.x} ${n.y})`);});
+}
+
+/* ---------- viewport zoom/pan ---------- */
+const vp=document.getElementById('viewport'), svg=document.getElementById('graph');
+let T={x:0,y:0,k:1};
+function applyT(){vp.setAttribute('transform',`translate(${T.x} ${T.y}) scale(${T.k})`);}
+function fit(){const rect=svg.getBoundingClientRect();const pad=98;
+  let minx=1e9,miny=1e9,maxx=-1e9,maxy=-1e9;
+  DATA.nodes.forEach(n=>{minx=Math.min(minx,n.x-n.r);maxx=Math.max(maxx,n.x+n.r);
+    miny=Math.min(miny,n.y-n.r);maxy=Math.max(maxy,n.y+n.r);});
+  const cw=maxx-minx,ch=maxy-miny;
+  const k=Math.min((rect.width-pad*2)/cw,(rect.height-pad*2)/ch);
+  T.k=Math.min(k,2.0);
+  T.x=(rect.width-cw*T.k)/2-minx*T.k;
+  T.y=(rect.height-ch*T.k)/2-miny*T.k;applyT();}
+function toWorld(cx,cy){const r=svg.getBoundingClientRect();return{x:(cx-r.left-T.x)/T.k,y:(cy-r.top-T.y)/T.k};}
+
+svg.addEventListener('wheel',ev=>{ev.preventDefault();const r=svg.getBoundingClientRect();
+  const mx=ev.clientX-r.left,my=ev.clientY-r.top;const wx=(mx-T.x)/T.k,wy=(my-T.y)/T.k;
+  const f=ev.deltaY<0?1.12:1/1.12;T.k=Math.max(0.35,Math.min(3.2,T.k*f));
+  T.x=mx-wx*T.k;T.y=my-wy*T.k;applyT();},{passive:false});
+
+let drag=null;
+svg.addEventListener('pointerdown',ev=>{
+  ev.preventDefault();
+  const t=ev.target.closest('.node');
+  if(t){const nn=t.__n;drag={node:nn,moved:false,tx:nn.x,ty:nn.y};nn.fx=nn.x;nn.fy=nn.y;try{svg.setPointerCapture(ev.pointerId);}catch(e){}hideTip();setFocus(nn);}
+  else{drag={pan:true,x0:ev.clientX,y0:ev.clientY,px:T.x,py:T.y};svg.classList.add('grabbing');}
+});
+svg.addEventListener('pointermove',ev=>{
+  if(!drag)return;
+  if(drag.pan){T.x=drag.px+(ev.clientX-drag.x0);T.y=drag.py+(ev.clientY-drag.y0);applyT();return;}
+  drag.moved=true;const w=toWorld(ev.clientX,ev.clientY);
+  drag.tx=w.x;drag.ty=w.y;alpha=Math.max(alpha,REDUCE?0.02:0.22);kick();
+});
+svg.addEventListener('pointerup',ev=>{
+  if(drag&&drag.node){if(drag.node.id==="hub"){drag.node.fx=CX;drag.node.fy=CY;}else{drag.node.fx=null;drag.node.fy=null;}
+    if(!drag.moved)selectNode(drag.node);}
+  if(drag&&drag.pan&&Math.abs(ev.clientX-drag.x0)<3&&Math.abs(ev.clientY-drag.y0)<3)deselect();
+  svg.classList.remove('grabbing');drag=null;
+  if(pinned)setFocus(pinned);else clearFocus();   // restore a stable focus state after the drag
+});
+
+/* ---------- focus / hover ---------- */
+let pinned=null;
+const tip=document.getElementById('tip');
+function setFocus(n){
+  const keep=new Set([n.id]);adj[n.id].forEach(x=>keep.add(x));
+  nodeEls.forEach(g=>{const id=g.__n.id;g.classList.toggle('faded',!keep.has(id));g.classList.toggle('lit',id===n.id||adj[n.id].has(id));});
+  edgeEls.forEach(p=>{const e=p.__e;const inc=e.source===n.id||e.target===n.id;
+    p.classList.toggle('lit',inc);p.classList.toggle('faded',!inc);});
+}
+function clearFocus(){nodeEls.forEach(g=>g.classList.remove('faded','lit'));edgeEls.forEach(p=>p.classList.remove('lit','faded'));}
+function showTip(n,x,y){if(pinned&&pinned===n){hideTip();return;}const c=colorOf[n.type];
+  tip.innerHTML=`<div class="t">${n.title}</div><div class="meta"><span class="sw" style="background:${c}"></span>${labelOf[n.type]} · ${n.status}</div><div class="sum">${n.summary}</div>`;
+  tip.style.left=Math.min(x+14,innerWidth-300)+'px';tip.style.top=(y+14)+'px';tip.classList.add('on');}
+function hideTip(){tip.classList.remove('on');}
+
+nodeEls.forEach(g=>{const n=g.__n;
+  g.addEventListener('pointerenter',ev=>{if(drag)return;if(!pinned)setFocus(n);showTip(n,ev.clientX,ev.clientY);});
+  g.addEventListener('pointermove',ev=>{if(drag)return;if(tip.classList.contains('on')){tip.style.left=Math.min(ev.clientX+14,innerWidth-300)+'px';tip.style.top=(ev.clientY+14)+'px';}});
+  g.addEventListener('pointerleave',()=>{if(drag)return;hideTip();if(!pinned)clearFocus();else setFocus(pinned);});
+});
+
+/* ---------- selection + panel ---------- */
+const panel=document.getElementById('panel');
+function selectNode(n){pinned=n;setFocus(n);openPanel(n);ensureVisible(n);
+  document.getElementById('hint').style.opacity=0;}
+function ensureVisible(n){const rect=svg.getBoundingClientRect();
+  const sx=n.x*T.k+T.x, sy=n.y*T.k+T.y, panelLeft=rect.width-360;
+  if(sx>panelLeft-30||sx<60||sy<90||sy>rect.height-70){
+    T.x=rect.width*0.40-n.x*T.k; T.y=rect.height*0.52-n.y*T.k; applyT();}}
+function deselect(){pinned=null;clearFocus();panel.classList.remove('open');}
+document.getElementById('pclose').onclick=deselect;
+function linkRow(m){const c=colorOf[m.type];const a=document.createElement('a');
+  a.innerHTML=`<span class="sw" style="background:${c}"></span>${m.title}<span class="ty">${labelOf[m.type]}</span>`;
+  a.onclick=()=>{selectNode(m);centerOn(m);};return a;}
+function openPanel(n){const c=colorOf[n.type];
+  document.getElementById('pchips').innerHTML=
+    `<span class="tag"><span class="sw" style="background:${c}"></span>${labelOf[n.type]}</span>`+
+    `<span class="tag status">${n.status}</span>`+
+    `<span class="tag status">${n.cluster}</span>`;
+  document.getElementById('ptitle').textContent=n.title;
+  document.getElementById('powner').textContent='Owner · '+n.owner;
+  document.getElementById('psum').textContent=n.summary;
+  const out=outgoing(n),inc=incoming(n).filter(m=>!n.links.includes(m.title)||true);
+  const incFiltered=incoming(n);
+  const po=document.getElementById('pout');po.innerHTML='<h4>Links to ('+out.length+')</h4>';out.forEach(m=>po.appendChild(linkRow(m)));
+  const pi=document.getElementById('pin');pi.innerHTML='<h4>Linked from ('+incFiltered.length+')</h4>';incFiltered.forEach(m=>pi.appendChild(linkRow(m)));
+  panel.classList.add('open');}
+function centerOn(n){const rect=svg.getBoundingClientRect();
+  T.k=Math.max(T.k,1.0);T.x=rect.width*0.42-n.x*T.k;T.y=rect.height/2-n.y*T.k;applyT();}
+
+/* ---------- search ---------- */
+document.getElementById('q').addEventListener('input',e=>{
+  const q=e.target.value.trim().toLowerCase();
+  if(!q){nodeEls.forEach(g=>g.classList.remove('faded','lit'));edgeEls.forEach(p=>p.classList.remove('faded','lit'));return;}
+  const hit=new Set();
+  DATA.nodes.forEach(n=>{if(n.title.toLowerCase().includes(q)||labelOf[n.type].toLowerCase().includes(q)||n.type.includes(q))hit.add(n.id);});
+  nodeEls.forEach(g=>{const h=hit.has(g.__n.id);g.classList.toggle('lit',h);g.classList.toggle('faded',!h);});
+  edgeEls.forEach(p=>p.classList.add('faded'));
+});
+
+/* ---------- legend (type toggles) ---------- */
+const hiddenTypes=new Set();
+const legend=document.getElementById('legend');
+DATA.types.forEach(t=>{const c=document.createElement('span');c.className='chip';
+  c.innerHTML=`<span class="sw" style="background:${t.color}"></span><span class="lab">${t.label.split(' ')[0]==='Study'&&t.type!=='hub'?t.label:({hub:'Hub',design:'Design',stats:'Statistics',data:'Data',ops:'Process',safety:'Safety',supply:'Supply',program:'Program',reference:'Reference'})[t.type]}</span>`;
+  c.onclick=()=>{if(hiddenTypes.has(t.type))hiddenTypes.delete(t.type);else hiddenTypes.add(t.type);
+    c.classList.toggle('off');applyVisibility();};
+  legend.appendChild(c);});
+function applyVisibility(){
+  nodeEls.forEach(g=>g.classList.toggle('hidden',hiddenTypes.has(g.__n.type)));
+  edgeEls.forEach(p=>{const e=p.__e;p.classList.toggle('hidden',hiddenTypes.has(byId[e.source].type)||hiddenTypes.has(byId[e.target].type));});
+}
+
+document.getElementById('reset').onclick=()=>{deselect();document.getElementById('q').value='';
+  nodeEls.forEach(g=>g.classList.remove('faded','lit'));edgeEls.forEach(p=>p.classList.remove('faded','lit'));fit();};
+
+/* ---------- run ---------- */
+let raf=null,cooling=0;
+function kick(){if(!raf){cooling=0;raf=requestAnimationFrame(loop);}}
+function loop(){tick();place();cooling++;
+  if(alpha>0.02||cooling<40){raf=requestAnimationFrame(loop);}else{raf=null;if(!drag)decollide();}}
+function boxNodeHit(box,self){return DATA.nodes.some(m=>{if(m===self)return false;
+  const nx=Math.max(box.x,Math.min(m.x,box.x+box.w)),ny=Math.max(box.y,Math.min(m.y,box.y+box.h));
+  return Math.hypot(m.x-nx,m.y-ny)<m.r+2;});}
+function decollide(){
+  const cand=DATA.nodes.filter(n=>n.degree>=4||n.id==="hub").sort((a,b)=>(b.id==="hub")-(a.id==="hub")||b.degree-a.degree);
+  const boxes=[];
+  cand.forEach(n=>{const w=n.title.length*7+6,h=16;
+    const cy=(n.id==="hub")?n.y-n.r-12:n.y+n.r+13;
+    const box={x:n.x-w/2,y:cy-h/2,w,h};
+    const labHit=boxes.some(b=>!(box.x+box.w<b.x||box.x>b.x+b.w||box.y+box.h<b.y||box.y>b.y+b.h));
+    n.__lab=(n.id==="hub")||(!labHit&&!boxNodeHit(box,n)); if(n.__lab)boxes.push(box);});
+  nodeEls.forEach(g=>{const l=g.querySelector('.lbl');g.__n.__lab?l.classList.add('anchor'):l.classList.remove('anchor');});
+}
+prewarm(260);            // settle headless → stable composition
+place();decollide();fit();
+alpha=0.07;kick();        // gentle live micro-settle, then park
+window.addEventListener('resize',fit);
+</script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+file '/Users/patrickiben/Biometrics_AI_Program/risk_monitor/narration/c-5-0.wav'
+file '/Users/patrickiben/Biometrics_AI_Program/risk_monitor/narration/_gap.wav'
+file '/Users/patrickiben/Biometrics_AI_Program/risk_monitor/narration/c-5-1.wav'
+file '/Users/patrickiben/Biometrics_AI_Program/risk_monitor/narration/_gap.wav'
+file '/Users/patrickiben/Biometrics_AI_Program/risk_monitor/narration/c-5-2.wav'
+file '/Users/patrickiben/Biometrics_AI_Program/risk_monitor/narration/_tail.wav'

@@ -1,0 +1,51 @@
+################################################################################
+# TABLE     : t_ae_by_soc_pt  (Parallel-group)
+# TITLE     : Treatment-Emergent Adverse Events by System Organ Class and
+#             Preferred Term
+# POPULATION: Safety Population (SAFFL == "Y")
+# INPUT     : ADAE (TRTEMFL == "Y")
+# NOTE      : PSEUDOCODE. Counts = PARTICIPANTS with >=1 event (n_distinct USUBJID),
+#             NOT event rows. n (%) per arm; % denominator = SAFFL N per arm.
+#             SOC sorted by overall frequency desc; PT within SOC desc.
+################################################################################
+source("../00_setup_helpers.R")
+env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
+dv  <- design_vars("PARALLEL")                 # trtvar = TRT01A
+
+denom <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
+adae  <- adam$adae %>% filter(TRTEMFL == "Y", SAFFL == "Y")   # treatment-emergent
+
+## 1) "Any TEAE" overall row (distinct participants, any event)
+any_te <- adae %>% group_by(trt = .data[[dv$trtvar]]) %>%
+  summarise(nsubj = n_distinct(USUBJID), .groups = "drop") %>%
+  mutate(AESOC = NA_character_, AEDECOD = NA_character_, level = 0L,
+         term = "Participants with any TEAE")
+
+## 2) by SOC (distinct participants within SOC)
+soc <- aecount(adae, trtvar = dv$trtvar, byvars = "AESOC") %>%
+  mutate(level = 1L, term = AESOC)
+
+## 3) by SOC*PT (distinct participants within SOC and PT)
+socpt <- aecount(adae, trtvar = dv$trtvar, byvars = c("AESOC","AEDECOD")) %>%
+  mutate(level = 2L, term = paste0("   ", AEDECOD))   # indent PT under SOC
+
+## ordering: SOC by overall (all-arm) participant count desc; PT within SOC desc
+soc_ord   <- soc   %>% group_by(AESOC)          %>% summarise(socn = sum(nsubj), .groups="drop")
+pt_ord    <- socpt %>% group_by(AESOC, AEDECOD) %>% summarise(ptn  = sum(nsubj), .groups="drop")
+
+## assemble: Any TEAE -> SOC -> indented PT, with n (%) per arm
+rep <- bind_rows(any_te, soc, socpt) %>%
+  left_join(denom, by = c("trt")) %>%
+  mutate(value = n_pct(nsubj, N)) %>%
+  left_join(soc_ord, by = "AESOC") %>% left_join(pt_ord, by = c("AESOC","AEDECOD")) %>%
+  arrange(desc(socn), AESOC, level, desc(ptn)) %>%
+  select(term, level, trt, value) %>%
+  pivot_wider(names_from = trt, values_from = value)
+
+ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
+   text = "Treatment-Emergent Adverse Events by System Organ Class and Preferred Term",
+   pop  = "Safety Population",
+   foot = "A participant is counted once at each level. MedDRA v27.0. % = participants with the event / N in arm.")
+
+## rtables/gt rendering; SOC bold (level 1), PT indented (level 2)
+print(rep)
