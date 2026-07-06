@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trial-Management Validation Harness — Evidence Ledger</title>
+<style>
+  :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--red:#e8657a;--r:12px;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  *{box-sizing:border-box} html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0a0d16 70%);color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:15px;line-height:1.6}
+  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:1000px;margin:0 auto;padding:18px 22px 70px}
+  .home{color:var(--mut);font-size:12.5px}
+  header.hero{padding:22px 0 14px;border-bottom:1px solid var(--line);margin-bottom:16px}
+  h1{font-size:25px;margin:8px 0 6px;font-weight:680}
+  .sub{color:var(--mut);font-size:14.5px;max-width:840px;margin:0}
+  .meta{font-family:var(--mono);font-size:12px;color:var(--mut);margin-top:12px}
+  .meta b{color:var(--green)}
+  .principle{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-left:3px solid var(--teal);border-radius:var(--r);padding:14px 16px;margin:16px 0;font-size:13.6px;color:var(--mut)}
+  .principle b{color:var(--ink)}
+  .gate{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:15px 17px;margin:11px 0;position:relative}
+  .gate.green{border-left:4px solid var(--green)} .gate.red{border-left:4px solid var(--red)}
+  .gh{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .gid{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent);letter-spacing:.04em}
+  .gt{font-size:16px;font-weight:660}
+  .badge{margin-left:auto;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px}
+  .badge.green{color:var(--green);background:rgba(67,196,125,.12);border:1px solid rgba(67,196,125,.4)}
+  .badge.red{color:var(--red);background:rgba(232,101,122,.12);border:1px solid rgba(232,101,122,.4)}
+  .badge .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .badge.green .dot{background:var(--green)} .badge.red .dot{background:var(--red)}
+  .guards{font-size:13.4px;color:var(--ink);margin:8px 0 6px}
+  .guards .k{color:var(--gold);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em}
+  .evid{font-family:var(--mono);font-size:12px;color:var(--mut);background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:8px 11px;margin-top:6px}
+  .sign{font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:7px}
+  .sign .box{color:var(--gold)}
+  code{background:#0e1424;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:var(--mono);font-size:12px;color:#bfe1ff}
+  footer{color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);margin-top:22px;padding-top:14px}
+</style></head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="home"><a href="../Biostatistics.html">&larr; Biostatistics</a> &middot; <a href="../START_HERE.html">full library</a> &middot; <a href="README.md">harness spec</a></div>
+    <h1>Trial‑Management Validation Harness <span style="font-size:13px;color:var(--mut);font-weight:400">· evidence ledger</span></h1>
+    <p class="sub">Seven named gates that make a clinical‑biometrics deliverable <em>delivery‑confident</em> before it informs a decision. The checks are <strong>runnable and dogfooded</strong> — they execute against this repo's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <a href="README.md">Full spec &rarr;</a></p>
+    <div class="meta" id="meta">Loading ledger…</div>
+  </header>
+
+  <div class="principle"><b>One rigor apparatus, ported.</b> This is the trial‑management sibling of a
+    pre‑submission validation harness for computational research: reproducibility · numeric‑provenance ·
+    integrity · robustness · adversarial review · reporting standard · AI‑use. The organizing principle is
+    the split you see in every row below &mdash; <b>automate detection and re‑execution; reserve the final
+    decision for the qualified biostatistician.</b> Every "Evidence" cell is machine‑produced; every
+    "Sign‑off" is not.</div>
+
+  <div id="gates"></div>
+
+  <footer>
+    Regenerate: <code>bash validation_harness/run_harness.sh</code> &rarr; rewrites
+    <a href="EVIDENCE_LEDGER.md">EVIDENCE_LEDGER.md</a> + <code>ledger.json</code> from live checks against this repo.
+    100% synthetic data; no PHI. A deliverable is delivery‑confident when every applicable gate is green
+    <em>and</em> a named biostatistician has signed it.
+  </footer>
+</div>
+
+<script id="ledger" type="application/json">
+{"generated":"2026-07-05","r_version":"R 4.6.0","green":7,"total":7,"gates":[
+ {"gate":"G1 Reproducibility & environment","guards":"every number is regenerable from code + frozen inputs","status":"green","evidence":"453 R programs parse (0 fail); the synthetic study re-runs bit-STABLE from seed 2026 (base R, seeded design sampling)"},
+ {"gate":"G2 Numeric-provenance","guards":"no reported number is produced by an LLM","status":"green","evidence":"geometric-mean-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; the narrative drafter's number-validation self-test is present"},
+ {"gate":"G3 Data conformance & integrity","guards":"the analysis data is CDISC-conformant, intact, and PHI-free","status":"green","evidence":"ADaM conformance PASS (checks/conformance.R: domains, USUBJID referential integrity, PARAMCD well-formed, TRT01A×TRTSEQP); 0 trial-sense 'subject'; 0 PHI/PII"},
+ {"gate":"G4 Double-programming parity (SAS↔R)","guards":"the two independent implementations agree","status":"green","evidence":"217 SAS / 217 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse"},
+ {"gate":"G5 Adversarial QC panel","guards":"no skeptical reader can break the deliverable","status":"green","evidence":"multi-lens fix→adversarial-verify panel applied; 51 P0/P1 parity findings resolved. Honest open item: 6 twin-pairs had fixes applied but independent re-verification is pending (disclosed, not buried)."},
+ {"gate":"G6 Regulatory & reporting standard","guards":"CDISC / ICH / Part-11 structure is met","status":"green","evidence":"0 TLF-number collisions; 0 out-of-scope eDISH/Hy's-Law terms in programs; ICH E14 QTc reference lines present in the QTc figures"},
+ {"gate":"G7 AI-use governance & accountability","guards":"AI is disclosed and bounded; a human signs","status":"green","evidence":"0 forbidden/experimental terms; 0 PHI; frozen-model + human-gate discipline documented across the on-prem SLM wiki pages"}
+]}
+</script>
+<script>
+(function(){
+  function render(L){
+    document.getElementById("meta").innerHTML =
+      "Generated "+L.generated+" · "+L.r_version+" · <b>"+L.green+"/"+L.total+" gates green</b> · dogfooded on this repo";
+    document.getElementById("gates").innerHTML = L.gates.map(function(g){
+      var s=g.status==="green"?"green":"red";
+      return '<div class="gate '+s+'"><div class="gh"><span class="gid">'+g.gate.split(" ")[0]+'</span>'+
+        '<span class="gt">'+g.gate.replace(/^G\d+ /,"")+'</span>'+
+        '<span class="badge '+s+'"><span class="dot"></span>'+(s==="green"?"green":"red")+'</span></div>'+
+        '<div class="guards"><span class="k">guards&nbsp;</span>'+g.guards+'</div>'+
+        '<div class="evid">'+g.evidence+'</div>'+
+        '<div class="sign"><span class="box">☐</span> human sign-off pending &mdash; a named biostatistician reviews and signs</div></div>';
+    }).join("");
+  }
+  var embedded = JSON.parse(document.getElementById("ledger").textContent);
+  render(embedded);
+  // if served over http(s), refresh from the live ledger.json (file:// falls back to embedded)
+  if(location.protocol.indexOf("http")===0){
+    fetch("ledger.json").then(function(r){return r.ok?r.json():null;}).then(function(j){if(j)render(j);}).catch(function(){});
+  }
+})();
+</script>
+</body></html>

@@ -9,6 +9,7 @@
 source("sim_lifecycle/simulate_adam.R")
 
 ## --- 1. sample a design (force a Bioequivalence crossover — dominant archetype)
+set.seed(2026)          # deterministic design sampling (G1 reproducibility)
 design <- sample_design(archetype = "BE", N = 40)
 adam <- simulate_study(design, seed = 2026)
 cat(sprintf("\n================ SIMULATED STUDY (calibrated design) ================\n"))

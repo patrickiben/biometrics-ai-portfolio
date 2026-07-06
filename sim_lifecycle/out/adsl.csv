@@ -1,41 +1,41 @@
 "USUBJID","SUBJID","SITEID","AGE","AGEGR1","SEX","RACE","ETHNIC","HEIGHTBL","WEIGHTBL","BMIBL","SAFFL","PKFL","RANDFL","ENRLFL","TRTSEQP","TRTSEQPN","TRT01A","TRT01AN"
-"CP-SIM-101-001","001","101",41,"40-64","M","White","NOT HISPANIC OR LATINO",178.6,78.4,24.6,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-002","002","101",42,"40-64","M","White","NOT HISPANIC OR LATINO",177.1,81.8,26.1,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-003","003","101",32,"<40","F","White","NOT HISPANIC OR LATINO",164.6,63.7,23.5,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-004","004","101",56,"40-64","F","White","NOT HISPANIC OR LATINO",169.1,54.9,19.2,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-005","005","101",44,"40-64","M","White","HISPANIC OR LATINO",184.1,60.9,18,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-006","006","101",59,"40-64","F","Black","HISPANIC OR LATINO",166.7,71.6,25.8,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-007","007","101",58,"40-64","M","White","NOT HISPANIC OR LATINO",178.3,60.2,18.9,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-008","008","101",44,"40-64","M","White","NOT HISPANIC OR LATINO",181.4,92.7,28.2,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-009","009","101",49,"40-64","F","White","NOT HISPANIC OR LATINO",165.3,54.3,19.9,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-010","010","101",58,"40-64","M","White","NOT HISPANIC OR LATINO",165.1,81.6,29.9,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-011","011","101",39,"<40","F","Asian","NOT HISPANIC OR LATINO",166.5,51.3,18.5,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-012","012","101",45,"40-64","M","White","NOT HISPANIC OR LATINO",178.3,80.1,25.2,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-013","013","101",42,"40-64","F","White","NOT HISPANIC OR LATINO",176.1,62.5,20.2,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-014","014","101",46,"40-64","M","Black","NOT HISPANIC OR LATINO",179.5,70.7,21.9,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-015","015","101",45,"40-64","F","White","NOT HISPANIC OR LATINO",158.2,58.9,23.5,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-016","016","101",53,"40-64","F","White","NOT HISPANIC OR LATINO",172.8,64,21.4,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-017","017","101",48,"40-64","M","Black","HISPANIC OR LATINO",171,103.4,35.4,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-018","018","101",36,"<40","F","Black","HISPANIC OR LATINO",153.5,77.7,33,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-019","019","101",48,"40-64","F","Black","NOT HISPANIC OR LATINO",156.7,88.9,36.2,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-020","020","101",37,"<40","F","Asian","HISPANIC OR LATINO",163.2,55.3,20.8,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-021","021","101",34,"<40","F","White","NOT HISPANIC OR LATINO",160.4,85.1,33.1,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-022","022","101",50,"40-64","F","Asian","NOT HISPANIC OR LATINO",165.8,87.3,31.8,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-023","023","101",34,"<40","F","Black","NOT HISPANIC OR LATINO",161.6,68.3,26.2,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-024","024","101",46,"40-64","F","White","NOT HISPANIC OR LATINO",151.9,75,32.5,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-025","025","101",37,"<40","M","Black","NOT HISPANIC OR LATINO",173.2,79.4,26.5,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-026","026","101",55,"40-64","F","White","NOT HISPANIC OR LATINO",173.6,70.7,23.5,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-027","027","101",49,"40-64","M","Black","NOT HISPANIC OR LATINO",180.2,79.9,24.6,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-028","028","101",40,"40-64","F","White","NOT HISPANIC OR LATINO",159.5,64.3,25.3,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-029","029","101",50,"40-64","F","White","HISPANIC OR LATINO",162.3,71.5,27.1,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-030","030","101",47,"40-64","M","White","NOT HISPANIC OR LATINO",174.2,106.6,35.1,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-031","031","101",34,"<40","M","Black","NOT HISPANIC OR LATINO",173.3,58.5,19.5,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-032","032","101",42,"40-64","F","White","NOT HISPANIC OR LATINO",167.7,92.4,32.9,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-033","033","101",36,"<40","M","White","NOT HISPANIC OR LATINO",182.1,74.8,22.6,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-034","034","101",47,"40-64","F","White","NOT HISPANIC OR LATINO",161,64,24.7,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-035","035","101",38,"<40","M","Black","HISPANIC OR LATINO",176.5,59.9,19.2,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-036","036","101",42,"40-64","M","Asian","NOT HISPANIC OR LATINO",177,77.1,24.6,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-037","037","101",33,"<40","F","Black","NOT HISPANIC OR LATINO",166.7,55.1,19.8,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-038","038","101",36,"<40","M","White","NOT HISPANIC OR LATINO",178.4,74.6,23.4,"Y","Y","Y","Y","RT",2,"Reference",2
-"CP-SIM-101-039","039","101",45,"40-64","M","Other","NOT HISPANIC OR LATINO",186.5,68.1,19.6,"Y","Y","Y","Y","TR",1,"Test",1
-"CP-SIM-101-040","040","101",35,"<40","M","Asian","NOT HISPANIC OR LATINO",175.9,84.1,27.2,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-001","001","102",42,"40-64","F","White","NOT HISPANIC OR LATINO",170.9,61.1,20.9,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-002","002","102",32,"<40","F","White","NOT HISPANIC OR LATINO",164.6,63.7,23.5,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-003","003","102",56,"40-64","M","White","HISPANIC OR LATINO",167,76.8,27.5,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-004","004","102",44,"40-64","F","Black","HISPANIC OR LATINO",164.3,76,28.2,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-005","005","102",59,"40-64","M","White","NOT HISPANIC OR LATINO",169.6,77,26.8,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-006","006","102",58,"40-64","M","White","NOT HISPANIC OR LATINO",178.3,60.2,18.9,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-007","007","102",44,"40-64","F","White","NOT HISPANIC OR LATINO",166.9,80.8,29,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-008","008","102",49,"40-64","M","White","NOT HISPANIC OR LATINO",177.7,69,21.9,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-009","009","102",58,"40-64","F","Asian","NOT HISPANIC OR LATINO",159,55.5,22,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-010","010","102",39,"<40","M","White","NOT HISPANIC OR LATINO",176.2,85.7,27.6,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-011","011","102",45,"40-64","F","White","NOT HISPANIC OR LATINO",160.5,54.1,21,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-012","012","102",42,"40-64","M","Black","NOT HISPANIC OR LATINO",182.9,94.8,28.3,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-013","013","102",46,"40-64","F","White","NOT HISPANIC OR LATINO",165.1,71.3,26.2,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-014","014","102",45,"40-64","F","White","NOT HISPANIC OR LATINO",158.2,58.9,23.5,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-015","015","102",53,"40-64","M","Black","HISPANIC OR LATINO",184,69.3,20.5,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-016","016","102",48,"40-64","F","Black","HISPANIC OR LATINO",160.2,63.2,24.6,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-017","017","102",36,"<40","F","Black","NOT HISPANIC OR LATINO",153.5,77.7,33,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-018","018","102",48,"40-64","F","Asian","HISPANIC OR LATINO",156.7,88.9,36.2,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-019","019","102",37,"<40","F","White","NOT HISPANIC OR LATINO",163.2,55.3,20.8,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-020","020","102",34,"<40","F","Asian","NOT HISPANIC OR LATINO",160.4,85.1,33.1,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-021","021","102",50,"40-64","F","Black","NOT HISPANIC OR LATINO",165.8,87.3,31.8,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-022","022","102",34,"<40","F","White","NOT HISPANIC OR LATINO",161.6,68.3,26.2,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-023","023","102",46,"40-64","M","Black","NOT HISPANIC OR LATINO",181.4,62.9,19.1,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-024","024","102",37,"<40","F","White","NOT HISPANIC OR LATINO",161.3,48.6,18.7,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-025","025","102",55,"40-64","M","Black","NOT HISPANIC OR LATINO",174.5,89.3,29.3,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-026","026","102",49,"40-64","F","White","NOT HISPANIC OR LATINO",160.3,60.6,23.6,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-027","027","102",40,"40-64","F","White","HISPANIC OR LATINO",159.5,64.3,25.3,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-028","028","102",50,"40-64","M","White","NOT HISPANIC OR LATINO",170.9,92.9,31.8,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-029","029","102",47,"40-64","M","Black","NOT HISPANIC OR LATINO",174.2,106.6,35.1,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-030","030","102",34,"<40","F","White","NOT HISPANIC OR LATINO",157.8,65.5,26.3,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-031","031","102",42,"40-64","M","White","NOT HISPANIC OR LATINO",171.2,96.2,32.8,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-032","032","102",36,"<40","F","White","NOT HISPANIC OR LATINO",159.3,71.9,28.3,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-033","033","102",47,"40-64","M","Black","HISPANIC OR LATINO",172.6,90.8,30.5,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-034","034","102",38,"<40","M","Asian","NOT HISPANIC OR LATINO",176.5,59.9,19.2,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-035","035","102",42,"40-64","F","Black","NOT HISPANIC OR LATINO",167.7,65,23.1,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-036","036","102",33,"<40","M","White","NOT HISPANIC OR LATINO",163,69.5,26.2,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-037","037","102",36,"<40","M","Other","NOT HISPANIC OR LATINO",178.4,74.6,23.4,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-038","038","102",45,"40-64","M","Asian","NOT HISPANIC OR LATINO",186.5,68.1,19.6,"Y","Y","Y","Y","RT",2,"Reference",2
+"CP-SIM-102-039","039","102",35,"<40","F","White","NOT HISPANIC OR LATINO",176,69.8,22.5,"Y","Y","Y","Y","TR",1,"Test",1
+"CP-SIM-102-040","040","102",42,"40-64","M","White","NOT REPORTED",170.6,93.4,32.1,"Y","Y","Y","Y","RT",2,"Reference",2

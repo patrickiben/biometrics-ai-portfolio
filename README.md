@@ -37,6 +37,9 @@ one‑page index). All data is **100% synthetic**; there is no PHI and no partic
 - The **hybrid** (cloud + on‑prem) and **on‑device small‑model** operating patterns, and a short training
   course. → [`hybrid_ops_wiki/`](hybrid_ops_wiki/) · [`slm_wiki/`](slm_wiki/) · [`slm_operating_wiki/`](slm_operating_wiki/) · [`courses/`](courses/Biostatistics_AI_Training.html)
 
+**Validation & QC**
+- **Trial‑Management Validation Harness** — seven named gates (reproducibility · numeric‑provenance · CDISC conformance & integrity · SAS↔R double‑programming parity · adversarial QC · regulatory & reporting standards · AI‑use governance) that make a deliverable *delivery‑confident*. The checks are **runnable and dogfooded** on this repo's own libraries + synthetic data and emit an evidence ledger (currently **7/7 gates green**, with one open item honestly disclosed). → [`validation_harness/`](validation_harness/index.html)
+
 ---
 
 ## Principles the work is built on
