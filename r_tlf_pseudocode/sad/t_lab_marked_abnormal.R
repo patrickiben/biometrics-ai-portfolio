@@ -35,11 +35,18 @@ lb <- adam$adlb %>%
                     grepl("LOW",  toupper(ANRIND))  ~ "Low",
                     TRUE                            ~ ""))
 
-## --- denominator: on-treatment evaluable N (distinct USUBJID) per dose level
-denom <- lb %>%
+## --- denominator: on-treatment evaluable N (distinct USUBJID) per dose level + Total.
+## Built from ADLB filtered SAFFL & ONTRTFL ONLY -- BEFORE the gradable-lab (ATOXGRN)
+## filter -- so a participant with no gradable lab still counts, matching the SAS _bign
+## twin. (Deriving N from `lb`, which already dropped missing ATOXGRN, understates the
+## denominator and shifts every percentage.)
+evalpop <- adam$adlb %>%
+  filter(SAFFL == "Y", ONTRTFL == "Y") %>%
+  mutate(trt = .data[[dv$trtvar]])
+denom <- evalpop %>%
   group_by(trt) %>%
   summarise(N = n_distinct(USUBJID), .groups = "drop")
-total_n <- tibble(trt = "Total", N = n_distinct(lb$USUBJID))
+total_n <- tibble(trt = "Total", N = n_distinct(evalpop$USUBJID))
 denom   <- bind_rows(denom, total_n)
 
 ## --- distinct participants with >=1 treatment-emergent marked value --------

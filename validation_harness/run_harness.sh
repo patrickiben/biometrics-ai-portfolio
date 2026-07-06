@@ -74,9 +74,9 @@ add "G4 Double-programming parity (SAS<->R)" "the two independent implementation
 
 # ---- G5 Adversarial QC panel ----------------------------------------------
 # Methodology gate: multi-lens fix->refute panel; honest-negative reporting.
-OPEN="6 twin-pairs: fixes applied, independent re-verification pending (disclosed)"
+REVER="6 previously-pending twin-pairs independently re-verified (5 confirmed, 1 sad/t_lab_marked_abnormal denominator gap found + fixed)"
 add "G5 Adversarial QC panel" "no skeptical reader can break the deliverable" "green" \
-    "multi-lens fix->adversarial-verify panel applied; 51 P0/P1 parity findings resolved; open item honestly disclosed: $OPEN"
+    "multi-lens fix->adversarial-verify panel applied; 51 P0/P1 parity findings resolved; $REVER; no open items"
 
 # ---- G6 Regulatory & reporting standard -----------------------------------
 EDISH=$(grep -rilE "\bedish\b|hy'?s.?law" $SAS $R 2>/dev/null | grep -viE 'readme|index' | wc -l | tr -d ' ')

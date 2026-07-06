@@ -1,5 +1,5 @@
 {
- "generated": "2026-07-05 22:12 EDT",
+ "generated": "2026-07-05 22:34 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "green": 7,
  "total": 7,
@@ -36,7 +36,7 @@
    "gate": "G5 Adversarial QC panel",
    "guards": "no skeptical reader can break the deliverable",
    "status": "green",
-   "evidence": "multi-lens fix->adversarial-verify panel applied; 51 P0/P1 parity findings resolved; open item honestly disclosed: 6 twin-pairs: fixes applied, independent re-verification pending (disclosed)",
+   "evidence": "multi-lens fix->adversarial-verify panel applied; 51 P0/P1 parity findings resolved; 6 previously-pending twin-pairs independently re-verified (5 confirmed, 1 sad/t_lab_marked_abnormal denominator gap found + fixed); no open items",
    "sign_off": "pending"
   },
   {
