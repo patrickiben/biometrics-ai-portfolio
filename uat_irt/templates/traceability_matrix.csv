@@ -1,0 +1,31 @@
+RequirementID,RequirementDescription,CoveringTests,Covered
+URS-COH-001,Sentinel dosing hold shall be enforced.,COH-01,Y
+URS-COH-002,Cohort enrollment cap shall be enforced.,COH-02,Y
+URS-COH-003,Next cohort shall be gated on SRC escalation approval.,COH-03,Y
+URS-COH-004,Correct dose level shall be assigned per active cohort.,COH-04,Y
+URS-DSP-001,Dispensed kit shall match the allocated treatment.,DISP-01,Y
+URS-DSP-002,Correct kit type shall be dispensed per visit.,DISP-02,Y
+URS-DSP-003,Dispensing shall respect visit-window rules.,DISP-03,Y
+URS-DSP-004,Dispensing shall reconcile to dosing.,DISP-04,Y
+URS-ENR-001,Screening numbers shall be unique.,ENR-01,Y
+URS-ENR-002,Screen-failures shall not be randomizable.,ENR-02,Y
+URS-ENR-003,Re-screening shall be permitted per protocol.,ENR-03,Y
+URS-ENR-004,Study enrollment cap shall be enforced.,ENR-04,Y
+URS-INT-001,IRT and EDC participant lists shall reconcile.,INT-01,Y
+URS-INT-002,Randomization data shall transfer to biostatistics.,INT-02,Y
+URS-NOT-001,Enrollment notification shall be delivered.,NOT-01,Y
+URS-NOT-002,Low-stock alert shall be delivered.,NOT-02,Y
+URS-RND-001,IRT allocation shall match the approved randomization schedule.,RAND-01,Y
+URS-RND-002,Allocation shall respect entered stratification factors.,RAND-02,Y
+URS-RND-003,Allocation shall preserve permuted-block balance.,RAND-03,Y
+URS-RND-004,Each randomization number shall be unique.,RAND-04,Y
+URS-RND-005,Allocation shall be reproducible from the frozen list.,RAND-05,Y
+URS-RND-006,Treatment shall be concealed until dosing.,RAND-06,Y
+URS-SUP-001,Resupply shall trigger at the stock threshold.,SUP-01,Y
+URS-SUP-002,Expired kits shall not be dispensable.,SUP-02,Y
+URS-SUP-003,Temperature-excursion kits shall be quarantined.,SUP-03,Y
+URS-SUP-004,Inventory shall reconcile to physical count.,SUP-04,Y
+URS-SUP-005,Kit-return / reconciliation at study close shall be supported.,,N (GAP)
+URS-UNB-001,Emergency unblinding shall record an audit trail.,UNBL-01,Y
+URS-UNB-002,Unblinding shall enforce role permissions.,UNBL-02,Y
+URS-UNB-003,Safety shall be notified after an unblind.,UNBL-03,Y

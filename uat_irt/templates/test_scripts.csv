@@ -1,0 +1,30 @@
+TestID,Area,RequirementID,TestTitle,Priority,Steps,ExpectedResult,Status,LinkedDefect
+RAND-01,Randomization,URS-RND-001,Allocation matches the approved randomization schedule,Critical,Randomize 40 synthetic participants; export IRT allocation; compare to the approved list.,"IRT allocation == list (sequence, kit, stratum) for all.",Pass,
+RAND-02,Randomization,URS-RND-002,Stratified allocation respects entered strata,Critical,Randomize across weight strata; verify stratum assignment.,Each participant allocated within their entered stratum block.,Pass,DEF-02
+RAND-03,Randomization,URS-RND-003,Within-block allocation balance,High,Inspect allocation balance within each permuted block.,Within-block balance matches block size/ratio.,Pass,
+RAND-04,Randomization,URS-RND-004,Randomization-number uniqueness under concurrency,Critical,Two sites randomize concurrently; check uniqueness.,Each participant gets a unique randomization number; no collision.,Fail,DEF-01
+RAND-05,Randomization,URS-RND-005,Allocation reproducible from the frozen list,High,Reload the frozen list; re-run allocation.,Allocation is reproducible.,Pass,
+RAND-06,Randomization,URS-RND-006,Allocation concealment until dosing,Critical,Attempt to view treatment before dosing as a blinded role.,Concealed; blinded role sees kit ID only.,Pass,
+COH-01,Dose-escalation cohorts,URS-COH-001,Sentinel dosing hold enforced,Critical,Enroll sentinel pair; try to dose 3rd before window.,Only 2 sentinels dosable; 3rd held.,Pass,
+COH-02,Dose-escalation cohorts,URS-COH-002,Cohort enrollment cap enforced,High,Enroll to cohort cap + 1.,Enrollment blocked at cohort cap.,Pass,
+COH-03,Dose-escalation cohorts,URS-COH-003,Next-cohort gate requires SRC approval,Critical,Open next cohort before SRC-approval flag set.,Next cohort blocked until SRC approval.,In Progress,
+COH-04,Dose-escalation cohorts,URS-COH-004,Correct dose level per active cohort,Critical,Verify dose level assigned per active cohort.,Kit dose level matches active cohort.,Pass,
+ENR-01,Enrollment / screening,URS-ENR-001,Unique screening numbers,Medium,Screen 10 participants.,"Unique, sequential screening numbers.",Pass,
+ENR-02,Enrollment / screening,URS-ENR-002,Screen-fail cannot randomize,High,Mark screen-fail; attempt to randomize.,Randomization blocked.,Pass,
+ENR-03,Enrollment / screening,URS-ENR-003,Re-screening permitted per protocol,Medium,Re-screen a permitted screen-fail.,Re-screening allowed with new screening number.,Not Run,
+ENR-04,Enrollment / screening,URS-ENR-004,Study enrollment cap enforced,High,Enroll to study cap + 1.,Enrollment blocked at study cap.,Pass,
+DISP-01,Drug dispensing,URS-DSP-001,Dispensed kit matches allocated arm,Critical,Dispense at Day 1; compare kit to allocation.,Dispensed kit matches allocated arm.,Pass,
+DISP-02,Drug dispensing,URS-DSP-002,Correct kit type by visit,High,Dispense across visits with differing kit types.,Correct kit type per visit.,Pass,
+DISP-03,Drug dispensing,URS-DSP-003,Dispensing blocked outside visit window,Medium,Attempt dispensing outside the visit window.,Blocked / warned outside window.,Blocked,
+DISP-04,Drug dispensing,URS-DSP-004,Dispensing reconciles to dosing,High,Reconcile dispensing records to dosing.,Records reconcile to dosing events.,Pass,
+SUP-01,Resupply / inventory,URS-SUP-001,Automatic resupply at threshold,High,Draw site stock below threshold.,Automatic resupply shipment triggered.,Pass,
+SUP-02,Resupply / inventory,URS-SUP-002,Expired kits not dispensable,Critical,Attempt to dispense an expired kit.,Expired kits not dispensable.,Pass,
+SUP-03,Resupply / inventory,URS-SUP-003,Temperature-excursion kits quarantined,High,Flag a temperature excursion; attempt to dispense.,Excursion kits quarantined; not dispensable.,Fail,DEF-03
+SUP-04,Resupply / inventory,URS-SUP-004,Inventory reconciliation,Medium,Reconcile IRT inventory to physical count.,Inventory reconciles.,Pass,
+UNBL-01,Emergency unblinding,URS-UNB-001,Emergency unblind with audit trail,Critical,Perform emergency unblind as authorized role.,Treatment revealed; full audit trail recorded.,Pass,
+UNBL-02,Emergency unblinding,URS-UNB-002,Unblinding role permissions,Critical,Attempt unblind as unauthorized role.,Unblinding denied for unauthorized roles.,Pass,
+UNBL-03,Emergency unblinding,URS-UNB-003,Post-unblind safety notification,High,"After unblind, verify safety notification.",Notification sent to medical monitor / safety.,In Progress,
+NOT-01,Notifications / reports,URS-NOT-001,Enrollment notification delivered,Medium,Randomize; check enrollment notification.,Notification delivered to distribution list.,Pass,DEF-04
+NOT-02,Notifications / reports,URS-NOT-002,Low-stock alert delivered,Medium,Draw stock below threshold; check alert.,Low-stock alert delivered to CRA.,Not Run,
+INT-01,Data integration (EDC),URS-INT-001,IRT<->EDC participant reconciliation,High,Reconcile IRT participants against EDC.,IRT and EDC participant lists reconcile.,Pass,
+INT-02,Data integration (EDC),URS-INT-002,Randomization data transfer to biostatistics,High,Transfer randomization data to biostat.,Export matches IRT allocation (per role).,Pass,

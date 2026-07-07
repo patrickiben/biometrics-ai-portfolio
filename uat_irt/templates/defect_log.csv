@@ -1,0 +1,5 @@
+DefectID,Severity,Status,FoundInTest,Description,DateRaised,Resolution
+DEF-01,Critical,Open,RAND-04,Duplicate randomization number under concurrent site requests (race condition on the number sequence).,2026-07-02,Fix pending
+DEF-02,Major,Closed,RAND-02,Weight-stratum (>=70kg) mis-mapped to the wrong block on first build.,2026-06-30,Fixed; RAND-02 re-test passed
+DEF-03,Major,Open,SUP-03,Temperature-excursion kit remained dispensable; quarantine hold not enforced.,2026-07-03,Fix pending
+DEF-04,Minor,Open,NOT-01,Enrollment-notification email omits site number in the subject line (cosmetic).,2026-07-03,Backlog

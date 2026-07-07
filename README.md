@@ -28,6 +28,12 @@ one‑page index). All data is **100% synthetic**; there is no PHI and no partic
   package, and page humans; zero PHI egress. → [`sas_r_automation/`](sas_r_automation/) · [`sasr_monitoring_wiki/`](sasr_monitoring_wiki/)
 - **Self‑updating trackers & knowledge bases** — Smartsheet‑from‑SAS/R, a no‑GUI Outlook→KB pipeline, and a
   navigable knowledge‑graph vault. → [`smartsheet_sasr/`](smartsheet_sasr/) · [`study_kb_nogui/`](study_kb_nogui/index.html) · [`knowledge_vault/`](knowledge_vault/)
+- **IRT / RTSM User Acceptance Testing** — UAT of the randomization & supply system from the biostatistics
+  lens: a test‑script library, traceability matrix, defect log, and an interactive execution tracker with a
+  live go‑live sign‑off gate. → [`uat_irt/`](uat_irt/UAT_IRT_Guide.html)
+- **Hours "find‑hours" reconciliation** — where the hours come from when out‑of‑scope work lands: a
+  planned‑vs‑actual‑vs‑EAC effort reconciliation + decision tree (slack → contingency → defer → change order),
+  with an interactive worksheet. Hours/effort only, no dollars. → [`budget_reconciliation/`](budget_reconciliation/FindHours_Playbook.html)
 
 **Interactive dashboards** (self‑contained HTML, synthetic data)
 - Participant‑safety monitoring (**TRIALMON**), trial‑risk early‑warning, and a study‑lifecycle monitor.

@@ -1,6 +1,6 @@
 # Evidence Ledger — Trial-Management Validation Harness
 
-_Generated 2026-07-05 22:34 EDT · R version 4.6.0 (2026-04-24) · 7/7 gates green · dogfooded on this repo's synthetic deliverables._
+_Generated 2026-07-06 21:34 EDT · R version 4.6.0 (2026-04-24) · 7/7 gates green · dogfooded on this repo's synthetic deliverables._
 
 | Gate | Guards (the fragile object) | Status | Evidence (automated) | Human sign-off |
 |---|---|:--:|---|---|
