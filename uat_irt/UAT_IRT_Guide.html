@@ -43,6 +43,7 @@
 
   <div class="toc">
     <a href="#what">0 · What a UAT is &amp; who does it</a><br>
+    <a href="#realworld">★ What the preview is &amp; where a real UAT runs</a><br>
     <a href="#inputs">1 · Before you start — inputs</a><br>
     <a href="#plan">2 · Write the UAT plan</a><br>
     <a href="#derive">3 · Turn the URS into test cases</a><br>
@@ -65,6 +66,40 @@
     <tr><td class="k">QA</td><td>Confirms the process was followed (plan approved, scripts executed with evidence, defects closed, sign‑off complete) and that it is inspection‑ready.</td></tr>
   </table>
   <p><b>Where it runs:</b> the vendor's <b>UAT / staging environment</b> — never production — using <b>test participants, test sites, and a test randomization list</b>. Typical duration: <b>2–4 weeks</b> (dry run → formal execution → defect fix cycles → regression → sign‑off).</p>
+
+  <h2 id="realworld">What this preview is, and where a real UAT actually runs</h2>
+<p>This section closes the one gap the rest of the guide assumes you already know: the interactive tracker page is a teaching mock, and the real UAT happens inside the vendor's system in your browser. Read this before you conclude that anything on the tracker page is a live result.</p>
+
+<div class="panel warn"><b>The tracker page (<code>UAT_IRT_Tracker.html</code>) is a read-only illustration.</b> It is pre-filled with <b>synthetic</b> test cases and shows you what a <em>completed</em> UAT tracker looks like and how the go-live gate behaves (it flips to READY only when every Critical test is Pass, there are zero open Critical or Major defects, and traceability is 100%). It connects to <b>no</b> live system, you do not run a real UAT inside it, and nothing on it is study data. It is there to show you the finished shape you are working toward.</div>
+
+<p>Where the real work lives: you operate the vendor's system in a browser and record every result in the <a href="UAT_IRT_RTSM_Workbook.xlsx"><b>Excel workbook</b></a>. Those two things are the real tools. The tracker page is the picture, the workbook is the record.</p>
+
+<div class="panel role"><b>How a real UAT connects to real systems.</b> The IRT/RTSM is a <b>vendor-hosted web application</b>, so you do not install anything. UAT is performed in the vendor's <b>UAT / staging environment</b> (a separate instance from production), loaded with a <b>test</b> randomization list, never the production list. Your inputs come from documents you and the study team already own: the <b>URS</b> (agreed between the sponsor/biostatistics and the IRT vendor), the <b>randomization specification and the test randomization list</b> (produced by the independent unblinded randomization statistician), the <b>drug-supply spec</b> (kit types, visit-to-kit matrix, resupply thresholds, expiry), and the <b>protocol</b>. You confirm the built system does exactly what those documents say, before a single real participant is randomized.</div>
+
+<p>The step sequence below is how you get access and actually run it.</p>
+
+<div class="step"><div class="b">1</div><div><b>Request UAT access and role-based test accounts</b> from the vendor, routed through your project manager. You need a login for each role you must test: investigator/site, unblinded pharmacist or statistician, and blinded roles. Testing that permissions differ by role is part of the UAT, so you need more than one account.</div></div>
+<div class="step"><div class="b">2</div><div><b>Confirm the staging environment is loaded with the test list and test data</b>, not production. Verify the build/version label the vendor gives you and record it. Everything you execute is tied to that build.</div></div>
+<div class="step"><div class="b">3</div><div><b>Log into the staging web app in your browser and operate it.</b> Register a test participant, randomize, dispense a kit, drive inventory down to trigger resupply, and invoke emergency unblinding. You are driving the real application, just pointed at the test instance.</div></div>
+<div class="step"><div class="b">4</div><div><b>Compare what the system did against your list and spec.</b> For randomization this is your reconciliation: open the test list next to the IRT allocation output and confirm, cell for cell, that the arm, stratum, block position, and kit number match. This is the biostatistician's part and it is not delegated.</div></div>
+<div class="step"><div class="b">5</div><div><b>Capture evidence as you go.</b> Dated screenshots and system exports from the staging app are the evidence. A pass without a dated screenshot is not inspection-ready.</div></div>
+<div class="step"><div class="b">6</div><div><b>Record every result in the Excel workbook</b>: Status (Pass/Fail/Blocked/Not Run), tester, date, defect ID, and traceability. The workbook does not talk to the IRT system. You transcribe results into it by hand, on purpose, so the record is attributable and stands on its own in the eTMF.</div></div>
+<div class="step"><div class="b">7</div><div><b>Log every defect in the vendor's defect-tracking tool too</b>, so the vendor fixes the build, and mirror it on the workbook's Defect Log. Retest on the new build the vendor issues, re-run the tests the change could have touched, and record the new build/version you tested against.</div></div>
+
+<div class="panel ex"><div class="lbl">Two systems, one record</div>
+<p>Think of it as two live systems and one paper trail. The <b>vendor's staging IRT</b> is where you act. The <b>vendor's defect tracker</b> is where the fix loop lives so the build gets corrected. The <b>Excel workbook</b> is neither of those: it is your independent record and your sign-off, and it is what an auditor reads. Screenshots and exports are the bridge between what the system did and what your workbook says it did.</p></div>
+
+<table>
+  <tr><th>Piece</th><th>What it is / where it lives</th></tr>
+  <tr><td class="k">Staging IRT</td><td>Vendor-hosted web app, a separate UAT instance from production, loaded with a test list. You operate it in a browser.</td></tr>
+  <tr><td class="k">Test list + specs</td><td>Randomization spec and test list from the unblinded randomization statistician; URS, drug-supply spec, and protocol from the study team. These are your inputs, never generated by an assistant.</td></tr>
+  <tr><td class="k">Evidence</td><td>Dated screenshots and system exports from staging. The proof each result actually happened.</td></tr>
+  <tr><td class="k">Vendor defect tool</td><td>Where defects are logged for the vendor to fix and reissue the build. You retest on the new build.</td></tr>
+  <tr><td class="k">Excel workbook</td><td>Your record and sign-off: Status, defects, traceability, and the formula-driven go-live gate. It does not connect to the IRT, you transcribe into it.</td></tr>
+  <tr><td class="k">eTMF</td><td>Where the signed package (plan, scripts, results with evidence, defect log, signed summary) is filed.</td></tr>
+</table>
+
+<div class="panel warn"><b>What the sign-off actually authorizes.</b> When the workbook gate reads READY and the named humans (UAT lead and the accountable biostatistician) sign the summary, that signed package is what authorizes the vendor to promote the validated build to <b>production</b> for real randomization. The gate packages the evidence, a person still signs. Every number in the record comes only from the validated systems (the IRT, the test list, your reconciliation), never from an assistant that helped you draft or check the wording.</div>
 
   <h2 id="inputs"><span class="n">1</span>Before you start — the inputs you need</h2>
   <p>You cannot write a single test until you have these. Gather them first:</p>

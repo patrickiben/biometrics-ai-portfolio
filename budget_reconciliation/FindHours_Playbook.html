@@ -46,6 +46,7 @@
 
   <div class="toc">
     <a href="#idea">0 · The core idea in one line</a><br>
+    <a href="#realworld">★ What the preview is · where real reconciliation runs</a><br>
     <a href="#planned">1 · Get planned hours</a><br>
     <a href="#actual">2 · Get actual hours</a><br>
     <a href="#eac">3 · Forecast each task (EAC)</a><br>
@@ -61,6 +62,33 @@
   <p>Budget left is <b>not</b> what's left to spend. <code>Planned − Actual</code> looks like a cushion, but most of it is already <em>committed</em> to finishing work in flight. What you can actually redeploy is:</p>
   <div class="formula">NET FINDABLE = (Σ Planned + Contingency) − Σ EAC</div>
   <p>— the total budget plus reserve, minus the honest <b>forecast cost of finishing everything already in scope</b> (EAC = Estimate at Completion). Only that difference is real, spendable slack. The whole workbook exists to compute this one number honestly and tell you whether the new ask fits inside it.</p>
+
+  <h2 id="realworld">What this preview is, and where the real reconciliation runs</h2>
+<p>The <a href="Hours_Reconciliation_Worksheet.html"><b>Hours_Reconciliation_Worksheet.html</b></a> page is an <b>interactive sandbox</b>, not a live report. It ships pre-loaded with <em>example</em> hours for a made-up study so you can type a new ask into the "find hours" box and watch the net-findable figure and the absorbable-vs-change-order verdict recompute in real time. Its purpose is to let you feel how the arithmetic behaves before you trust it: change the ask from an interim analysis to an amendment re-run and see the shortfall appear.</p>
+<p>It is <b>not connected to any budget, timesheet, or CTMS.</b> Every number on that page is illustrative. Nothing you type is saved, and nothing is read from a real project. When you have an actual study to reconcile, you do the real work in the <a href="Hours_Budget_Reconciliation_Workbook.xlsx"><b>Excel workbook</b></a> (Instructions, Effort Ledger, Find Hours, Change Order), where you enter your own hours. The <a href="FindHours_Playbook.html">playbook</a> tells you where each of those hours comes from.</p>
+
+<div class="panel role">
+<p><b>How a real reconciliation actually connects to your systems.</b> The workbook is a working sheet you fill by hand: it does not integrate with any source system, so you export from each one and enter or paste the numbers. Here is where each figure lives and how it gets into the ledger.</p>
+<ul>
+<li><b>Planned hours</b> come from the project budget / SOW task grid, maintained by the project manager or project finance (usually in the CTMS or a planning workbook). You read the biometrics tasks and their budgeted hours (SAP, each ADaM domain, each TLF batch, interim/DSMB outputs, define.xml, reviewer's guide) and transcribe them into the Effort Ledger.</li>
+<li><b>Actual hours</b> come from the company time-tracking / timesheet system, where staff log hours against the project and task code. You pull a report to a cutoff date and enter the hours-to-date per task. Then you correct for timesheet lag: add verbal estimates of worked-but-unlogged hours, or every task looks artificially under budget and your slack is a mirage.</li>
+<li><b>% complete and EAC</b> are your professional judgement, informed by the deliverable tracker and CTMS milestones. No system hands you a forecast; the ledger just holds the estimate you defend.</li>
+<li><b>The change order</b> the workbook drafts is only a draft. It feeds the real contract change process (lead biostatistician and PM review, sponsor approval and signature, then the SOW / budget is formally amended in the CTMS). Only after that are the out-of-scope hours performed.</li>
+</ul>
+</div>
+
+<p>Read as a chain: you export planned hours from the budget grid and actual hours from the timesheet system, reconcile them in the workbook, and the workbook drafts the change order that routes into the contract process. Where each number comes from:</p>
+<table>
+<tr><th>Number in the workbook</th><th>Source system</th><th>How it gets in</th></tr>
+<tr><td class="k">Planned</td><td>Project budget / SOW task grid (PM or project finance, often in the CTMS or a planning workbook)</td><td>You read the biometrics task rows and their budgeted hours, then transcribe them into the Effort Ledger.</td></tr>
+<tr><td class="k">Actual</td><td>Company time-tracking / timesheet system (hours logged to the project/task code)</td><td>You pull a report to a cutoff date, enter hours-to-date, then add verbal estimates for worked-but-unlogged hours.</td></tr>
+<tr><td class="k">% done / EAC</td><td>Your professional estimate, informed by the deliverable tracker and CTMS milestones</td><td>You type % complete (or a bottoms-up EAC); the ledger forecasts the remaining hours.</td></tr>
+<tr><td class="k">Change order</td><td>The real contract change process (lead biostat + PM review, sponsor sign-off, then SOW/budget amended in the CTMS)</td><td>The workbook drafts it; it is reviewed, approved, signed, and only then is the SOW amended and the work performed.</td></tr>
+</table>
+
+<div class="panel warn">
+<p><b>Everything here is hours and effort only.</b> The workbook stays in hours because hours are what you control on a study and what a change order is written in. Pricing that effort is the PM's or project finance's job, downstream of this tool, and never happens in the workbook or the sandbox. Reported study numbers still come from the validated systems (the timesheet report, the budget grid, the CTMS): the workbook is your reconciliation of those numbers, not a source for them.</p>
+</div>
 
   <h2 id="planned"><span class="n">1</span>Get the planned hours</h2>
   <p>Planned hours live in the <b>project budget / SOW</b>. CRO budgets are built bottom‑up as a task grid: each deliverable carries budgeted hours, often split by role. For biometrics that's the SAP, each ADaM domain, each TLF batch, DSMB/interim outputs, define.xml, reviewer's guide, and so on.</p>
