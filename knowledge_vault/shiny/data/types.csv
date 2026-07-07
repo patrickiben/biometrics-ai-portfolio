@@ -1,0 +1,10 @@
+type,label,color
+hub,Study home,#F2C14E
+design,Study design & data collection,#7AA2F7
+stats,Statistics & programming,#9D7CD8
+data,Data management & flow,#56C2C0
+ops,Process gate,#E0A458
+safety,Safety & oversight,#E5677B
+supply,"Randomization, blinding & drug",#6FCF97
+program,Deliverables & timeline,#E08FB8
+reference,"People, standards & vendors",#8A93A6

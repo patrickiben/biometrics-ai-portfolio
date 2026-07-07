@@ -1,0 +1,93 @@
+---
+title: "Study Knowledge Graph"
+subtitle: "A visual, runnable guide to the study knowledge base"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(visNetwork); library(knitr)
+source("../shiny/R/logic.R")
+kg <- kg_load("../shiny/data"); st <- kg_stats(kg); V <- kg_vis(kg)
+```
+
+::: {.callout-note appearance="simple"}
+**Run / share / read / build - pick your mode.** This page *shows* the knowledge base and embeds the live graph, the [**Shiny app**](../shiny) lets you filter and click through it, the [interactive graph](kg-graph.html) is a shareable no-server widget, and the [run-and-build page](kg-build.html) shows how it is made. Synthetic study, no PHI.
+:::
+
+## What it is
+
+Every study artifact - protocol, SAP, ADaM specs, DMP, monitoring plan, milestones - is a **note**, and every dependency between them is a **link**. Instead of a folder tree, you navigate the study the way it actually connects.
+
+```{mermaid}
+flowchart LR
+  H[Study hub] --> D[Design & data collection]
+  H --> S[Statistics & programming]
+  H --> DM[Data management & flow]
+  H --> SF[Safety & oversight]
+  H --> SU[Randomization, blinding & drug]
+  H --> P[Deliverables & timeline]
+  H --> R[People, standards & vendors]
+```
+
+## The structure - by the numbers {#live}
+
+```{r kpis, results='asis'}
+box <- function(label, value, col="#e9edf7") sprintf(
+  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Notes", st$n_nodes)); cat(box("Links", st$n_edges))
+cat(box("Clusters", st$n_clusters, "#3fd0c9")); cat(box("Note types", st$n_types, "#e0a64c"))
+cat('</div>')
+```
+
+The most-connected note is the **`r st$hub_title`** (it links to `r st$hub_degree` others); the top **broker** - the note that most sits *between* clusters - is **`r st$broker_title`**. Those are computed with `igraph`, not asserted.
+
+## The live graph
+
+Drag a note, hover for its detail, or use the type selector.
+
+```{r graph}
+legend <- data.frame(label = kg$types$label, color = kg$types$color, shape = "dot")
+visNetwork(V$nodes, V$edges, background = "#141925", height = "520px", width = "100%") |>
+  visNodes(font = list(color = "#e9edf7", size = 16)) |>
+  visEdges(color = list(color = "#2A3242", highlight = "#5b8cff"), smooth = FALSE) |>
+  visOptions(highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE),
+             selectedBy = "group") |>
+  visPhysics(solver = "forceAtlas2Based",
+             forceAtlas2Based = list(gravitationalConstant = -55), stabilization = TRUE) |>
+  visLegend(useGroups = FALSE, addNodes = legend, width = 0.2, position = "left", ncol = 1)
+```
+
+## Run it - and change it {#run}
+
+```r
+shiny::runApp("knowledge_vault/shiny")
+# needs: install.packages(c("shiny","bslib","visNetwork","igraph"))
+```
+
+::: {.callout-tip appearance="simple"}
+**The three CSVs are the vault.** Add a note as a row in `data/nodes.csv`, wire it with rows in `data/edges.csv`, and it appears - sized by how many notes link to it. The [run-and-build page](kg-build.html) shows how the graph is built from `R/logic.R`.
+:::
+
+## The other formats
+
+| Mode | Artifact |
+|---|---|
+| Run / explore | [Shiny app](../shiny) |
+| Share (no R) | [Interactive graph](kg-graph.html) |
+| Build | [Run-and-build walkthrough](kg-build.html) |
+
+*Synthetic study knowledge base. No PHI, no participant-level data.*

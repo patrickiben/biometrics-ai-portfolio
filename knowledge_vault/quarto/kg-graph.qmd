@@ -1,0 +1,47 @@
+---
+title: "Study Knowledge Graph - Interactive"
+format:
+  html:
+    theme: darkly
+    embed-resources: true
+    page-layout: full
+    toc: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(visNetwork)
+source("../shiny/R/logic.R")
+kg <- kg_load("../shiny/data"); V <- kg_vis(kg); st <- kg_stats(kg)
+```
+
+::: {.callout-note appearance="simple"}
+**Shareable interactive graph** (no R server needed - it is a self-contained widget). Drag to explore, hover a note to see its detail. The editable version is the [Shiny app](../shiny); the [visual guide](kg-guide.html) explains the structure. Synthetic study, no PHI.
+:::
+
+```{r kpis, results='asis'}
+box <- function(label, value, col="#e9edf7") sprintf(
+  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Notes", st$n_nodes)); cat(box("Links", st$n_edges))
+cat(box("Clusters", st$n_clusters, "#3fd0c9")); cat(box("Hub links", st$hub_degree, "#e0a64c"))
+cat('</div>')
+```
+
+```{r graph}
+legend <- data.frame(label = kg$types$label, color = kg$types$color, shape = "dot")
+visNetwork(V$nodes, V$edges, background = "#141925", height = "600px", width = "100%") |>
+  visNodes(font = list(color = "#e9edf7", size = 16), borderWidth = 1) |>
+  visEdges(color = list(color = "#2A3242", highlight = "#5b8cff"), smooth = FALSE) |>
+  visOptions(highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE),
+             selectedBy = "group") |>
+  visPhysics(solver = "forceAtlas2Based",
+             forceAtlas2Based = list(gravitationalConstant = -55), stabilization = TRUE) |>
+  visLegend(useGroups = FALSE, addNodes = legend, width = 0.2, position = "left", ncol = 1)
+```
+
+*The most-connected note is the **`r st$hub_title`** (degree `r st$hub_degree`); the top broker between clusters is **`r st$broker_title`**. Colour = note type; size = how many notes link to it.*

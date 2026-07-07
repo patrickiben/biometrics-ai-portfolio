@@ -1,0 +1,100 @@
+---
+title: "Run and build the Study Knowledge Graph"
+subtitle: "The R Shiny graph, from running it to building it yourself"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    highlight-style: github-dark
+    code-copy: true
+execute:
+  eval: false
+---
+
+## Run it
+
+```r
+install.packages(c("shiny", "bslib", "visNetwork", "igraph"))   # once
+shiny::runApp("knowledge_vault/shiny")
+```
+
+Filter by note type, click a note to read its detail and neighbours.
+
+## The one principle: separate the logic from the UI
+
+The graph logic lives in plain functions in `shiny/R/logic.R`. The app, the
+[visual guide](kg-guide.html), the [interactive graph](kg-graph.html), and the unit
+tests all call the same functions.
+
+## Step 1 - the data is three CSVs
+
+```
+nodes.csv:  id, title, type, status, owner, cluster, summary
+edges.csv:  from, to
+types.csv:  type, label, color
+```
+
+The three CSVs *are* the vault. Add a note as a row, wire it up with edges, and it
+appears in the graph. Nothing about the study is hard-coded.
+
+## Step 2 - the logic turns CSVs into a graph
+
+`igraph` gives you the metrics for free - degree (how connected), betweenness (which
+note brokers between clusters):
+
+```r
+kg_igraph <- function(kg)
+  igraph::simplify(igraph::graph_from_data_frame(
+    kg$edges[, c("from","to")], directed = FALSE, vertices = kg$nodes["id"]))
+
+kg_metrics <- function(kg) {
+  g <- kg_igraph(kg); n <- kg$nodes
+  n$degree      <- as.integer(igraph::degree(g)[n$id])
+  n$betweenness <- as.integer(round(igraph::betweenness(g, normalized = TRUE)[n$id] * 100))
+  n
+}
+```
+
+`kg_vis()` then shapes the nodes/edges for `visNetwork` (colour by type, size by degree,
+an HTML tooltip per note).
+
+## Step 3 - the app draws it with visNetwork
+
+```r
+output$net <- renderVisNetwork({
+  visNetwork(sub()$nodes, sub()$edges, background = "#141925") |>
+    visOptions(highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE)) |>
+    visPhysics(solver = "forceAtlas2Based") |>
+    visLegend(useGroups = FALSE, addNodes = legend) |>
+    visEvents(selectNode =
+      "function(n){ Shiny.setInputValue('kg_sel', n.nodes[0], {priority:'event'}); }")
+})
+```
+
+The type checkboxes drive `sub()` (a filtered nodes/edges list), so re-checking a type
+re-draws the subgraph. Clicking a node fires `visEvents` -> `input$kg_sel`, which the
+detail panel reads.
+
+## Step 4 - the detail panel and metrics
+
+`kg_neighbors(kg, id)` lists the notes a selected note links to; `kg_stats(kg)` gives
+the value-box numbers (notes, links, clusters, the hub). All from `igraph`.
+
+## Verify it
+
+```r
+Rscript knowledge_vault/tests/test-logic.R     # 28 notes, 59 links, hub is most-connected
+```
+
+## Make it yours
+
+- **Add a note:** a row in `nodes.csv` + its links in `edges.csv`.
+- **Add a category:** a row in `types.csv` (type, label, colour).
+- **Change what "important" means:** size nodes by `betweenness` instead of `degree` in `kg_vis()`.
+
+Same principle as the other consoles (logic core, data as CSV, one render path):
+the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html) and the
+[risk console](../../risk_monitor/quarto/risk-build.html).
