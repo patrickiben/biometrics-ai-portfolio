@@ -1,0 +1,64 @@
+---
+title: "Trial-Termination Early-Warning - Snapshot"
+format:
+  html:
+    theme: darkly
+    embed-resources: true
+    page-layout: full
+    toc: false
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+library(knitr)
+source("../shiny/R/logic.R")
+s <- risk_load("../shiny/data")
+o <- risk_overall(s)
+```
+
+::: {.callout-note appearance="simple"}
+**Read-only shareable snapshot**, computed from the signal feed (`data/signals.csv`). The interactive tool is the [Shiny app](../shiny), and the [visual guide](risk-guide.html) explains the roll-up. The AI flags; the SRC / DSMB / medical monitor / PM / account lead decide. Synthetic, no PHI, no participant records.
+:::
+
+```{r kpis, results='asis'}
+box <- function(label, score, rag) {
+  col <- c(green="#43c47d", amber="#e0a64c", red="#e8657a")[rag]
+  sprintf('<div style="flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1">%d · %s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+    col, score, toupper(rag), label)
+}
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Overall termination risk", o$score, o$rag))
+for (t in TIERS) { ts <- o$tiers[[t]]; cat(box(paste(t, "tier"), ts$score, ts$rag)) }
+cat('</div>')
+```
+
+:::: {.grid}
+
+::: {.g-col-12 .g-col-md-7}
+#### All signals
+```{r table}
+d <- s[, c("tier","id","signal","category","engine","level","weight")]
+d$adv <- ifelse(as.logical(s$advanced), "ADV", "")
+kable(d, col.names=c("Tier","ID","Signal","Category","Engine","Level","Wt","Adv"), row.names=FALSE)
+```
+:::
+
+::: {.g-col-12 .g-col-md-5}
+#### Early-warning feed (firing, ranked)
+```{r feed, results='asis'}
+f <- risk_feed(s)
+for (j in seq_len(nrow(f))) {
+  r <- f[j, ]; col <- if (r$level == "red") "#e8657a" else "#e0a64c"
+  adv <- if (as.logical(r$advanced)) ' <span style="font-size:10px;background:#3a4157;border-radius:4px;padding:1px 5px">ADV</span>' else ""
+  cat(sprintf('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350"><div style="flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px"></div><div><div style="font-size:13px;color:#e9edf7"><b>%s</b> · <span style="font-family:ui-monospace,monospace;color:#7fb0ff">%s</span> %s%s</div><div style="font-size:12px;color:#94a1c0">%s</div></div></div>',
+    col, r$tier, r$id, r$signal, adv, r$detail))
+}
+```
+:::
+
+::::
+
+*The advanced-engine signals (marked ADV) use published methods: Optimal Transport / Wasserstein drift and Active Inference / free-energy. Reported safety numbers come from the validated safety database, never a model.*

@@ -1,0 +1,113 @@
+---
+title: "Trial-Termination Early-Warning"
+subtitle: "A visual, runnable guide to the 3-tier risk console"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(knitr)
+source("../shiny/R/logic.R")
+s <- risk_load("../shiny/data")
+o <- risk_overall(s)
+```
+
+::: {.callout-note appearance="simple"}
+**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up), the [**Shiny app**](../shiny) lets you *run* it and set a what-if, the [dashboard](risk-dashboard.html) is a shareable snapshot, and the [run-and-build page](risk-build.html) shows how it is made. Synthetic, no PHI, no participant records.
+:::
+
+::: {.callout-important appearance="simple"}
+**The rule.** The AI **flags, aggregates, and drafts** the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study; the account lead owns the client signal. Reported safety numbers come from the validated safety database, never from a model.
+:::
+
+## Three tiers, one roll-up
+
+```{mermaid}
+flowchart TB
+  SRC[Data sources<br/>EDC · validated safety DB · labs · ECG · IXRS · CTMS · finance · CRM] --> RT{Route by<br/>data sensitivity}
+  RT -->|participant safety / PK / unblinded| LOC[On-device local model<br/>zero egress]
+  RT -->|non-sensitive ops / commercial| CLD[Cloud Claude, API + BAA]
+  LOC --> ADV[Advanced engine<br/>Optimal Transport + Active Inference<br/>Wasserstein drift · free-energy]
+  CLD --> ADV
+  ADV --> SC[Scoring: severity-weighted roll-up<br/>to a tier RAG]
+  SC --> ESC[Alert + escalation<br/>safety to SRC/DSMB · study to PM · client to account lead]
+```
+
+The scoring is transparent - each signal has a level (green/amber/red) and a
+weight; a tier is the weighted blend, and the overall index weights the tiers
+(participant safety heaviest).
+
+## The live console - computed from the signal feed {#live}
+
+```{r kpis, results='asis'}
+box <- function(label, score, rag) {
+  col <- c(green="#43c47d", amber="#e0a64c", red="#e8657a")[rag]
+  sprintf('<div style="flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1">%d · %s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+    col, score, toupper(rag), label)
+}
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Overall termination risk", o$score, o$rag))
+for (t in TIERS) { ts <- o$tiers[[t]]; cat(box(paste(t, "tier"), ts$score, ts$rag)) }
+cat('</div>')
+```
+
+::: {.panel-tabset}
+
+### Early-warning feed
+
+```{r feed, results='asis'}
+f <- risk_feed(s)
+for (j in seq_len(nrow(f))) {
+  r <- f[j, ]; col <- if (r$level == "red") "#e8657a" else "#e0a64c"
+  adv <- if (as.logical(r$advanced)) ' <span style="font-size:10px;background:#3a4157;border-radius:4px;padding:1px 5px">ADV</span>' else ""
+  cat(sprintf('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350"><div style="flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px"></div><div><div style="font-size:13px;color:#e9edf7"><b>%s</b> · <span style="font-family:ui-monospace,monospace;color:#7fb0ff">%s</span> %s%s</div><div style="font-size:12px;color:#94a1c0">%s</div></div></div>',
+    col, r$tier, r$id, r$signal, adv, r$detail))
+}
+```
+
+### All signals
+
+```{r table}
+d <- s[, c("tier","id","signal","category","engine","level","weight")]
+kable(d, col.names=c("Tier","ID","Signal","Category","Engine","Level","Weight"), row.names=FALSE)
+```
+
+:::
+
+## Run it - and change it {#run}
+
+```r
+shiny::runApp("risk_monitor/shiny")
+# needs: install.packages(c("shiny","bslib","DT"))
+```
+
+Select a signal, set its level, and watch the tier and overall risk re-colour. The
+[run-and-build page](risk-build.html) shows how the console is built from `R/logic.R`.
+
+::: {.callout-tip appearance="simple"}
+**Going live:** `data/signals.csv` is a representative subset of the 65-signal catalog. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.
+:::
+
+## The other formats
+
+| Mode | Artifact |
+|---|---|
+| Run | [Shiny app](../shiny) |
+| Share (no R) | [Dashboard](risk-dashboard.html) |
+| Build | [Run-and-build walkthrough](risk-build.html) |
+
+*Synthetic, no PHI. The AI flags; the SRC / DSMB / PM / account lead decide.*

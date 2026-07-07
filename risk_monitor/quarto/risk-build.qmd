@@ -1,0 +1,116 @@
+---
+title: "Run and build the Trial-Termination Early-Warning console"
+subtitle: "The R Shiny console, from running it to building it yourself"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    highlight-style: github-dark
+    code-copy: true
+execute:
+  eval: false
+---
+
+## Run it
+
+```r
+install.packages(c("shiny", "bslib", "DT"))   # once
+shiny::runApp("risk_monitor/shiny")
+```
+
+Select a signal, set its level, and watch the tier and overall risk re-colour.
+
+## The one principle: separate the logic from the UI
+
+The roll-up lives in plain functions in `shiny/R/logic.R`. The app, the
+[visual guide](risk-guide.html), the [dashboard](risk-dashboard.html), and the unit
+tests all call the same functions.
+
+## Step 1 - the transparent roll-up
+
+```r
+SEVERITY <- c(green = 0, amber = 50, red = 100)
+
+tier_score <- function(signals, tier) {
+  x <- signals[signals$tier == tier, ]
+  sev <- SEVERITY[as.character(x$level)]
+  score <- sum(sev * x$weight) / sum(x$weight)     # severity-weighted blend
+  list(score = round(score), rag = rag_of(score))
+}
+
+risk_overall <- function(signals) {                 # weight the tiers
+  ts <- vapply(TIERS, function(t) tier_score(signals, t)$score, numeric(1))
+  w  <- c(Participant = .5, Study = .3, Client = .2)[TIERS]
+  round(sum(ts * w) / sum(w))
+}
+```
+
+Three levels, per-signal weights, tier and overall blends, RAG thresholds. Change a
+weight or a threshold here and every surface updates.
+
+## Step 2 - the data is a signal feed you can swap
+
+`data/signals.csv` carries `tier, id, signal, category, engine, level, weight,
+advanced, detail`. It is a representative subset of the 65-signal catalog; replace
+it with your live KRI / stopping-rule feed (same columns). `advanced = TRUE` marks
+the continuous signals from the published-method engine (Optimal Transport,
+Active Inference).
+
+```r
+s <- risk_load("data")
+risk_overall(s)$rag          # the portfolio RAG
+risk_feed(s)                 # every firing signal, ranked red-first
+```
+
+## Step 3 - the app skeleton and the what-if
+
+```r
+ui <- page_sidebar(
+  title = "Trial-Termination Early-Warning",
+  theme = bs_theme(version = 5, bootswatch = "darkly"),
+  sidebar = sidebar(
+    selectInput("tier", "Show tier", c("All", TIERS)),
+    selectInput("sig", "Signal", ids),
+    radioButtons("level", NULL, c("green","amber","red"), inline = TRUE)),
+  # value boxes (overall + 3 tiers), signals table, feed ...
+)
+
+server <- function(input, output, session) {
+  rv <- reactiveValues(signals = seed)
+  observeEvent(input$level, {                       # the what-if
+    i <- which(rv$signals$id == input$sig)
+    rv$signals$level[i] <- factor(input$level, levels = c("green","amber","red"))
+  })
+  ov <- reactive(risk_overall(rv$signals))          # recomputes; boxes/feed read it
+}
+```
+
+Setting a signal's level writes to `rv$signals`, which re-runs `ov()`, which
+re-colours the tier boxes and reorders the feed.
+
+## Step 4 - the value boxes and feed
+
+Colour each value box by its RAG (`renderUI` returning a coloured span), render the
+signals as an editable-select `DT`, and build the feed as ranked red-first rows.
+
+## Verify it headless
+
+```r
+shiny::testServer("risk_monitor/shiny", {
+  session$setInputs(sig = "ESC-33", level = "red")
+  ov()$tiers$Study$score      # rises as the study signal escalates
+})
+```
+
+## Make it yours
+
+- **Change the rule:** edit `rag_of()` / the tier weights in `R/logic.R`.
+- **Change the data:** swap `data/signals.csv` for your KRI feed.
+- **Add a tier or a signal:** add rows and (for a new tier) a `TIER_WEIGHT` entry.
+
+Same skeleton as the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html),
+the [UAT tracker](../../uat_irt/quarto/uat-build.html), and the
+[find-hours app](../../budget_reconciliation/quarto/hours-build.html).
