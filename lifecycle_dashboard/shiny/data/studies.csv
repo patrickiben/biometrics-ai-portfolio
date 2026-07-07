@@ -1,0 +1,9 @@
+"id","name","phase","design","owner","target","enrolled","sites","days_to_dbl","open_queries","clean_pct","sdv_pct","tlf_planned","tlf_programmed","tlf_qcd","tlf_finalized","dbl_prog_pct","discrep"
+"CP-101","Parallel SAD study","Startup","Parallel SAD","S. Patel",40,14,1,119,6,0.338,0.299,90,8,5,4,57,13
+"CP-102","Parallel MAD study","Startup","Parallel MAD","A. Rivera",48,5,2,130,5,0.3,0.365,180,14,9,6,41,9
+"CP-103","2x2 Crossover BE study","Conduct","2x2 Crossover BE","L. Dubois",48,31,1,33,42,0.612,0.53,72,17,11,7,41,14
+"CP-104","Fixed-sequence DDI study","Conduct","Fixed-sequence DDI","L. Dubois",32,17,1,45,27,0.549,0.531,180,20,13,8,60,2
+"CP-105","Food-effect study","DB Lock","Food-effect","M. Chen",16,16,2,-17,17,0.811,0.678,90,42,28,22,43,2
+"CP-106","Single-ascending FIH study","DB Lock","Single-ascending FIH","A. Rivera",40,40,1,-16,38,0.71,0.651,180,82,68,62,58,14
+"CP-107","Parallel SAD study","Reporting","Parallel SAD","A. Rivera",60,60,3,-68,6,0.874,0.882,150,118,76,66,55,7
+"CP-108","Parallel MAD study","Reporting","Parallel MAD","K. Novak",16,16,3,-24,7,0.91,0.86,72,32,16,7,42,16

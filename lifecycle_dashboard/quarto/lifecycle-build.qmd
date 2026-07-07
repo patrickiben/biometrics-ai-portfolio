@@ -1,0 +1,116 @@
+---
+title: "Run and build the Study Lifecycle Monitor"
+subtitle: "The R Shiny console, from running it to building it yourself"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    highlight-style: github-dark
+    code-copy: true
+execute:
+  eval: false
+---
+
+## Run it
+
+```r
+install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
+shiny::runApp("lifecycle_dashboard/shiny")
+```
+
+Pick a study, then move the what-if sliders and watch its row in the risk heatmap
+re-colour. The scoring is transparent, so every number is defensible.
+
+## The one principle: separate the logic from the UI
+
+The scoring lives in plain functions in `shiny/R/logic.R`. The app, the
+[visual guide](lifecycle-guide.html), the [dashboard](lifecycle-dashboard.html),
+and the unit tests all call the same functions.
+
+## Step 1 - the transparent scoring
+
+```r
+score_study <- function(s, overdue) {
+  dblp <- dbl_pressure(s$phase, s$days_to_dbl); repp <- rep_pressure(s$phase)
+  timeline <- clamp(overdue * 22 + dblp * 45)
+  data     <- clamp((min(1, s$open_queries/120)*45 + (1-s$clean_pct)*30 +
+                     (1-s$sdv_pct)*25) * (0.5 + 0.6*dblp))
+  tlf      <- clamp((1 - s$tlf_finalized/s$tlf_planned)*100 * (0.3 + 0.8*repp))
+  resource <- clamp((1 - s$dbl_prog_pct/100)*55 + min(1, s$discrep/18)*45*repp)
+  overall  <- clamp(0.30*timeline + 0.28*data + 0.27*tlf + 0.15*resource)
+  list(Timeline=timeline, Data=data, TLF=tlf, Resource=resource, overall=overall)
+}
+```
+
+Four sub-scores, one weighted blend, RAG thresholds at 33 and 66. Change the
+weights or a rule here and every surface updates.
+
+## Step 2 - the data is CSV you can swap
+
+`R/gen_data.R` writes four CSVs (`studies`, `milestones`, `deliverables`,
+`query_trend`). On a real study you replace them with a read-only CTMS / EDC
+export carrying the same columns. `lifecycle_load()` reads them; nothing writes back.
+
+```r
+d <- lifecycle_load("data")
+st <- score_portfolio(d)        # adds Timeline/Data/TLF/Resource/overall/rag
+lifecycle_kpis(st, d)$at_risk   # how many studies over threshold
+```
+
+## Step 3 - the app skeleton and the what-if
+
+```r
+ui <- page_sidebar(
+  title = "Study Lifecycle Monitor",
+  theme = bs_theme(version = 5, bootswatch = "darkly"),
+  sidebar = sidebar(
+    selectInput("study", "Study", choices = ids),
+    sliderInput("openq", "Open queries", 0, 150, 0),
+    sliderInput("dblprog", "Double-programmed %", 0, 100, 50)),
+  # value boxes, heatmap, signals, trend, detail ...
+)
+
+server <- function(input, output, session) {
+  rv <- reactiveValues(studies = seed$studies)
+  observeEvent(list(input$openq, input$dblprog), {          # the what-if
+    i <- which(rv$studies$id == input$study)
+    rv$studies$open_queries[i] <- input$openq
+    rv$studies$dbl_prog_pct[i] <- input$dblprog
+  })
+  st <- reactive(score_portfolio(list(studies = rv$studies,        # recomputes
+                    milestones = seed$milestones, deliverables = seed$deliverables,
+                    query_trend = seed$query_trend)))
+  # every output reads st(): value boxes, the heatmap, the signals, the detail
+}
+```
+
+Moving a slider writes to `rv$studies`, which re-runs `st()`, which re-colours the
+heatmap. You never call the scorer by hand; the reactive does.
+
+## Step 4 - the heatmap and the detail
+
+`renderPlot({ ggplot(heat_long(), aes(dim, id, fill = value)) + geom_tile() ... })`
+for the RAG grid; a milestone-track and a TLF-funnel `ggplot` for the selected
+study; a `downloadHandler` is a natural add for exporting the scored portfolio.
+
+## Verify it headless
+
+```r
+shiny::testServer("lifecycle_dashboard/shiny", {
+  session$setInputs(study = "CP-108", openq = 150)
+  st()$overall[st()$id == "CP-108"]     # rises as open queries climb
+})
+```
+
+## Make it yours
+
+- **Change the rule:** edit `score_study()` / the signal rules in `R/logic.R`.
+- **Change the data:** swap the CSVs for a CTMS export (same columns).
+- **Add a dimension:** add a sub-score in `score_study()` and a column to the heatmap.
+
+Same skeleton as the [UAT tracker](../../uat_irt/quarto/uat-build.html) and the
+[find-hours app](../../budget_reconciliation/quarto/hours-build.html): logic core,
+`reactiveValues`, reactive rules, outputs.

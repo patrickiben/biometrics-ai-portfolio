@@ -1,0 +1,132 @@
+---
+title: "Study Lifecycle Monitor"
+subtitle: "A visual, runnable guide to the operational-health console"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(ggplot2); library(knitr)
+source("../shiny/R/logic.R")
+d  <- lifecycle_load("../shiny/data")
+st <- score_portfolio(d)
+k  <- lifecycle_kpis(st, d)
+```
+
+::: {.callout-note appearance="simple"}
+**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up computed from the portfolio), the [**Shiny app**](../shiny) lets you *run* it and nudge a what-if, the [dashboard](lifecycle-dashboard.html) is a shareable snapshot, and the [run-and-build page](lifecycle-build.html) shows how it is made. Synthetic, no PHI, no participant-level data. A screening lens for operational health, never a reported clinical number.
+:::
+
+## What it watches
+
+Operational health of every study from protocol to CSR, on one screen: are milestones slipping, is the query backlog clearing before database lock, is TLF production keeping pace, is double-programming on track.
+
+```{mermaid}
+flowchart LR
+  S[Startup] --> C[Conduct] --> L[DB Lock] --> R[Reporting]
+  S -.-> M1[Protocol · SAP · FPFV]
+  C -.-> M2[LPLV]
+  L -.-> M3[DBL]
+  R -.-> M4[TLFs · CSR]
+```
+
+## How the risk score works - it is transparent
+
+No black box. Each study gets four operational sub-scores (0-100), blended into one:
+
+```{mermaid}
+flowchart LR
+  T[Timeline<br/>overdue milestones +<br/>days-to-lock pressure] --> O
+  D[Data<br/>open queries +<br/>clean/SDV %] --> O
+  F[TLF<br/>% finalized vs<br/>reporting pressure] --> O
+  Rs[Resource<br/>double-programming +<br/>discrepancies] --> O
+  O{{overall = 0.30·T + 0.28·D<br/>+ 0.27·F + 0.15·R}}
+  O --> RAG[RAG: >66 red · 34-66 amber · &le;33 green]
+```
+
+Because it is a formula, you can defend every number and change what "risk" means in one place (`score_study()` in `R/logic.R`).
+
+## The live portfolio - computed from the data {#live}
+
+```{r kpis, results='asis'}
+box <- function(label, value, col) sprintf(
+  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Active studies", k$n, "#e9edf7"))
+cat(box("At risk", k$at_risk, "#e8657a"))
+cat(box("On watch", k$watch, "#e0a64c"))
+cat(box("Open queries", k$open_q, "#e9edf7"))
+cat(box("Avg deliverables", paste0(k$avg_del,"%"), "#3fd0c9"))
+cat(box("Next DB lock", ifelse(is.na(k$next_dbl_days),"-",paste0(k$next_dbl_days,"d")), "#5b8cff"))
+cat('</div>')
+```
+
+::: {.panel-tabset}
+
+### Risk heatmap
+
+```{r heat, fig.width=8, fig.height=4}
+dims <- c("Timeline","Data","TLF","Resource")
+hl <- do.call(rbind, lapply(dims, function(dm) data.frame(id=st$id, dim=dm, value=st[[dm]])))
+hl$id <- factor(hl$id, levels=rev(st$id)); hl$dim <- factor(hl$dim, levels=dims)
+ggplot(hl, aes(dim, id, fill=value)) +
+  geom_tile(colour="#222630", linewidth=1.5) +
+  geom_text(aes(label=value), colour="#0b1020", fontface="bold", size=4) +
+  scale_fill_gradientn(colours=c("#43c47d","#e0a64c","#e8657a"), limits=c(0,100)) +
+  labs(x=NULL, y=NULL) +
+  theme_minimal(base_size=12) +
+  theme(legend.position="none", panel.grid=element_blank(),
+        plot.background=element_rect(fill="#222630", colour=NA),
+        panel.background=element_rect(fill="#222630", colour=NA),
+        text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"))
+```
+
+### Ranked signals
+
+```{r sig}
+sg <- lifecycle_signals(st, d)
+kable(head(sg[, c("sev","who","title","msg")], 10),
+      col.names=c("Severity","Study","Signal","Detail"), row.names=FALSE)
+```
+
+:::
+
+## Run it - and change it {#run}
+
+```r
+shiny::runApp("lifecycle_dashboard/shiny")
+# needs: install.packages(c("shiny","bslib","DT","ggplot2"))
+```
+
+Pick a study, then move the what-if sliders (open queries, double-programming) and
+watch that study's row in the heatmap re-colour. The [run-and-build page](lifecycle-build.html)
+shows how the app is built from `R/logic.R`.
+
+::: {.callout-tip appearance="simple"}
+**Going live:** `R/gen_data.R` writes the four CSVs so you can see the shape. Replace them with a read-only CTMS / EDC export carrying the same columns and the console is your portfolio. Nothing writes back to a source system.
+:::
+
+## The other formats
+
+| Mode | Artifact |
+|---|---|
+| Run | [Shiny app](../shiny) |
+| Share (no R) | [Dashboard](lifecycle-dashboard.html) |
+| Build | [Run-and-build walkthrough](lifecycle-build.html) |
+
+*Synthetic, deterministic, no PHI. Operational screening, not a clinical readout.*

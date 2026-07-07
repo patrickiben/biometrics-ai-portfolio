@@ -1,0 +1,97 @@
+---
+title: "Study Lifecycle Monitor - Snapshot"
+format:
+  html:
+    theme: darkly
+    embed-resources: true
+    page-layout: full
+    toc: false
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(ggplot2); library(knitr)
+source("../shiny/R/logic.R")
+d  <- lifecycle_load("../shiny/data")
+st <- score_portfolio(d)
+k  <- lifecycle_kpis(st, d)
+```
+
+::: {.callout-note appearance="simple"}
+**Read-only shareable snapshot**, computed from the portfolio (`data/*.csv`). The interactive tool is the [Shiny app](../shiny), and the [visual guide](lifecycle-guide.html) explains the scoring. Synthetic, no PHI, no participant-level data.
+:::
+
+```{r kpis, results='asis'}
+box <- function(label, value, col) sprintf(
+  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Active studies", k$n, "#e9edf7"))
+cat(box("At risk", k$at_risk, "#e8657a"))
+cat(box("On watch", k$watch, "#e0a64c"))
+cat(box("Open queries", k$open_q, "#e9edf7"))
+cat(box("Avg deliverables", paste0(k$avg_del,"%"), "#3fd0c9"))
+cat(box("Next DB lock", ifelse(is.na(k$next_dbl_days),"-",paste0(k$next_dbl_days,"d")), "#5b8cff"))
+cat('</div>')
+```
+
+:::: {.grid}
+
+::: {.g-col-12 .g-col-md-7}
+#### Portfolio risk heatmap
+
+```{r heat, fig.width=7, fig.height=4.2}
+dims <- c("Timeline","Data","TLF","Resource")
+hl <- do.call(rbind, lapply(dims, function(dm) data.frame(id=st$id, dim=dm, value=st[[dm]])))
+hl$id <- factor(hl$id, levels=rev(st$id)); hl$dim <- factor(hl$dim, levels=dims)
+ggplot(hl, aes(dim, id, fill=value)) +
+  geom_tile(colour="#222630", linewidth=1.5) +
+  geom_text(aes(label=value), colour="#0b1020", fontface="bold", size=4) +
+  scale_fill_gradientn(colours=c("#43c47d","#e0a64c","#e8657a"), limits=c(0,100)) +
+  labs(x=NULL, y=NULL) + theme_minimal(base_size=12) +
+  theme(legend.position="none", panel.grid=element_blank(),
+        plot.background=element_rect(fill="#222630", colour=NA),
+        panel.background=element_rect(fill="#222630", colour=NA),
+        text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"))
+```
+:::
+
+::: {.g-col-12 .g-col-md-5}
+#### Early-warning signals (ranked)
+
+```{r signals, results='asis'}
+sg <- lifecycle_signals(st, d)
+for (j in seq_len(min(8, nrow(sg)))) {
+  r <- sg[j, ]; col <- if (r$sev == "red") "#e8657a" else "#e0a64c"
+  cat(sprintf('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350"><div style="flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px"></div><div><div style="font-size:13px;color:#e9edf7"><b>%s</b> - %s</div><div style="font-size:12px;color:#94a1c0">%s</div></div></div>', col, r$who, r$title, r$msg))
+}
+```
+:::
+
+::::
+
+#### Portfolio open-query trend (8 weeks)
+
+```{r trend, fig.width=10, fig.height=2.6}
+agg <- aggregate(open_queries ~ week, d$query_trend, sum)
+ggplot(agg, aes(week, open_queries)) +
+  geom_line(colour="#5b8cff", linewidth=1.2) + geom_point(colour="#5b8cff", size=2) +
+  labs(x="Week", y="Open queries (portfolio)") + theme_minimal(base_size=12) +
+  theme(plot.background=element_rect(fill="#222630", colour=NA),
+        panel.background=element_rect(fill="#222630", colour=NA),
+        text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"),
+        panel.grid=element_line(colour="#3a4157"))
+```
+
+#### Studies, ranked by overall risk
+
+```{r table}
+kable(st[, c("id","phase","overall","Timeline","Data","TLF","Resource","rag")],
+      col.names=c("Study","Phase","Overall","Timeline","Data","TLF","Resource","RAG"), row.names=FALSE)
+```
