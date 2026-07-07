@@ -1,0 +1,127 @@
+---
+title: "TRIALMON - Participant-Safety Screening"
+subtitle: "A visual, runnable guide to the safety-screening console"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(ggplot2); library(knitr)
+source("../trialmon_shiny/R/logic.R")
+tm <- trialmon_load("../trialmon_shiny/data")
+P  <- score_participants(tm$participants); k <- trialmon_kpis(tm)
+DARK <- theme_minimal(base_size=12) + theme(legend.position="top",
+  plot.background=element_rect(fill="#141925", colour=NA), panel.background=element_rect(fill="#141925", colour=NA),
+  text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"),
+  panel.grid=element_line(colour="#2a3242"), plot.title=element_text(colour="#e9edf7", size=12))
+```
+
+::: {.callout-important appearance="simple"}
+**Every panel is a SCREENING lens.** It flags a position for the medical monitor / SRC / DSMB. It never reports a clinical number and never adjudicates a DLT or a Hy's-Law case. Reported safety numbers come from the validated safety database.
+:::
+
+::: {.callout-note appearance="simple"}
+**Run / share / read / build.** This page *shows* the console, the [**Shiny app**](../trialmon_shiny) lets you *click* the eDISH plot to open an evidence packet, the [dashboard](trialmon-dashboard.html) is a shareable snapshot, and the [run-and-build page](trialmon-build.html) shows how it is made. Synthetic, no PHI (values are xULN multiples).
+:::
+
+## The eDISH AND-gate - why it is not just "high ALT"
+
+The Hy's-Law screen fires only when transaminase **and** bilirubin are both up. A high ALT alone is not a Hy's position, and the screen must not cry wolf on it.
+
+```{mermaid}
+flowchart LR
+  A{ALT or AST<br/>> 3x ULN?} -->|no| G[GREEN]
+  A -->|yes| B{TBili<br/>> 2x ULN?}
+  B -->|no| N[ALT-only<br/>near-miss, GREEN]
+  B -->|yes| R[Hy's-Law position<br/>RED - notify medical monitor / SRC]
+```
+
+In the synthetic data, **CP101-014** (ALT 5.6x, TBili 3.1x) sits in the RED quadrant, while **CP101-009** (ALT 4.2x, TBili 1.6x) is the near-miss the AND-gate correctly keeps green.
+
+## The live screens - computed from the data {#live}
+
+```{r kpis, results='asis'}
+st <- trialmon_status(tm)
+scol <- c(GREEN="#43c47d", watch="#5f8aa8", AMBER="#e0a64c", RED="#e8657a")
+box <- function(label, value, col="#e9edf7") sprintf(
+  '<div style="flex:1 1 130px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>', col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Safety status", st, scol[st])); cat(box("Participants", k$n))
+cat(box("RED flags", k$red, "#e8657a")); cat(box("AMBER flags", k$amber, "#e0a64c"))
+cat(box("Grade >=3 AE", k$g3ae)); cat(box("SAEs", k$sae))
+cat('</div>')
+```
+
+::: {.panel-tabset}
+
+### eDISH / Hy's-Law
+
+```{r edish, fig.width=8, fig.height=4.5}
+P$flag <- ifelse(P$hys, "Hy's-Law (RED)", ifelse(P$alt>3 & P$tbl<=2, "ALT-only (near-miss)", "within limits"))
+ggplot(P, aes(alt, tbl, colour=flag)) +
+  annotate("rect", xmin=3, xmax=Inf, ymin=2, ymax=Inf, fill="#e8657a", alpha=.08) +
+  geom_hline(yintercept=2, linetype=2, colour="#e0a64c") + geom_vline(xintercept=3, linetype=2, colour="#e0a64c") +
+  geom_point(size=3) + geom_text(data=P[P$hys|P$alt>3,], aes(label=id), colour="#c5cee4", size=3, vjust=-1) +
+  scale_x_log10() + scale_y_log10() +
+  scale_colour_manual(values=c("Hy's-Law (RED)"="#e8657a","ALT-only (near-miss)"="#e0a64c","within limits"="#43c47d")) +
+  labs(x="peak ALT (x ULN, log)", y="peak TBili (x ULN, log)", colour=NULL) + DARK
+```
+
+### Screening worklist
+
+```{r wl}
+wl <- trialmon_worklist(tm)
+kable(wl[, c("sev","id","check","value","rule")],
+      col.names=c("Severity","Participant / cohort","Screen","Value","Rule"), row.names=FALSE)
+```
+
+### 3+3 DLT ladder
+
+```{r ladder, fig.width=8, fig.height=3.2}
+ds <- dlt_state(tm); ds$cohort <- factor(ds$cohort, levels=ds$cohort)
+ggplot(ds, aes(cohort, dose_mg, fill=sev)) + geom_col(width=.7) +
+  geom_text(aes(label=sprintf("%d/%d DLT", dlt, evaluable)), vjust=-0.5, colour="#e9edf7", size=3.3) +
+  scale_fill_manual(values=c(GREEN="#43c47d", AMBER="#e0a64c", RED="#e8657a")) +
+  labs(x=NULL, y="dose (mg)", fill=NULL) + DARK
+```
+
+:::
+
+## Run it - and change it {#run}
+
+```r
+shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
+# needs: install.packages(c("shiny","bslib","ggplot2"))
+```
+
+Click a point on the eDISH plot to open that participant's evidence packet (eDISH,
+QTcF, AEs, disposition, the trajectory). The [run-and-build page](trialmon-build.html)
+shows how it is built from `R/logic.R`.
+
+::: {.callout-tip appearance="simple"}
+**Going live:** `R/gen_data.R` writes the CSVs so you can see the shape. Replace them with a read-only export from the validated safety database / ADaM (same columns). The dashboard never becomes the source of a number; it points a reviewer at a position.
+:::
+
+## The other formats
+
+| Mode | Artifact |
+|---|---|
+| Run | [Shiny app](../trialmon_shiny) |
+| Share (no R) | [Dashboard](trialmon-dashboard.html) |
+| Build | [Run-and-build walkthrough](trialmon-build.html) |
+
+*Synthetic, no PHI. The tool flags; the medical monitor / SRC / DSMB decide.*

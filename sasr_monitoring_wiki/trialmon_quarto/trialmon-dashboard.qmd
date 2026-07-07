@@ -1,0 +1,94 @@
+---
+title: "TRIALMON - Safety Screening Snapshot"
+format:
+  html:
+    theme: darkly
+    embed-resources: true
+    page-layout: full
+    toc: false
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(ggplot2); library(knitr)
+source("../trialmon_shiny/R/logic.R")
+tm <- trialmon_load("../trialmon_shiny/data")
+P  <- score_participants(tm$participants); k <- trialmon_kpis(tm)
+DARK <- theme_minimal(base_size=12) + theme(legend.position="top",
+  plot.background=element_rect(fill="#141925", colour=NA), panel.background=element_rect(fill="#141925", colour=NA),
+  text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"), panel.grid=element_line(colour="#2a3242"))
+```
+
+::: {.callout-important appearance="simple"}
+**Read-only screening snapshot**, computed from the safety data (`data/*.csv`). Every panel is a screening lens: it flags a position for the medical monitor / SRC / DSMB, it never reports a clinical number or adjudicates. The interactive tool is the [Shiny app](../trialmon_shiny); the [visual guide](trialmon-guide.html) explains the rules. Synthetic, no PHI.
+:::
+
+```{r kpis, results='asis'}
+st <- trialmon_status(tm); scol <- c(GREEN="#43c47d", watch="#5f8aa8", AMBER="#e0a64c", RED="#e8657a")
+box <- function(label, value, col="#e9edf7") sprintf(
+  '<div style="flex:1 1 130px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>', col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Safety status", st, scol[st])); cat(box("Participants", k$n))
+cat(box("RED flags", k$red, "#e8657a")); cat(box("AMBER flags", k$amber, "#e0a64c"))
+cat(box("Grade >=3 AE", k$g3ae)); cat(box("SAEs", k$sae))
+cat('</div>')
+```
+
+:::: {.grid}
+
+::: {.g-col-12 .g-col-md-7}
+#### eDISH / Hy's-Law screen
+```{r edish, fig.width=7, fig.height=4.4}
+P$flag <- ifelse(P$hys, "Hy's-Law (RED)", ifelse(P$alt>3 & P$tbl<=2, "ALT-only (near-miss)", "within limits"))
+ggplot(P, aes(alt, tbl, colour=flag)) +
+  annotate("rect", xmin=3, xmax=Inf, ymin=2, ymax=Inf, fill="#e8657a", alpha=.08) +
+  geom_hline(yintercept=2, linetype=2, colour="#e0a64c") + geom_vline(xintercept=3, linetype=2, colour="#e0a64c") +
+  geom_point(size=3) + geom_text(data=P[P$hys|P$alt>3,], aes(label=id), colour="#c5cee4", size=3, vjust=-1) +
+  scale_x_log10() + scale_y_log10() +
+  scale_colour_manual(values=c("Hy's-Law (RED)"="#e8657a","ALT-only (near-miss)"="#e0a64c","within limits"="#43c47d")) +
+  labs(x="peak ALT (x ULN, log)", y="peak TBili (x ULN, log)", colour=NULL) + DARK
+```
+:::
+
+::: {.g-col-12 .g-col-md-5}
+#### Screening worklist (ranked)
+```{r wl, results='asis'}
+wl <- trialmon_worklist(tm)
+for (j in seq_len(nrow(wl))) { r <- wl[j,]; col <- if (r$sev=="RED") "#e8657a" else "#e0a64c"
+  cat(sprintf('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2a3242"><div style="flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px"></div><div><div style="font-size:13px;color:#e9edf7"><b>%s</b> · %s</div><div style="font-size:12px;color:#94a1c0">%s</div></div></div>', col, r$id, r$check, r$value)) }
+```
+:::
+
+::::
+
+:::: {.grid}
+::: {.g-col-12 .g-col-md-6}
+#### 3+3 DLT ladder
+```{r ladder, fig.width=6, fig.height=3.2}
+ds <- dlt_state(tm); ds$cohort <- factor(ds$cohort, levels=ds$cohort)
+ggplot(ds, aes(cohort, dose_mg, fill=sev)) + geom_col(width=.7) +
+  geom_text(aes(label=sprintf("%d/%d DLT", dlt, evaluable)), vjust=-0.5, colour="#e9edf7", size=3.3) +
+  scale_fill_manual(values=c(GREEN="#43c47d", AMBER="#e0a64c", RED="#e8657a")) +
+  labs(x=NULL, y="dose (mg)", fill=NULL) + DARK
+```
+:::
+::: {.g-col-12 .g-col-md-6}
+#### AE by SOC x max grade
+```{r aegrid, fig.width=6, fig.height=3.2}
+ae <- tm$aes; ae$soc <- sub(" disorders","", ae$soc)
+g <- aggregate(list(n=ae$grade), by=list(soc=ae$soc, grade=factor(ae$grade, levels=1:4)), length)
+ggplot(g, aes(grade, soc, fill=n)) + geom_tile(colour="#141925") +
+  geom_text(aes(label=n), colour="#0b1020", fontface="bold", size=3.6) +
+  scale_fill_gradient(low="#3a4157", high="#e8657a") + labs(x="CTCAE grade", y=NULL) + DARK +
+  theme(legend.position="none")
+```
+:::
+::::
+
+*eDISH AND-gate: (ALT or AST > 3x) AND TBili > 2x. CP101-009 (ALT 4.2x, TBili 1.6x) is the near-miss the gate keeps green. Reported safety numbers come from the validated safety database, never this screen.*

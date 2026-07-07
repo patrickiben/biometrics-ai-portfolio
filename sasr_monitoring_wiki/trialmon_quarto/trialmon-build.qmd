@@ -1,0 +1,101 @@
+---
+title: "Run and build TRIALMON"
+subtitle: "The R Shiny safety-screening console, from running it to building it yourself"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    highlight-style: github-dark
+    code-copy: true
+execute:
+  eval: false
+---
+
+## Run it
+
+```r
+install.packages(c("shiny", "bslib", "ggplot2"))   # once
+shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
+```
+
+Click a point on the eDISH plot to open a participant's evidence packet.
+
+## The one principle: separate the logic from the UI
+
+The screening rules live in plain functions in `trialmon_shiny/R/logic.R`. The app,
+the [visual guide](trialmon-guide.html), the [dashboard](trialmon-dashboard.html),
+and the unit tests all call the same functions.
+
+## Step 1 - the screening rules, as plain functions
+
+```r
+qtc_sev <- function(qt, dqt)
+  if (qt > 500 || dqt > 60) "RED" else if (qt > 480 || dqt > 30) "AMBER"
+  else if (qt > 450) "watch" else "GREEN"
+
+score_participants <- function(p) {
+  p$hys  <- (p$alt > 3 | p$ast > 3) & p$tbl > 2        # the eDISH AND-gate
+  p$qsev <- mapply(qtc_sev, p$qt, p$dqt)               # ICH E14 tiers
+  p
+}
+```
+
+The **AND-gate** is the whole point: a high ALT alone does not fire; bilirubin must
+be up too. CP101-009 (ALT 4.2x, TBili 1.6x) stays green - a test that would.
+
+## Step 2 - the data is a safety export you can swap
+
+`R/gen_data.R` writes `participants.csv`, `aes.csv`, `cohorts.csv` (values are xULN
+multiples, not measurements). On a real study you replace them with a **read-only**
+export from the validated safety database / ADaM (ADLB, ADEG, ADAE), same columns.
+Nothing writes back.
+
+```r
+tm <- trialmon_load("data")
+trialmon_status(tm)          # worst of the eDISH / QTcF / 3+3 screens
+trialmon_worklist(tm)        # every firing position, ranked RED-first
+```
+
+## Step 3 - the signature eDISH scatter
+
+```r
+output$edish <- renderPlot({
+  ggplot(P, aes(alt, tbl, colour = flag)) +
+    annotate("rect", xmin=3, xmax=Inf, ymin=2, ymax=Inf, fill="#e8657a", alpha=.08) +
+    geom_hline(yintercept=2, linetype=2) + geom_vline(xintercept=3, linetype=2) +
+    geom_point() + scale_x_log10() + scale_y_log10()
+})
+observeEvent(input$edish_click, {                        # click -> participant
+  np <- nearPoints(P, input$edish_click, xvar="alt", yvar="tbl", maxpoints=1)
+  if (nrow(np)) updateSelectInput(session, "pid", selected = np$id[1])
+})
+```
+
+`nearPoints()` maps the click on the log-log plot back to the nearest participant,
+which opens the evidence packet.
+
+## Step 4 - the worklist, the 3+3 ladder, the packet
+
+`trialmon_worklist()` builds the ranked flag list; `dlt_state()` rolls DLTs up per
+cohort for the 3+3 ladder; the packet reads the selected participant's screens, AEs,
+and disposition. All from `R/logic.R`.
+
+## Verify it
+
+```r
+Rscript sasr_monitoring_wiki/trialmon_tests/test-logic.R
+# checks the AND-gate: CP101-009 (ALT>3, TBili<2) is NOT a Hy's position
+```
+
+## Make it yours
+
+- **Change a threshold:** edit `qtc_sev()` or the eDISH gate in `R/logic.R`.
+- **Change the data:** swap the CSVs for a safety-DB / ADaM export.
+- **Add a screen:** add a rule and a `trialmon_worklist()` entry.
+
+Same skeleton as the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html),
+the [risk console](../../risk_monitor/quarto/risk-build.html), and the
+[knowledge graph](../../knowledge_vault/quarto/kg-build.html).

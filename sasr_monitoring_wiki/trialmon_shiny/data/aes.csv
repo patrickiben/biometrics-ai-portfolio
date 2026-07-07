@@ -1,0 +1,17 @@
+"id","soc","pt","grade","serious","related","teae","onset","resolution"
+"CP101-014","Investigations","ALT increased",3,"Y","Related","Y",18,NA
+"CP101-014","Investigations","AST increased",3,"N","Related","Y",18,NA
+"CP101-014","Hepatobiliary disorders","Hyperbilirubinaemia",3,"Y","Related","Y",22,NA
+"CP101-009","Investigations","ALT increased",2,"N","Possible","Y",15,34
+"CP101-018","Investigations","Electrocardiogram QT prolonged",2,"N","Possible","Y",22,NA
+"CP101-006","Investigations","Electrocardiogram QT prolonged",1,"N","Unlikely","Y",15,40
+"CP101-011","Blood/lymphatic disorders","Anaemia",1,"N","Possible","Y",20,NA
+"CP101-006","General disorders","Headache",1,"N","Possible","Y",5,34
+"CP101-020","General disorders","Dizziness",1,"N","Possible","Y",21,31
+"CP101-009","General disorders","Dizziness",2,"N","Unlikely","Y",26,29
+"CP101-018","General disorders","Nausea",2,"N","Possible","Y",13,46
+"CP101-011","General disorders","Headache",2,"N","Unlikely","Y",21,35
+"CP101-011","General disorders","Dizziness",2,"N","Unlikely","Y",39,44
+"CP101-001","General disorders","Nausea",2,"N","Unlikely","Y",10,48
+"CP101-020","General disorders","Diarrhoea",2,"N","Possible","Y",38,24
+"CP101-015","General disorders","Diarrhoea",2,"N","Possible","Y",21,35
