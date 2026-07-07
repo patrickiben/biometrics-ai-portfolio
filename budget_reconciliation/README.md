@@ -12,6 +12,7 @@ additional scope and needs a change order.
 
 | File | What it is |
 |---|---|
+| **[`Hours_Budget_Reconciliation_Workbook.xlsx`](Hours_Budget_Reconciliation_Workbook.xlsx)** | **The working tool — download and fill in.** A formula-driven Excel workbook (Instructions · Effort Ledger · Find Hours · Change Order). Enter your deliverables and planned/actual/EAC hours; net findable and the find-hours verdict compute automatically. Hours/effort only, no dollars. |
 | [`FindHours_Playbook.html`](FindHours_Playbook.html) | The playbook — the problem (silent absorption), the reconciliation (`net findable = (Σ planned + contingency) − Σ EAC`), the 4-step decision tree (reallocate slack → contingency → defer → change order), when it's genuinely out-of-scope, and governance. |
 | [`Hours_Reconciliation_Worksheet.html`](Hours_Reconciliation_Worksheet.html) | Interactive worksheet — a synthetic project effort ledger + a "find hours" input: enter the new deliverable's estimated hours and it sources them (under-run slack → contingency), showing whether it's **absorbable internally** or needs a **change order** for the shortfall. |
 | [`templates/project_hours_ledger.csv`](templates/project_hours_ledger.csv) | The effort ledger (deliverable × planned / actual / % / EAC / variance) with a contingency row. |

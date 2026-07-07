@@ -10,6 +10,7 @@ a biostatistician's responsibility.
 
 | File | What it is |
 |---|---|
+| **[`UAT_IRT_RTSM_Workbook.xlsx`](UAT_IRT_RTSM_Workbook.xlsx)** | **The working tool — download and fill in.** A formula-driven Excel workbook (Instructions · Test Scripts · Traceability · Defect Log · Execution Summary) pre-filled for a **parallel-group** study. Execute each test in the IRT test environment and record the result; the go-live sign-off gate computes automatically. Shareable and signable for the eTMF. |
 | [`UAT_IRT_Guide.html`](UAT_IRT_Guide.html) | The guide — what UAT for IRT/RTSM is, the biostatistician's role, the process (URS → scripts → execute → defects → trace → sign-off), coverage areas, the go-live gate, governance. |
 | [`UAT_IRT_Tracker.html`](UAT_IRT_Tracker.html) | Interactive execution & defect tracker — KPIs, execution by area, a filterable test-script table (click for steps/expected/actual), the defect log, and a **live go-live sign-off gate** that stays blocked until every critical test passes and every critical/major defect closes. |
 | [`templates/test_scripts.csv`](templates/test_scripts.csv) | Test-script library (29 example cases across randomization, dose-escalation cohorts, enrollment, dispensing, resupply, unblinding, notifications, EDC integration). |
