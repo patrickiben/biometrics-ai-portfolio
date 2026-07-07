@@ -1,6 +1,6 @@
 ---
 title: "IRT / RTSM User Acceptance Testing"
-subtitle: "A visual, runnable guide — from the biostatistics lens"
+subtitle: "A visual, runnable guide - from the biostatistics lens"
 format:
   html:
     theme: darkly
@@ -30,12 +30,12 @@ s <- uat_summary(d$tests, d$defects, d$trace)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Watch / explore / read / build — pick your mode.** This page *shows* the UAT (diagrams + a live dashboard computed from the data), the [**Shiny app**](../shiny) lets you *run* one, the [build-it walkthrough](../BUILD_IT.md) shows how the app is made, and the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) is what you file. Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
+**Watch / explore / read / build - pick your mode.** This page *shows* the UAT (diagrams + a live dashboard computed from the data), the [**Shiny app**](../shiny) lets you *run* one, the [build-it walkthrough](uat-build.html) shows how the app is made, and the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) is what you file. Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
 :::
 
 ## What a UAT is, in one picture
 
-You are confirming, in a test environment, that the vendor's randomization & drug-supply build does **exactly** what your specs say — before a single real participant is randomized.
+You are confirming, in a test environment, that the vendor's randomization & drug-supply build does **exactly** what your specs say - before a single real participant is randomized.
 
 ```{mermaid}
 flowchart LR
@@ -53,7 +53,7 @@ flowchart LR
   REC -.-> LOG
 ```
 
-## Where it actually runs — the systems
+## Where it actually runs - the systems
 
 The tracker you see below is a **picture**. The real UAT happens across three live places, and the workbook is the paper trail that ties them together.
 
@@ -79,7 +79,7 @@ flowchart TB
 The workbook does not connect to the IRT. You **transcribe** results into it, on purpose, so the record is attributable and stands on its own for an auditor. Every number comes from the validated systems (the IRT, the test list, your reconciliation), never from an assistant.
 :::
 
-## The live tracker — computed from the data {#live}
+## The live tracker - computed from the data {#live}
 
 This is the same logic the Shiny app and the Excel gate use, rendered here from `templates/*.csv`. Edit that CSV (or run the app) and these move.
 
@@ -138,7 +138,7 @@ kable(od, col.names = c("Defect","Severity","In test","Description"), row.names 
 
 :::
 
-## Run it — and change it {#run}
+## Run it - and change it {#run}
 
 The interactive tool is a real R Shiny app you own. From the package root:
 
@@ -147,15 +147,15 @@ shiny::runApp("uat_irt/shiny")
 # needs: install.packages(c("shiny","bslib","DT","ggplot2"))
 ```
 
-Select a test, mark it Pass/Fail, close a defect — the KPIs and the go-live gate recompute live. Download your results to CSV to drop into the Excel workbook and the eTMF.
+Select a test, mark it Pass/Fail, close a defect - the KPIs and the go-live gate recompute live. Download your results to CSV to drop into the Excel workbook and the eTMF.
 
 ::: {.callout-tip appearance="simple"}
-**You want to build these yourself.** The whole app is ~150 lines: `shiny/R/logic.R` holds the gate + KPI math (the functions this page also called), and `shiny/app.R` is the UI + reactivity. The [build-it walkthrough](../BUILD_IT.md) takes you through it piece by piece. Change the CSV to your study's tests and it is your tracker.
+**You want to build these yourself.** The whole app is ~150 lines: `shiny/R/logic.R` holds the gate + KPI math (the functions this page also called), and `shiny/app.R` is the UI + reactivity. The [build-it walkthrough](uat-build.html) takes you through it piece by piece. Change the CSV to your study's tests and it is your tracker.
 :::
 
 ## How to write a test that is actually executable
 
-A good test has a specific, verifiable expected result — not "works correctly". Two worked examples:
+A good test has a specific, verifiable expected result - not "works correctly". Two worked examples:
 
 ::: {.panel-tabset}
 
@@ -163,8 +163,8 @@ A good test has a specific, verifiable expected result — not "works correctly"
 
 - **Precondition:** test list loaded in staging; the <70 kg stratum, block 1, has an unused slot; you know the next expected list entry.
 - **Steps:** log in as Investigator → register participant 101-001, weight 68.0 kg → Randomize → record kit + confirmation → open the allocation report as the unblinded statistician.
-- **Expected:** 101-001 is allocated to the **next unused <70 kg / block-1 entry** — arm, sequence, and kit match the list; the investigator sees a **kit ID only**, not the arm.
-- **Verify:** put the test list next to the IRT output and confirm cell-for-cell across *every* stratum and both arms of the ratio — not one happy-path participant.
+- **Expected:** 101-001 is allocated to the **next unused <70 kg / block-1 entry** - arm, sequence, and kit match the list; the investigator sees a **kit ID only**, not the arm.
+- **Verify:** put the test list next to the IRT output and confirm cell-for-cell across *every* stratum and both arms of the ratio - not one happy-path participant.
 
 ### Emergency unblinding (UNBL-01)
 
@@ -190,11 +190,11 @@ cat('
 
 | Mode | Artifact |
 |---|---|
-| Explore / run | [Shiny app](../shiny) — edit, mark, download |
-| Share (no R) | [Dashboard](uat-dashboard.html) — the tracker as a self-contained page |
+| Explore / run | [Shiny app](../shiny) - edit, mark, download |
+| Share (no R) | [Dashboard](uat-dashboard.html) - the tracker as a self-contained page |
 | Present | [Slides](uat-slides.html) |
 | Skim | [One-page cheat-sheet (PDF)](uat-onepager.pdf) |
-| File | [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) — the signed record for the eTMF |
-| Build | [Build-it walkthrough](../BUILD_IT.md) |
+| File | [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) - the signed record for the eTMF |
+| Build | [Build-it walkthrough](uat-build.html) |
 
 *Synthetic data throughout. UAT sign-off is a named-human decision.*

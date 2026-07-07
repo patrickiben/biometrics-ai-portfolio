@@ -1,13 +1,11 @@
 ---
 title: "IRT / RTSM UAT Snapshot"
 format:
-  dashboard:
+  html:
     theme: darkly
     embed-resources: true
-    nav-buttons:
-      - icon: play-circle
-        text: Shiny app
-        href: ../shiny
+    page-layout: full
+    toc: false
 execute:
   echo: false
   warning: false
@@ -25,62 +23,46 @@ g <- uat_gate(d$tests, d$defects, d$trace)
 s <- uat_summary(d$tests, d$defects, d$trace)
 ```
 
-## Row {height="8%"}
-
-::: {.card}
-**Read-only shareable snapshot**, computed from the validated UAT data (`templates/*.csv`). It does not connect to the IRT. The interactive tool is the [Shiny app](../shiny). Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
+::: {.callout-note appearance="simple"}
+**Read-only shareable snapshot**, computed from the validated UAT data (`templates/*.csv`). It does not connect to the IRT. The interactive tool is the [Shiny app](../shiny), and the [visual guide](uat-guide.html) explains it. Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
 :::
 
-## Row {height="20%"}
-
-```{r}
-#| content: valuebox
-#| title: "Test scripts"
-list(icon = "list-check", color = "#222630", value = s$total)
+```{r kpis, results='asis'}
+box <- function(label, value, col) sprintf(
+  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:30px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Test scripts", s$total, "#e9edf7"))
+cat(box("Passed", s$pass, "#43c47d"))
+cat(box("Failed", s$fail, "#e8657a"))
+cat(box("Open defects", s$open_def, "#e0a64c"))
+cat(box("Requirements traced", paste0(s$cov, "%"), "#3fd0c9"))
+cat('</div>')
 ```
 
-```{r}
-#| content: valuebox
-#| title: "Passed"
-list(icon = "check-circle", color = "success", value = s$pass)
-```
+:::: {.grid}
 
-```{r}
-#| content: valuebox
-#| title: "Failed"
-list(icon = "x-circle", color = "danger", value = s$fail)
-```
+::: {.g-col-12 .g-col-md-5}
+#### Go-live sign-off gate
 
-```{r}
-#| content: valuebox
-#| title: "Open defects"
-list(icon = "bug", color = "warning", value = s$open_def)
-```
-
-```{r}
-#| content: valuebox
-#| title: "Requirements traced"
-list(icon = "diagram-3", color = "info", value = paste0(s$cov, "%"))
-```
-
-## Row {height="36%"}
-
-```{r}
-#| title: "Go-live sign-off gate"
-#| results: asis
-tick <- function(ok, txt) sprintf('<div style="margin:4px 0;font-size:15px"><span style="color:%s;font-weight:700">%s</span> %s</div>',
+```{r gate, results='asis'}
+tick <- function(ok, txt) sprintf(
+  '<div style="margin:6px 0;font-size:15px;color:#e9edf7"><span style="color:%s;font-weight:700;margin-right:6px">%s</span>%s</div>',
   if (ok) "#43c47d" else "#e8657a", if (ok) "&#10004;" else "&#10008;", txt)
-bg <- if (g$go) "#1e3a28" else "#3a1e24"; bd <- if (g$go) "#43c47d" else "#e8657a"
-cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:10px;padding:14px 16px">', bg, bd))
-cat(sprintf('<div style="font-size:22px;font-weight:700;margin-bottom:8px;color:#e9edf7">%s</div>', g$verdict))
+bg <- if (g$go) "#152b1e" else "#2b1519"; bd <- if (g$go) "#43c47d" else "#e8657a"
+cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:12px;padding:16px 18px">', bg, bd))
+cat(sprintf('<div style="font-size:22px;font-weight:700;margin-bottom:10px;color:#e9edf7">%s</div>', g$verdict))
 cat(tick(g$crit_fail == 0, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
 cat(tick(g$open_cm == 0,  sprintf("<b>%d</b> open critical/major defect(s)", g$open_cm)))
 cat(tick(g$trace_gap == 0, sprintf("<b>%d</b> requirement(s) without a test", g$trace_gap)))
-cat('<div style="font-size:12px;color:#94a1c0;margin-top:10px">Conjunctive: all three must hold. The gate packages the evidence, a named human signs.</div></div>')
+cat('<div style="font-size:12px;color:#94a1c0;margin-top:12px">Conjunctive: all three must hold. The gate packages the evidence, a named human signs.</div></div>')
 ```
+:::
 
-```{r}
-#| title: "Execution by area"
+::: {.g-col-12 .g-col-md-7}
+#### Execution by area
+
+```{r plot, fig.width=7, fig.height=4.2}
 df <- uat_area_counts(d$tests)
 ggplot(df, aes(Freq, Area, fill = Status)) +
   geom_col(width = 0.7) +
@@ -94,11 +76,13 @@ ggplot(df, aes(Freq, Area, fill = Status)) +
         panel.grid = element_line(colour="#3a4157"),
         legend.key = element_rect(fill="#222630", colour=NA))
 ```
+:::
 
-## Row {height="36%"}
+::::
 
-```{r}
-#| title: "Test scripts"
+#### Test scripts
+
+```{r table}
 tt <- d$tests[, c("TestID","Area","Priority","TestTitle","Status")]
 kable(tt, col.names = c("Test","Area","Priority","Title","Status"), row.names = FALSE)
 ```

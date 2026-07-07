@@ -1,6 +1,6 @@
 ---
-title: "Find Hours — Budget Reconciliation (effort only)"
-subtitle: "A visual, runnable guide — from the biostatistics lens"
+title: "Find Hours - Budget Reconciliation (effort only)"
+subtitle: "A visual, runnable guide - from the biostatistics lens"
 format:
   html:
     theme: darkly
@@ -31,7 +31,7 @@ f90 <- find_hours(90, d$ledger, d$contingency)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Run / share / skim / file / build — pick your mode.** This page *shows* the reconciliation (diagrams + a live roll-up computed from the ledger), the [**Shiny app**](../shiny) lets you *run* one interactively, the [dashboard](hours-dashboard.html) is a shareable snapshot, the [one-pager](hours-onepager.pdf) is the skim, the [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx) is what you file, and the [build-it walkthrough](../BUILD_IT.md) shows how the app is made. Operations-only, synthetic, hours/effort only (no dollars, rates, or headcount). We say *participant*, not *subject*.
+**Run / share / skim / file / build - pick your mode.** This page *shows* the reconciliation (diagrams + a live roll-up computed from the ledger), the [**Shiny app**](../shiny) lets you *run* one interactively, the [dashboard](hours-dashboard.html) is a shareable snapshot, the [one-pager](hours-onepager.pdf) is the skim, the [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx) is what you file, and the [build-it walkthrough](hours-build.html) shows how the app is made. Operations-only, synthetic, hours/effort only (no dollars, rates, or headcount). We say *participant*, not *subject*.
 :::
 
 ## The whole idea, in one line
@@ -42,7 +42,7 @@ $$\textbf{Net findable} \;=\; \big(\textstyle\sum \text{Planned} \;+\; \text{Con
 
 Under-run slack is the part of your planned effort you are forecast **not** to spend (planned minus estimate-at-completion, floored at zero). Contingency is the management reserve. Add them and you have the effort you can redirect before touching the contract.
 
-## What to do with a new ask — the decision tree
+## What to do with a new ask - the decision tree
 
 ```{mermaid}
 flowchart TD
@@ -60,7 +60,7 @@ flowchart TD
 
 The tool automates the first two branches: it sources hours from under-run slack first, then contingency, and reports whatever is left as the change-order residual. Deferring / re-sequencing is a human decision you make before you accept a residual.
 
-## Where every number comes from — the source map
+## Where every number comes from - the source map
 
 The ledger you see below is a *picture* built from synthetic data. On a real study each column is fed from a system of record, and the tool never invents a number.
 
@@ -84,7 +84,7 @@ flowchart LR
 The tool does not connect to CTMS or timesheets. You **transcribe** current figures into the ledger, on purpose, so the reconciliation is attributable and stands on its own. Every number reported here comes from the validated ledger and the shared logic core, never from an assistant.
 :::
 
-## The live roll-up — computed from the ledger {#live}
+## The live roll-up - computed from the ledger {#live}
 
 This is the same logic the Shiny app and the Excel workbook use, rendered here from `templates/project_hours_ledger.csv`. Edit that ledger (or run the app) and these move.
 
@@ -141,11 +141,11 @@ Under-run slack is per-task `max(0, planned − EAC)`. It sums to the portfolio 
 
 :::
 
-## Testing an ask — two worked examples {#worked}
+## Testing an ask - two worked examples {#worked}
 
 ::: {.panel-tabset}
 
-### Ask 45 h — absorbable
+### Ask 45 h - absorbable
 
 ```{r w45, results='asis'}
 verdict_box <- function(fh) {
@@ -164,7 +164,7 @@ verdict_box(f45)
 
 A 45 h ask is fully covered: `r f45$from_slack` h from under-run slack and `r f45$from_cont` h from contingency, no residual. It is absorbable internally with `r f45$contingency_left` h of reserve still held back.
 
-### Ask 90 h — change order
+### Ask 90 h - change order
 
 ```{r w90, results='asis'}
 verdict_box(f90)
@@ -174,7 +174,7 @@ A 90 h ask exhausts the `r m$net_slack` h of slack and the full `r m$contingency
 
 :::
 
-## Run it — and build it {#run}
+## Run it - and build it {#run}
 
 The interactive tool is a real R Shiny app you own. From the package root:
 
@@ -186,18 +186,18 @@ shiny::runApp("budget_reconciliation/shiny")
 Edit a task's EAC, change the ask, and the net-findable roll-up and verdict recompute live. Download the reconciled ledger to CSV to drop into the Excel workbook.
 
 ::: {.callout-tip appearance="simple"}
-**You want to build these yourself.** The whole app is small: `shiny/R/logic.R` holds the reconciliation math (the functions this page also called), and `shiny/app.R` is the UI + reactivity. The [build-it walkthrough](../BUILD_IT.md) takes you through it piece by piece. Change the ledger CSV to your study and it is your reconciliation.
+**You want to build these yourself.** The whole app is small: `shiny/R/logic.R` holds the reconciliation math (the functions this page also called), and `shiny/app.R` is the UI + reactivity. The [build-it walkthrough](hours-build.html) takes you through it piece by piece. Change the ledger CSV to your study and it is your reconciliation.
 :::
 
 ## The other formats
 
 | Mode | Artifact |
 |---|---|
-| Run | [Shiny app](../shiny) — edit EAC, test an ask, download |
-| Share (no R) | [Dashboard](hours-dashboard.html) — the roll-up as a self-contained page |
+| Run | [Shiny app](../shiny) - edit EAC, test an ask, download |
+| Share (no R) | [Dashboard](hours-dashboard.html) - the roll-up as a self-contained page |
 | Present | [Slides](hours-slides.html) |
 | Skim | [One-page cheat-sheet (PDF)](hours-onepager.pdf) |
-| File | [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx) — the record you keep |
-| Build | [Build-it walkthrough](../BUILD_IT.md) |
+| File | [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx) - the record you keep |
+| Build | [Build-it walkthrough](hours-build.html) |
 
 *Synthetic data throughout. Hours / effort only. A change order is a named-human, contracted decision; pricing is handled downstream by the PM / project finance.*

@@ -1,10 +1,11 @@
 ---
-title: "Find Hours — reconciliation snapshot"
+title: "Find Hours - Reconciliation Snapshot"
 format:
-  dashboard:
+  html:
     theme: darkly
     embed-resources: true
-    nav-buttons: []
+    page-layout: full
+    toc: false
 execute:
   echo: false
   warning: false
@@ -17,101 +18,73 @@ knitr:
 ```{r setup}
 library(ggplot2); library(knitr)
 source("../shiny/R/logic.R")
-d   <- hours_load()
-m   <- hours_metrics(d$ledger, d$contingency)
+d  <- hours_load()
+m  <- hours_metrics(d$ledger, d$contingency)
 f45 <- find_hours(45, d$ledger, d$contingency)
 ```
 
 ::: {.callout-note appearance="simple"}
-Shareable snapshot, computed from the effort ledger (hours only, synthetic). The [Shiny app](../shiny) is the interactive version. Every number comes from the validated ledger, never from an assistant.
+**Read-only shareable snapshot**, computed from the effort ledger (`templates/project_hours_ledger.csv`). It connects to no real budget or timesheet. The interactive tool is the [Shiny app](../shiny), and the [visual guide](hours-guide.html) explains it. Hours / effort only, no dollars. Synthetic.
 :::
 
-## Row {height=22%}
-
-```{r}
-#| content: valuebox
-#| title: "Planned (h)"
-#| color: "#222630"
-list(value = m$planned)
+```{r kpis, results='asis'}
+box <- function(label, value, col) sprintf(
+  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:30px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
+cat(box("Planned (h)",      m$planned,     "#e9edf7"))
+cat(box("Spent to date (h)", m$actual,     "#5b8cff"))
+cat(box("Forecast EAC (h)",  m$eac,        "#e0a64c"))
+cat(box("Contingency (h)",   m$contingency, "#3fd0c9"))
+cat(box("Net findable (h)",  m$findable,   "#43c47d"))
+cat('</div>')
 ```
 
-```{r}
-#| content: valuebox
-#| title: "Spent to date (h)"
-#| color: "#5b8cff"
-list(value = m$actual)
-```
+:::: {.grid}
 
-```{r}
-#| content: valuebox
-#| title: "Forecast EAC (h)"
-#| color: "#e0a64c"
-list(value = m$eac)
-```
+::: {.g-col-12 .g-col-md-7}
+#### Planned vs forecast (EAC) by deliverable
 
-```{r}
-#| content: valuebox
-#| title: "Contingency (h)"
-#| color: "#3fd0c9"
-list(value = m$contingency)
-```
-
-```{r}
-#| content: valuebox
-#| title: "Net findable (h)"
-#| color: "#43c47d"
-list(value = m$findable)
-```
-
-## Row {height=48%}
-
-### Column {width=58%}
-
-```{r}
-#| title: "Planned vs forecast EAC, by deliverable"
-df <- d$ledger[, c("deliverable","planned","eac")]
+```{r plot, fig.width=7, fig.height=4.4}
 long <- rbind(
-  data.frame(deliverable = df$deliverable, hours = df$planned, kind = "Planned"),
-  data.frame(deliverable = df$deliverable, hours = df$eac,     kind = "Forecast EAC"))
-long$deliverable <- factor(long$deliverable, levels = rev(df$deliverable))
+  data.frame(deliverable = d$ledger$deliverable, hours = d$ledger$planned, kind = "Planned"),
+  data.frame(deliverable = d$ledger$deliverable, hours = d$ledger$eac,     kind = "Forecast EAC"))
+long$deliverable <- factor(long$deliverable, levels = rev(d$ledger$deliverable))
 ggplot(long, aes(hours, deliverable, fill = kind)) +
   geom_col(width = 0.7, position = position_dodge(width = 0.75)) +
   scale_fill_manual(values = c("Planned"="#5b8cff","Forecast EAC"="#e0a64c")) +
   labs(x = "Hours", y = NULL, fill = NULL) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "top",
-        plot.background  = element_rect(fill="#222630", colour=NA),
+  theme_minimal(base_size = 11) +
+  theme(legend.position = "top", plot.background = element_rect(fill="#222630", colour=NA),
         panel.background = element_rect(fill="#222630", colour=NA),
-        text = element_text(colour="#e9edf7"),
-        axis.text = element_text(colour="#c5cee4"),
-        panel.grid = element_line(colour="#3a4157"))
+        text = element_text(colour="#e9edf7"), axis.text = element_text(colour="#c5cee4"),
+        panel.grid = element_line(colour="#3a4157"),
+        legend.key = element_rect(fill="#222630", colour=NA))
 ```
+:::
 
-### Column {width=42%}
+::: {.g-col-12 .g-col-md-5}
+#### A 45 h ask, sourced
 
-```{r}
-#| title: "Test an ask: 45 h"
-#| content: valuebox
-#| color: "#1e3a28"
-list(icon = "check-circle", value = f45$verdict)
+```{r verdict, results='asis'}
+f <- f45
+bg <- if (f$absorbable) "#152b1e" else "#2b1519"; bd <- if (f$absorbable) "#43c47d" else "#e8657a"
+row <- function(lbl, val, col) sprintf('<div style="margin:5px 0;color:#e9edf7"><span style="font-family:monospace;color:%s;font-weight:700;margin-right:8px">%2d h</span>%s</div>', col, val, lbl)
+cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:12px;padding:16px 18px">', bg, bd))
+cat(sprintf('<div style="font-size:20px;font-weight:700;margin-bottom:10px;color:#e9edf7">Ask 45 h &rarr; %s</div>', f$verdict))
+cat(row("from under-run slack",     f$from_slack, "#43c47d"))
+cat(row("from contingency reserve", f$from_cont,  "#3fd0c9"))
+cat(row("residual (change order)",  f$shortfall,  if (f$shortfall > 0) "#e8657a" else "#94a1c0"))
+cat(sprintf('<div style="font-size:12px;color:#94a1c0;margin-top:10px">Net findable = (&Sigma; planned + contingency) &minus; &Sigma; EAC = <b>%d h</b>. Contingency left after this ask: %d h.</div></div>', m$findable, f$contingency_left))
 ```
+:::
 
-```{r}
-#| title: "How the 45 h ask is sourced"
-src <- data.frame(
-  Source = c("Under-run slack", "Contingency reserve", "Residual (change order)"),
-  Hours  = c(f45$from_slack, f45$from_cont, f45$shortfall))
-kable(src, align = "lr", row.names = FALSE)
-```
+::::
 
-Net findable = (planned + contingency) − EAC = (`r m$planned` + `r m$contingency`) − `r m$eac` = **`r m$findable` h**. The 45 h ask is absorbed with `r f45$contingency_left` h of reserve still held.
+#### Effort ledger (hours)
 
-## Row {height=30%}
-
-```{r}
-#| title: "Effort ledger"
-lg <- d$ledger
-lg$slack <- pmax(0, lg$planned - lg$eac)
+```{r ledger}
+lg <- d$ledger; lg$slack <- pmax(0, lg$planned - lg$eac)
 kable(lg[, c("deliverable","planned","actual","pct","eac","slack")],
       col.names = c("Deliverable","Planned","Actual","% done","EAC","Under-run slack"),
       row.names = FALSE, align = "lrrrrr")

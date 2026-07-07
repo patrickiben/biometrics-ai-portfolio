@@ -1,0 +1,155 @@
+---
+title: "Run and build the UAT tracker"
+subtitle: "The R Shiny app, from running it to building it yourself"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    highlight-style: github-dark
+    code-copy: true
+execute:
+  eval: false
+---
+
+## Run it
+
+The interactive tool is a real R Shiny app. From the package root:
+
+```r
+install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
+shiny::runApp("uat_irt/shiny")
+```
+
+Select a test and mark it Pass/Fail, close a defect, and the KPIs and the go-live
+sign-off gate recompute live. Download your results to CSV from the sidebar to drop
+into the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) and the eTMF.
+
+## The one principle: separate the logic from the UI
+
+The rules (the go-live gate, the KPIs) live in plain functions in `shiny/R/logic.R`.
+The app, the [visual guide](uat-guide.html), the [dashboard](uat-dashboard.html), and
+the unit tests all call those same functions. You can change what the gate *means*
+without touching the app, and change how it *looks* without touching the rules.
+
+## Step 1 - write the logic as plain functions
+
+No Shiny yet. Just functions that take data frames and return numbers:
+
+```r
+# READY only when every Critical test passes, zero open Critical/Major
+# defects, and traceability is complete.
+uat_gate <- function(tests, defects, trace) {
+  crit_fail <- sum(tests$Priority == "Critical" & tests$Status != "Pass")
+  open_cm   <- sum(defects$Status == "Open" & defects$Severity %in% c("Critical","Major"))
+  trace_gap <- sum(trace$Covered != "Y")
+  go <- crit_fail == 0 && open_cm == 0 && trace_gap == 0
+  list(crit_fail = crit_fail, open_cm = open_cm, trace_gap = trace_gap,
+       go = go, verdict = if (go) "READY for sign-off" else "NOT ready - blocked")
+}
+```
+
+## Step 2 - test the logic first
+
+```r
+source("R/logic.R")
+d <- uat_load("../templates")
+uat_gate(d$tests, d$defects, d$trace)$verdict   # "NOT ready - blocked"
+```
+
+If the rule is right here, it is right everywhere, because everything calls it.
+
+## Step 3 - the app skeleton
+
+An `app.R` is three things: a `ui`, a `server`, and `shinyApp(ui, server)`.
+
+```r
+library(shiny); library(bslib); library(DT); library(ggplot2)
+source("R/logic.R")
+seed <- uat_load()
+
+ui <- page_sidebar(
+  title = "IRT / RTSM UAT Tracker",
+  theme = bs_theme(version = 5, bootswatch = "darkly"),
+  sidebar = sidebar( ... ),
+  # value boxes, table, gate, plot ...
+)
+server <- function(input, output, session) { ... }
+shinyApp(ui, server)
+```
+
+`bslib::page_sidebar` gives a modern layout for free; `layout_columns()` and `card()`
+arrange the panels.
+
+## Step 4 - hold the editable state in `reactiveValues`
+
+The data changes as the user works, so it lives in `reactiveValues`. Every output reads
+from it, so every output updates when it changes.
+
+```r
+server <- function(input, output, session) {
+  rv <- reactiveValues(tests = seed$tests, defects = seed$defects, trace = seed$trace)
+
+  gate <- reactive(uat_gate(rv$tests, rv$defects, rv$trace))   # recomputes on any change
+  summ <- reactive(uat_summary(rv$tests, rv$defects, rv$trace))
+```
+
+`gate` and `summ` are reactive expressions: Shiny re-runs them automatically whenever
+`rv$tests` (or defects/trace) changes. This is the whole trick.
+
+## Step 5 - a selectable table and a status setter
+
+Show the tests in a `DT` table with single-row selection. When a row is selected, show
+its detail and radio buttons to mark it:
+
+```r
+  output$tests <- renderDT(
+    datatable(rv$tests[, cols], selection = "single", filter = "top"), server = TRUE)
+
+  observeEvent(input$set_status, {                 # user picked a new status
+    sel <- input$tests_rows_selected
+    if (length(sel) == 1 && rv$tests$Status[sel] != input$set_status) {
+      rv$tests$Status[sel] <- input$set_status     # mutate the state ...
+    }                                              # ... and everything recomputes
+  })
+```
+
+That write to `rv$tests$Status` is what makes the gate flip. You do not call the gate
+yourself; changing `rv` triggers the reactive that does.
+
+## Step 6 - the gate output, a plot, a download
+
+```r
+  output$gate <- renderUI({
+    g <- gate()
+    div(class = if (g$go) "alert alert-success" else "alert alert-danger", g$verdict)
+    # ... plus the three tick/cross criteria
+  })
+```
+
+`renderPlot({ ggplot(uat_area_counts(rv$tests), ...) })` for the by-area bar, and a
+`downloadHandler` that writes `rv$tests` to CSV so results round-trip to Excel and the eTMF.
+
+## Verify it without a browser
+
+You can test the reactivity headless, which is how this app was checked:
+
+```r
+shiny::testServer("uat_irt/shiny", {
+  session$setInputs(tests_rows_selected = which(rv$tests$TestID == "RAND-04"),
+                    set_status = "Pass")
+  gate()$crit_fail            # dropped by one
+})
+```
+
+## Make it yours
+
+- **Change the rule:** edit `uat_gate()` in `shiny/R/logic.R` (for example, allow a Minor-defect waiver). Nothing else changes.
+- **Change the data:** edit `templates/*.csv`.
+- **Add a column:** add it to the CSV and to the `datatable()` column list.
+- **Add a panel:** another `card()` in the UI and a `render*` in the server.
+
+The same skeleton (logic core, `reactiveValues`, reactive rules, outputs) builds the
+[find-hours app](../../budget_reconciliation/quarto/hours-build.html) too.

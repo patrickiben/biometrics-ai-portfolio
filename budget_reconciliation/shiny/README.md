@@ -1,4 +1,4 @@
-# Find Hours — Hours Budget Reconciliation Shiny app
+# Find Hours - Hours Budget Reconciliation Shiny app
 
 A runnable, editable version of the find-hours worksheet. Edit the effort
 ledger, type an out-of-scope ask, and watch net-findable and the
@@ -21,7 +21,7 @@ Or from inside this folder: `setwd("budget_reconciliation/shiny"); shiny::runApp
 | File | What it is |
 |---|---|
 | `app.R` | The Shiny app: UI + reactive server. |
-| `R/logic.R` | The **pure logic** — `hours_metrics()` (the net-findable roll-up) and `find_hours()` (the sourcing + verdict), plus `change_order_text()`. The Quarto docs and the unit tests call the same functions. |
+| `R/logic.R` | The **pure logic** - `hours_metrics()` (the net-findable roll-up) and `find_hours()` (the sourcing + verdict), plus `change_order_text()`. The Quarto docs and the unit tests call the same functions. |
 | `../templates/project_hours_ledger.csv` | The seed effort ledger (the editable template). |
 | `../tests/test-logic.R` | Unit tests (run with `Rscript`). |
 
@@ -42,7 +42,7 @@ NET FINDABLE = (Σ Planned + Contingency) − Σ EAC
 
 ## How it maps to the other formats
 
-- **Excel workbook** (`../Hours_Budget_Reconciliation_Workbook.xlsx`) — the fillable version for real reconciliations.
-- **Quarto guide / dashboard / slides** (`../quarto/`) — the read/share/present views, built from the same `R/logic.R`.
+- **Excel workbook** (`../Hours_Budget_Reconciliation_Workbook.xlsx`) - the fillable version for real reconciliations.
+- **Quarto guide / dashboard / slides** (`../quarto/`) - the read/share/present views, built from the same `R/logic.R`.
 
 *Hours/effort only. Pricing the effort is the PM's / project finance's job, downstream of this tool. Nothing here connects to a real budget or timesheet.*
