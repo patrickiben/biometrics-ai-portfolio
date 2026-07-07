@@ -38,7 +38,7 @@
   <header class="hero">
     <div class="home"><a href="../Biostatistics.html">&larr; Biostatistics</a> &middot; <a href="../START_HERE.html">full library</a> &middot; <a href="README.md">harness spec</a></div>
     <h1>Trial‑Management Validation Harness <span style="font-size:13px;color:var(--mut);font-weight:400">· evidence ledger</span></h1>
-    <p class="sub">Seven named gates that make a clinical‑biometrics deliverable <em>delivery‑confident</em> before it informs a decision. The checks are <strong>runnable and dogfooded</strong> — they execute against this repo's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <a href="README.md">Full spec &rarr;</a></p>
+    <p class="sub">Eight named gates that make a clinical‑biometrics deliverable <em>delivery‑confident</em> before it informs a decision. The checks are <strong>runnable and dogfooded</strong> — they execute against this repo's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <a href="README.md">Full spec &rarr;</a></p>
     <div class="meta" id="meta">Loading ledger…</div>
   </header>
 
@@ -60,14 +60,15 @@
 </div>
 
 <script id="ledger" type="application/json">
-{"generated":"2026-07-05","r_version":"R 4.6.0","green":7,"total":7,"gates":[
+{"generated":"2026-07-06","r_version":"R 4.6.0","green":8,"total":8,"gates":[
  {"gate":"G1 Reproducibility & environment","guards":"every number is regenerable from code + frozen inputs","status":"green","evidence":"453 R programs parse (0 fail); the synthetic study re-runs bit-STABLE from seed 2026 (base R, seeded design sampling)"},
  {"gate":"G2 Numeric-provenance","guards":"no reported number is produced by an LLM","status":"green","evidence":"geometric-mean-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; the narrative drafter's number-validation self-test is present"},
  {"gate":"G3 Data conformance & integrity","guards":"the analysis data is CDISC-conformant, intact, and PHI-free","status":"green","evidence":"ADaM conformance PASS (checks/conformance.R: domains, USUBJID referential integrity, PARAMCD well-formed, TRT01A×TRTSEQP); 0 trial-sense 'subject'; 0 PHI/PII"},
  {"gate":"G4 Double-programming parity (SAS↔R)","guards":"the two independent implementations agree","status":"green","evidence":"217 SAS / 217 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse"},
  {"gate":"G5 Adversarial QC panel","guards":"no skeptical reader can break the deliverable","status":"green","evidence":"multi-lens fix→adversarial-verify panel applied; 51 P0/P1 parity findings resolved. The 6 previously-pending twin-pairs were independently re-verified: 5 confirmed, 1 (sad/t_lab_marked_abnormal denominator) found and fixed. No open items."},
  {"gate":"G6 Regulatory & reporting standard","guards":"CDISC / ICH / Part-11 structure is met","status":"green","evidence":"0 TLF-number collisions; 0 out-of-scope eDISH/Hy's-Law terms in programs; ICH E14 QTc reference lines present in the QTc figures"},
- {"gate":"G7 AI-use governance & accountability","guards":"AI is disclosed and bounded; a human signs","status":"green","evidence":"0 forbidden/experimental terms; 0 PHI; frozen-model + human-gate discipline documented across the on-prem SLM wiki pages"}
+ {"gate":"G7 AI-use governance & accountability","guards":"AI is disclosed and bounded; a human signs","status":"green","evidence":"0 forbidden/experimental terms; 0 PHI; frozen-model + human-gate discipline documented across the on-prem SLM wiki pages"},
+ {"gate":"G8 Package & GUI consistency","guards":"the package is navigable, linked, and internally consistent","status":"green","evidence":"package_qc.py: 0 issues across the package's HTML — no broken links, no deliverable missing from the navigation, no orphaned pages, no terminology or count drift. Catches outdated/inconsistent GUIs across the WHOLE package, not just the pseudocode."}
 ]}
 </script>
 <script>

@@ -2,7 +2,7 @@
 
 *A reusable, field‑general procedure for being confident in a clinical‑biometrics deliverable —
 an analysis dataset, a table/listing/figure, a monitoring output — before it is used to inform a
-decision or ships to a sponsor. Seven named gates, explicit pass criteria, and a fixed evidence
+decision or ships to a sponsor. Eight named gates, explicit pass criteria, and a fixed evidence
 ledger. The organizing principle throughout: **automate detection and re‑execution; reserve the
 final decision for the qualified biostatistician.***
 
@@ -20,7 +20,7 @@ ledger view.
 
 ---
 
-## The seven gates
+## The eight gates
 
 ### G1 — Reproducibility & environment gate
 **Claim it defends:** *"Any qualified programmer can regenerate every dataset, table, listing, and figure from the code and the frozen inputs."*

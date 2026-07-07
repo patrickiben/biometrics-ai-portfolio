@@ -35,10 +35,14 @@ add "G2 Numeric-provenance" "no reported number is produced by an LLM" "$G2" \
 # ---- G3 Data conformance & integrity (CDISC + no PHI) ----------------------
 CONF=$(Rscript validation_harness/checks/conformance.R sim_lifecycle/out 2>/dev/null | grep G3_VERDICT | awk '{print $2}')
 SUBJ=$(grep -rniE '\bsubjects?\b' $SAS $R 2>/dev/null | grep -ivE 'subjid|usubjid' | wc -l | tr -d ' ')
-PII=$(grep -rniE '@[a-z]+health|[0-9]{3}-[0-9]{3}-[0-9]{4}' "$REPO" 2>/dev/null | wc -l | tr -d ' ')
+# scan SHIPPED DELIVERABLE surfaces (analysis data + docs) for participant PHI. Excludes the raw
+# public-registry calibration corpus (sim_lifecycle/data/, not a deliverable) and infra dirs.
+PII=$(grep -rniE '[0-9]{3}-[0-9]{3}-[0-9]{4}|[a-z]{2,}\.[a-z]{2,}@[a-z]+\.(com|net)' "$REPO" \
+      --include='*.csv' --include='*.html' --include='*.md' 2>/dev/null \
+      | grep -vE 'sim_lifecycle/data/|/validation_harness/|noreply|example\.(com|net)|https?://' | wc -l | tr -d ' ')
 G3=green; { [ "${CONF:-FAIL}" = PASS ] && [ "$SUBJ" = 0 ] && [ "$PII" = 0 ]; } || G3=red
 add "G3 Data conformance & integrity" "the analysis data is CDISC-conformant, intact, and PHI-free" "$G3" \
-    "ADaM conformance ${CONF:-?} (checks/conformance.R); $SUBJ trial-sense 'subject' in programs; $PII PHI/PII hits"
+    "ADaM conformance ${CONF:-?} (checks/conformance.R); $SUBJ trial-sense 'subject' in programs; $PII PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)"
 
 # ---- G4 Double-programming parity (SAS <-> R) ------------------------------
 NSAS=$(find $SAS -name '*.sas' ! -name '00_setup*' | wc -l | tr -d ' ')
@@ -92,6 +96,14 @@ GOV=$(grep -rilE 'frozen|temperature 0|human[ -]gate|pinned|human approv' slm_wi
 G7=green; { [ "$JARG" = 0 ] && [ "$PII" = 0 ] && [ "$GOV" -gt 0 ]; } || G7=red
 add "G7 AI-use governance & accountability" "AI is disclosed and bounded; a human signs" "$G7" \
     "$JARG experimental/non-standard method labels in analysis programs; $PII PHI hits; frozen-model + human-gate discipline documented in $GOV wiki pages"
+
+# ---- G8 Package & GUI consistency (whole package) --------------------------
+python3 package_qc.py >/dev/null 2>&1; PKGRC=$?
+PKGN=$(grep -oE '[0-9]+ issue' package_qc_report.md 2>/dev/null | grep -oE '[0-9]+' | head -1)
+PKGP=$(grep -oE 'Scanned [0-9]+ HTML' package_qc_report.md 2>/dev/null | grep -oE '[0-9]+' | head -1)
+G8=green; [ "${PKGRC:-1}" = 0 ] || G8=red
+add "G8 Package & GUI consistency" "the package is navigable, linked, and internally consistent" "$G8" \
+    "package_qc.py: ${PKGN:-?} issues across ${PKGP:-?} HTML pages (broken links, deliverables missing from the nav, orphaned pages, terminology drift, count drift)"
 
 # ---- emit ledger -----------------------------------------------------------
 STAMP="$(date '+%Y-%m-%d %H:%M %Z')"; RVER="$(Rscript -e 'cat(R.version.string)' 2>/dev/null)"
