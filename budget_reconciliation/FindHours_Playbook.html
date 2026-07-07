@@ -1,81 +1,167 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Finding Hours for Out-of-Scope Work — Playbook</title>
+<title>How to find hours for out-of-scope work — practical playbook</title>
 <style>
   :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--red:#e8657a;--r:12px;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
   *{box-sizing:border-box} html{scroll-behavior:smooth}
   body{margin:0;background:linear-gradient(180deg,#0b1020,#0a0d16 70%);color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:15px;line-height:1.62}
   a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
-  .wrap{max-width:900px;margin:0 auto;padding:16px 22px 70px}
+  .wrap{max-width:920px;margin:0 auto;padding:16px 22px 80px}
   .home{color:var(--mut);font-size:12.5px}
-  header.hero{padding:20px 0 14px;border-bottom:1px solid var(--line);margin-bottom:12px}
-  h1{font-size:25px;margin:8px 0 6px;font-weight:680}
-  .sub{color:var(--mut);font-size:14.5px;max-width:820px;margin:0}
-  .note{font-size:11.5px;color:var(--gold);margin-top:8px}
-  h2{font-size:18px;font-weight:670;margin:28px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line)}
-  h2 .n{font-family:var(--mono);color:var(--accent);font-size:14px;margin-right:8px}
+  header.hero{padding:20px 0 14px;border-bottom:1px solid var(--line);margin-bottom:8px}
+  h1{font-size:26px;margin:8px 0 6px;font-weight:680}
+  .sub{color:var(--mut);font-size:14.5px;max-width:840px;margin:0}
+  h2{font-size:19px;font-weight:680;margin:30px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+  h2 .n{display:inline-block;width:28px;height:28px;line-height:28px;text-align:center;background:var(--accent);color:#06112b;border-radius:7px;font-family:var(--mono);font-size:14px;margin-right:10px;vertical-align:middle}
+  h3{font-size:15.5px;margin:20px 0 6px}
   p{margin:9px 0} ul,ol{padding-left:22px} li{margin:6px 0}
+  .toc{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 18px;margin:14px 0;column-count:2;font-size:13.5px}
+  .toc a{color:var(--ink)}
   .panel{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:14px 17px;margin:12px 0}
+  .role{border-left:3px solid var(--teal);background:rgba(63,208,201,.06)}
   .warn{border-left:3px solid var(--gold);background:rgba(224,166,76,.07)}
-  .key{border-left:3px solid var(--teal);background:rgba(63,208,201,.06)}
+  .ex{border-left:3px solid var(--accent);background:rgba(91,140,255,.06)}
+  .ex .lbl{font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--accent)}
+  .formula{background:#0e1424;border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:8px;padding:11px 14px;font-family:var(--mono);font-size:13px;color:#ffe7b8;margin:10px 0}
   code{background:#0e1424;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:var(--mono);font-size:12.6px;color:#bfe1ff}
-  .eq{font-family:var(--mono);font-size:13.5px;background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:10px 13px;margin:10px 0;color:#bfe1ff}
-  ol.tree{counter-reset:s;list-style:none;padding-left:0} ol.tree li{padding:10px 0 10px 38px;position:relative;border-bottom:1px solid #1c2438}
-  ol.tree li:before{counter-increment:s;content:counter(s);position:absolute;left:0;top:9px;width:26px;height:26px;border-radius:50%;background:#0e1424;border:1px solid var(--line);color:var(--accent);font-family:var(--mono);text-align:center;line-height:25px}
-  ol.tree li b{color:var(--ink)} .tag{font-family:var(--mono);font-size:10.5px;color:var(--teal);text-transform:uppercase;letter-spacing:.06em}
-  .btn{display:inline-block;background:rgba(91,140,255,.12);border:1px solid rgba(91,140,255,.4);color:var(--accent);border-radius:8px;padding:8px 14px;margin:6px 8px 0 0;font-size:13px}
-  .foot{color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);margin-top:24px;padding-top:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+  th{text-align:left;color:var(--mut);font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--line);padding:7px 9px;vertical-align:top}
+  td{padding:7px 9px;border-bottom:1px solid #1c2438;vertical-align:top}
+  td.k{color:var(--gold);font-family:var(--mono);font-size:11px;white-space:nowrap}
+  td.num{font-family:var(--mono);text-align:right}
+  .btn{display:inline-block;background:rgba(67,196,125,.14);border:1px solid rgba(67,196,125,.5);color:var(--green);border-radius:8px;padding:9px 15px;margin:6px 8px 0 0;font-size:14px;font-weight:600}
+  .step{display:flex;gap:12px;margin:12px 0} .step .b{flex:0 0 30px;height:30px;line-height:30px;text-align:center;background:var(--accent);color:#06112b;border-radius:8px;font-family:var(--mono);font-weight:700}
+  .foot{color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);margin-top:26px;padding-top:14px}
+  .hoursonly{display:inline-block;font-size:11px;color:var(--gold);border:1px solid rgba(224,166,76,.45);background:rgba(224,166,76,.1);border-radius:5px;padding:1px 8px;margin-left:6px;vertical-align:middle}
 </style></head>
 <body>
 <div class="wrap">
   <header class="hero">
     <div class="home"><a href="../Operations.html">&larr; Operations</a> &middot; <a href="../START_HERE.html">full library</a></div>
-    <h1>Finding Hours for Out-of-Scope Work</h1>
-    <p class="sub">A playbook for the recurring reality: a sponsor asks for an unplanned analysis, an amendment lands, an ad-hoc table is "needed by Friday" &mdash; and it wasn't budgeted. Where do the hours come from, and when is it genuinely a change in scope?</p>
-    <p class="note">Operational effort in HOURS only — no dollars, no rates, no headcount claims. This is how the team stewards its own effort budget.</p>
-    <div style="margin-top:12px"><a class="btn" href="Hours_Budget_Reconciliation_Workbook.xlsx" style="background:rgba(67,196,125,.14);border-color:rgba(67,196,125,.5);color:#43c47d">&#8595; Download the budget workbook (Excel)</a><a class="btn" href="Hours_Reconciliation_Worksheet.html">Open the demo worksheet &rarr;</a></div>
-    <p class="note" style="color:var(--gold);font-size:12px;margin-top:8px">Use the Excel workbook to actually reconcile your project: enter your deliverables and planned/actual/EAC hours on the Effort Ledger, then the Find Hours sheet sources a new ask and flags any change order. The worksheet on this page is an illustrative view.</p>
+    <h1>How to find hours for out‑of‑scope work <span class="hoursonly">hours only · no $</span></h1>
+    <p class="sub">A do‑it playbook for the moment an unplanned deliverable lands (an ad‑hoc interim, an extra TLF pack, a sponsor re‑run) and you have to answer: <b>can we absorb this, or is it a change order?</b> The <a href="Hours_Budget_Reconciliation_Workbook.xlsx"><b>Excel workbook</b></a> does the arithmetic; this page tells you where every number comes from and what to do with the answer.</p>
+    <div><a class="btn" href="Hours_Budget_Reconciliation_Workbook.xlsx">&#8595; The workbook you'll fill in (Excel)</a></div>
+    <p class="sub" style="margin-top:8px">This is <b>effort reconciliation in hours</b> — planned vs actual vs forecast. No rates, no dollars, no headcount: hours are what you actually control on a study, and they're what a change order is written in.</p>
   </header>
 
-  <h2><span class="n">1</span>The problem, stated honestly</h2>
-  <p>An effort budget is a finite pool of hours allocated across deliverables. New work does not add hours to the pool; it must be <em>funded</em> from somewhere. The failure mode is <strong>silent absorption</strong> — quietly doing the extra work by over-running existing tasks, which shows up later as a blown budget, a missed date, or a burned-out programmer. The fix is a quick, repeatable reconciliation that makes the source of the hours <strong>explicit and recorded</strong>.</p>
-  <div class="panel key"><strong>The lead biostatistician's job here</strong> is to protect the team's hours: to know where the slack is, to spend contingency deliberately, and to say "this is additional scope" when it is — so the people doing the work aren't the ones quietly paying for it.</div>
+  <div class="toc">
+    <a href="#idea">0 · The core idea in one line</a><br>
+    <a href="#planned">1 · Get planned hours</a><br>
+    <a href="#actual">2 · Get actual hours</a><br>
+    <a href="#eac">3 · Forecast each task (EAC)</a><br>
+    <a href="#slack">4 · Find the real slack</a><br>
+    <a href="#netfind">5 · Compute net findable</a><br>
+    <a href="#tree">6 · The find‑hours decision tree</a><br>
+    <a href="#convo">7 · Have the conversation</a><br>
+    <a href="#co">8 · Raise a change order</a><br>
+    <a href="#worked">Worked example · pitfalls</a>
+  </div>
 
-  <h2><span class="n">2</span>The reconciliation</h2>
-  <p>Track three numbers per deliverable — <strong>planned</strong>, <strong>actual-to-date</strong>, and <strong>EAC</strong> (estimate at completion: what it will really take). The forecast variance tells you where the give is:</p>
-  <div class="eq">variance = planned − EAC     (positive = under-running = slack; negative = over-running = at risk)</div>
-  <div class="eq">net findable = (Σ planned + contingency) − Σ EAC</div>
-  <p>Net findable is the honest headroom: the reserve plus the net of every under-run and over-run across the portfolio. Over-runs are netted in on purpose — you cannot count a task's under-run as free while another task is quietly eating the difference.</p>
+  <h2 id="idea"><span class="n">0</span>The core idea, in one line</h2>
+  <p>Budget left is <b>not</b> what's left to spend. <code>Planned − Actual</code> looks like a cushion, but most of it is already <em>committed</em> to finishing work in flight. What you can actually redeploy is:</p>
+  <div class="formula">NET FINDABLE = (Σ Planned + Contingency) − Σ EAC</div>
+  <p>— the total budget plus reserve, minus the honest <b>forecast cost of finishing everything already in scope</b> (EAC = Estimate at Completion). Only that difference is real, spendable slack. The whole workbook exists to compute this one number honestly and tell you whether the new ask fits inside it.</p>
 
-  <h2><span class="n">3</span>The decision tree — where the hours come from</h2>
-  <ol class="tree">
-    <li><span class="tag">safest</span> <b>Reallocate under-run slack.</b> Move budget from deliverables forecasting under plan (EAC &lt; planned). It is already yours; no one needs to grant it. Confirm the under-run is real (the task is genuinely tracking light, not just early).</li>
-    <li><span class="tag">deliberate</span> <b>Draw the contingency buffer.</b> The management reserve exists for exactly this. Drawing it is a <em>decision to record</em>, not a silent move — note how much and why, so the remaining buffer is known.</li>
-    <li><span class="tag">negotiated</span> <b>Defer / re-sequence lower-priority in-scope work.</b> If slack + contingency fall short, free hours by moving non-critical-path effort later — with the PM's agreement on the new dates. This trades time for hours; it is not free.</li>
-    <li><span class="tag">formal</span> <b>Escalate a change order.</b> If a shortfall remains after 1–3, the work is genuinely additional scope. Raise a <a href="templates/change_order.md">change order</a> for the shortfall hours. This is the correct outcome, not a failure — it keeps the budget honest and the team's hours protected.</li>
-  </ol>
+  <h2 id="planned"><span class="n">1</span>Get the planned hours</h2>
+  <p>Planned hours live in the <b>project budget / SOW</b>. CRO budgets are built bottom‑up as a task grid: each deliverable carries budgeted hours, often split by role. For biometrics that's the SAP, each ADaM domain, each TLF batch, DSMB/interim outputs, define.xml, reviewer's guide, and so on.</p>
+  <div class="step"><div class="b">1</div><div>Get the current budget grid from the PM / project finance (usually an Excel by task and role).</div></div>
+  <div class="step"><div class="b">2</div><div>List each biometrics task as a row in the workbook's <b>Effort Ledger</b> and enter its <b>Planned</b> hours.</div></div>
+  <div class="step"><div class="b">3</div><div>Enter the <b>contingency / management reserve</b> as its own row — the hours held back for the unexpected. If your budget doesn't name one, put 0 and know your only levers are slack, deferral, and a change order.</div></div>
 
-  <h2><span class="n">4</span>When it is genuinely out-of-scope</h2>
-  <p>Not everything can (or should) be absorbed. Escalate to a change order when:</p>
+  <h2 id="actual"><span class="n">2</span>Get the actual hours</h2>
+  <p>Actuals come from the <b>time‑tracking system</b> — hours logged to the project code, by task, to a cutoff date.</p>
   <ul>
-    <li>the ask exceeds net findable hours (the <a href="Hours_Reconciliation_Worksheet.html">worksheet</a> shows the shortfall);</li>
-    <li>absorbing it would push a critical-path deliverable past its date;</li>
-    <li>it recurs — a "one-off" that is now every month is a scope pattern, not a favor;</li>
-    <li>it changes the deliverable itself (a new domain, an added analysis population, an unplanned interim).</li>
+    <li>Pull hours-to-date per task and enter them in <b>Actual</b>.</li>
+    <li><b>Correct for timesheet lag.</b> Timesheets trail reality by a week or two. If someone has worked hours they haven't entered, add their verbal estimate — otherwise every task looks artificially under budget and your slack is a mirage.</li>
+    <li>Note the <b>cutoff date</b> you reconciled to, so the picture is defensible later.</li>
   </ul>
-  <div class="panel warn"><strong>Absorbing silently is the one thing not to do.</strong> It hides the true cost, sets a precedent that the work is free, and lands on whoever is holding the task. Make the source of every hour explicit — reallocated, drawn from contingency, deferred, or change-ordered.</div>
 
-  <h2><span class="n">5</span>Governance</h2>
+  <h2 id="eac"><span class="n">3</span>Forecast each task to completion (EAC)</h2>
+  <p>Actual‑to‑date tells you nothing about a task that's half done. You need <b>EAC — the total hours the task will take once finished.</b> Pick the method that fits how much you know:</p>
+  <table>
+    <tr><th style="width:22%">Method</th><th>EAC =</th><th style="width:34%">Use when</th></tr>
+    <tr><td class="k">Actual + ETC</td><td>Actual‑to‑date + your honest <b>estimate‑to‑complete</b> of the remaining work</td><td>Default. You can look at what's left and size it.</td></tr>
+    <tr><td class="k">% complete</td><td>Actual ÷ (% complete)</td><td>Effort tracks linearly with progress; a task 60% done at 90 h forecasts ≈150 h.</td></tr>
+    <tr><td class="k">Bottoms‑up</td><td>Actual + Σ(re‑estimate of each remaining item)</td><td>The remaining work is itemizable (e.g., 6 TLFs left × ~4 h).</td></tr>
+    <tr><td class="k">Completed</td><td>Actual (task is done)</td><td>Task finished — EAC is just what it cost. This is your <b>realized</b> variance.</td></tr>
+  </table>
+  <p>Enter <b>% complete</b> and let the workbook estimate EAC, or type EAC directly if you did a bottoms‑up. <b>Variance = Planned − EAC:</b> positive = forecasting under (possible slack), negative = forecasting over (a problem to raise, not a source of hours).</p>
+
+  <h2 id="slack"><span class="n">4</span>Find the <em>real</em> slack — not the apparent slack</h2>
+  <p>Not every under‑forecast is money in the bank. Grade it:</p>
+  <table>
+    <tr><td class="k" style="color:var(--green)">Realized</td><td><b>Completed</b> tasks that came in under Planned. Safe to redeploy — it's banked.</td></tr>
+    <tr><td class="k" style="color:var(--gold)">Projected</td><td><b>In‑progress</b> tasks forecasting under. Trust it only if enough is done to know — a task 10% complete hasn't earned its slack yet. Discount aggressively.</td></tr>
+    <tr><td class="k" style="color:var(--red)">Illusory</td><td>An <b>early</b> task with low actual simply because it hasn't ramped. This is <b>not</b> slack; counting it is the #1 way find‑hours math goes wrong.</td></tr>
+  </table>
+  <p class="panel warn">Before you offer slack to a PM, be able to say <em>which task</em> it comes from and <em>why the under‑run is real</em>. "We have 19 hours: 12 realized on ADaM QC which finished under, 7 projected on TLF QC which is 80% done and tracking light" is defensible. "The budget shows 40 hours left" is not.</p>
+
+  <h2 id="netfind"><span class="n">5</span>Compute net findable</h2>
+  <p>With Planned, EAC, and contingency entered, the ledger computes:</p>
+  <div class="formula">NET FINDABLE = (Σ Planned + Contingency) − Σ EAC</div>
+  <p>That's your honest cushion: everything budgeted, minus the forecast to finish everything already promised. In the workbook's demo it's <b>59 hours</b>. This is the number you test the new ask against.</p>
+
+  <h2 id="tree"><span class="n">6</span>The find‑hours decision tree</h2>
+  <p>A new ask needs <b>N</b> hours. Work the levers in order — cheapest/most‑within‑your‑control first:</p>
+  <div class="step"><div class="b">1</div><div><b>Reallocate slack.</b> Move realized/projected under‑run hours to the new task. This is inside your project; you decide it and <b>record</b> it (which task gave, which received).</div></div>
+  <div class="step"><div class="b">2</div><div><b>Draw contingency.</b> Spend the reserve. That's what it's for, but it's a <b>PM decision to record</b> — and once spent it's not there for the next surprise.</div></div>
+  <div class="step"><div class="b">3</div><div><b>Defer / re‑sequence.</b> Push lower‑priority in‑scope work later to free people now. This trades <b>schedule</b> for hours and needs the PM/sponsor to agree the new dates.</div></div>
+  <div class="step"><div class="b">4</div><div><b>Change order.</b> If a shortfall remains after 1–3, it is <b>added scope</b>. Raise a CO for the remainder. Don't quietly absorb it.</div></div>
+  <p>The workbook's <b>Find Hours</b> sheet automates the test: enter the need, and it computes</p>
+  <div class="formula">Shortfall = MAX(0, Need − NET FINDABLE)</div>
+  <p>and returns a verdict: <b>absorbable</b> (Shortfall = 0) or <b>change order for X hours</b> (Shortfall &gt; 0).</p>
+
+  <h2 id="convo"><span class="n">7</span>Have the conversation</h2>
+  <p>Reconciliation is only useful if it becomes a clear ask to the PM/sponsor. Two scripts:</p>
+  <div class="panel ex"><div class="lbl">Absorbable</div>
+    <p style="margin:6px 0 0">"Sponsor requested an unplanned PK re‑run — I scope it at <b>45 hours</b>. Reconciliation: ADaM QC finished <b>12 h</b> under and TLF QC is 80% done tracking <b>7 h</b> under (19 h slack), plus <b>40 h</b> contingency — <b>59 h net findable</b>. I propose funding it from the 19 h slack + 26 h contingency, leaving 14 h contingency. <b>No change order needed.</b> OK to proceed?"</p>
+  </div>
+  <div class="panel ex"><div class="lbl">Not absorbable</div>
+    <p style="margin:6px 0 0">"The ask scopes at <b>90 hours</b>; net findable is <b>59</b>. I can cover 59 from slack + contingency, but the remaining <b>31 hours is out of scope</b> — here's the change‑order draft. I'd recommend we not start the out‑of‑scope portion until it's signed."</p>
+  </div>
+
+  <h2 id="co"><span class="n">8</span>Raise a change order</h2>
+  <p>A change order is the record that scope grew and the budget was amended to match. The workbook's <b>Change Order</b> sheet drafts one. It states:</p>
   <ul>
-    <li><strong>Hours / effort only</strong> — this playbook reasons in hours, not dollars, rates, or headcount. Cost is finance's; effort stewardship is the team's.</li>
-    <li><strong>Recorded, not silent</strong> — every reallocation, contingency draw, deferral, and change order is written down (the <a href="templates/project_hours_ledger.csv">ledger</a> and <a href="templates/change_order.md">change-order</a> template carry it).</li>
-    <li><strong>Human-decided</strong> — the worksheet is decision support; the PM and lead biostatistician decide and own the call.</li>
+    <li><b>What</b> the added work is, and <b>why it's out of scope</b> (not in the current SOW).</li>
+    <li>The <b>hours</b> required, by task/role.</li>
+    <li>The <b>schedule impact</b> (dates that move).</li>
+    <li>Approvals: lead biostatistician, PM, sponsor.</li>
+  </ul>
+  <p class="panel warn"><b>Sequence matters:</b> raise → lead biostat + PM review → sponsor approves and signs → budget amended → <em>then</em> do the out‑of‑scope work. Doing it first on a handshake is how CROs eat unbillable hours.</p>
+
+  <h2 id="worked">Worked example, end to end</h2>
+  <div class="panel">
+    <table>
+      <tr><th>Task</th><th>Planned</th><th>Actual</th><th>% done</th><th>EAC</th><th>Variance</th></tr>
+      <tr><td>SAP</td><td class="num">40</td><td class="num">40</td><td class="num">100</td><td class="num">40</td><td class="num">0</td></tr>
+      <tr><td>ADaM programming</td><td class="num">120</td><td class="num">70</td><td class="num">60</td><td class="num">117</td><td class="num" style="color:var(--green)">+3</td></tr>
+      <tr><td>ADaM QC</td><td class="num">60</td><td class="num">48</td><td class="num">100</td><td class="num">48</td><td class="num" style="color:var(--green)">+12</td></tr>
+      <tr><td>TLF programming</td><td class="num">160</td><td class="num">95</td><td class="num">55</td><td class="num">168</td><td class="num" style="color:var(--red)">−8</td></tr>
+      <tr><td>TLF QC</td><td class="num">80</td><td class="num">40</td><td class="num">80</td><td class="num">73</td><td class="num" style="color:var(--green)">+7</td></tr>
+      <tr><td><b>Contingency</b></td><td class="num">40</td><td class="num">—</td><td class="num">—</td><td class="num">0</td><td class="num" style="color:var(--green)">+40</td></tr>
+      <tr style="border-top:2px solid var(--line)"><td><b>Totals</b></td><td class="num"><b>500</b></td><td class="num">293</td><td class="num"></td><td class="num"><b>446</b></td><td class="num"></td></tr>
+    </table>
+    <p style="margin:6px 0 0"><b>NET FINDABLE = Σ Planned (incl. 40 h contingency) − Σ EAC = 500 − 446 = ~59 h</b> once the reserve (which no in‑scope task is forecast to consume) is counted. <span style="color:var(--mut)">The workbook keeps contingency as its own row so it is neither double‑counted nor lost.</span></p>
+    <ul>
+      <li><b>A 45‑hour ask</b> → Shortfall = MAX(0, 45 − 59) = <b>0 → absorbable.</b> Fund from 19 h realized/projected slack + 26 h contingency.</li>
+      <li><b>A 90‑hour ask</b> → Shortfall = MAX(0, 90 − 59) = <b>31 → change order for 31 h.</b> Absorb 59, CO the rest.</li>
+    </ul>
+    <p style="margin:6px 0 0">Note TLF programming is forecasting <b>8 h over</b> — that's a real over‑run to flag, and it's already netted into the 59. Ignoring over‑runs is how "found" hours evaporate.</p>
+  </div>
+
+  <h3>Pitfalls</h3>
+  <ul>
+    <li><b>Optimistic EAC.</b> Under‑forecasting to make the budget look healthy inflates net findable and sets you up to blow the real number. Forecast honestly, over‑runs included.</li>
+    <li><b>Treating <code>Planned − Actual</code> as available.</b> Most of that gap is committed to in‑flight work. Use EAC, not Actual.</li>
+    <li><b>Counting early‑task under‑runs as slack.</b> Low actual on a task that hasn't ramped is not a cushion.</li>
+    <li><b>Absorbing silently.</b> If you fund out‑of‑scope work with no record, you can't defend the budget when it runs short later — and you've set a precedent that the work is free.</li>
+    <li><b>Forgetting deferral has a cost.</b> Freeing hours by pushing work trades schedule risk for effort; say so.</li>
+    <li><b>Working before the CO is signed.</b> Out‑of‑scope hours spent on a handshake are hours you may never get back.</li>
   </ul>
 
   <div class="foot">
-    Companion: the <a href="Hours_Reconciliation_Worksheet.html">find-hours worksheet</a> and the
-    <a href="templates/project_hours_ledger.csv">effort-ledger</a> / <a href="templates/change_order.md">change-order</a> templates.
-    &nbsp;·&nbsp; <a href="../Operations.html">&larr; Operations</a>
+    The tool: <a href="Hours_Budget_Reconciliation_Workbook.xlsx"><b>Hours_Budget_Reconciliation_Workbook.xlsx</b></a> (Instructions · Effort Ledger · Find Hours · Change Order). Hours/effort only — no rates, dollars, ROI, or headcount. 100% synthetic. &nbsp;·&nbsp; <a href="../Operations.html">&larr; Operations</a>
   </div>
 </div>
 </body></html>
