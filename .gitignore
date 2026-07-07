@@ -2,3 +2,7 @@
 *.zip
 node_modules/
 __pycache__/
+
+# Quarto build cache / render artifacts
+**/.quarto/
+**/*_files/

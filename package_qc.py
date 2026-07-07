@@ -79,8 +79,10 @@ for f in html_files + glob.glob(ROOT + "/**/*.md", recursive=True):
         if TRIAL_SUBJ.search(line) and "usubjid" not in low and "subjid" not in low:
             add("Terminology: 'subject' (use participant)", f"{rel(f)}:{i}")
 
-# 5. forbidden research jargon anywhere
-FORB = re.compile(r'last straw|\bLSA\b|\bCRT\b|directedness|critical[ -]transition|\bJEPA\b|world[ -]model|meta-learn', re.I)
+# 5. forbidden research jargon anywhere. Acronyms match case-sensitively (uppercase
+#    only) so minified-JS identifiers like `crt`/`lsa` in bundled libraries (mermaid,
+#    bootstrap) don't false-positive; the spelled-out terms stay case-insensitive.
+FORB = re.compile(r'(?i:last straw|directedness|critical[ -]transition|world[ -]model|meta-learn)|\b(?:LSA|CRT|JEPA)\b')
 for f in html_files + glob.glob(ROOT + "/**/*.md", recursive=True):
     if any(s in f for s in SKIP_DIR): continue
     for i, line in enumerate(read(f).splitlines(), 1):

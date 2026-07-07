@@ -1,0 +1,200 @@
+---
+title: "IRT / RTSM User Acceptance Testing"
+subtitle: "A visual, runnable guide — from the biostatistics lens"
+format:
+  html:
+    theme: darkly
+    toc: true
+    toc-location: left
+    toc-title: On this page
+    embed-resources: true
+    code-tools: true
+    code-fold: true
+    fig-width: 8
+    fig-height: 4
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(ggplot2); library(knitr)
+source("../shiny/R/logic.R")
+d <- uat_load("../templates")
+g <- uat_gate(d$tests, d$defects, d$trace)
+s <- uat_summary(d$tests, d$defects, d$trace)
+```
+
+::: {.callout-note appearance="simple"}
+**Watch / explore / read / build — pick your mode.** This page *shows* the UAT (diagrams + a live dashboard computed from the data), the [**Shiny app**](../shiny) lets you *run* one, the [build-it walkthrough](../BUILD_IT.md) shows how the app is made, and the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) is what you file. Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
+:::
+
+## What a UAT is, in one picture
+
+You are confirming, in a test environment, that the vendor's randomization & drug-supply build does **exactly** what your specs say — before a single real participant is randomized.
+
+```{mermaid}
+flowchart LR
+  URS[URS + randomization spec<br/>+ drug-supply spec] --> TC[Derive test cases<br/>positive · negative · boundary]
+  TC --> EX[Execute in the vendor's<br/>staging IRT, in a browser]
+  EX --> REC[Record result + dated<br/>screenshot evidence]
+  REC --> DEC{Pass?}
+  DEC -->|No| DEF[Log defect → vendor fixes<br/>→ retest new build]
+  DEF --> EX
+  DEC -->|Yes| TR[Traceability:<br/>every requirement has a test]
+  TR --> GATE{{Go-live sign-off gate}}
+  GATE -->|READY + human signs| PROD[Vendor promotes build<br/>to production]
+  GATE -->|blocked| EX
+  DEF -.mirror.-> LOG[(Excel workbook<br/>your record)]
+  REC -.-> LOG
+```
+
+## Where it actually runs — the systems
+
+The tracker you see below is a **picture**. The real UAT happens across three live places, and the workbook is the paper trail that ties them together.
+
+```{mermaid}
+flowchart TB
+  subgraph vendor[Vendor systems]
+    IRT[Staging IRT / RTSM<br/>web app · test list]
+    VDEF[Vendor defect tracker]
+  end
+  subgraph you[You, the biostatistician]
+    BR[Operate it in a browser]
+    EV[Dated screenshots + exports]
+    WB[(Excel workbook:<br/>status · defects · traceability · gate)]
+  end
+  ETMF[[eTMF: signed package]]
+  IRT --> BR --> EV --> WB
+  BR --> VDEF
+  VDEF -->|fixed build| IRT
+  WB --> ETMF
+```
+
+::: {.callout-important appearance="simple"}
+The workbook does not connect to the IRT. You **transcribe** results into it, on purpose, so the record is attributable and stands on its own for an auditor. Every number comes from the validated systems (the IRT, the test list, your reconciliation), never from an assistant.
+:::
+
+## The live tracker — computed from the data {#live}
+
+This is the same logic the Shiny app and the Excel gate use, rendered here from `templates/*.csv`. Edit that CSV (or run the app) and these move.
+
+```{r kpis, results='asis'}
+box <- function(label, value, col) sprintf(
+  '<div style="flex:1;min-width:120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:12px 14px;margin:4px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em">%s</div></div>', col, value, label)
+cat('<div style="display:flex;flex-wrap:wrap;gap:2px">')
+cat(box("Test scripts", s$total, "#e9edf7"))
+cat(box("Passed", s$pass, "#43c47d"))
+cat(box("Failed", s$fail, "#e8657a"))
+cat(box("Open defects", s$open_def, "#e0a64c"))
+cat(box("Requirements traced", paste0(s$cov, "%"), "#3fd0c9"))
+cat('</div>')
+```
+
+::: {.panel-tabset}
+
+### Go-live gate
+
+```{r gate, results='asis'}
+tick <- function(ok, txt) sprintf('<div style="margin:3px 0"><span style="color:%s;font-weight:700">%s</span> %s</div>',
+  if (ok) "#43c47d" else "#e8657a", if (ok) "✔" else "✘", txt)
+bg <- if (g$go) "#1e3a28" else "#3a1e24"; bd <- if (g$go) "#43c47d" else "#e8657a"
+cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:10px;padding:14px 16px;max-width:640px">', bg, bd))
+cat(sprintf('<div style="font-size:20px;font-weight:700;margin-bottom:6px">%s</div>', g$verdict))
+cat(tick(g$crit_fail == 0, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
+cat(tick(g$open_cm == 0,  sprintf("<b>%d</b> open critical/major defect(s)", g$open_cm)))
+cat(tick(g$trace_gap == 0, sprintf("<b>%d</b> requirement(s) without a test", g$trace_gap)))
+cat('<div style="font-size:11px;color:#94a1c0;margin-top:8px">The gate packages the evidence; a named human signs. It does not grant approval.</div></div>')
+```
+
+The gate is deliberately **conjunctive**: all three conditions must hold. In the seed data it reads *blocked* because a critical test is still failing, two critical/major defects are open, and one requirement has no test yet. Fix those in the app and watch it flip.
+
+### Execution by area
+
+```{r plot}
+df <- uat_area_counts(d$tests)
+ggplot(df, aes(Freq, Area, fill = Status)) +
+  geom_col(width = 0.7) +
+  scale_fill_manual(values = c("Pass"="#43c47d","Fail"="#e8657a","Blocked"="#e0a64c",
+    "In Progress"="#5b8cff","Not Run"="#6b7794"), drop = FALSE) +
+  labs(x = "Tests", y = NULL, fill = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top", plot.background = element_rect(fill="#222630", colour=NA),
+        panel.background = element_rect(fill="#222630", colour=NA),
+        text = element_text(colour="#e9edf7"), axis.text = element_text(colour="#c5cee4"),
+        panel.grid = element_line(colour="#3a4157"))
+```
+
+### Open defects
+
+```{r defects}
+od <- d$defects[d$defects$Status == "Open", c("DefectID","Severity","FoundInTest","Description")]
+kable(od, col.names = c("Defect","Severity","In test","Description"), row.names = FALSE)
+```
+
+:::
+
+## Run it — and change it {#run}
+
+The interactive tool is a real R Shiny app you own. From the package root:
+
+```r
+shiny::runApp("uat_irt/shiny")
+# needs: install.packages(c("shiny","bslib","DT","ggplot2"))
+```
+
+Select a test, mark it Pass/Fail, close a defect — the KPIs and the go-live gate recompute live. Download your results to CSV to drop into the Excel workbook and the eTMF.
+
+::: {.callout-tip appearance="simple"}
+**You want to build these yourself.** The whole app is ~150 lines: `shiny/R/logic.R` holds the gate + KPI math (the functions this page also called), and `shiny/app.R` is the UI + reactivity. The [build-it walkthrough](../BUILD_IT.md) takes you through it piece by piece. Change the CSV to your study's tests and it is your tracker.
+:::
+
+## How to write a test that is actually executable
+
+A good test has a specific, verifiable expected result — not "works correctly". Two worked examples:
+
+::: {.panel-tabset}
+
+### Stratified allocation (RAND-02)
+
+- **Precondition:** test list loaded in staging; the <70 kg stratum, block 1, has an unused slot; you know the next expected list entry.
+- **Steps:** log in as Investigator → register participant 101-001, weight 68.0 kg → Randomize → record kit + confirmation → open the allocation report as the unblinded statistician.
+- **Expected:** 101-001 is allocated to the **next unused <70 kg / block-1 entry** — arm, sequence, and kit match the list; the investigator sees a **kit ID only**, not the arm.
+- **Verify:** put the test list next to the IRT output and confirm cell-for-cell across *every* stratum and both arms of the ratio — not one happy-path participant.
+
+### Emergency unblinding (UNBL-01)
+
+- **Precondition:** a randomized test participant exists; you hold the unblinding-authorized role.
+- **Steps:** open the participant → invoke emergency unblind → enter reason → confirm → check the audit trail → log in as a **blinded** role and confirm the arm is still hidden.
+- **Expected:** arm revealed to the authorized role only; unblinding written to the audit trail (who/when/why); participant flagged; blinded role still cannot see the arm; any required safety notification fires.
+
+:::
+
+## Defect severity drives the gate
+
+```{r sev, results='asis'}
+cat('
+| Severity | Meaning | Blocks go-live? |
+|---|---|---|
+| **Critical** | Could compromise safety, break the blind, mis-randomize, mis-dose, or corrupt integrity | **Yes** |
+| **Major** | Significant functional error in a key workflow (resupply, wrong kit, missing safety alert) | **Yes, until fixed** |
+| **Minor** | Cosmetic / non-functional (a label typo, a missing site number in a subject line) | No; fix or waive with rationale |
+')
+```
+
+## The other formats
+
+| Mode | Artifact |
+|---|---|
+| Explore / run | [Shiny app](../shiny) — edit, mark, download |
+| Share (no R) | [Dashboard](uat-dashboard.html) — the tracker as a self-contained page |
+| Present | [Slides](uat-slides.html) |
+| Skim | [One-page cheat-sheet (PDF)](uat-onepager.pdf) |
+| File | [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) — the signed record for the eTMF |
+| Build | [Build-it walkthrough](../BUILD_IT.md) |
+
+*Synthetic data throughout. UAT sign-off is a named-human decision.*

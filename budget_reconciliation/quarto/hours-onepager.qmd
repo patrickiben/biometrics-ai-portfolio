@@ -1,0 +1,40 @@
+---
+format:
+  typst:
+    papersize: us-letter
+    margin:
+      x: 1.5cm
+      y: 1.2cm
+    fontsize: 9pt
+    mainfont: Helvetica
+    include-in-header: _typst_header.typ
+execute:
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r setup}
+source("../shiny/R/logic.R")
+d   <- hours_load()
+m   <- hours_metrics(d$ledger, d$contingency)
+f45 <- find_hours(45, d$ledger, d$contingency)
+f90 <- find_hours(90, d$ledger, d$contingency)
+
+fence <- strrep("`", 3)
+lets <- sprintf(paste0(
+  "#let planned = %d\n#let cont = %d\n#let eac = %d\n#let findable = %d\n",
+  "#let netslack = %d\n",
+  "#let f45slack = %d\n#let f45cont = %d\n#let f45left = %d\n#let f45verdict = [%s]\n",
+  "#let f90short = %d\n#let f90verdict = [%s]\n"),
+  m$planned, m$contingency, m$eac, m$findable, m$net_slack,
+  f45$from_slack, f45$from_cont, f45$contingency_left, f45$verdict,
+  f90$shortfall, f90$verdict)
+
+body <- readLines("_onepager_layout.typ")
+block <- paste0(fence, "{=typst}\n", lets, paste(body, collapse = "\n"), "\n", fence, "\n")
+```
+
+```{r emit, results='asis'}
+cat(block)
+```

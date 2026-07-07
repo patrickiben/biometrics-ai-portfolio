@@ -1,0 +1,118 @@
+---
+title: "Find Hours — reconciliation snapshot"
+format:
+  dashboard:
+    theme: darkly
+    embed-resources: true
+    nav-buttons: []
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(ggplot2); library(knitr)
+source("../shiny/R/logic.R")
+d   <- hours_load()
+m   <- hours_metrics(d$ledger, d$contingency)
+f45 <- find_hours(45, d$ledger, d$contingency)
+```
+
+::: {.callout-note appearance="simple"}
+Shareable snapshot, computed from the effort ledger (hours only, synthetic). The [Shiny app](../shiny) is the interactive version. Every number comes from the validated ledger, never from an assistant.
+:::
+
+## Row {height=22%}
+
+```{r}
+#| content: valuebox
+#| title: "Planned (h)"
+#| color: "#222630"
+list(value = m$planned)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Spent to date (h)"
+#| color: "#5b8cff"
+list(value = m$actual)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Forecast EAC (h)"
+#| color: "#e0a64c"
+list(value = m$eac)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Contingency (h)"
+#| color: "#3fd0c9"
+list(value = m$contingency)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Net findable (h)"
+#| color: "#43c47d"
+list(value = m$findable)
+```
+
+## Row {height=48%}
+
+### Column {width=58%}
+
+```{r}
+#| title: "Planned vs forecast EAC, by deliverable"
+df <- d$ledger[, c("deliverable","planned","eac")]
+long <- rbind(
+  data.frame(deliverable = df$deliverable, hours = df$planned, kind = "Planned"),
+  data.frame(deliverable = df$deliverable, hours = df$eac,     kind = "Forecast EAC"))
+long$deliverable <- factor(long$deliverable, levels = rev(df$deliverable))
+ggplot(long, aes(hours, deliverable, fill = kind)) +
+  geom_col(width = 0.7, position = position_dodge(width = 0.75)) +
+  scale_fill_manual(values = c("Planned"="#5b8cff","Forecast EAC"="#e0a64c")) +
+  labs(x = "Hours", y = NULL, fill = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top",
+        plot.background  = element_rect(fill="#222630", colour=NA),
+        panel.background = element_rect(fill="#222630", colour=NA),
+        text = element_text(colour="#e9edf7"),
+        axis.text = element_text(colour="#c5cee4"),
+        panel.grid = element_line(colour="#3a4157"))
+```
+
+### Column {width=42%}
+
+```{r}
+#| title: "Test an ask: 45 h"
+#| content: valuebox
+#| color: "#1e3a28"
+list(icon = "check-circle", value = f45$verdict)
+```
+
+```{r}
+#| title: "How the 45 h ask is sourced"
+src <- data.frame(
+  Source = c("Under-run slack", "Contingency reserve", "Residual (change order)"),
+  Hours  = c(f45$from_slack, f45$from_cont, f45$shortfall))
+kable(src, align = "lr", row.names = FALSE)
+```
+
+Net findable = (planned + contingency) − EAC = (`r m$planned` + `r m$contingency`) − `r m$eac` = **`r m$findable` h**. The 45 h ask is absorbed with `r f45$contingency_left` h of reserve still held.
+
+## Row {height=30%}
+
+```{r}
+#| title: "Effort ledger"
+lg <- d$ledger
+lg$slack <- pmax(0, lg$planned - lg$eac)
+kable(lg[, c("deliverable","planned","actual","pct","eac","slack")],
+      col.names = c("Deliverable","Planned","Actual","% done","EAC","Under-run slack"),
+      row.names = FALSE, align = "lrrrrr")
+```

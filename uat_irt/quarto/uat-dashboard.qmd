@@ -1,0 +1,104 @@
+---
+title: "IRT / RTSM UAT Snapshot"
+format:
+  dashboard:
+    theme: darkly
+    embed-resources: true
+    nav-buttons:
+      - icon: play-circle
+        text: Shiny app
+        href: ../shiny
+execute:
+  echo: false
+  warning: false
+  message: false
+knitr:
+  opts_chunk:
+    dev: png
+---
+
+```{r setup}
+library(ggplot2); library(knitr)
+source("../shiny/R/logic.R")
+d <- uat_load("../templates")
+g <- uat_gate(d$tests, d$defects, d$trace)
+s <- uat_summary(d$tests, d$defects, d$trace)
+```
+
+## Row {height="8%"}
+
+::: {.card}
+**Read-only shareable snapshot**, computed from the validated UAT data (`templates/*.csv`). It does not connect to the IRT. The interactive tool is the [Shiny app](../shiny). Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
+:::
+
+## Row {height="20%"}
+
+```{r}
+#| content: valuebox
+#| title: "Test scripts"
+list(icon = "list-check", color = "#222630", value = s$total)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Passed"
+list(icon = "check-circle", color = "success", value = s$pass)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Failed"
+list(icon = "x-circle", color = "danger", value = s$fail)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Open defects"
+list(icon = "bug", color = "warning", value = s$open_def)
+```
+
+```{r}
+#| content: valuebox
+#| title: "Requirements traced"
+list(icon = "diagram-3", color = "info", value = paste0(s$cov, "%"))
+```
+
+## Row {height="36%"}
+
+```{r}
+#| title: "Go-live sign-off gate"
+#| results: asis
+tick <- function(ok, txt) sprintf('<div style="margin:4px 0;font-size:15px"><span style="color:%s;font-weight:700">%s</span> %s</div>',
+  if (ok) "#43c47d" else "#e8657a", if (ok) "&#10004;" else "&#10008;", txt)
+bg <- if (g$go) "#1e3a28" else "#3a1e24"; bd <- if (g$go) "#43c47d" else "#e8657a"
+cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:10px;padding:14px 16px">', bg, bd))
+cat(sprintf('<div style="font-size:22px;font-weight:700;margin-bottom:8px;color:#e9edf7">%s</div>', g$verdict))
+cat(tick(g$crit_fail == 0, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
+cat(tick(g$open_cm == 0,  sprintf("<b>%d</b> open critical/major defect(s)", g$open_cm)))
+cat(tick(g$trace_gap == 0, sprintf("<b>%d</b> requirement(s) without a test", g$trace_gap)))
+cat('<div style="font-size:12px;color:#94a1c0;margin-top:10px">Conjunctive: all three must hold. The gate packages the evidence, a named human signs.</div></div>')
+```
+
+```{r}
+#| title: "Execution by area"
+df <- uat_area_counts(d$tests)
+ggplot(df, aes(Freq, Area, fill = Status)) +
+  geom_col(width = 0.7) +
+  scale_fill_manual(values = c("Pass"="#43c47d","Fail"="#e8657a","Blocked"="#e0a64c",
+    "In Progress"="#5b8cff","Not Run"="#6b7794"), drop = FALSE) +
+  labs(x = "Tests", y = NULL, fill = NULL) +
+  theme_minimal(base_size = 12) +
+  theme(legend.position = "top", plot.background = element_rect(fill="#222630", colour=NA),
+        panel.background = element_rect(fill="#222630", colour=NA),
+        text = element_text(colour="#e9edf7"), axis.text = element_text(colour="#c5cee4"),
+        panel.grid = element_line(colour="#3a4157"),
+        legend.key = element_rect(fill="#222630", colour=NA))
+```
+
+## Row {height="36%"}
+
+```{r}
+#| title: "Test scripts"
+tt <- d$tests[, c("TestID","Area","Priority","TestTitle","Status")]
+kable(tt, col.names = c("Test","Area","Priority","Title","Status"), row.names = FALSE)
+```
