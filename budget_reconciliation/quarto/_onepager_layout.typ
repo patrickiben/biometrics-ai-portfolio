@@ -55,24 +55,23 @@
 )
 
 #v(6pt)
-#grid(columns: (1fr, 1fr), gutter: 14pt,
-[
-  == Where it runs \u{2014} the systems
-  #set list(spacing: 0.5em)
-  - *SOW / budget grid (CTMS)* feeds planned hours into the ledger.
-  - *Timesheet system* feeds actual-to-date.
-  - *Your estimate + progress tracker* set % complete and EAC.
-  - *The tool* rolls these up; it connects to none of them. You transcribe current figures in, so the reconciliation is attributable and stands on its own.
-  - *Contract process* (lead biostat + PM review, sponsor sign-off, SOW amended) handles any residual.
-],
-[
-  == Read the ledger \u{2014} worked
-  #set list(spacing: 0.5em)
-  - Per task, *under-run slack* = max(0, planned #sym.minus EAC). A task forecast under plan gives up slack; a task over-running (EAC > planned) is *watched, not raided*.
-  - Sum the per-task slack to get *net slack* (#netslack h here), then add *contingency* (#cont h) for *net findable* = #findable h.
-  - Source a new ask in order: slack first, then contingency, then the residual is a change order.
+#rect(width: 100%, fill: rgb("#1b1f28"), stroke: rgb("#3a4157"), inset: 9pt, radius: 6pt)[
+  == Where the numbers run \u{2014} the systems (the ledger is the paper trail)
+  #grid(columns: (auto, auto, auto, auto, auto, auto, auto), align: horizon, gutter: 5pt,
+    text(size: 8.5pt)[*SOW / budget grid* (CTMS, planned)], text(fill: rgb("#94a1c0"))[#sym.arrow.r],
+    text(size: 8.5pt)[*Timesheet system* (actual)], text(fill: rgb("#94a1c0"))[#sym.arrow.r],
+    text(size: 8.5pt)[*Your estimate + progress tracker* (% done, EAC)], text(fill: rgb("#94a1c0"))[#sym.arrow.r],
+    text(size: 8.5pt)[*Effort ledger* #sym.arrow.r *net-findable roll-up*],
+  )
+  #text(fill: rgb("#94a1c0"), size: 8pt)[The residual goes to the *contract process* (lead biostat + PM review, sponsor sign-off, SOW amended). The tool connects to none of these, you transcribe current figures in, on purpose, so the reconciliation is attributable and stands on its own.]
 ]
-)
+
+#v(6pt)
+== Read the ledger \u{2014} worked
+#set list(spacing: 0.5em)
+- Per task, *under-run slack* = max(0, planned #sym.minus EAC). A task forecast under plan gives up slack; a task over-running (EAC > planned) is *watched, not raided*.
+- Sum the per-task slack to get *net slack* (#netslack h here), then add *contingency* (#cont h) for *net findable* = #findable h you can redirect before touching the contract.
+- Source a new ask in order: under-run slack first, then contingency, then the residual is a change order.
 
 #v(6pt)
 == Thresholds \u{2014} how far an ask can go before a change order

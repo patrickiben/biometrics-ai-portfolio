@@ -1,6 +1,6 @@
 ---
-title: "Find Hours - Budget Reconciliation (effort only)"
-subtitle: "A visual, runnable guide - from the biostatistics lens"
+title: "Find Hours, Budget Reconciliation (effort only)"
+subtitle: "A visual, runnable guide, from the biostatistics lens"
 format:
   html:
     theme: darkly
@@ -39,7 +39,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 ```
 
 ::: {.callout-note appearance="simple"}
-**Run / share / skim / file / build - pick your mode.** This page *shows* the reconciliation (diagrams + a live roll-up computed from the ledger), the [**runnable R Shiny app**](hours-build.html) lets you *run* one interactively, the [dashboard](hours-dashboard.html) is a shareable snapshot, the [one-pager](hours-onepager.pdf) is the skim, the [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx) is what you file, and the [build-it walkthrough](hours-build.html) shows how the app is made. Operations-only, synthetic, hours/effort only (no dollars, rates, or headcount). We say *participant*, not *subject*.
+**Run / share / skim / file / build, pick your mode.** This page *shows* the reconciliation (diagrams + a live roll-up computed from the ledger), the [**runnable R Shiny app**](hours-build.html) lets you *run* one interactively, the [dashboard](hours-dashboard.html) is a shareable snapshot, the [one-pager](hours-onepager.pdf) is the skim, the [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx) is what you file, and the [build-it walkthrough](hours-build.html) shows how the app is made. Operations-only, synthetic, hours / effort only (no dollars, rates, or headcount). We say *participant*, not *subject*.
 :::
 
 ## The whole idea, in one line
@@ -50,18 +50,18 @@ $$\textbf{Net findable} \;=\; \big(\textstyle\sum \text{Planned} \;+\; \text{Con
 
 Under-run slack is the part of your planned effort you are forecast **not** to spend (planned minus estimate-at-completion, floored at zero). Contingency is the management reserve. Add them and you have the effort you can redirect before touching the contract.
 
-## What to do with a new ask - the decision tree
+## What to do with a new ask, the decision tree
 
 ```{mermaid}
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
-flowchart TD
-  ASK["New ask lands:<br/>estimate its effort"] --> SLACK{"Under-run slack<br/>covers it?"}
-  SLACK -->|Yes| REALLOC["Reallocate slack from<br/>under-plan tasks"]
-  SLACK -->|Partly / No| CONT{"Contingency<br/>covers the rest?"}
-  CONT -->|Yes| DRAW["Draw the reserve,<br/>log what it funded"]
-  CONT -->|Partly / No| DEFER{"Defer or<br/>re-sequence?"}
-  DEFER -->|Yes| RESEQ["Free planned hours<br/>this period"]
-  DEFER -->|No| CO["Change order for<br/>the residual"]
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
+flowchart LR
+  ASK["New ask,<br/>estimate effort"] --> SLACK{"Slack<br/>covers it?"}
+  SLACK -->|Yes| REALLOC["Reallocate<br/>under-run slack"]
+  SLACK -->|"Partly / No"| CONT{"Contingency<br/>covers rest?"}
+  CONT -->|Yes| DRAW["Draw reserve,<br/>log it"]
+  CONT -->|"Partly / No"| DEFER{"Defer /<br/>re-sequence?"}
+  DEFER -->|Yes| RESEQ["Free planned<br/>hours"]
+  DEFER -->|No| CO["Change order,<br/>the residual"]
   REALLOC --> ABS["Absorbed<br/>internally"]
   DRAW --> ABS
   RESEQ --> ABS
@@ -69,17 +69,17 @@ flowchart TD
 
 The tool automates the first two branches: it sources hours from under-run slack first, then contingency, and reports whatever is left as the change-order residual. Deferring / re-sequencing is a human decision you make before you accept a residual.
 
-## Where every number comes from - the source map
+## Where every number comes from, the source map
 
 The ledger you see below is a *picture* built from synthetic data. On a real study each column is fed from a system of record, and the tool never invents a number.
 
 ```{mermaid}
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
-  SOW["SOW / budget grid<br/>in CTMS"] -->|Planned| LEDG[("Effort ledger")]
-  TS["Timesheet system"] -->|Actual| LEDG
-  EST["Your estimate +<br/>progress tracker"] -->|"% done, EAC"| LEDG
-  LEDG --> ROLL["Roll-up:<br/>net findable"]
+  SOW["SOW / budget<br/>grid, CTMS"] -->|Planned| LEDG[("Effort<br/>ledger")]
+  TS["Timesheet<br/>system"] -->|Actual| LEDG
+  EST["Estimate +<br/>progress"] -->|"% done, EAC"| LEDG
+  LEDG --> ROLL["Roll-up,<br/>net findable"]
   ROLL --> CO["Change-order<br/>process"]
 ```
 
@@ -94,7 +94,7 @@ flowchart LR
 The tool does not connect to CTMS or timesheets. You **transcribe** current figures into the ledger, on purpose, so the reconciliation is attributable and stands on its own. Every number reported here comes from the validated ledger and the shared logic core, never from an assistant.
 :::
 
-## The live roll-up - computed from the ledger {#live}
+## The live roll-up, computed from the ledger {#live}
 
 This is the same logic the Shiny app and the Excel workbook use, rendered here from the effort ledger, [`project_hours_ledger.csv`](../templates/project_hours_ledger.csv) (in the [`templates/`](../templates/) folder). Edit that ledger (or run the app) and these move.
 
@@ -151,11 +151,11 @@ Under-run slack is per-task `max(0, planned − EAC)`. It sums to the portfolio 
 
 :::
 
-## Testing an ask - two worked examples {#worked}
+## Testing an ask, two worked examples {#worked}
 
 ::: {.panel-tabset}
 
-### Ask 45 h - absorbable
+### Ask 45 h, absorbable
 
 ```{r w45, results='asis'}
 verdict_box <- function(fh) {
@@ -174,7 +174,7 @@ verdict_box(f45)
 
 A 45 h ask is fully covered: `r f45$from_slack` h from under-run slack and `r f45$from_cont` h from contingency, no residual. It is absorbable internally with `r f45$contingency_left` h of reserve still held back.
 
-### Ask 90 h - change order
+### Ask 90 h, change order
 
 ```{r w90, results='asis'}
 verdict_box(f90)
@@ -184,7 +184,7 @@ A 90 h ask exhausts the `r m$net_slack` h of slack and the full `r m$contingency
 
 :::
 
-## Run it - and build it {#run}
+## Run it, and build it {#run}
 
 The interactive tool is a real R Shiny app you own. From the package root:
 
@@ -203,11 +203,11 @@ Edit a task's EAC, change the ask, and the net-findable roll-up and verdict reco
 
 | Mode | Artifact |
 |---|---|
-| Run | [Run &amp; build the Shiny app](hours-build.html) - edit EAC, test an ask, download |
-| Share (no R) | [Dashboard](hours-dashboard.html) - the roll-up as a self-contained page |
+| Run | [Run &amp; build the Shiny app](hours-build.html), edit EAC, test an ask, download |
+| Share (no R) | [Dashboard](hours-dashboard.html), the roll-up as a self-contained page |
 | Present | [Slides](hours-slides.html) |
 | Skim | [One-page cheat-sheet (PDF)](hours-onepager.pdf) |
-| File | [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx) - the record you keep |
+| File | [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx), the record you keep |
 | Build | [Build-it walkthrough](hours-build.html) |
 
 *Synthetic data throughout. Hours / effort only. A change order is a named-human, contracted decision; pricing is handled downstream by the PM / project finance.*

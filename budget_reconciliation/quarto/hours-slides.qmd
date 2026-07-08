@@ -29,7 +29,7 @@ f45 <- find_hours(45, d$ledger, d$contingency)
 f90 <- find_hours(90, d$ledger, d$contingency)
 ```
 
-## The one-line idea
+## The one-line idea {.scrollable}
 
 When a new out-of-scope ask lands, **find the hours you already have** before asking for more.
 
@@ -88,7 +88,7 @@ cat('</div>')
 ( `r m$planned` + `r m$contingency` ) − `r m$eac` = <b style="color:#43c47d">`r m$findable` h</b> you can redirect before a change order.
 </p>
 
-## Planned vs forecast
+## Planned vs forecast {.scrollable}
 
 ```{r plot}
 df <- d$ledger[, c("deliverable","planned","eac")]
@@ -109,7 +109,7 @@ ggplot(long, aes(hours, deliverable, fill = kind)) +
         panel.grid = element_line(colour="#3a4157"))
 ```
 
-## Ask 45 h - absorbable {.scrollable}
+## Ask 45 h, absorbable {.scrollable}
 
 ```{r w45, results='asis'}
 vbox <- function(fh){
@@ -126,7 +126,7 @@ vbox(f45)
 
 Fully covered from what you already hold: no residual, `r f45$contingency_left` h of reserve still in hand.
 
-## Ask 90 h - change order {.scrollable}
+## Ask 90 h, change order {.scrollable}
 
 ```{r w90, results='asis'}
 vbox(f90)
@@ -141,7 +141,7 @@ shiny::runApp("budget_reconciliation/shiny")
 # install.packages(c("shiny","bslib","DT","ggplot2"))
 ```
 
-- **Run**: [Run &amp; build the Shiny app](hours-build.html) - edit an EAC, change the ask, watch net-findable recompute
+- **Run**: [Run &amp; build the Shiny app](hours-build.html), edit an EAC, change the ask, watch net-findable recompute
 - **Share**: [dashboard](hours-dashboard.html) · **Skim**: [one-pager](hours-onepager.pdf)
 - **File**: [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx)
 - **Build**: [build-it walkthrough](hours-build.html)
