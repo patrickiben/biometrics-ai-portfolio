@@ -105,6 +105,18 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <figcaption><b>4 &middot; What each owner gets.</b> An email with <b>Open update form</b> (no Smartsheet login needed) &rarr; a form with <em>only their row&rsquo;s four cells</em> &rarr; <b>Submit</b>.</figcaption></figure>
     <figure class="shot"><img src="nc_img/nc_step5_writeback.png" alt="The Smartsheet grid with the database-cut row updated in place to 75 percent with a new date, still exactly five rows, marked updated just now">
       <figcaption><b>5 &middot; Written back in place.</b> Still five rows &mdash; the data-cut row moved to <b>75%</b> with its new date, updated in place. No duplicate, no copy-paste, no code, and nobody opened the sheet.</figcaption></figure>
+    <h2>Why it stays current &mdash; the self-updating loop</h2>
+    <p>Those five screens wire up one loop that then runs on its own every week &mdash; nobody has to remember to chase updates:</p>
+    <div class="flow">
+      <div class="node sp"><b>1 &middot; The tracker grid</b><span>operational columns, one shared view &mdash; the grid you set up once</span></div>
+      <div class="arrow">&darr;&nbsp; every Monday, Smartsheet Automation fires on its own</div>
+      <div class="node cs"><b>2 &middot; Request an update (recurring)</b><span>each open row&rsquo;s owner is emailed a one-click mini-form of just their own cells</span></div>
+      <div class="arrow">&darr;</div>
+      <div class="node out"><b>3 &middot; The owner submits</b><span>fills their four cells and clicks Submit &mdash; no Smartsheet login, no opening the sheet</span></div>
+      <div class="arrow">&darr;&nbsp; the answer writes back into that row, in place, never a duplicate</div>
+      <div class="node sp"><b>4 &middot; The row is current again</b><span>and the cycle repeats next Monday (back to step 1), so the tracker never goes stale between check-ins</span></div>
+    </div>
+    <p class="muted">A native <b>Smartsheet form</b> feeds <em>new</em> rows into step 1, and <b>Outlook Rules</b> keep the study email organized alongside &mdash; both covered below.</p>
     <div class="callout tip"><b>A faithful re-creation of the Smartsheet UI</b>, built from Smartsheet&rsquo;s own help documentation &mdash; the menus, the visual workflow builder, and the update request are all real Smartsheet features. The full click-by-click instructions are in <a href="#build1">Make the tracker update itself</a>.</div>
   <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026.</div></section>
 <section id="arch" aria-label="How it works (no code)">

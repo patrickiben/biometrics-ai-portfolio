@@ -2208,12 +2208,12 @@ vertical-align: -.125em;
    
   <ul>
   <li><a href="#run-it" id="toc-run-it" class="nav-link active" data-scroll-target="#run-it">Run it</a></li>
-  <li><a href="#the-one-principle-separate-the-logic-from-the-ui" id="toc-the-one-principle-separate-the-logic-from-the-ui" class="nav-link" data-scroll-target="#the-one-principle-separate-the-logic-from-the-ui">The one principle: separate the logic from the UI</a></li>
-  <li><a href="#step-1---the-data-is-three-csvs" id="toc-step-1---the-data-is-three-csvs" class="nav-link" data-scroll-target="#step-1---the-data-is-three-csvs">Step 1 - the data is three CSVs</a></li>
-  <li><a href="#step-2---the-logic-turns-csvs-into-a-graph" id="toc-step-2---the-logic-turns-csvs-into-a-graph" class="nav-link" data-scroll-target="#step-2---the-logic-turns-csvs-into-a-graph">Step 2 - the logic turns CSVs into a graph</a></li>
-  <li><a href="#step-3---the-app-draws-it-with-visnetwork" id="toc-step-3---the-app-draws-it-with-visnetwork" class="nav-link" data-scroll-target="#step-3---the-app-draws-it-with-visnetwork">Step 3 - the app draws it with visNetwork</a></li>
-  <li><a href="#step-4---the-detail-panel-and-metrics" id="toc-step-4---the-detail-panel-and-metrics" class="nav-link" data-scroll-target="#step-4---the-detail-panel-and-metrics">Step 4 - the detail panel and metrics</a></li>
-  <li><a href="#verify-it" id="toc-verify-it" class="nav-link" data-scroll-target="#verify-it">Verify it</a></li>
+  <li><a href="#the-data-it-reads" id="toc-the-data-it-reads" class="nav-link" data-scroll-target="#the-data-it-reads">The data it reads</a></li>
+  <li><a href="#the-complete-logic-core-shinyrlogic.r" id="toc-the-complete-logic-core-shinyrlogic.r" class="nav-link" data-scroll-target="#the-complete-logic-core-shinyrlogic.r">The complete logic core: shiny/R/logic.R</a></li>
+  <li><a href="#the-complete-app-shinyapp.r" id="toc-the-complete-app-shinyapp.r" class="nav-link" data-scroll-target="#the-complete-app-shinyapp.r">The complete app: shiny/app.R</a></li>
+  <li><a href="#how-the-reactivity-works-part-by-part" id="toc-how-the-reactivity-works-part-by-part" class="nav-link" data-scroll-target="#how-the-reactivity-works-part-by-part">How the reactivity works, part by part</a></li>
+  <li><a href="#verify-it-without-a-browser" id="toc-verify-it-without-a-browser" class="nav-link" data-scroll-target="#verify-it-without-a-browser">Verify it without a browser</a></li>
+  <li><a href="#the-unit-tests-shiny-is-not-involved" id="toc-the-unit-tests-shiny-is-not-involved" class="nav-link" data-scroll-target="#the-unit-tests-shiny-is-not-involved">The unit tests: shiny is not involved</a></li>
   <li><a href="#make-it-yours" id="toc-make-it-yours" class="nav-link" data-scroll-target="#make-it-yours">Make it yours</a></li>
   </ul>
 </nav>
@@ -2225,7 +2225,7 @@ vertical-align: -.125em;
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Run and build the Study Knowledge Graph</h1>
-<p class="subtitle lead">The R Shiny graph, from running it to building it yourself</p>
+<p class="subtitle lead">The complete R Shiny graph, every line</p>
 </div>
 
 
@@ -2244,64 +2244,257 @@ vertical-align: -.125em;
 
 <section id="run-it" class="level2">
 <h2 class="anchored" data-anchor-id="run-it">Run it</h2>
+<p>The interactive tool is a real R Shiny app. From the package root:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;shiny&quot;</span>, <span class="st">&quot;bslib&quot;</span>, <span class="st">&quot;visNetwork&quot;</span>, <span class="st">&quot;igraph&quot;</span>))   <span class="co"># once</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;knowledge_vault/shiny&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Filter by note type, click a note to read its detail and neighbours.</p>
+<p>Filter by note type, click a note to read its detail and its neighbours, and read the graph metrics (notes, links, clusters, the hub). Synthetic study, no PHI.</p>
+<p>The whole app is two files, shown here in full, nothing elided:</p>
+<ul>
+<li><strong>shiny/R/logic.R</strong> — the pure graph logic (no Shiny). The <a href="kg-guide.html">visual guide</a>, the <a href="kg-graph.html">interactive graph</a>, and the unit tests call these same functions.</li>
+<li><strong>shiny/app.R</strong> — the UI and the reactive server that draws the graph.</li>
+</ul>
+<p>The one idea to hold onto: the <strong>graph math</strong> lives in <code>logic.R</code>, the <strong>screen</strong> lives in <code>app.R</code>. You can change what “important” means without touching the app, and change how it looks without touching the math.</p>
 </section>
-<section id="the-one-principle-separate-the-logic-from-the-ui" class="level2">
-<h2 class="anchored" data-anchor-id="the-one-principle-separate-the-logic-from-the-ui">The one principle: separate the logic from the UI</h2>
-<p>The graph logic lives in plain functions in <code>shiny/R/logic.R</code>. The app, the <a href="kg-guide.html">visual guide</a>, the <a href="kg-graph.html">interactive graph</a>, and the unit tests all call the same functions.</p>
-</section>
-<section id="step-1---the-data-is-three-csvs" class="level2">
-<h2 class="anchored" data-anchor-id="step-1---the-data-is-three-csvs">Step 1 - the data is three CSVs</h2>
+<section id="the-data-it-reads" class="level2">
+<h2 class="anchored" data-anchor-id="the-data-it-reads">The data it reads</h2>
+<p>Three CSVs are the whole vault. Edit them to point the app at your study (keep the column names): <a href="../shiny/data/nodes.csv"><code>nodes.csv</code></a>, <a href="../shiny/data/edges.csv"><code>edges.csv</code></a>, <a href="../shiny/data/types.csv"><code>types.csv</code></a>.</p>
 <pre><code>nodes.csv:  id, title, type, status, owner, cluster, summary
 edges.csv:  from, to
 types.csv:  type, label, color</code></pre>
-<p>The three CSVs <em>are</em> the vault. Add a note as a row, wire it up with edges, and it appears in the graph. Nothing about the study is hard-coded.</p>
+<p>Each row of <code>nodes.csv</code> is one study artifact (protocol, SAP, ADaM specs, DMP, monitoring plan, milestones). Each row of <code>edges.csv</code> is one dependency between two notes. <code>types.csv</code> gives every note type a label and a colour. Nothing about the study is hard-coded.</p>
 </section>
-<section id="step-2---the-logic-turns-csvs-into-a-graph" class="level2">
-<h2 class="anchored" data-anchor-id="step-2---the-logic-turns-csvs-into-a-graph">Step 2 - the logic turns CSVs into a graph</h2>
-<p><code>igraph</code> gives you the metrics for free - degree (how connected), betweenness (which note brokers between clusters):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>kg_igraph <span class="ot">&lt;-</span> <span class="cf">function</span>(kg)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  igraph<span class="sc">::</span><span class="fu">simplify</span>(igraph<span class="sc">::</span><span class="fu">graph_from_data_frame</span>(</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    kg<span class="sc">$</span>edges[, <span class="fu">c</span>(<span class="st">&quot;from&quot;</span>,<span class="st">&quot;to&quot;</span>)], <span class="at">directed =</span> <span class="cn">FALSE</span>, <span class="at">vertices =</span> kg<span class="sc">$</span>nodes[<span class="st">&quot;id&quot;</span>]))</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>kg_metrics <span class="ot">&lt;-</span> <span class="cf">function</span>(kg) {</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">kg_igraph</span>(kg); n <span class="ot">&lt;-</span> kg<span class="sc">$</span>nodes</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  n<span class="sc">$</span>degree      <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(igraph<span class="sc">::</span><span class="fu">degree</span>(g)[n<span class="sc">$</span>id])</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  n<span class="sc">$</span>betweenness <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(<span class="fu">round</span>(igraph<span class="sc">::</span><span class="fu">betweenness</span>(g, <span class="at">normalized =</span> <span class="cn">TRUE</span>)[n<span class="sc">$</span>id] <span class="sc">*</span> <span class="dv">100</span>))</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  n</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>kg_vis()</code> then shapes the nodes/edges for <code>visNetwork</code> (colour by type, size by degree, an HTML tooltip per note).</p>
+<section id="the-complete-logic-core-shinyrlogic.r" class="level2">
+<h2 class="anchored" data-anchor-id="the-complete-logic-core-shinyrlogic.r">The complete logic core: shiny/R/logic.R</h2>
+<p>Every line of the graph logic. <code>kg_load()</code> reads the three CSVs; <code>kg_igraph()</code> builds the undirected <code>igraph</code>; <code>kg_metrics()</code> attaches degree and betweenness to each note; <code>kg_neighbors()</code> lists what a note links to; <code>kg_stats()</code> is the value-box row (notes, links, clusters, the hub, the top broker); <code>kg_vis()</code> shapes nodes and edges for <code>visNetwork</code>. Nothing here depends on Shiny, so you can test it in a plain console.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># logic.R - pure graph logic for the Study Knowledge Graph (CP-101 KB).</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># The vault is a set of linked notes; this computes the graph metrics the app,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># the Quarto page, and the tests all share. No PHI. Synthetic study.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">suppressWarnings</span>(<span class="fu">suppressMessages</span>(<span class="fu">library</span>(igraph)))</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>kg_load <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">dir =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  cand <span class="ot">&lt;-</span> <span class="fu">c</span>(dir, <span class="st">&quot;data&quot;</span>, <span class="st">&quot;../data&quot;</span>, <span class="st">&quot;shiny/data&quot;</span>, <span class="st">&quot;knowledge_vault/shiny/data&quot;</span>)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  cand <span class="ot">&lt;-</span> <span class="fu">Filter</span>(<span class="fu">Negate</span>(is.null), cand)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  base <span class="ot">&lt;-</span> <span class="fu">Find</span>(<span class="cf">function</span>(d) <span class="fu">file.exists</span>(<span class="fu">file.path</span>(d, <span class="st">&quot;nodes.csv&quot;</span>)), cand)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(base)) <span class="fu">stop</span>(<span class="st">&quot;Cannot find nodes.csv&quot;</span>)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  rd <span class="ot">&lt;-</span> <span class="cf">function</span>(f) utils<span class="sc">::</span><span class="fu">read.csv</span>(<span class="fu">file.path</span>(base, f), <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">nodes =</span> <span class="fu">rd</span>(<span class="st">&quot;nodes.csv&quot;</span>), <span class="at">edges =</span> <span class="fu">rd</span>(<span class="st">&quot;edges.csv&quot;</span>), <span class="at">types =</span> <span class="fu">rd</span>(<span class="st">&quot;types.csv&quot;</span>))</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>kg_igraph <span class="ot">&lt;-</span> <span class="cf">function</span>(kg) {</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> igraph<span class="sc">::</span><span class="fu">graph_from_data_frame</span>(kg<span class="sc">$</span>edges[, <span class="fu">c</span>(<span class="st">&quot;from&quot;</span>, <span class="st">&quot;to&quot;</span>)],</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">directed =</span> <span class="cn">FALSE</span>, <span class="at">vertices =</span> kg<span class="sc">$</span>nodes[<span class="st">&quot;id&quot;</span>])</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  igraph<span class="sc">::</span><span class="fu">simplify</span>(g)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Attach degree + betweenness to the node frame (drives node size / importance).</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>kg_metrics <span class="ot">&lt;-</span> <span class="cf">function</span>(kg) {</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  g <span class="ot">&lt;-</span> <span class="fu">kg_igraph</span>(kg)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> kg<span class="sc">$</span>nodes</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  deg <span class="ot">&lt;-</span> igraph<span class="sc">::</span><span class="fu">degree</span>(g)[n<span class="sc">$</span>id]</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>  btw <span class="ot">&lt;-</span> <span class="fu">round</span>(igraph<span class="sc">::</span><span class="fu">betweenness</span>(g, <span class="at">normalized =</span> <span class="cn">TRUE</span>)[n<span class="sc">$</span>id] <span class="sc">*</span> <span class="dv">100</span>)</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  n<span class="sc">$</span>degree <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(deg)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  n<span class="sc">$</span>betweenness <span class="ot">&lt;-</span> <span class="fu">as.integer</span>(btw)</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>  n</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>kg_neighbors <span class="ot">&lt;-</span> <span class="cf">function</span>(kg, id) {</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>  e <span class="ot">&lt;-</span> kg<span class="sc">$</span>edges</span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>  ids <span class="ot">&lt;-</span> <span class="fu">unique</span>(<span class="fu">c</span>(e<span class="sc">$</span>to[e<span class="sc">$</span>from <span class="sc">==</span> id], e<span class="sc">$</span>from[e<span class="sc">$</span>to <span class="sc">==</span> id]))</span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>  kg<span class="sc">$</span>nodes[kg<span class="sc">$</span>nodes<span class="sc">$</span>id <span class="sc">%in%</span> ids, <span class="fu">c</span>(<span class="st">&quot;id&quot;</span>, <span class="st">&quot;title&quot;</span>, <span class="st">&quot;type&quot;</span>)]</span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>kg_stats <span class="ot">&lt;-</span> <span class="cf">function</span>(kg) {</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">kg_metrics</span>(kg)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  hub <span class="ot">&lt;-</span> n[<span class="fu">order</span>(<span class="sc">-</span>n<span class="sc">$</span>degree), ][<span class="dv">1</span>, ]</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>  broker <span class="ot">&lt;-</span> n[<span class="fu">order</span>(<span class="sc">-</span>n<span class="sc">$</span>betweenness), ][<span class="dv">1</span>, ]</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">n_nodes =</span> <span class="fu">nrow</span>(n), <span class="at">n_edges =</span> <span class="fu">nrow</span>(kg<span class="sc">$</span>edges),</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>       <span class="at">n_clusters =</span> <span class="fu">length</span>(<span class="fu">unique</span>(n<span class="sc">$</span>cluster)), <span class="at">n_types =</span> <span class="fu">length</span>(<span class="fu">unique</span>(n<span class="sc">$</span>type)),</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>       <span class="at">hub_id =</span> hub<span class="sc">$</span>id, <span class="at">hub_title =</span> hub<span class="sc">$</span>title, <span class="at">hub_degree =</span> hub<span class="sc">$</span>degree,</span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>       <span class="at">broker_id =</span> broker<span class="sc">$</span>id, <span class="at">broker_title =</span> broker<span class="sc">$</span>title,</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>       <span class="at">by_type =</span> <span class="fu">as.data.frame</span>(<span class="fu">table</span>(<span class="at">type =</span> n<span class="sc">$</span>type)),</span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>       <span class="at">orphans =</span> <span class="fu">sum</span>(n<span class="sc">$</span>degree <span class="sc">==</span> <span class="dv">0</span>))</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Nodes/edges shaped for visNetwork (id/label/group/value/color/title + from/to).</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>kg_vis <span class="ot">&lt;-</span> <span class="cf">function</span>(kg) {</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">kg_metrics</span>(kg)</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  col <span class="ot">&lt;-</span> <span class="fu">setNames</span>(kg<span class="sc">$</span>types<span class="sc">$</span>color, kg<span class="sc">$</span>types<span class="sc">$</span>type)</span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  nodes <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>    <span class="at">id =</span> n<span class="sc">$</span>id, <span class="at">label =</span> n<span class="sc">$</span>title, <span class="at">group =</span> n<span class="sc">$</span>type,</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>    <span class="at">value =</span> <span class="fu">pmax</span>(<span class="dv">4</span>, n<span class="sc">$</span>degree), <span class="at">color =</span> <span class="fu">unname</span>(col[n<span class="sc">$</span>type]),</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="fu">sprintf</span>(<span class="st">&quot;&lt;b&gt;%s&lt;/b&gt;&lt;br&gt;%s · %s&lt;br&gt;owner: %s&lt;br&gt;%s&quot;</span>,</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>             n<span class="sc">$</span>title, n<span class="sc">$</span>type, n<span class="sc">$</span>status, n<span class="sc">$</span>owner, n<span class="sc">$</span>summary),</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>  edges <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">from =</span> kg<span class="sc">$</span>edges<span class="sc">$</span>from, <span class="at">to =</span> kg<span class="sc">$</span>edges<span class="sc">$</span>to, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">nodes =</span> nodes, <span class="at">edges =</span> edges, <span class="at">legend =</span> kg<span class="sc">$</span>types)</span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Read the metrics: <code>kg_metrics()</code> calls <code>igraph::degree()</code> (how many notes link to a note, which drives node size) and <code>igraph::betweenness()</code> (how much a note sits <em>between</em> clusters, which finds the broker). <code>kg_stats()</code> then sorts by each to pick the hub and the broker. Those numbers are computed from the edges, never asserted.</p>
 </section>
-<section id="step-3---the-app-draws-it-with-visnetwork" class="level2">
-<h2 class="anchored" data-anchor-id="step-3---the-app-draws-it-with-visnetwork">Step 3 - the app draws it with visNetwork</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>output<span class="sc">$</span>net <span class="ot">&lt;-</span> <span class="fu">renderVisNetwork</span>({</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">visNetwork</span>(<span class="fu">sub</span>()<span class="sc">$</span>nodes, <span class="fu">sub</span>()<span class="sc">$</span>edges, <span class="at">background =</span> <span class="st">&quot;#141925&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="fu">visOptions</span>(<span class="at">highlightNearest =</span> <span class="fu">list</span>(<span class="at">enabled =</span> <span class="cn">TRUE</span>, <span class="at">degree =</span> <span class="dv">1</span>, <span class="at">hover =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">visPhysics</span>(<span class="at">solver =</span> <span class="st">&quot;forceAtlas2Based&quot;</span>) <span class="sc">|&gt;</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">visLegend</span>(<span class="at">useGroups =</span> <span class="cn">FALSE</span>, <span class="at">addNodes =</span> legend) <span class="sc">|&gt;</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">visEvents</span>(<span class="at">selectNode =</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      <span class="st">&quot;function(n){ Shiny.setInputValue(&#39;kg_sel&#39;, n.nodes[0], {priority:&#39;event&#39;}); }&quot;</span>)</span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>The type checkboxes drive <code>sub()</code> (a filtered nodes/edges list), so re-checking a type re-draws the subgraph. Clicking a node fires <code>visEvents</code> -&gt; <code>input$kg_sel</code>, which the detail panel reads.</p>
+<section id="the-complete-app-shinyapp.r" class="level2">
+<h2 class="anchored" data-anchor-id="the-complete-app-shinyapp.r">The complete app: shiny/app.R</h2>
+<p>Every line of the UI and server. Read it top to bottom; the walk-through below points at the parts that matter.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ===========================================================================</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app.R - Study Knowledge Graph (Shiny + visNetwork).</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># The CP-101 study knowledge base as an interactive, force-directed graph of</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># linked notes. Filter by note type, click a node to see its detail and its</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># neighbours, and read the graph metrics (degree, brokers, clusters). No PHI.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run:  shiny::runApp(&quot;knowledge_vault/shiny&quot;)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Data: data/nodes.csv + edges.csv + types.csv (swap in your own vault).</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># ===========================================================================</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny); <span class="fu">library</span>(bslib); <span class="fu">library</span>(visNetwork)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;R/logic.R&quot;</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>kg <span class="ot">&lt;-</span> <span class="fu">kg_load</span>(<span class="st">&quot;data&quot;</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>V  <span class="ot">&lt;-</span> <span class="fu">kg_vis</span>(kg)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">page_sidebar</span>(</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Study Knowledge Graph&quot;</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">bs_theme</span>(<span class="at">version =</span> <span class="dv">5</span>, <span class="at">bootswatch =</span> <span class="st">&quot;darkly&quot;</span>, <span class="at">primary =</span> <span class="st">&quot;#5b8cff&quot;</span>),</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="at">sidebar =</span> <span class="fu">sidebar</span>(</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="dv">320</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small text-muted&quot;</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;The CP-101 study knowledge base as a linked-note graph. Filter by type, &quot;</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;click a node for its detail and neighbours. Synthetic, no PHI.&quot;</span>),</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">checkboxGroupInput</span>(<span class="st">&quot;types&quot;</span>, <span class="st">&quot;Show note types&quot;</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>      <span class="at">choices =</span> <span class="fu">setNames</span>(kg<span class="sc">$</span>types<span class="sc">$</span>type, kg<span class="sc">$</span>types<span class="sc">$</span>label), <span class="at">selected =</span> kg<span class="sc">$</span>types<span class="sc">$</span>type),</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">selectInput</span>(<span class="st">&quot;focus&quot;</span>, <span class="st">&quot;Focus a note&quot;</span>, <span class="at">choices =</span> <span class="fu">c</span>(<span class="st">&quot;(none)&quot;</span> <span class="ot">=</span> <span class="st">&quot;&quot;</span>, <span class="fu">setNames</span>(kg<span class="sc">$</span>nodes<span class="sc">$</span>id, kg<span class="sc">$</span>nodes<span class="sc">$</span>title))),</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hr</span>(),</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">uiOutput</span>(<span class="st">&quot;detail&quot;</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout_columns</span>(</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_widths =</span> <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">3</span>,<span class="dv">3</span>,<span class="dv">3</span>),</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Notes&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;k_nodes&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;secondary&quot;</span>),</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Links&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;k_edges&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;secondary&quot;</span>),</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Clusters&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;k_clusters&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;info&quot;</span>),</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Hub links (CP-101)&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;k_hub&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;warning&quot;</span>)</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Knowledge graph (drag to explore · click a note)&quot;</span>),</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>       <span class="fu">visNetworkOutput</span>(<span class="st">&quot;net&quot;</span>, <span class="at">height =</span> <span class="st">&quot;560px&quot;</span>))</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  st <span class="ot">&lt;-</span> <span class="fu">kg_stats</span>(kg)</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>k_nodes    <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">as.character</span>(st<span class="sc">$</span>n_nodes))</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>k_edges    <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">as.character</span>(st<span class="sc">$</span>n_edges))</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>k_clusters <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">as.character</span>(st<span class="sc">$</span>n_clusters))</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>k_hub      <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">as.character</span>(st<span class="sc">$</span>hub_degree))</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  sub <span class="ot">&lt;-</span> <span class="fu">reactive</span>({</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    keep <span class="ot">&lt;-</span> V<span class="sc">$</span>nodes<span class="sc">$</span>group <span class="sc">%in%</span> input<span class="sc">$</span>types</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    ns <span class="ot">&lt;-</span> V<span class="sc">$</span>nodes[keep, ]</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    es <span class="ot">&lt;-</span> V<span class="sc">$</span>edges[V<span class="sc">$</span>edges<span class="sc">$</span>from <span class="sc">%in%</span> ns<span class="sc">$</span>id <span class="sc">&amp;</span> V<span class="sc">$</span>edges<span class="sc">$</span>to <span class="sc">%in%</span> ns<span class="sc">$</span>id, ]</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">list</span>(<span class="at">nodes =</span> ns, <span class="at">edges =</span> es)</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>net <span class="ot">&lt;-</span> <span class="fu">renderVisNetwork</span>({</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    s <span class="ot">&lt;-</span> <span class="fu">sub</span>()</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    legend <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">label =</span> kg<span class="sc">$</span>types<span class="sc">$</span>label, <span class="at">color =</span> kg<span class="sc">$</span>types<span class="sc">$</span>color,</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>                         <span class="at">shape =</span> <span class="st">&quot;dot&quot;</span>, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">visNetwork</span>(s<span class="sc">$</span>nodes, s<span class="sc">$</span>edges, <span class="at">background =</span> <span class="st">&quot;#141925&quot;</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>      <span class="fu">visNodes</span>(<span class="at">font =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">&quot;#e9edf7&quot;</span>, <span class="at">size =</span> <span class="dv">16</span>), <span class="at">borderWidth =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>      <span class="fu">visEdges</span>(<span class="at">color =</span> <span class="fu">list</span>(<span class="at">color =</span> <span class="st">&quot;#2A3242&quot;</span>, <span class="at">highlight =</span> <span class="st">&quot;#5b8cff&quot;</span>), <span class="at">smooth =</span> <span class="cn">FALSE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>      <span class="fu">visOptions</span>(<span class="at">highlightNearest =</span> <span class="fu">list</span>(<span class="at">enabled =</span> <span class="cn">TRUE</span>, <span class="at">degree =</span> <span class="dv">1</span>, <span class="at">hover =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>      <span class="fu">visPhysics</span>(<span class="at">solver =</span> <span class="st">&quot;forceAtlas2Based&quot;</span>,</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>                 <span class="at">forceAtlas2Based =</span> <span class="fu">list</span>(<span class="at">gravitationalConstant =</span> <span class="sc">-</span><span class="dv">55</span>), <span class="at">stabilization =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>      <span class="fu">visLegend</span>(<span class="at">useGroups =</span> <span class="cn">FALSE</span>, <span class="at">addNodes =</span> legend, <span class="at">width =</span> <span class="fl">0.18</span>, <span class="at">position =</span> <span class="st">&quot;left&quot;</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>      <span class="fu">visEvents</span>(<span class="at">selectNode =</span> <span class="st">&quot;function(n){ Shiny.setInputValue(&#39;kg_sel&#39;, n.nodes[0], {priority:&#39;event&#39;}); }&quot;</span>)</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>focus, {</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">nzchar</span>(input<span class="sc">$</span>focus)) <span class="fu">visNetworkProxy</span>(<span class="st">&quot;net&quot;</span>) <span class="sc">|&gt;</span> <span class="fu">visFocus</span>(<span class="at">id =</span> input<span class="sc">$</span>focus, <span class="at">scale =</span> <span class="fl">1.2</span>) <span class="sc">|&gt;</span></span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>      <span class="fu">visSelectNodes</span>(<span class="at">id =</span> input<span class="sc">$</span>focus)</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>  selected <span class="ot">&lt;-</span> <span class="fu">reactiveVal</span>(<span class="st">&quot;hub&quot;</span>)</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>kg_sel, <span class="fu">selected</span>(input<span class="sc">$</span>kg_sel))</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>focus, <span class="cf">if</span> (<span class="fu">nzchar</span>(input<span class="sc">$</span>focus)) <span class="fu">selected</span>(input<span class="sc">$</span>focus))</span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>detail <span class="ot">&lt;-</span> <span class="fu">renderUI</span>({</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>    id <span class="ot">&lt;-</span> <span class="fu">selected</span>(); n <span class="ot">&lt;-</span> kg<span class="sc">$</span>nodes[kg<span class="sc">$</span>nodes<span class="sc">$</span>id <span class="sc">==</span> id, ]</span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="sc">!</span><span class="fu">nrow</span>(n)) <span class="fu">return</span>(<span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small text-muted&quot;</span>, <span class="st">&quot;Click a note in the graph.&quot;</span>))</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>    nb <span class="ot">&lt;-</span> <span class="fu">kg_neighbors</span>(kg, id)</span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>    col <span class="ot">&lt;-</span> <span class="fu">setNames</span>(kg<span class="sc">$</span>types<span class="sc">$</span>color, kg<span class="sc">$</span>types<span class="sc">$</span>type)[n<span class="sc">$</span>type]</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tagList</span>(</span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;fw-bold&quot;</span>, n<span class="sc">$</span>title),</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small&quot;</span>, tags<span class="sc">$</span><span class="fu">span</span>(<span class="at">style =</span> <span class="fu">sprintf</span>(<span class="st">&quot;color:%s;font-weight:700&quot;</span>, col), n<span class="sc">$</span>type),</span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>          <span class="st">&quot; · &quot;</span>, n<span class="sc">$</span>status, <span class="st">&quot; · &quot;</span>, n<span class="sc">$</span>owner),</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small text-muted my-1&quot;</span>, n<span class="sc">$</span>summary),</span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small&quot;</span>, tags<span class="sc">$</span><span class="fu">b</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Links to %d notes: &quot;</span>, <span class="fu">nrow</span>(nb))),</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>          <span class="fu">paste</span>(nb<span class="sc">$</span>title, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>))</span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(ui, server)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
-<section id="step-4---the-detail-panel-and-metrics" class="level2">
-<h2 class="anchored" data-anchor-id="step-4---the-detail-panel-and-metrics">Step 4 - the detail panel and metrics</h2>
-<p><code>kg_neighbors(kg, id)</code> lists the notes a selected note links to; <code>kg_stats(kg)</code> gives the value-box numbers (notes, links, clusters, the hub). All from <code>igraph</code>.</p>
+<section id="how-the-reactivity-works-part-by-part" class="level2">
+<h2 class="anchored" data-anchor-id="how-the-reactivity-works-part-by-part">How the reactivity works, part by part</h2>
+<p>Follow the data, not the layout. Here is the chain that makes a checkbox redraw the graph and a click fill the detail panel.</p>
+<p><strong>The graph is loaded once, up front.</strong> <code>kg &lt;- kg_load(&quot;data&quot;)</code> and <code>V &lt;- kg_vis(kg)</code> run when the app starts, so the shaped nodes and edges (<code>V$nodes</code>, <code>V$edges</code>) are ready before any input. The value-box numbers come from <code>st &lt;- kg_stats(kg)</code> in the server.</p>
+<p><strong>The type checkboxes drive one reactive.</strong> The <code>sub</code> reactive keeps only the nodes whose <code>group</code> is in <code>input$types</code>, then keeps only the edges whose both ends survive. Re-checking a type re-runs <code>sub()</code>, which is the only thing <code>renderVisNetwork</code> reads, so the subgraph redraws. You never redraw by hand.</p>
+<p><strong>Drawing the graph reads that reactive.</strong> <code>output$net</code> renders the <code>visNetwork</code> from <code>sub()</code> and attaches a <code>selectNode</code> event handler. That JavaScript callback fires <code>Shiny.setInputValue(&quot;kg_sel&quot;, nodes.nodes[0])</code> whenever you click a node, which is how a click in the browser becomes an R input.</p>
+<p><strong>Selecting a note fills the detail panel.</strong> <code>selected</code> is a <code>reactiveVal</code> that starts at <code>&quot;hub&quot;</code>. <code>observeEvent(input$kg_sel, selected(input$kg_sel))</code> updates it on a click, and the focus dropdown updates it too. <code>output$detail</code> reads <code>selected()</code>, looks up that note, and calls <code>kg_neighbors(kg, id)</code> to list what it links to.</p>
+<p><strong>Focus just recenters.</strong> The <code>input$focus</code> observer uses a <code>visNetworkProxy</code> to call <code>visFocus()</code> and <code>visSelectNodes()</code> on the chosen note, without redrawing the whole graph.</p>
+<p><strong>Everything else just reads the loaded data.</strong> The value boxes read <code>st</code>, the graph reads <code>sub()</code>, and the detail panel reads <code>selected()</code> plus <code>kg_neighbors()</code>. Change the CSVs and every one of these updates on the next run.</p>
 </section>
-<section id="verify-it" class="level2">
-<h2 class="anchored" data-anchor-id="verify-it">Verify it</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>Rscript knowledge_vault<span class="sc">/</span>tests<span class="sc">/</span>test<span class="sc">-</span>logic.R     <span class="co"># 28 notes, 59 links, hub is most-connected</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="verify-it-without-a-browser" class="level2">
+<h2 class="anchored" data-anchor-id="verify-it-without-a-browser">Verify it without a browser</h2>
+<p>The graph logic has no Shiny in it, so you can drive it in a plain console. This is how the logic was checked before it was ever opened in a browser:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;knowledge_vault/shiny/R/logic.R&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>kg <span class="ot">&lt;-</span> <span class="fu">kg_load</span>(<span class="st">&quot;knowledge_vault/shiny/data&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>st <span class="ot">&lt;-</span> <span class="fu">kg_stats</span>(kg)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>st<span class="sc">$</span>n_nodes           <span class="co"># number of notes</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>st<span class="sc">$</span>n_edges           <span class="co"># number of links</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>st<span class="sc">$</span>hub_title         <span class="co"># the most-connected note</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>st<span class="sc">$</span>broker_title      <span class="co"># the note that most brokers between clusters</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(<span class="fu">kg_neighbors</span>(kg, <span class="st">&quot;sap&quot;</span>))   <span class="co"># how many notes the SAP links to</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="the-unit-tests-shiny-is-not-involved" class="level2">
+<h2 class="anchored" data-anchor-id="the-unit-tests-shiny-is-not-involved">The unit tests: shiny is not involved</h2>
+<p>The graph logic is covered by a zero-dependency test you run with <code>Rscript</code>. It is the same file the guide and the interactive graph trust:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env Rscript</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Unit tests for the Study Knowledge Graph logic. Needs igraph.</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run:  Rscript knowledge_vault/tests/test-logic.R</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span> <span class="fu">Find</span>(file.exists, <span class="fu">c</span>(<span class="st">&quot;../shiny/R/logic.R&quot;</span>, <span class="st">&quot;knowledge_vault/shiny/R/logic.R&quot;</span>, <span class="st">&quot;shiny/R/logic.R&quot;</span>))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="st">&quot;found logic.R&quot;</span> <span class="ot">=</span> <span class="sc">!</span><span class="fu">is.null</span>(lp)); <span class="fu">source</span>(lp)</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>dir <span class="ot">&lt;-</span> <span class="fu">Find</span>(<span class="cf">function</span>(d) <span class="fu">file.exists</span>(<span class="fu">file.path</span>(d, <span class="st">&quot;nodes.csv&quot;</span>)),</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>            <span class="fu">c</span>(<span class="st">&quot;../shiny/data&quot;</span>, <span class="st">&quot;knowledge_vault/shiny/data&quot;</span>, <span class="st">&quot;shiny/data&quot;</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>kg <span class="ot">&lt;-</span> <span class="fu">kg_load</span>(dir)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>s  <span class="ot">&lt;-</span> <span class="fu">kg_stats</span>(kg)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>v  <span class="ot">&lt;-</span> <span class="fu">kg_vis</span>(kg)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;28 notes&quot;</span>                 <span class="ot">=</span> s<span class="sc">$</span>n_nodes <span class="sc">==</span> <span class="dv">28</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;59 links&quot;</span>                 <span class="ot">=</span> s<span class="sc">$</span>n_edges <span class="sc">==</span> <span class="dv">59</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;hub is most-connected&quot;</span>    <span class="ot">=</span> s<span class="sc">$</span>hub_id <span class="sc">==</span> <span class="st">&quot;hub&quot;</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;no orphan notes&quot;</span>          <span class="ot">=</span> s<span class="sc">$</span>orphans <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;every vis node has colour&quot;</span><span class="ot">=</span> <span class="fu">all</span>(<span class="sc">!</span><span class="fu">is.na</span>(v<span class="sc">$</span>nodes<span class="sc">$</span>color)),</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;no India/NA in owners&quot;</span>    <span class="ot">=</span> <span class="sc">!</span><span class="fu">any</span>(<span class="fu">grepl</span>(<span class="st">&quot;India|</span><span class="sc">\\</span><span class="st">(NA</span><span class="sc">\\</span><span class="st">)&quot;</span>, kg<span class="sc">$</span>nodes<span class="sc">$</span>owner)),</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;SAP links to 7 notes&quot;</span>     <span class="ot">=</span> <span class="fu">nrow</span>(<span class="fu">kg_neighbors</span>(kg, <span class="st">&quot;sap&quot;</span>)) <span class="sc">==</span> <span class="dv">7</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Knowledge-graph logic: all tests passed</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Run it:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Rscript knowledge_vault<span class="sc">/</span>tests<span class="sc">/</span>test<span class="sc">-</span>logic.R   <span class="co"># prints: Knowledge-graph logic: all tests passed</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="make-it-yours" class="level2">
 <h2 class="anchored" data-anchor-id="make-it-yours">Make it yours</h2>
 <ul>
-<li><strong>Add a note:</strong> a row in <code>nodes.csv</code> + its links in <code>edges.csv</code>.</li>
-<li><strong>Add a category:</strong> a row in <code>types.csv</code> (type, label, colour).</li>
-<li><strong>Change what “important” means:</strong> size nodes by <code>betweenness</code> instead of <code>degree</code> in <code>kg_vis()</code>.</li>
+<li><strong>Add a note:</strong> a row in <a href="../shiny/data/nodes.csv"><code>nodes.csv</code></a> plus its links in <a href="../shiny/data/edges.csv"><code>edges.csv</code></a>. It appears in the graph, sized by how many notes link to it.</li>
+<li><strong>Add a category:</strong> a row in <a href="../shiny/data/types.csv"><code>types.csv</code></a> (type, label, colour), and it becomes a checkbox and a legend entry.</li>
+<li><strong>Change what “important” means:</strong> size nodes by <code>betweenness</code> instead of <code>degree</code> in <code>kg_vis()</code>. Nothing else changes, because everything reads that one function.</li>
+<li><strong>Add a panel:</strong> another <code>card()</code> in the UI and a matching <code>render*</code> in the server.</li>
 </ul>
-<p>Same principle as the other consoles (logic core, data as CSV, one render path): the <a href="../../lifecycle_dashboard/quarto/lifecycle-build.html">lifecycle monitor</a> and the <a href="../../risk_monitor/quarto/risk-build.html">risk console</a>.</p>
+<p>The same skeleton, a logic core plus data as CSV plus one render path, builds the <a href="../../lifecycle_dashboard/quarto/lifecycle-build.html">lifecycle monitor</a> and the <a href="../../uat_irt/quarto/uat-build.html">UAT tracker</a> too.</p>
 </section>
 
 </main>

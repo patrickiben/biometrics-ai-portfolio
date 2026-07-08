@@ -6,9 +6,11 @@ format:
     theme: dark
     embed-resources: true
     slide-number: true
+    smaller: true
     transition: fade
     fig-width: 9
-    fig-height: 4.2
+    fig-height: 3.8
+mermaid-format: svg
 execute:
   echo: false
   warning: false
@@ -31,19 +33,16 @@ s <- uat_summary(d$tests, d$defects, d$trace)
 You confirm, in a test environment, that the vendor's randomization and drug-supply build does **exactly** what your specs say, before a single real participant is randomized.
 
 ```{mermaid}
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','fontSize':'20px','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
-  URS[URS + specs] --> TC[Test cases]
-  TC --> EX[Execute in<br/>staging IRT]
-  EX --> DEF[Defects]
-  DEF --> EX
-  EX --> TR[Traceability]
-  TR --> GATE{{Go-live gate}}
-  GATE --> PROD[Production]
+  URS["URS + specs"] --> TC["Test cases"] --> EX["Execute in<br/>staging IRT"]
+  EX --> DEF["Defects"] --> EX
+  EX --> TR["Traceability"] --> GATE{{"Go-live gate"}} --> PROD["Production"]
 ```
 
 Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
 
-## Where it runs: the systems
+## Where it runs: the systems {.scrollable}
 
 - **Staging IRT / RTSM** (vendor): the web app you operate in a browser, plus the approved test list.
 - **You, the biostatistician:** execute each case, capture dated screenshot evidence, and transcribe results into your workbook.
@@ -52,27 +51,27 @@ Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
 
 The workbook does not connect to the IRT. You transcribe on purpose, so the record is attributable and stands alone for an auditor.
 
-## The live gate, computed now
+## The live gate, computed now {.scrollable}
 
 ```{r results='asis'}
-tick <- function(ok, txt) sprintf('<div style="margin:6px 0;font-size:26px"><span style="color:%s;font-weight:700">%s</span> %s</div>',
+tick <- function(ok, txt) sprintf('<div style="margin:6px 0;font-size:24px"><span style="color:%s;font-weight:700">%s</span> %s</div>',
   if (ok) "#43c47d" else "#e8657a", if (ok) "&#10004;" else "&#10008;", txt)
 bg <- if (g$go) "#1e3a28" else "#3a1e24"; bd <- if (g$go) "#43c47d" else "#e8657a"
-cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:12px;padding:20px 24px;max-width:820px">', bg, bd))
-cat(sprintf('<div style="font-size:34px;font-weight:700;margin-bottom:10px;color:#e9edf7">%s</div>', g$verdict))
+cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:12px;padding:18px 22px;max-width:820px">', bg, bd))
+cat(sprintf('<div style="font-size:30px;font-weight:700;margin-bottom:8px;color:#e9edf7">%s</div>', g$verdict))
 cat(tick(g$crit_fail == 0, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
 cat(tick(g$open_cm == 0,  sprintf("<b>%d</b> open critical/major defect(s)", g$open_cm)))
 cat(tick(g$trace_gap == 0, sprintf("<b>%d</b> requirement(s) without a test", g$trace_gap)))
 cat('</div>')
 ```
 
-The gate is **conjunctive**: all critical pass **AND** 0 open critical/major defects **AND** 100% traceability.
+**Conjunctive:** all critical pass **AND** 0 open critical/major defects **AND** 100% traceability.
 
 ## Snapshot
 
 ```{r results='asis'}
 box <- function(label, value, col) sprintf(
-  '<div style="flex:1;min-width:150px;background:#222630;border:1px solid #3a4157;border-radius:12px;padding:18px 20px;margin:6px"><div style="font-size:40px;font-weight:700;color:%s;font-family:monospace">%s</div><div style="font-size:15px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em">%s</div></div>', col, value, label)
+  '<div style="flex:1;min-width:140px;background:#222630;border:1px solid #3a4157;border-radius:12px;padding:16px 18px;margin:6px"><div style="font-size:34px;font-weight:700;color:%s;font-family:monospace">%s</div><div style="font-size:14px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em">%s</div></div>', col, value, label)
 cat('<div style="display:flex;flex-wrap:wrap;gap:4px">')
 cat(box("Test scripts", s$total, "#e9edf7"))
 cat(box("Passed", s$pass, "#43c47d"))
@@ -93,7 +92,7 @@ ggplot(df, aes(Freq, Area, fill = Status)) +
   scale_fill_manual(values = c("Pass"="#43c47d","Fail"="#e8657a","Blocked"="#e0a64c",
     "In Progress"="#5b8cff","Not Run"="#6b7794"), drop = FALSE) +
   labs(x = "Tests", y = NULL, fill = NULL) +
-  theme_minimal(base_size = 14) +
+  theme_minimal(base_size = 13) +
   theme(legend.position = "top", plot.background = element_rect(fill="#222630", colour=NA),
         panel.background = element_rect(fill="#222630", colour=NA),
         text = element_text(colour="#e9edf7"), axis.text = element_text(colour="#c5cee4"),
@@ -101,7 +100,7 @@ ggplot(df, aes(Freq, Area, fill = Status)) +
         legend.key = element_rect(fill="#222630", colour=NA))
 ```
 
-## How to write an executable test
+## How to write an executable test {.scrollable}
 
 **RAND-02, stratified allocation.** A good test has a specific, verifiable expected result, not "works correctly".
 
@@ -110,7 +109,7 @@ ggplot(df, aes(Freq, Area, fill = Status)) +
 - **Expected:** allocated to the **next unused <70 kg / block-1 entry**; arm, sequence, and kit match the list; the investigator sees a **kit ID only**, not the arm.
 - **Verify:** compare cell-for-cell across every stratum and both arms, not one happy-path participant.
 
-## Severity drives the gate
+## Severity drives the gate {.scrollable}
 
 ```{r results='asis'}
 cat('
@@ -124,7 +123,7 @@ cat('
 
 One open Critical or Major defect holds the gate. That is the whole point: severity, not count, decides.
 
-## Run it, and build it
+## Run it, and build it {.scrollable}
 
 The interactive tool is a real R Shiny app you own:
 
@@ -133,11 +132,11 @@ shiny::runApp("uat_irt/shiny")
 # needs: install.packages(c("shiny","bslib","DT","ggplot2"))
 ```
 
-Mark a test Pass/Fail, close a defect, and the KPIs + go-live gate recompute live. The gate math lives in `shiny/R/logic.R` (~50 lines), shared by the app, these slides, and the unit tests. Change the CSV to your study's tests and it is your tracker.
+Mark a test Pass/Fail, close a defect, and the KPIs and go-live gate recompute live. The gate math lives in `shiny/R/logic.R`, shared by the app, these slides, and the unit tests. Change the CSV to your study's tests and it is your tracker.
 
-## Thank you
+## Pick your mode {.scrollable}
 
-- **Explore / run:** the [Shiny app](../shiny)
+- **Explore / run:** [Run &amp; build the Shiny app](uat-build.html)
 - **Share (no R):** the [dashboard](uat-dashboard.html)
 - **Skim:** the [one-page cheat-sheet](uat-onepager.pdf)
 - **Read:** the [full guide](uat-guide.html)

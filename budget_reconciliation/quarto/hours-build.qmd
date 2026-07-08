@@ -1,6 +1,6 @@
 ---
 title: "Run and build the find-hours app"
-subtitle: "The R Shiny app, from running it to building it yourself"
+subtitle: "The complete R Shiny app, every line"
 format:
   html:
     theme: darkly
@@ -10,19 +10,21 @@ format:
     embed-resources: true
     highlight-style: github-dark
     code-copy: true
+    code-fold: false
 execute:
   eval: false
+  echo: true
 ---
 
 Hours / effort only throughout: no dollars, rates, or headcount. The one equation:
 
 ```
-NET FINDABLE = (Σ Planned + Contingency) − Σ EAC
+NET FINDABLE = (Sum of Planned + Contingency) - Sum of EAC
 ```
 
 ## Run it
 
-From the package root:
+The interactive tool is a real R Shiny app. From the package root:
 
 ```r
 install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
@@ -33,125 +35,117 @@ Edit a task's EAC, change the ask, and the net-findable roll-up and the
 absorbable-vs-change-order verdict recompute live. Download the change-order draft when
 there is a shortfall, and the reconciled ledger to CSV for the [Excel workbook](../Hours_Budget_Reconciliation_Workbook.xlsx).
 
-## The one principle: separate the logic from the UI
+The whole app is two files, shown here in full, nothing elided:
 
-The reconciliation math lives in plain functions in `shiny/R/logic.R`. The app, the
-[visual guide](hours-guide.html), the [dashboard](hours-dashboard.html), and the unit
-tests all call the same functions. Own the pattern once and the next tool takes an
-afternoon.
+- **shiny/R/logic.R** &mdash; the pure reconciliation math (no Shiny). The [visual guide](hours-guide.html), the [dashboard](hours-dashboard.html), and the unit tests call these same functions.
+- **shiny/app.R** &mdash; the UI and the reactive server.
 
-## Step 1 - the logic core
+The one idea to hold onto: the **rules** live in `logic.R`, the **screen** lives in `app.R`. You can change what "net findable" means without touching the app, and change how it looks without touching the rules.
 
-Plain functions, no Shiny. The roll-up and the sourcing decision:
+## The data it reads
 
-```r
-hours_metrics <- function(ledger, contingency = 40) {
-  planned <- sum(ledger$planned); eac <- sum(ledger$eac)
-  net_slack <- max(0, planned - eac)             # under-run, floored at zero
-  list(planned = planned, eac = eac, net_slack = net_slack,
-       contingency = contingency, findable = net_slack + contingency)
-}
+One CSV is the whole dataset. Edit it to point the app at your study (keep the column names): [`project_hours_ledger.csv`](../templates/project_hours_ledger.csv). The rows named `CONTINGENCY` and `TOTAL` are handled specially by `hours_load()`: the contingency row sets the reserve, the total row is dropped, and everything else is a real deliverable.
 
-find_hours <- function(need, ledger, contingency = 40) {
-  m <- hours_metrics(ledger, contingency)
-  from_slack <- min(need, m$net_slack)               # spend slack first ...
-  from_cont  <- min(need - from_slack, contingency)  # ... then contingency ...
-  shortfall  <- need - from_slack - from_cont        # ... the rest is a change order
-  list(from_slack = from_slack, from_cont = from_cont, shortfall = shortfall,
-       absorbable = shortfall <= 0, metrics = m)
-}
+## The complete logic core: shiny/R/logic.R
+
+Every line of the logic. `hours_load()` reads the ledger CSV and splits out the
+contingency reserve; `hours_metrics()` is the portfolio roll-up; `find_hours()` sources a
+new ask from under-run slack first, then contingency, and reports the residual;
+`change_order_text()` drafts the hours-only note. Nothing here depends on Shiny, so you can
+test it in a plain console.
+
+```{r logic, code=readLines("../shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-## Step 2 - test it in the console first
+Read `find_hours()`: it sources the ask in a fixed order. `from_slack <- min(need, m$net_slack)`
+takes what it can from under-run slack, `from_cont <- min(need - from_slack, contingency)`
+takes the rest from the reserve, and `shortfall <- need - from_slack - from_cont` is
+whatever is left. The ask is absorbable exactly when `shortfall <= 0`. Change that sourcing
+order and you have changed what "find the hours you already have" means, everywhere, at once.
 
-```r
-source("R/logic.R"); d <- hours_load()
-hours_metrics(d$ledger, d$contingency)$findable    # 59
-find_hours(90, d$ledger, d$contingency)$shortfall  # 31  -> change order
+## The complete app: shiny/app.R
+
+Every line of the UI and server. Read it top to bottom; the walk-through below points
+at the parts that matter.
+
+```{r app, code=readLines("../shiny/app.R"), eval=FALSE, echo=TRUE}
 ```
 
-Get the arithmetic right here and every surface (app, guide, Excel) agrees.
+## How the reactivity works, part by part
 
-## Step 3 - the app skeleton
+Follow the data, not the layout. Here is the chain that makes a click flip the verdict.
 
-```r
-library(shiny); library(bslib); library(DT); library(ggplot2)
-source("R/logic.R")
-seed <- hours_load()
+**The editable state lives in one place.** `rv <- reactiveValues(ledger = withVar(seed$ledger))`
+holds the one frame the user can change. The helper `withVar()` recomputes the `variance`
+column (`planned - eac`) each time the ledger is rebuilt. Every output reads from `rv`, so
+when `rv` changes, everything that depends on it recomputes. That is the entire trick.
 
-ui <- page_sidebar(
-  title = "Find Hours",
-  theme = bs_theme(version = 5, bootswatch = "darkly"),
-  sidebar = sidebar( numericInput("need", "Out-of-scope ask (hours)", 45, min = 0), ... ),
-  # value boxes, editable ledger, verdict, plot ...
-)
-server <- function(input, output, session) { ... }
-shinyApp(ui, server)
-```
+**The rules are reactive expressions.** `metrics <- reactive(hours_metrics(rv$ledger, input$contingency))`
+and `fh <- reactive(find_hours(input$need, rv$ledger, input$contingency))` re-run automatically
+whenever the ledger **or** the ask input **or** the contingency changes. You never call the
+roll-up by hand.
 
-## Step 4 - editable state and reactive rules
+**The value boxes just read the reactive.** `output$v_planned`, `output$v_actual`,
+`output$v_eac`, `output$v_cont`, and `output$v_find` each render one field of `metrics()`.
+They know nothing about how it was computed.
 
-```r
-  rv <- reactiveValues(ledger = withVar(seed$ledger))       # planned/actual/pct/eac/variance
-  metrics <- reactive(hours_metrics(rv$ledger, input$contingency))
-  fh      <- reactive(find_hours(input$need, rv$ledger, input$contingency))
-```
+**Editing a cell mutates the state.** The ledger is a `DT` with per-cell editing enabled on
+the numeric columns. The observer on `input$ledger_cell_edit` coerces the new value with
+`as.numeric()`, writes it into `rv$ledger` for that row and column, recomputes the `variance`
+column, and pushes the frame back through a `dataTableProxy` with `replaceData()` so the user
+does not lose their place. That write is what makes the verdict flip, because `fh()` depends
+on `rv$ledger`.
 
-`metrics` and `fh` re-run whenever the ledger **or** the ask input changes. The value
-boxes and the verdict just read them.
+**The quick-pick buttons set the ask.** Each of `input$q20`, `input$q45`, `input$q90`, and
+`input$q150` calls `updateNumericInput(session, "need", value = 90)` (or 20, 45, 150), which retriggers `fh()`.
+The `input$reset` observer restores `rv$ledger` from the seed.
 
-## Step 5 - an editable table with a proxy
+**The verdict reads the reactive and branches.** `output$verdict` reads `fh()`, shows the
+three-line sourcing breakdown (slack, contingency, shortfall), then renders a green
+"Absorbable internally" alert when `f$absorbable` is true, or a red "Change order needed"
+alert with the residual hours when it is not.
 
-On a cell edit, coerce the value, update the state, recompute `variance`, and push it
-back with a `dataTableProxy` so the user does not lose their place:
+**The downloads round-trip to Excel and the eTMF.** `output$dl_ledger` writes `rv$ledger`
+to CSV with the workbook's column names; `output$dl_co` writes `change_order_text(fh())`,
+the hours-only change-order draft, to a Markdown file.
 
-```r
-  output$ledger <- renderDT(
-    datatable(disp(rv$ledger), rownames = FALSE,
-              editable = list(target = "cell", disable = list(columns = c(0, 5)))),
-    server = TRUE)
-  proxy <- dataTableProxy("ledger")
+## Verify it without a browser
 
-  observeEvent(input$ledger_cell_edit, {
-    info <- input$ledger_cell_edit; j <- info$col + 1L
-    num <- suppressWarnings(as.numeric(info$value))
-    if (j %in% 2:5 && !is.na(num)) {
-      rv$ledger[info$row, j] <- num
-      rv$ledger$variance <- rv$ledger$planned - rv$ledger$eac
-      replaceData(proxy, disp(rv$ledger), resetPaging = FALSE, rownames = FALSE)
-    }
-  })
-```
-
-## Step 6 - the verdict, quick-picks, a download
-
-```r
-  output$verdict <- renderUI({
-    f <- fh()
-    if (f$absorbable)
-      div(class = "alert alert-success", "Absorbable internally",
-          sprintf(" - %d h slack + %d h contingency", f$from_slack, f$from_cont))
-    else
-      div(class = "alert alert-danger", sprintf("Change order needed: %d h", f$shortfall))
-  })
-```
-
-Quick-pick `actionButton`s call `updateNumericInput(session, "need", value = 90)`; a
-`downloadHandler` writes the change-order draft from `change_order_text(fh())`.
-
-## Verify it headless
+You can drive the reactive graph headless, which is how this app was checked before it
+was ever opened in a browser:
 
 ```r
 shiny::testServer("budget_reconciliation/shiny", {
+  # a 90 h ask exhausts slack and reserve, leaving a change-order residual
   session$setInputs(need = 90, contingency = 40)
   fh()$shortfall            # 31
+
+  # a 45 h ask is fully absorbable
+  session$setInputs(need = 45)
+  fh()$absorbable           # TRUE
 })
+```
+
+## The unit tests: shiny is not involved
+
+The reconciliation logic is covered by a zero-dependency test you run with `Rscript`. It is
+the same file the guide and dashboard trust:
+
+```{r tests, code=readLines("../tests/test-logic.R"), eval=FALSE, echo=TRUE}
+```
+
+Run it:
+
+```r
+Rscript budget_reconciliation/tests/test-logic.R   # prints: find-hours logic: all tests passed
 ```
 
 ## Make it yours
 
-- **Change the data:** edit `templates/project_hours_ledger.csv`.
-- **Change the rule:** edit `hours_metrics()`/`find_hours()` (for example, hold back part of the contingency as untouchable).
-- **Add a source step:** insert it into the sourcing order in `find_hours()`.
+- Change the data: edit `project_hours_ledger.csv` in `templates/`.
+- Change the rule: edit `hours_metrics()` or `find_hours()` in `shiny/R/logic.R`, for example to hold back part of the contingency as untouchable.
+- Add a source step: insert it into the sourcing order in `find_hours()`, before the shortfall line.
+- Add a column: add it to the CSV and to the `datatable()` column list in `app.R`.
 
-Same skeleton as the [UAT tracker](../../uat_irt/quarto/uat-build.html).
+The same skeleton, a logic core plus `reactiveValues` plus reactive rules plus outputs,
+builds the [UAT tracker](../../uat_irt/quarto/uat-build.html) and the four dashboards too.

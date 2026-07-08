@@ -22,8 +22,15 @@ source("../shiny/R/logic.R")
 kg <- kg_load("../shiny/data"); st <- kg_stats(kg); V <- kg_vis(kg)
 ```
 
+```{=html}
+<style>
+svg[id^="mermaid"]{ width:100% !important; max-width:940px; height:auto; display:block; margin:8px auto; }
+svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !important; }
+</style>
+```
+
 ::: {.callout-note appearance="simple"}
-**Run / share / read / build - pick your mode.** This page *shows* the knowledge base and embeds the live graph, the [**Shiny app**](../shiny) lets you filter and click through it, the [interactive graph](kg-graph.html) is a shareable no-server widget, and the [run-and-build page](kg-build.html) shows how it is made. Synthetic study, no PHI.
+**Run / share / read / build - pick your mode.** This page *shows* the knowledge base and embeds the live graph, the [**run-and-build page**](kg-build.html) shows how to run and build the Shiny app that lets you filter and click through it, and the [interactive graph](kg-graph.html) is a shareable no-server widget. Synthetic study, no PHI.
 :::
 
 ## What it is
@@ -31,14 +38,15 @@ kg <- kg_load("../shiny/data"); st <- kg_stats(kg); V <- kg_vis(kg)
 Every study artifact - protocol, SAP, ADaM specs, DMP, monitoring plan, milestones - is a **note**, and every dependency between them is a **link**. Instead of a folder tree, you navigate the study the way it actually connects.
 
 ```{mermaid}
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
-  H[Study hub] --> D[Design & data collection]
-  H --> S[Statistics & programming]
-  H --> DM[Data management & flow]
-  H --> SF[Safety & oversight]
-  H --> SU[Randomization, blinding & drug]
-  H --> P[Deliverables & timeline]
-  H --> R[People, standards & vendors]
+  H["Study hub"] --> D["Design &<br/>data collection"]
+  H --> S["Statistics &<br/>programming"]
+  H --> DM["Data management<br/>& flow"]
+  H --> SF["Safety &<br/>oversight"]
+  H --> SU["Randomization,<br/>blinding & drug"]
+  H --> P["Deliverables<br/>& timeline"]
+  H --> R["People, standards<br/>& vendors"]
 ```
 
 ## The structure - by the numbers {#live}
@@ -57,7 +65,7 @@ The most-connected note is the **`r st$hub_title`** (it links to `r st$hub_degre
 
 ## The live graph
 
-Drag a note, hover for its detail, or use the type selector.
+Drag a note, hover for its detail, or use the type selector. The whole vault is three CSV files you can open right now: [`nodes.csv`](../shiny/data/nodes.csv) (one row per note), [`edges.csv`](../shiny/data/edges.csv) (one row per link), and [`types.csv`](../shiny/data/types.csv) (the note-type colours). Edit those and the graph moves.
 
 ```{r graph}
 legend <- data.frame(label = kg$types$label, color = kg$types$color, shape = "dot")
@@ -79,14 +87,14 @@ shiny::runApp("knowledge_vault/shiny")
 ```
 
 ::: {.callout-tip appearance="simple"}
-**The three CSVs are the vault.** Add a note as a row in `data/nodes.csv`, wire it with rows in `data/edges.csv`, and it appears - sized by how many notes link to it. The [run-and-build page](kg-build.html) shows how the graph is built from `R/logic.R`.
+**The three CSVs are the vault.** Add a note as a row in [`nodes.csv`](../shiny/data/nodes.csv), wire it with rows in [`edges.csv`](../shiny/data/edges.csv), and it appears - sized by how many notes link to it. The [run-and-build page](kg-build.html) shows how the graph is built from the logic in `R/logic.R`.
 :::
 
 ## The other formats
 
 | Mode | Artifact |
 |---|---|
-| Run / explore | [Shiny app](../shiny) |
+| Run / explore | [Run &amp; build the Shiny app](kg-build.html) |
 | Share (no R) | [Interactive graph](kg-graph.html) |
 | Build | [Run-and-build walkthrough](kg-build.html) |
 

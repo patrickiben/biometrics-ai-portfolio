@@ -20,7 +20,7 @@ o <- risk_overall(s)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Read-only shareable snapshot**, computed from the signal feed (`data/signals.csv`). The interactive tool is the [Shiny app](../shiny), and the [visual guide](risk-guide.html) explains the roll-up. The AI flags; the SRC / DSMB / medical monitor / PM / account lead decide. Synthetic, no PHI, no participant records.
+**Read-only shareable snapshot**, computed from the signal feed [`signals.csv`](../shiny/data/signals.csv). The interactive tool is the [Run &amp; build the Shiny app](risk-build.html) page, and the [visual guide](risk-guide.html) explains the roll-up. The AI flags; the SRC / DSMB / medical monitor / PM / account lead decide. Synthetic, no PHI, no participant records.
 :::
 
 ```{r kpis, results='asis'}

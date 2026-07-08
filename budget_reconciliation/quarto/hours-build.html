@@ -2208,14 +2208,12 @@ vertical-align: -.125em;
    
   <ul>
   <li><a href="#run-it" id="toc-run-it" class="nav-link active" data-scroll-target="#run-it">Run it</a></li>
-  <li><a href="#the-one-principle-separate-the-logic-from-the-ui" id="toc-the-one-principle-separate-the-logic-from-the-ui" class="nav-link" data-scroll-target="#the-one-principle-separate-the-logic-from-the-ui">The one principle: separate the logic from the UI</a></li>
-  <li><a href="#step-1---the-logic-core" id="toc-step-1---the-logic-core" class="nav-link" data-scroll-target="#step-1---the-logic-core">Step 1 - the logic core</a></li>
-  <li><a href="#step-2---test-it-in-the-console-first" id="toc-step-2---test-it-in-the-console-first" class="nav-link" data-scroll-target="#step-2---test-it-in-the-console-first">Step 2 - test it in the console first</a></li>
-  <li><a href="#step-3---the-app-skeleton" id="toc-step-3---the-app-skeleton" class="nav-link" data-scroll-target="#step-3---the-app-skeleton">Step 3 - the app skeleton</a></li>
-  <li><a href="#step-4---editable-state-and-reactive-rules" id="toc-step-4---editable-state-and-reactive-rules" class="nav-link" data-scroll-target="#step-4---editable-state-and-reactive-rules">Step 4 - editable state and reactive rules</a></li>
-  <li><a href="#step-5---an-editable-table-with-a-proxy" id="toc-step-5---an-editable-table-with-a-proxy" class="nav-link" data-scroll-target="#step-5---an-editable-table-with-a-proxy">Step 5 - an editable table with a proxy</a></li>
-  <li><a href="#step-6---the-verdict-quick-picks-a-download" id="toc-step-6---the-verdict-quick-picks-a-download" class="nav-link" data-scroll-target="#step-6---the-verdict-quick-picks-a-download">Step 6 - the verdict, quick-picks, a download</a></li>
-  <li><a href="#verify-it-headless" id="toc-verify-it-headless" class="nav-link" data-scroll-target="#verify-it-headless">Verify it headless</a></li>
+  <li><a href="#the-data-it-reads" id="toc-the-data-it-reads" class="nav-link" data-scroll-target="#the-data-it-reads">The data it reads</a></li>
+  <li><a href="#the-complete-logic-core-shinyrlogic.r" id="toc-the-complete-logic-core-shinyrlogic.r" class="nav-link" data-scroll-target="#the-complete-logic-core-shinyrlogic.r">The complete logic core: shiny/R/logic.R</a></li>
+  <li><a href="#the-complete-app-shinyapp.r" id="toc-the-complete-app-shinyapp.r" class="nav-link" data-scroll-target="#the-complete-app-shinyapp.r">The complete app: shiny/app.R</a></li>
+  <li><a href="#how-the-reactivity-works-part-by-part" id="toc-how-the-reactivity-works-part-by-part" class="nav-link" data-scroll-target="#how-the-reactivity-works-part-by-part">How the reactivity works, part by part</a></li>
+  <li><a href="#verify-it-without-a-browser" id="toc-verify-it-without-a-browser" class="nav-link" data-scroll-target="#verify-it-without-a-browser">Verify it without a browser</a></li>
+  <li><a href="#the-unit-tests-shiny-is-not-involved" id="toc-the-unit-tests-shiny-is-not-involved" class="nav-link" data-scroll-target="#the-unit-tests-shiny-is-not-involved">The unit tests: shiny is not involved</a></li>
   <li><a href="#make-it-yours" id="toc-make-it-yours" class="nav-link" data-scroll-target="#make-it-yours">Make it yours</a></li>
   </ul>
 </nav>
@@ -2227,7 +2225,7 @@ vertical-align: -.125em;
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <h1 class="title">Run and build the find-hours app</h1>
-<p class="subtitle lead">The R Shiny app, from running it to building it yourself</p>
+<p class="subtitle lead">The complete R Shiny app, every line</p>
 </div>
 
 
@@ -2245,112 +2243,371 @@ vertical-align: -.125em;
 
 
 <p>Hours / effort only throughout: no dollars, rates, or headcount. The one equation:</p>
-<pre><code>NET FINDABLE = (Σ Planned + Contingency) − Σ EAC</code></pre>
+<pre><code>NET FINDABLE = (Sum of Planned + Contingency) - Sum of EAC</code></pre>
 <section id="run-it" class="level2">
 <h2 class="anchored" data-anchor-id="run-it">Run it</h2>
-<p>From the package root:</p>
+<p>The interactive tool is a real R Shiny app. From the package root:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;shiny&quot;</span>, <span class="st">&quot;bslib&quot;</span>, <span class="st">&quot;DT&quot;</span>, <span class="st">&quot;ggplot2&quot;</span>))   <span class="co"># once</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;budget_reconciliation/shiny&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>Edit a task’s EAC, change the ask, and the net-findable roll-up and the absorbable-vs-change-order verdict recompute live. Download the change-order draft when there is a shortfall, and the reconciled ledger to CSV for the <a href="../Hours_Budget_Reconciliation_Workbook.xlsx">Excel workbook</a>.</p>
+<p>The whole app is two files, shown here in full, nothing elided:</p>
+<ul>
+<li><strong>shiny/R/logic.R</strong> — the pure reconciliation math (no Shiny). The <a href="hours-guide.html">visual guide</a>, the <a href="hours-dashboard.html">dashboard</a>, and the unit tests call these same functions.</li>
+<li><strong>shiny/app.R</strong> — the UI and the reactive server.</li>
+</ul>
+<p>The one idea to hold onto: the <strong>rules</strong> live in <code>logic.R</code>, the <strong>screen</strong> lives in <code>app.R</code>. You can change what “net findable” means without touching the app, and change how it looks without touching the rules.</p>
 </section>
-<section id="the-one-principle-separate-the-logic-from-the-ui" class="level2">
-<h2 class="anchored" data-anchor-id="the-one-principle-separate-the-logic-from-the-ui">The one principle: separate the logic from the UI</h2>
-<p>The reconciliation math lives in plain functions in <code>shiny/R/logic.R</code>. The app, the <a href="hours-guide.html">visual guide</a>, the <a href="hours-dashboard.html">dashboard</a>, and the unit tests all call the same functions. Own the pattern once and the next tool takes an afternoon.</p>
+<section id="the-data-it-reads" class="level2">
+<h2 class="anchored" data-anchor-id="the-data-it-reads">The data it reads</h2>
+<p>One CSV is the whole dataset. Edit it to point the app at your study (keep the column names): <a href="../templates/project_hours_ledger.csv"><code>project_hours_ledger.csv</code></a>. The rows named <code>CONTINGENCY</code> and <code>TOTAL</code> are handled specially by <code>hours_load()</code>: the contingency row sets the reserve, the total row is dropped, and everything else is a real deliverable.</p>
 </section>
-<section id="step-1---the-logic-core" class="level2">
-<h2 class="anchored" data-anchor-id="step-1---the-logic-core">Step 1 - the logic core</h2>
-<p>Plain functions, no Shiny. The roll-up and the sourcing decision:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>hours_metrics <span class="ot">&lt;-</span> <span class="cf">function</span>(ledger, <span class="at">contingency =</span> <span class="dv">40</span>) {</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  planned <span class="ot">&lt;-</span> <span class="fu">sum</span>(ledger<span class="sc">$</span>planned); eac <span class="ot">&lt;-</span> <span class="fu">sum</span>(ledger<span class="sc">$</span>eac)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  net_slack <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="dv">0</span>, planned <span class="sc">-</span> eac)             <span class="co"># under-run, floored at zero</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">planned =</span> planned, <span class="at">eac =</span> eac, <span class="at">net_slack =</span> net_slack,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>       <span class="at">contingency =</span> contingency, <span class="at">findable =</span> net_slack <span class="sc">+</span> contingency)</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>find_hours <span class="ot">&lt;-</span> <span class="cf">function</span>(need, ledger, <span class="at">contingency =</span> <span class="dv">40</span>) {</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">hours_metrics</span>(ledger, contingency)</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  from_slack <span class="ot">&lt;-</span> <span class="fu">min</span>(need, m<span class="sc">$</span>net_slack)               <span class="co"># spend slack first ...</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  from_cont  <span class="ot">&lt;-</span> <span class="fu">min</span>(need <span class="sc">-</span> from_slack, contingency)  <span class="co"># ... then contingency ...</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  shortfall  <span class="ot">&lt;-</span> need <span class="sc">-</span> from_slack <span class="sc">-</span> from_cont        <span class="co"># ... the rest is a change order</span></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">from_slack =</span> from_slack, <span class="at">from_cont =</span> from_cont, <span class="at">shortfall =</span> shortfall,</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>       <span class="at">absorbable =</span> shortfall <span class="sc">&lt;=</span> <span class="dv">0</span>, <span class="at">metrics =</span> m)</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="the-complete-logic-core-shinyrlogic.r" class="level2">
+<h2 class="anchored" data-anchor-id="the-complete-logic-core-shinyrlogic.r">The complete logic core: shiny/R/logic.R</h2>
+<p>Every line of the logic. <code>hours_load()</code> reads the ledger CSV and splits out the contingency reserve; <code>hours_metrics()</code> is the portfolio roll-up; <code>find_hours()</code> sources a new ask from under-run slack first, then contingency, and reports the residual; <code>change_order_text()</code> drafts the hours-only note. Nothing here depends on Shiny, so you can test it in a plain console.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># logic.R — pure reconciliation logic for the &quot;Find Hours&quot; tool.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># HOURS / EFFORT ONLY. No dollars, rates, ROI, or headcount. Synthetic data.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># These are plain functions with no Shiny dependency, so the Shiny app, the</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Quarto documents, and the unit tests all call the SAME logic. Edit the math</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># in one place and every surface updates.</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>DEFAULT_CONTINGENCY <span class="ot">&lt;-</span> <span class="dv">40</span>L</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Load the effort ledger from a CSV (the editable template) and split out the</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co"># contingency reserve and the TOTAL summary row from the real deliverable rows.</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>hours_load <span class="ot">&lt;-</span> <span class="cf">function</span>(<span class="at">path =</span> <span class="cn">NULL</span>) {</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  cand <span class="ot">&lt;-</span> <span class="fu">c</span>(path,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;../templates/project_hours_ledger.csv&quot;</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;templates/project_hours_ledger.csv&quot;</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;budget_reconciliation/templates/project_hours_ledger.csv&quot;</span>)</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>  cand <span class="ot">&lt;-</span> <span class="fu">Filter</span>(<span class="fu">Negate</span>(is.null), cand)</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">Find</span>(file.exists, cand)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.null</span>(p)) <span class="fu">stop</span>(<span class="st">&quot;Cannot find project_hours_ledger.csv (looked in: &quot;</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                       <span class="fu">paste</span>(cand, <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="st">&quot;)&quot;</span>)</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  d <span class="ot">&lt;-</span> utils<span class="sc">::</span><span class="fu">read.csv</span>(p, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>, <span class="at">check.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  cont_row  <span class="ot">&lt;-</span> <span class="fu">grepl</span>(<span class="st">&quot;^CONTINGENCY&quot;</span>, d<span class="sc">$</span>Deliverable, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>  total_row <span class="ot">&lt;-</span> <span class="fu">grepl</span>(<span class="st">&quot;^TOTAL&quot;</span>,       d<span class="sc">$</span>Deliverable, <span class="at">ignore.case =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>  contingency <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">any</span>(cont_row)) <span class="fu">as.integer</span>(d<span class="sc">$</span>PlannedHours[cont_row][<span class="dv">1</span>]) <span class="cf">else</span> DEFAULT_CONTINGENCY</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>  ledger <span class="ot">&lt;-</span> d[<span class="sc">!</span>cont_row <span class="sc">&amp;</span> <span class="sc">!</span>total_row,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>              <span class="fu">c</span>(<span class="st">&quot;Deliverable&quot;</span>, <span class="st">&quot;PlannedHours&quot;</span>, <span class="st">&quot;ActualToDate&quot;</span>, <span class="st">&quot;PctComplete&quot;</span>, <span class="st">&quot;EAC&quot;</span>)]</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">names</span>(ledger) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;deliverable&quot;</span>, <span class="st">&quot;planned&quot;</span>, <span class="st">&quot;actual&quot;</span>, <span class="st">&quot;pct&quot;</span>, <span class="st">&quot;eac&quot;</span>)</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>  ledger[<span class="fu">c</span>(<span class="st">&quot;planned&quot;</span>, <span class="st">&quot;actual&quot;</span>, <span class="st">&quot;pct&quot;</span>, <span class="st">&quot;eac&quot;</span>)] <span class="ot">&lt;-</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">lapply</span>(ledger[<span class="fu">c</span>(<span class="st">&quot;planned&quot;</span>, <span class="st">&quot;actual&quot;</span>, <span class="st">&quot;pct&quot;</span>, <span class="st">&quot;eac&quot;</span>)], as.numeric)</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rownames</span>(ledger) <span class="ot">&lt;-</span> <span class="cn">NULL</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">ledger =</span> ledger, <span class="at">contingency =</span> contingency)</span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Portfolio-level roll-up. net_slack is the honest under-run across every task</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="co"># (planned minus the forecast cost to finish, floored at zero); findable adds</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a><span class="co"># the contingency reserve. This is the one number the whole tool is about.</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>hours_metrics <span class="ot">&lt;-</span> <span class="cf">function</span>(ledger, <span class="at">contingency =</span> DEFAULT_CONTINGENCY) {</span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>  planned <span class="ot">&lt;-</span> <span class="fu">sum</span>(ledger<span class="sc">$</span>planned); actual <span class="ot">&lt;-</span> <span class="fu">sum</span>(ledger<span class="sc">$</span>actual); eac <span class="ot">&lt;-</span> <span class="fu">sum</span>(ledger<span class="sc">$</span>eac)</span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  net_slack <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="dv">0</span>, planned <span class="sc">-</span> eac)</span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">planned =</span> planned, <span class="at">actual =</span> actual, <span class="at">eac =</span> eac,</span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>       <span class="at">net_slack =</span> net_slack, <span class="at">contingency =</span> contingency,</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>       <span class="at">findable =</span> net_slack <span class="sc">+</span> contingency)</span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Test a new out-of-scope ask against the net headroom, sourcing hours in order:</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a><span class="co"># under-run slack first, then contingency, then whatever is left is a shortfall.</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>find_hours <span class="ot">&lt;-</span> <span class="cf">function</span>(need, ledger, <span class="at">contingency =</span> DEFAULT_CONTINGENCY) {</span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>  need <span class="ot">&lt;-</span> <span class="fu">max</span>(<span class="dv">0</span>, <span class="fu">round</span>(<span class="fu">as.numeric</span>(need)))</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>  m <span class="ot">&lt;-</span> <span class="fu">hours_metrics</span>(ledger, contingency)</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>  from_slack <span class="ot">&lt;-</span> <span class="fu">min</span>(need, m<span class="sc">$</span>net_slack)</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  from_cont  <span class="ot">&lt;-</span> <span class="fu">min</span>(need <span class="sc">-</span> from_slack, contingency)</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>  shortfall  <span class="ot">&lt;-</span> need <span class="sc">-</span> from_slack <span class="sc">-</span> from_cont</span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>  absorbable <span class="ot">&lt;-</span> shortfall <span class="sc">&lt;=</span> <span class="dv">0</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">list</span>(<span class="at">need =</span> need, <span class="at">from_slack =</span> from_slack, <span class="at">from_cont =</span> from_cont,</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>       <span class="at">shortfall =</span> shortfall, <span class="at">contingency_left =</span> contingency <span class="sc">-</span> from_cont,</span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>       <span class="at">absorbable =</span> absorbable, <span class="at">metrics =</span> m,</span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>       <span class="at">verdict =</span> <span class="cf">if</span> (absorbable) <span class="st">&quot;Absorbable internally&quot;</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">else</span> <span class="fu">sprintf</span>(<span class="st">&quot;Change order needed: %d h&quot;</span>, shortfall))</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a><span class="co"># Draft a change-order note (hours only) for a residual shortfall.</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>change_order_text <span class="ot">&lt;-</span> <span class="cf">function</span>(fh, <span class="at">study =</span> <span class="st">&quot;CP-XXX&quot;</span>, <span class="at">deliverable =</span> <span class="st">&quot;&lt;out-of-scope deliverable&gt;&quot;</span>) {</span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">paste0</span>(</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;# Change Order (effort, hours)</span><span class="sc">\n\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Study: &quot;</span>, study, <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Added deliverable: &quot;</span>, deliverable, <span class="st">&quot;</span><span class="sc">\n\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Estimated effort: &quot;</span>, fh<span class="sc">$</span>need, <span class="st">&quot; h</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Absorbed internally: &quot;</span>, fh<span class="sc">$</span>need <span class="sc">-</span> fh<span class="sc">$</span>shortfall, <span class="st">&quot; h &quot;</span>,</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;(&quot;</span>, fh<span class="sc">$</span>from_slack, <span class="st">&quot; h under-run slack + &quot;</span>, fh<span class="sc">$</span>from_cont, <span class="st">&quot; h contingency)</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Additional scope requiring a change order: &quot;</span>, fh<span class="sc">$</span>shortfall, <span class="st">&quot; h</span><span class="sc">\n\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Justification: the residual &quot;</span>, fh<span class="sc">$</span>shortfall,</span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot; h is not covered by planned effort or the management reserve and represents &quot;</span>,</span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;scope beyond the current SOW.</span><span class="sc">\n\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Approvals: Lead Biostatistician ______  Project Manager ______  Sponsor ______</span><span class="sc">\n\n</span><span class="st">&quot;</span>,</span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Hours/effort only. Pricing is handled downstream by the PM / project finance.</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Read <code>find_hours()</code>: it sources the ask in a fixed order. <code>from_slack &lt;- min(need, m$net_slack)</code> takes what it can from under-run slack, <code>from_cont &lt;- min(need - from_slack, contingency)</code> takes the rest from the reserve, and <code>shortfall &lt;- need - from_slack - from_cont</code> is whatever is left. The ask is absorbable exactly when <code>shortfall &lt;= 0</code>. Change that sourcing order and you have changed what “find the hours you already have” means, everywhere, at once.</p>
 </section>
-<section id="step-2---test-it-in-the-console-first" class="level2">
-<h2 class="anchored" data-anchor-id="step-2---test-it-in-the-console-first">Step 2 - test it in the console first</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;R/logic.R&quot;</span>); d <span class="ot">&lt;-</span> <span class="fu">hours_load</span>()</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hours_metrics</span>(d<span class="sc">$</span>ledger, d<span class="sc">$</span>contingency)<span class="sc">$</span>findable    <span class="co"># 59</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">find_hours</span>(<span class="dv">90</span>, d<span class="sc">$</span>ledger, d<span class="sc">$</span>contingency)<span class="sc">$</span>shortfall  <span class="co"># 31  -&gt; change order</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Get the arithmetic right here and every surface (app, guide, Excel) agrees.</p>
+<section id="the-complete-app-shinyapp.r" class="level2">
+<h2 class="anchored" data-anchor-id="the-complete-app-shinyapp.r">The complete app: shiny/app.R</h2>
+<p>Every line of the UI and server. Read it top to bottom; the walk-through below points at the parts that matter.</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ===========================================================================</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app.R — Hours Budget Reconciliation (&quot;Find Hours&quot;) Shiny app</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># A runnable, editable version of the find-hours worksheet. Edit the effort</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ledger, type an out-of-scope ask, and watch net-findable and the</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># absorbable-vs-change-order verdict recompute live. HOURS ONLY, synthetic.</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Run:  shiny::runApp(&quot;budget_reconciliation/shiny&quot;)   (from the package root)</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co">#   or: setwd(&quot;budget_reconciliation/shiny&quot;); shiny::runApp()</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># The math lives in R/logic.R (shared with the Quarto docs + unit tests);</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># the seed data is ../templates/project_hours_ledger.csv (edit it to reuse).</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># ===========================================================================</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bslib)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(DT)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;R/logic.R&quot;</span>)</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="st">`</span><span class="at">%||%</span><span class="st">`</span> <span class="ot">&lt;-</span> <span class="cf">function</span>(a, b) <span class="cf">if</span> (<span class="fu">is.null</span>(a) <span class="sc">||</span> <span class="fu">length</span>(a) <span class="sc">==</span> <span class="dv">0</span> <span class="sc">||</span> <span class="fu">is.na</span>(a)) b <span class="cf">else</span> a</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>seed <span class="ot">&lt;-</span> <span class="fu">hours_load</span>()</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">page_sidebar</span>(</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Find Hours — Hours Budget Reconciliation&quot;</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">bs_theme</span>(<span class="at">version =</span> <span class="dv">5</span>, <span class="at">bootswatch =</span> <span class="st">&quot;darkly&quot;</span>, <span class="at">primary =</span> <span class="st">&quot;#5b8cff&quot;</span>),</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">sidebar =</span> <span class="fu">sidebar</span>(</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="dv">300</span>,</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;text-warning small fw-bold&quot;</span>, <span class="st">&quot;HOURS / EFFORT ONLY — no $, no headcount&quot;</span>),</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">numericInput</span>(<span class="st">&quot;need&quot;</span>, <span class="st">&quot;Out-of-scope ask (hours)&quot;</span>, <span class="at">value =</span> <span class="dv">45</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">step =</span> <span class="dv">5</span>),</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;d-flex flex-wrap gap-1 mb-2&quot;</span>,</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>        <span class="fu">actionButton</span>(<span class="st">&quot;q20&quot;</span>,  <span class="st">&quot;20h&quot;</span>,  <span class="at">class =</span> <span class="st">&quot;btn-sm btn-outline-secondary&quot;</span>),</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>        <span class="fu">actionButton</span>(<span class="st">&quot;q45&quot;</span>,  <span class="st">&quot;45h&quot;</span>,  <span class="at">class =</span> <span class="st">&quot;btn-sm btn-outline-secondary&quot;</span>),</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        <span class="fu">actionButton</span>(<span class="st">&quot;q90&quot;</span>,  <span class="st">&quot;90h&quot;</span>,  <span class="at">class =</span> <span class="st">&quot;btn-sm btn-outline-secondary&quot;</span>),</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        <span class="fu">actionButton</span>(<span class="st">&quot;q150&quot;</span>, <span class="st">&quot;150h&quot;</span>, <span class="at">class =</span> <span class="st">&quot;btn-sm btn-outline-secondary&quot;</span>)),</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">numericInput</span>(<span class="st">&quot;contingency&quot;</span>, <span class="st">&quot;Contingency reserve (hours)&quot;</span>,</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>                 <span class="at">value =</span> seed<span class="sc">$</span>contingency, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">step =</span> <span class="dv">5</span>),</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hr</span>(),</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">actionButton</span>(<span class="st">&quot;reset&quot;</span>, <span class="st">&quot;Reset ledger&quot;</span>, <span class="at">class =</span> <span class="st">&quot;btn-sm btn-outline-warning&quot;</span>),</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">downloadButton</span>(<span class="st">&quot;dl_ledger&quot;</span>, <span class="st">&quot;Download ledger (CSV)&quot;</span>, <span class="at">class =</span> <span class="st">&quot;btn-sm&quot;</span>),</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">downloadButton</span>(<span class="st">&quot;dl_co&quot;</span>, <span class="st">&quot;Download change order&quot;</span>, <span class="at">class =</span> <span class="st">&quot;btn-sm&quot;</span>),</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">hr</span>(),</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small text-muted&quot;</span>,</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;Edit any blue-editable cell in the ledger (Planned, Actual, % done, EAC). &quot;</span>,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;This app connects to no real budget or timesheet.&quot;</span>)</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout_columns</span>(</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_widths =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">2</span>, <span class="dv">3</span>),</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Planned&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;v_planned&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;secondary&quot;</span>),</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Spent&quot;</span>,   <span class="fu">textOutput</span>(<span class="st">&quot;v_actual&quot;</span>),  <span class="at">theme =</span> <span class="st">&quot;secondary&quot;</span>),</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Forecast (EAC)&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;v_eac&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;info&quot;</span>),</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Contingency&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;v_cont&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;secondary&quot;</span>),</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    <span class="fu">value_box</span>(<span class="st">&quot;Net findable&quot;</span>, <span class="fu">textOutput</span>(<span class="st">&quot;v_find&quot;</span>), <span class="at">theme =</span> <span class="st">&quot;success&quot;</span>)</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout_columns</span>(</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_widths =</span> <span class="fu">c</span>(<span class="dv">7</span>, <span class="dv">5</span>),</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Project effort ledger (hours) — editable&quot;</span>),</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>         <span class="fu">DTOutput</span>(<span class="st">&quot;ledger&quot;</span>)),</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Find hours for the new ask&quot;</span>),</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>         <span class="fu">uiOutput</span>(<span class="st">&quot;verdict&quot;</span>))</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>  ),</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout_columns</span>(</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_widths =</span> <span class="fu">c</span>(<span class="dv">7</span>, <span class="dv">5</span>),</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Planned vs forecast (EAC) by deliverable&quot;</span>),</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>         <span class="fu">plotOutput</span>(<span class="st">&quot;plot&quot;</span>, <span class="at">height =</span> <span class="st">&quot;320px&quot;</span>)),</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;The find-hours decision tree&quot;</span>),</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>         tags<span class="sc">$</span><span class="fu">ol</span>(<span class="at">class =</span> <span class="st">&quot;small&quot;</span>,</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Reallocate under-run slack.&quot;</span>),</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; Move hours from tasks forecasting under plan (EAC &lt; planned) — already yours.&quot;</span>),</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Draw the contingency buffer.&quot;</span>),</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; The management reserve exists for this; a decision to record, not a silent move.&quot;</span>),</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Defer / re-sequence lower-priority in-scope work,&quot;</span>),</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; with the PM&#39;s agreement on new dates.&quot;</span>),</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Escalate a change order&quot;</span>),</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; for any residual shortfall — genuine added scope, not a silent over-run.&quot;</span>)))</span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) {</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>  withVar <span class="ot">&lt;-</span> <span class="cf">function</span>(l) { l<span class="sc">$</span>variance <span class="ot">&lt;-</span> l<span class="sc">$</span>planned <span class="sc">-</span> l<span class="sc">$</span>eac; l }</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>  rv <span class="ot">&lt;-</span> <span class="fu">reactiveValues</span>(<span class="at">ledger =</span> <span class="fu">withVar</span>(seed<span class="sc">$</span>ledger))</span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>  <span class="co"># quick-pick buttons</span></span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>q20,  <span class="fu">updateNumericInput</span>(session, <span class="st">&quot;need&quot;</span>, <span class="at">value =</span> <span class="dv">20</span>))</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>q45,  <span class="fu">updateNumericInput</span>(session, <span class="st">&quot;need&quot;</span>, <span class="at">value =</span> <span class="dv">45</span>))</span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>q90,  <span class="fu">updateNumericInput</span>(session, <span class="st">&quot;need&quot;</span>, <span class="at">value =</span> <span class="dv">90</span>))</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>q150, <span class="fu">updateNumericInput</span>(session, <span class="st">&quot;need&quot;</span>, <span class="at">value =</span> <span class="dv">150</span>))</span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>reset, rv<span class="sc">$</span>ledger <span class="ot">&lt;-</span> <span class="fu">withVar</span>(seed<span class="sc">$</span>ledger))</span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a>  metrics <span class="ot">&lt;-</span> <span class="fu">reactive</span>(<span class="fu">hours_metrics</span>(rv<span class="sc">$</span>ledger, input<span class="sc">$</span>contingency <span class="sc">%||%</span> seed<span class="sc">$</span>contingency))</span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a>  fh <span class="ot">&lt;-</span> <span class="fu">reactive</span>(<span class="fu">find_hours</span>(input<span class="sc">$</span>need <span class="sc">%||%</span> <span class="dv">0</span>, rv<span class="sc">$</span>ledger, input<span class="sc">$</span>contingency <span class="sc">%||%</span> seed<span class="sc">$</span>contingency))</span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>v_planned <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">sprintf</span>(<span class="st">&quot;%d h&quot;</span>, <span class="fu">metrics</span>()<span class="sc">$</span>planned))</span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>v_actual  <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">sprintf</span>(<span class="st">&quot;%d h&quot;</span>, <span class="fu">metrics</span>()<span class="sc">$</span>actual))</span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>v_eac     <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">sprintf</span>(<span class="st">&quot;%d h&quot;</span>, <span class="fu">metrics</span>()<span class="sc">$</span>eac))</span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>v_cont    <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">sprintf</span>(<span class="st">&quot;%d h&quot;</span>, <span class="fu">metrics</span>()<span class="sc">$</span>contingency))</span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>v_find    <span class="ot">&lt;-</span> <span class="fu">renderText</span>(<span class="fu">sprintf</span>(<span class="st">&quot;%d h&quot;</span>, <span class="fu">metrics</span>()<span class="sc">$</span>findable))</span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>ledger <span class="ot">&lt;-</span> <span class="fu">renderDT</span>({</span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a>    <span class="fu">isolate</span>({</span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a>      d <span class="ot">&lt;-</span> rv<span class="sc">$</span>ledger</span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a>      <span class="fu">names</span>(d) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Deliverable&quot;</span>, <span class="st">&quot;Planned&quot;</span>, <span class="st">&quot;Actual&quot;</span>, <span class="st">&quot;% done&quot;</span>, <span class="st">&quot;EAC&quot;</span>, <span class="st">&quot;Variance&quot;</span>)</span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a>      <span class="fu">datatable</span>(d, <span class="at">rownames =</span> <span class="cn">FALSE</span>, <span class="at">selection =</span> <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a>                <span class="at">editable =</span> <span class="fu">list</span>(<span class="at">target =</span> <span class="st">&quot;cell&quot;</span>, <span class="at">disable =</span> <span class="fu">list</span>(<span class="at">columns =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>))),</span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>                <span class="at">options =</span> <span class="fu">list</span>(<span class="at">dom =</span> <span class="st">&quot;t&quot;</span>, <span class="at">paging =</span> <span class="cn">FALSE</span>, <span class="at">ordering =</span> <span class="cn">FALSE</span>,</span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>                               <span class="at">scrollY =</span> <span class="st">&quot;300px&quot;</span>, <span class="at">scrollCollapse =</span> <span class="cn">TRUE</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a>        <span class="fu">formatStyle</span>(<span class="st">&quot;Variance&quot;</span>, <span class="at">color =</span> <span class="fu">styleInterval</span>(<span class="fu">c</span>(<span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.5</span>),</span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a>                    <span class="fu">c</span>(<span class="st">&quot;#e8657a&quot;</span>, <span class="st">&quot;#94a1c0&quot;</span>, <span class="st">&quot;#43c47d&quot;</span>)))</span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a>  }, <span class="at">server =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a>  proxy <span class="ot">&lt;-</span> <span class="fu">dataTableProxy</span>(<span class="st">&quot;ledger&quot;</span>)</span>
+<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>ledger_cell_edit, {</span>
+<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a>    info <span class="ot">&lt;-</span> input<span class="sc">$</span>ledger_cell_edit</span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a>    j <span class="ot">&lt;-</span> info<span class="sc">$</span>col <span class="sc">+</span> <span class="dv">1</span>L                      <span class="co"># rownames=FALSE -&gt; 0-based data cols</span></span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a>    num <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">as.numeric</span>(info<span class="sc">$</span>value))</span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (j <span class="sc">%in%</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">5</span> <span class="sc">&amp;&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(num)) {</span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a>      rv<span class="sc">$</span>ledger[info<span class="sc">$</span>row, j] <span class="ot">&lt;-</span> num</span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a>      rv<span class="sc">$</span>ledger<span class="sc">$</span>variance <span class="ot">&lt;-</span> rv<span class="sc">$</span>ledger<span class="sc">$</span>planned <span class="sc">-</span> rv<span class="sc">$</span>ledger<span class="sc">$</span>eac</span>
+<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a>      d <span class="ot">&lt;-</span> rv<span class="sc">$</span>ledger; <span class="fu">names</span>(d) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Deliverable&quot;</span>,<span class="st">&quot;Planned&quot;</span>,<span class="st">&quot;Actual&quot;</span>,<span class="st">&quot;% done&quot;</span>,<span class="st">&quot;EAC&quot;</span>,<span class="st">&quot;Variance&quot;</span>)</span>
+<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replaceData</span>(proxy, d, <span class="at">resetPaging =</span> <span class="cn">FALSE</span>, <span class="at">rownames =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>verdict <span class="ot">&lt;-</span> <span class="fu">renderUI</span>({</span>
+<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> <span class="fu">fh</span>(); m <span class="ot">&lt;-</span> f<span class="sc">$</span>metrics</span>
+<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a>    src <span class="ot">&lt;-</span> tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;mb-2&quot;</span>,</span>
+<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a>      tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;d-flex justify-content-between border-bottom pb-1&quot;</span>,</span>
+<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a>               tags<span class="sc">$</span><span class="fu">b</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Need: %d h&quot;</span>, f<span class="sc">$</span>need))),</span>
+<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a>      tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;d-flex justify-content-between&quot;</span>,</span>
+<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a>               tags<span class="sc">$</span><span class="fu">span</span>(<span class="st">&quot;1 · Under-run slack&quot;</span>), tags<span class="sc">$</span><span class="fu">span</span>(<span class="at">class =</span> <span class="st">&quot;text-success&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;−%d h&quot;</span>, f<span class="sc">$</span>from_slack))),</span>
+<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a>      tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;d-flex justify-content-between&quot;</span>,</span>
+<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a>               tags<span class="sc">$</span><span class="fu">span</span>(<span class="st">&quot;2 · Contingency&quot;</span>), tags<span class="sc">$</span><span class="fu">span</span>(<span class="at">class =</span> <span class="st">&quot;text-success&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;−%d h&quot;</span>, f<span class="sc">$</span>from_cont))),</span>
+<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a>      tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;d-flex justify-content-between&quot;</span>,</span>
+<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a>               tags<span class="sc">$</span><span class="fu">span</span>(<span class="st">&quot;3 · Shortfall&quot;</span>),</span>
+<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a>               tags<span class="sc">$</span><span class="fu">span</span>(<span class="at">class =</span> <span class="cf">if</span> (f<span class="sc">$</span>shortfall <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="st">&quot;text-danger&quot;</span> <span class="cf">else</span> <span class="st">&quot;text-success&quot;</span>,</span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a>                         <span class="fu">sprintf</span>(<span class="st">&quot;%d h&quot;</span>, f<span class="sc">$</span>shortfall))))</span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (f<span class="sc">$</span>absorbable) {</span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a>      box <span class="ot">&lt;-</span> tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;alert alert-success&quot;</span>,</span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>        tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;h5&quot;</span>, <span class="st">&quot;Absorbable internally&quot;</span>),</span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sprintf</span>(<span class="st">&quot;Sourced %d h from under-run slack and %d h from contingency (%d h contingency left). Record the reallocation; no change order needed.&quot;</span>,</span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a>                f<span class="sc">$</span>from_slack, f<span class="sc">$</span>from_cont, f<span class="sc">$</span>contingency_left))</span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>      box <span class="ot">&lt;-</span> tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;alert alert-danger&quot;</span>,</span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a>        tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;h5&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;Change order needed: %d h&quot;</span>, f<span class="sc">$</span>shortfall)),</span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sprintf</span>(<span class="st">&quot;Net headroom (%d h) covers %d h; the remaining %d h is genuine added scope. Defer lower-priority work or raise a change order — do not absorb it as a silent over-run.&quot;</span>,</span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>                m<span class="sc">$</span>findable, f<span class="sc">$</span>need <span class="sc">-</span> f<span class="sc">$</span>shortfall, f<span class="sc">$</span>shortfall))</span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tagList</span>(src, box)</span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>plot <span class="ot">&lt;-</span> <span class="fu">renderPlot</span>({</span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a>    d <span class="ot">&lt;-</span> rv<span class="sc">$</span>ledger</span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a>    dd <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a>      <span class="fu">data.frame</span>(<span class="at">deliverable =</span> d<span class="sc">$</span>deliverable, <span class="at">hours =</span> d<span class="sc">$</span>planned, <span class="at">kind =</span> <span class="st">&quot;Planned&quot;</span>),</span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a>      <span class="fu">data.frame</span>(<span class="at">deliverable =</span> d<span class="sc">$</span>deliverable, <span class="at">hours =</span> d<span class="sc">$</span>eac,     <span class="at">kind =</span> <span class="st">&quot;Forecast (EAC)&quot;</span>))</span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>    dd<span class="sc">$</span>deliverable <span class="ot">&lt;-</span> <span class="fu">factor</span>(dd<span class="sc">$</span>deliverable, <span class="at">levels =</span> <span class="fu">rev</span>(d<span class="sc">$</span>deliverable))</span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a>    <span class="fu">ggplot</span>(dd, <span class="fu">aes</span>(hours, deliverable, <span class="at">fill =</span> kind)) <span class="sc">+</span></span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a>      <span class="fu">geom_col</span>(<span class="at">position =</span> <span class="st">&quot;dodge&quot;</span>, <span class="at">width =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a>      <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">&quot;Planned&quot;</span> <span class="ot">=</span> <span class="st">&quot;#5b8cff&quot;</span>, <span class="st">&quot;Forecast (EAC)&quot;</span> <span class="ot">=</span> <span class="st">&quot;#3fd0c9&quot;</span>)) <span class="sc">+</span></span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a>      <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">&quot;Hours&quot;</span>, <span class="at">y =</span> <span class="cn">NULL</span>, <span class="at">fill =</span> <span class="cn">NULL</span>) <span class="sc">+</span></span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">12</span>) <span class="sc">+</span></span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a>      <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">&quot;top&quot;</span>,</span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a>            <span class="at">panel.grid.major.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a>            <span class="at">plot.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;#222630&quot;</span>, <span class="at">colour =</span> <span class="cn">NA</span>),</span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>            <span class="at">panel.background =</span> <span class="fu">element_rect</span>(<span class="at">fill =</span> <span class="st">&quot;#222630&quot;</span>, <span class="at">colour =</span> <span class="cn">NA</span>),</span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a>            <span class="at">text =</span> <span class="fu">element_text</span>(<span class="at">colour =</span> <span class="st">&quot;#e9edf7&quot;</span>),</span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a>            <span class="at">axis.text =</span> <span class="fu">element_text</span>(<span class="at">colour =</span> <span class="st">&quot;#c5cee4&quot;</span>),</span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a>            <span class="at">panel.grid.major.x =</span> <span class="fu">element_line</span>(<span class="at">colour =</span> <span class="st">&quot;#3a4157&quot;</span>))</span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>dl_ledger <span class="ot">&lt;-</span> <span class="fu">downloadHandler</span>(</span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a>    <span class="at">filename =</span> <span class="cf">function</span>() <span class="st">&quot;effort_ledger.csv&quot;</span>,</span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a>    <span class="at">content =</span> <span class="cf">function</span>(file) {</span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>      d <span class="ot">&lt;-</span> rv<span class="sc">$</span>ledger</span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a>      <span class="fu">names</span>(d) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Deliverable&quot;</span>,<span class="st">&quot;PlannedHours&quot;</span>,<span class="st">&quot;ActualToDate&quot;</span>,<span class="st">&quot;PctComplete&quot;</span>,<span class="st">&quot;EAC&quot;</span>,<span class="st">&quot;Variance&quot;</span>)</span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a>      utils<span class="sc">::</span><span class="fu">write.csv</span>(d, file, <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a>    })</span>
+<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>dl_co <span class="ot">&lt;-</span> <span class="fu">downloadHandler</span>(</span>
+<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a>    <span class="at">filename =</span> <span class="cf">function</span>() <span class="st">&quot;change_order.md&quot;</span>,</span>
+<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a>    <span class="at">content =</span> <span class="cf">function</span>(file) <span class="fu">writeLines</span>(<span class="fu">change_order_text</span>(<span class="fu">fh</span>()), file))</span>
+<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(ui, server)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
 </section>
-<section id="step-3---the-app-skeleton" class="level2">
-<h2 class="anchored" data-anchor-id="step-3---the-app-skeleton">Step 3 - the app skeleton</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny); <span class="fu">library</span>(bslib); <span class="fu">library</span>(DT); <span class="fu">library</span>(ggplot2)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;R/logic.R&quot;</span>)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>seed <span class="ot">&lt;-</span> <span class="fu">hours_load</span>()</span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">page_sidebar</span>(</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Find Hours&quot;</span>,</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">bs_theme</span>(<span class="at">version =</span> <span class="dv">5</span>, <span class="at">bootswatch =</span> <span class="st">&quot;darkly&quot;</span>),</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">sidebar =</span> <span class="fu">sidebar</span>( <span class="fu">numericInput</span>(<span class="st">&quot;need&quot;</span>, <span class="st">&quot;Out-of-scope ask (hours)&quot;</span>, <span class="dv">45</span>, <span class="at">min =</span> <span class="dv">0</span>), ... ),</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># value boxes, editable ledger, verdict, plot ...</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>server <span class="ot">&lt;-</span> <span class="cf">function</span>(input, output, session) { ... }</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">shinyApp</span>(ui, server)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="how-the-reactivity-works-part-by-part" class="level2">
+<h2 class="anchored" data-anchor-id="how-the-reactivity-works-part-by-part">How the reactivity works, part by part</h2>
+<p>Follow the data, not the layout. Here is the chain that makes a click flip the verdict.</p>
+<p><strong>The editable state lives in one place.</strong> <code>rv &lt;- reactiveValues(ledger = withVar(seed$ledger))</code> holds the one frame the user can change. The helper <code>withVar()</code> recomputes the <code>variance</code> column (<code>planned - eac</code>) each time the ledger is rebuilt. Every output reads from <code>rv</code>, so when <code>rv</code> changes, everything that depends on it recomputes. That is the entire trick.</p>
+<p><strong>The rules are reactive expressions.</strong> <code>metrics &lt;- reactive(hours_metrics(rv$ledger, input$contingency))</code> and <code>fh &lt;- reactive(find_hours(input$need, rv$ledger, input$contingency))</code> re-run automatically whenever the ledger <strong>or</strong> the ask input <strong>or</strong> the contingency changes. You never call the roll-up by hand.</p>
+<p><strong>The value boxes just read the reactive.</strong> <code>output$v_planned</code>, <code>output$v_actual</code>, <code>output$v_eac</code>, <code>output$v_cont</code>, and <code>output$v_find</code> each render one field of <code>metrics()</code>. They know nothing about how it was computed.</p>
+<p><strong>Editing a cell mutates the state.</strong> The ledger is a <code>DT</code> with per-cell editing enabled on the numeric columns. The observer on <code>input$ledger_cell_edit</code> coerces the new value with <code>as.numeric()</code>, writes it into <code>rv$ledger</code> for that row and column, recomputes the <code>variance</code> column, and pushes the frame back through a <code>dataTableProxy</code> with <code>replaceData()</code> so the user does not lose their place. That write is what makes the verdict flip, because <code>fh()</code> depends on <code>rv$ledger</code>.</p>
+<p><strong>The quick-pick buttons set the ask.</strong> Each of <code>input$q20</code>, <code>input$q45</code>, <code>input$q90</code>, and <code>input$q150</code> calls <code>updateNumericInput(session, &quot;need&quot;, value = 90)</code> (or 20, 45, 150), which retriggers <code>fh()</code>. The <code>input$reset</code> observer restores <code>rv$ledger</code> from the seed.</p>
+<p><strong>The verdict reads the reactive and branches.</strong> <code>output$verdict</code> reads <code>fh()</code>, shows the three-line sourcing breakdown (slack, contingency, shortfall), then renders a green “Absorbable internally” alert when <code>f$absorbable</code> is true, or a red “Change order needed” alert with the residual hours when it is not.</p>
+<p><strong>The downloads round-trip to Excel and the eTMF.</strong> <code>output$dl_ledger</code> writes <code>rv$ledger</code> to CSV with the workbook’s column names; <code>output$dl_co</code> writes <code>change_order_text(fh())</code>, the hours-only change-order draft, to a Markdown file.</p>
 </section>
-<section id="step-4---editable-state-and-reactive-rules" class="level2">
-<h2 class="anchored" data-anchor-id="step-4---editable-state-and-reactive-rules">Step 4 - editable state and reactive rules</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>  rv <span class="ot">&lt;-</span> <span class="fu">reactiveValues</span>(<span class="at">ledger =</span> <span class="fu">withVar</span>(seed<span class="sc">$</span>ledger))       <span class="co"># planned/actual/pct/eac/variance</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  metrics <span class="ot">&lt;-</span> <span class="fu">reactive</span>(<span class="fu">hours_metrics</span>(rv<span class="sc">$</span>ledger, input<span class="sc">$</span>contingency))</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  fh      <span class="ot">&lt;-</span> <span class="fu">reactive</span>(<span class="fu">find_hours</span>(input<span class="sc">$</span>need, rv<span class="sc">$</span>ledger, input<span class="sc">$</span>contingency))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><code>metrics</code> and <code>fh</code> re-run whenever the ledger <strong>or</strong> the ask input changes. The value boxes and the verdict just read them.</p>
+<section id="verify-it-without-a-browser" class="level2">
+<h2 class="anchored" data-anchor-id="verify-it-without-a-browser">Verify it without a browser</h2>
+<p>You can drive the reactive graph headless, which is how this app was checked before it was ever opened in a browser:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">testServer</span>(<span class="st">&quot;budget_reconciliation/shiny&quot;</span>, {</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="co"># a 90 h ask exhausts slack and reserve, leaving a change-order residual</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  session<span class="sc">$</span><span class="fu">setInputs</span>(<span class="at">need =</span> <span class="dv">90</span>, <span class="at">contingency =</span> <span class="dv">40</span>)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fh</span>()<span class="sc">$</span>shortfall            <span class="co"># 31</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="co"># a 45 h ask is fully absorbable</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  session<span class="sc">$</span><span class="fu">setInputs</span>(<span class="at">need =</span> <span class="dv">45</span>)</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fh</span>()<span class="sc">$</span>absorbable           <span class="co"># TRUE</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
-<section id="step-5---an-editable-table-with-a-proxy" class="level2">
-<h2 class="anchored" data-anchor-id="step-5---an-editable-table-with-a-proxy">Step 5 - an editable table with a proxy</h2>
-<p>On a cell edit, coerce the value, update the state, recompute <code>variance</code>, and push it back with a <code>dataTableProxy</code> so the user does not lose their place:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>ledger <span class="ot">&lt;-</span> <span class="fu">renderDT</span>(</span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="fu">datatable</span>(<span class="fu">disp</span>(rv<span class="sc">$</span>ledger), <span class="at">rownames =</span> <span class="cn">FALSE</span>,</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">editable =</span> <span class="fu">list</span>(<span class="at">target =</span> <span class="st">&quot;cell&quot;</span>, <span class="at">disable =</span> <span class="fu">list</span>(<span class="at">columns =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">5</span>)))),</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">server =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  proxy <span class="ot">&lt;-</span> <span class="fu">dataTableProxy</span>(<span class="st">&quot;ledger&quot;</span>)</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">observeEvent</span>(input<span class="sc">$</span>ledger_cell_edit, {</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    info <span class="ot">&lt;-</span> input<span class="sc">$</span>ledger_cell_edit; j <span class="ot">&lt;-</span> info<span class="sc">$</span>col <span class="sc">+</span> <span class="dv">1</span>L</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    num <span class="ot">&lt;-</span> <span class="fu">suppressWarnings</span>(<span class="fu">as.numeric</span>(info<span class="sc">$</span>value))</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (j <span class="sc">%in%</span> <span class="dv">2</span><span class="sc">:</span><span class="dv">5</span> <span class="sc">&amp;&amp;</span> <span class="sc">!</span><span class="fu">is.na</span>(num)) {</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      rv<span class="sc">$</span>ledger[info<span class="sc">$</span>row, j] <span class="ot">&lt;-</span> num</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      rv<span class="sc">$</span>ledger<span class="sc">$</span>variance <span class="ot">&lt;-</span> rv<span class="sc">$</span>ledger<span class="sc">$</span>planned <span class="sc">-</span> rv<span class="sc">$</span>ledger<span class="sc">$</span>eac</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>      <span class="fu">replaceData</span>(proxy, <span class="fu">disp</span>(rv<span class="sc">$</span>ledger), <span class="at">resetPaging =</span> <span class="cn">FALSE</span>, <span class="at">rownames =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  })</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</section>
-<section id="step-6---the-verdict-quick-picks-a-download" class="level2">
-<h2 class="anchored" data-anchor-id="step-6---the-verdict-quick-picks-a-download">Step 6 - the verdict, quick-picks, a download</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>  output<span class="sc">$</span>verdict <span class="ot">&lt;-</span> <span class="fu">renderUI</span>({</span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    f <span class="ot">&lt;-</span> <span class="fu">fh</span>()</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (f<span class="sc">$</span>absorbable)</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;alert alert-success&quot;</span>, <span class="st">&quot;Absorbable internally&quot;</span>,</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>          <span class="fu">sprintf</span>(<span class="st">&quot; - %d h slack + %d h contingency&quot;</span>, f<span class="sc">$</span>from_slack, f<span class="sc">$</span>from_cont))</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;alert alert-danger&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;Change order needed: %d h&quot;</span>, f<span class="sc">$</span>shortfall))</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  })</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Quick-pick <code>actionButton</code>s call <code>updateNumericInput(session, &quot;need&quot;, value = 90)</code>; a <code>downloadHandler</code> writes the change-order draft from <code>change_order_text(fh())</code>.</p>
-</section>
-<section id="verify-it-headless" class="level2">
-<h2 class="anchored" data-anchor-id="verify-it-headless">Verify it headless</h2>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">testServer</span>(<span class="st">&quot;budget_reconciliation/shiny&quot;</span>, {</span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  session<span class="sc">$</span><span class="fu">setInputs</span>(<span class="at">need =</span> <span class="dv">90</span>, <span class="at">contingency =</span> <span class="dv">40</span>)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">fh</span>()<span class="sc">$</span>shortfall            <span class="co"># 31</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>})</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<section id="the-unit-tests-shiny-is-not-involved" class="level2">
+<h2 class="anchored" data-anchor-id="the-unit-tests-shiny-is-not-involved">The unit tests: shiny is not involved</h2>
+<p>The reconciliation logic is covered by a zero-dependency test you run with <code>Rscript</code>. It is the same file the guide and dashboard trust:</p>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/usr/bin/env Rscript</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Unit tests for the find-hours logic. Zero dependencies (base R only).</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Run from the package root:  Rscript budget_reconciliation/tests/test-logic.R</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># or from this folder:        Rscript test-logic.R</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span> <span class="fu">Find</span>(file.exists, <span class="fu">c</span>(<span class="st">&quot;../shiny/R/logic.R&quot;</span>, <span class="st">&quot;budget_reconciliation/shiny/R/logic.R&quot;</span>, <span class="st">&quot;shiny/R/logic.R&quot;</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(<span class="st">&quot;found logic.R&quot;</span> <span class="ot">=</span> <span class="sc">!</span><span class="fu">is.null</span>(lp))</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(lp)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> <span class="fu">hours_load</span>()</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>m <span class="ot">&lt;-</span> <span class="fu">hours_metrics</span>(d<span class="sc">$</span>ledger, d<span class="sc">$</span>contingency)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;planned totals 850&quot;</span>   <span class="ot">=</span> m<span class="sc">$</span>planned <span class="sc">==</span> <span class="dv">850</span>,</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;eac totals 831&quot;</span>       <span class="ot">=</span> m<span class="sc">$</span>eac <span class="sc">==</span> <span class="dv">831</span>,</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;net slack 19&quot;</span>         <span class="ot">=</span> m<span class="sc">$</span>net_slack <span class="sc">==</span> <span class="dv">19</span>,</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;contingency 40&quot;</span>       <span class="ot">=</span> m<span class="sc">$</span>contingency <span class="sc">==</span> <span class="dv">40</span>,</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;net findable 59&quot;</span>      <span class="ot">=</span> m<span class="sc">$</span>findable <span class="sc">==</span> <span class="dv">59</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="co"># a 45 h ask is absorbable; a 90 h ask needs a 31 h change order</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>a45 <span class="ot">&lt;-</span> <span class="fu">find_hours</span>(<span class="dv">45</span>, d<span class="sc">$</span>ledger, d<span class="sc">$</span>contingency)</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>a90 <span class="ot">&lt;-</span> <span class="fu">find_hours</span>(<span class="dv">90</span>, d<span class="sc">$</span>ledger, d<span class="sc">$</span>contingency)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="fu">stopifnot</span>(</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;45 h absorbable&quot;</span>          <span class="ot">=</span> a45<span class="sc">$</span>absorbable <span class="sc">&amp;&amp;</span> a45<span class="sc">$</span>shortfall <span class="sc">==</span> <span class="dv">0</span>,</span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;90 h -&gt; 31 h change order&quot;</span> <span class="ot">=</span> <span class="sc">!</span>a90<span class="sc">$</span>absorbable <span class="sc">&amp;&amp;</span> a90<span class="sc">$</span>shortfall <span class="sc">==</span> <span class="dv">31</span>,</span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;sourcing order (slack first)&quot;</span> <span class="ot">=</span> a90<span class="sc">$</span>from_slack <span class="sc">==</span> <span class="dv">19</span> <span class="sc">&amp;&amp;</span> a90<span class="sc">$</span>from_cont <span class="sc">==</span> <span class="dv">40</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;find-hours logic: all tests passed</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<p>Run it:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>Rscript budget_reconciliation<span class="sc">/</span>tests<span class="sc">/</span>test<span class="sc">-</span>logic.R   <span class="co"># prints: find-hours logic: all tests passed</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </section>
 <section id="make-it-yours" class="level2">
 <h2 class="anchored" data-anchor-id="make-it-yours">Make it yours</h2>
 <ul>
-<li><strong>Change the data:</strong> edit <code>templates/project_hours_ledger.csv</code>.</li>
-<li><strong>Change the rule:</strong> edit <code>hours_metrics()</code>/<code>find_hours()</code> (for example, hold back part of the contingency as untouchable).</li>
-<li><strong>Add a source step:</strong> insert it into the sourcing order in <code>find_hours()</code>.</li>
+<li>Change the data: edit <code>project_hours_ledger.csv</code> in <code>templates/</code>.</li>
+<li>Change the rule: edit <code>hours_metrics()</code> or <code>find_hours()</code> in <code>shiny/R/logic.R</code>, for example to hold back part of the contingency as untouchable.</li>
+<li>Add a source step: insert it into the sourcing order in <code>find_hours()</code>, before the shortfall line.</li>
+<li>Add a column: add it to the CSV and to the <code>datatable()</code> column list in <code>app.R</code>.</li>
 </ul>
-<p>Same skeleton as the <a href="../../uat_irt/quarto/uat-build.html">UAT tracker</a>.</p>
+<p>The same skeleton, a logic core plus <code>reactiveValues</code> plus reactive rules plus outputs, builds the <a href="../../uat_irt/quarto/uat-build.html">UAT tracker</a> and the four dashboards too.</p>
 </section>
 
 </main>

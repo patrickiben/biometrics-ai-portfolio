@@ -26,7 +26,7 @@ DARK <- theme_minimal(base_size=12) + theme(legend.position="top",
 ```
 
 ::: {.callout-important appearance="simple"}
-**Read-only screening snapshot**, computed from the safety data (`data/*.csv`). Every panel is a screening lens: it flags a position for the medical monitor / SRC / DSMB, it never reports a clinical number or adjudicates. The interactive tool is the [Shiny app](../trialmon_shiny); the [visual guide](trialmon-guide.html) explains the rules. Synthetic, no PHI.
+**Read-only screening snapshot**, computed from the safety data ([`participants.csv`](../trialmon_shiny/data/participants.csv), [`aes.csv`](../trialmon_shiny/data/aes.csv), [`cohorts.csv`](../trialmon_shiny/data/cohorts.csv)). Every panel is a screening lens: it flags a position for the medical monitor / SRC / DSMB, it never reports a clinical number or adjudicates. The interactive tool is the [run &amp; build the Shiny app](trialmon-build.html) page; the [visual guide](trialmon-guide.html) explains the rules. Synthetic, no PHI.
 :::
 
 ```{r kpis, results='asis'}

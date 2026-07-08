@@ -3,8 +3,8 @@ format:
   typst:
     papersize: us-letter
     margin:
-      x: 1.3cm
-      y: 1.0cm
+      x: 1.2cm
+      y: 0.9cm
     fontsize: 9pt
     mainfont: "Helvetica Neue"
     include-in-header: _onepager-preamble.typ
@@ -30,35 +30,35 @@ verdict_col <- if (g$go) "#43c47d" else "#e8657a"
 
 #text(size: 15pt, weight: "bold")[IRT / RTSM User Acceptance Testing]
 #h(1fr)
-#text(fill: muted, size: 8pt)[Operations-only · synthetic · no PHI · say *participant* not *subject*]
+#text(fill: muted, size: 8pt)[Cheat-sheet · operations-only · synthetic · no PHI · say *participant* not *subject*]
 
 #line(length: 100%, stroke: 0.5pt + rgb("#3a4157"))
 #v(2pt)
 
-#grid(columns: (1fr, 1fr), gutter: 10pt,
+#grid(columns: (1fr, 1fr), gutter: 8pt,
   card[
     == What UAT confirms
-    In a test environment you confirm that the vendor's randomization and drug-supply build does *exactly* what your URS and specs say, before any real participant is randomized. You operate the staging IRT in a browser, record dated screenshot evidence, and transcribe results into your workbook so the record is attributable and stands alone for an auditor.
+    In a test environment you confirm the vendor's randomization and drug-supply build does *exactly* what your URS and specs say, before any real participant is randomized. You operate the staging IRT in a browser, capture dated screenshot evidence, and transcribe results into your workbook so the record is attributable and stands alone for an auditor.
   ],
   card[
     == The go-live gate (conjunctive)
     Sign-off is READY only when *all three* hold:
-    #list(
+    #list(tight: true,
       [Every *Critical* test passes],
       [*0* open Critical / Major defects],
       [*100%* traceability (every requirement has a test)],
     )
-    Current snapshot: #text(fill: rgb("`r verdict_col`"), weight: "bold")[`r verdict`]. \
-    #text(fill: muted, size: 8pt)[The gate packages evidence; a named human signs. It does not grant approval.]
+    Snapshot now: #text(fill: rgb("`r verdict_col`"), weight: "bold")[`r verdict`]. \
+    #text(fill: muted, size: 8pt)[Severity, not count, decides. The gate packages evidence; a named human signs.]
   ],
 )
 
-#v(4pt)
+#v(3pt)
 
-#grid(columns: (1.1fr, 1fr), gutter: 10pt,
+#grid(columns: (0.9fr, 1.1fr), gutter: 8pt,
   card[
     == Live snapshot
-    #table(columns: (1fr, auto), stroke: none, inset: 3pt,
+    #table(columns: (1fr, auto), stroke: none, inset: 2.5pt,
       [Test scripts], text(fill: rgb("#e9edf7"))[*`r s$total`*],
       [Passed], text(fill: rgb("#43c47d"))[*`r s$pass`*],
       [Failed], text(fill: rgb("#e8657a"))[*`r s$fail`*],
@@ -68,37 +68,63 @@ verdict_col <- if (g$go) "#43c47d" else "#e8657a"
   ],
   card[
     == Defect severity drives the gate
-    #table(columns: (auto, 1fr, auto), stroke: none, inset: 3pt,
+    #table(columns: (auto, 1fr, auto), stroke: none, inset: 2.5pt,
       text(fill: rgb("#e8657a"))[*Critical*], [Could break the blind, mis-randomize, mis-dose, or corrupt integrity], text(fill: rgb("#e8657a"))[Blocks],
-      text(fill: rgb("#e0a64c"))[*Major*], [Significant functional error in a key workflow (resupply, wrong kit, missing alert)], text(fill: rgb("#e0a64c"))[Blocks until fixed],
+      text(fill: rgb("#e0a64c"))[*Major*], [Significant functional error in a key workflow (resupply, wrong kit, missing alert)], text(fill: rgb("#e0a64c"))[Blocks til fixed],
       text(fill: muted)[*Minor*], [Cosmetic / non-functional (label typo, missing site number)], text(fill: rgb("#43c47d"))[Fix or waive],
     )
   ],
 )
 
-#v(4pt)
+#v(3pt)
 
 #card[
-  == The 8-step workflow
-  #grid(columns: (1fr,1fr,1fr,1fr), gutter: 6pt,
-    [*1.* Derive test cases from URS + specs (positive · negative · boundary)],
-    [*2.* Load the approved test list into the staging IRT],
-    [*3.* Execute each case in the browser; be systematic, not happy-path],
-    [*4.* Record result + dated screenshot evidence],
-    [*5.* Log every failure as a defect with a severity],
-    [*6.* Vendor fixes; retest against the new build],
-    [*7.* Traceability: confirm every requirement maps to a passing test],
-    [*8.* Evaluate the gate; a named human signs the package into the eTMF],
+  == Where it runs: the systems (the workbook is the paper trail)
+  #grid(columns: (auto, auto, auto, auto, auto, auto, auto, auto, auto), align: horizon, gutter: 5pt,
+    text(size: 8.5pt)[*Staging IRT* (vendor, test list)], text(fill: muted)[#sym.arrow.r],
+    text(size: 8.5pt)[*Operate in a browser*], text(fill: muted)[#sym.arrow.r],
+    text(size: 8.5pt)[*Dated screenshots + exports*], text(fill: muted)[#sym.arrow.r],
+    text(size: 8.5pt)[*Excel workbook* (status·defects·traceability·gate)], text(fill: muted)[#sym.arrow.r],
+    text(size: 8.5pt)[*eTMF* (signed package)],
   )
+  #text(fill: muted, size: 8pt)[Failures also go to the *vendor defect tracker*; the vendor promotes a fixed build back to staging for retest. The workbook never connects to the IRT, you transcribe, on purpose.]
 ]
 
-#v(4pt)
+#v(3pt)
+
+#grid(columns: (1fr, 1fr), gutter: 8pt,
+  card[
+    == Anatomy of an executable test (RAND-02)
+    A good test has a *specific, verifiable* expected result, not "works correctly".
+    #list(tight: true, spacing: 3pt,
+      [*Precondition:* test list loaded; the \<70 kg stratum, block 1, has an unused slot.],
+      [*Steps:* register 101-001 at 68.0 kg #sym.arrow.r randomize #sym.arrow.r record kit + confirmation #sym.arrow.r open the allocation report as the unblinded statistician.],
+      [*Expected:* allocated to the next unused \<70 kg / block-1 entry; arm, sequence, kit match the list; the investigator sees a *kit ID only*, not the arm.],
+      [*Verify:* compare cell-for-cell across every stratum and both arms, not one happy-path participant.],
+    )
+  ],
+  card[
+    == The 8-step workflow
+    #grid(columns: (1fr, 1fr), gutter: 4pt,
+      [*1.* Derive test cases from URS + specs (positive · negative · boundary)],
+      [*2.* Load the approved test list into staging IRT],
+      [*3.* Execute each case in the browser; be systematic],
+      [*4.* Record result + dated screenshot evidence],
+      [*5.* Log every failure as a defect with a severity],
+      [*6.* Vendor fixes; retest the new build],
+      [*7.* Traceability: every requirement maps to a passing test],
+      [*8.* Evaluate the gate; a named human signs it into the eTMF],
+    )
+  ],
+)
+
+#v(3pt)
 
 #card[
-  == Run it
+  == Run the interactive tool
   #grid(columns: (auto, 1fr), align: horizon + left, gutter: 10pt,
-    raw("shiny::runApp('uat_irt/shiny')", lang: "r", block: false),
-    text(fill: muted, size: 8pt)[Mark Pass/Fail, close a defect, and the KPIs + gate recompute live.],
+    raw("install.packages(c('shiny','bslib','DT','ggplot2'))\nshiny::runApp('uat_irt/shiny')", lang: "r", block: true),
+    text(fill: muted, size: 8pt)[Select a test, mark it Pass/Fail, close a defect, and the KPIs + go-live gate recompute live. The gate math lives in `shiny/R/logic.R`, shared by the app, the guide, the slides, and the unit tests. Full source in the run-and-build page.],
   )
 ]
 ```

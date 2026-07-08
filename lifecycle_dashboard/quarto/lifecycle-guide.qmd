@@ -27,8 +27,15 @@ st <- score_portfolio(d)
 k  <- lifecycle_kpis(st, d)
 ```
 
+```{=html}
+<style>
+svg[id^="mermaid"]{ width:100% !important; max-width:940px; height:auto; display:block; margin:8px auto; }
+svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !important; }
+</style>
+```
+
 ::: {.callout-note appearance="simple"}
-**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up computed from the portfolio), the [**Shiny app**](../shiny) lets you *run* it and nudge a what-if, the [dashboard](lifecycle-dashboard.html) is a shareable snapshot, and the [run-and-build page](lifecycle-build.html) shows how it is made. Synthetic, no PHI, no participant-level data. A screening lens for operational health, never a reported clinical number.
+**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up computed from the portfolio), the [**run-and-build page**](lifecycle-build.html) lets you *run* it and nudge a what-if, the [dashboard](lifecycle-dashboard.html) is a shareable snapshot, and the [run-and-build page](lifecycle-build.html) shows how it is made. Synthetic, no PHI, no participant-level data. A screening lens for operational health, never a reported clinical number.
 :::
 
 ## What it watches
@@ -36,12 +43,13 @@ k  <- lifecycle_kpis(st, d)
 Operational health of every study from protocol to CSR, on one screen: are milestones slipping, is the query backlog clearing before database lock, is TLF production keeping pace, is double-programming on track.
 
 ```{mermaid}
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
   S[Startup] --> C[Conduct] --> L[DB Lock] --> R[Reporting]
-  S -.-> M1[Protocol · SAP · FPFV]
+  S -.-> M1["Protocol<br/>SAP · FPFV"]
   C -.-> M2[LPLV]
   L -.-> M3[DBL]
-  R -.-> M4[TLFs · CSR]
+  R -.-> M4["TLFs · CSR"]
 ```
 
 ## How the risk score works - it is transparent
@@ -49,18 +57,21 @@ flowchart LR
 No black box. Each study gets four operational sub-scores (0-100), blended into one:
 
 ```{mermaid}
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
-  T[Timeline<br/>overdue milestones +<br/>days-to-lock pressure] --> O
-  D[Data<br/>open queries +<br/>clean/SDV %] --> O
-  F[TLF<br/>% finalized vs<br/>reporting pressure] --> O
-  Rs[Resource<br/>double-programming +<br/>discrepancies] --> O
-  O{{overall = 0.30·T + 0.28·D<br/>+ 0.27·F + 0.15·R}}
-  O --> RAG[RAG: >66 red · 34-66 amber · &le;33 green]
+  T["Timeline<br/>overdue + lock pressure"] --> O
+  D["Data<br/>queries + clean/SDV"] --> O
+  F["TLF<br/>finalized vs pressure"] --> O
+  Rs["Resource<br/>double-prog + discrep"] --> O
+  O{{"overall = 0.30·T + 0.28·D<br/>+ 0.27·F + 0.15·R"}}
+  O --> RAG["RAG bands<br/>red · amber · green"]
 ```
 
 Because it is a formula, you can defend every number and change what "risk" means in one place (`score_study()` in `R/logic.R`).
 
 ## The live portfolio - computed from the data {#live}
+
+Everything below is rendered from four CSVs, the same files the Shiny app reads: [`studies.csv`](../shiny/data/studies.csv), [`milestones.csv`](../shiny/data/milestones.csv), [`deliverables.csv`](../shiny/data/deliverables.csv), and [`query_trend.csv`](../shiny/data/query_trend.csv) (in the [`shiny/data/`](../shiny/data/) folder). Edit those CSVs (or run the app) and these move.
 
 ```{r kpis, results='asis'}
 box <- function(label, value, col) sprintf(
@@ -118,14 +129,14 @@ watch that study's row in the heatmap re-colour. The [run-and-build page](lifecy
 shows how the app is built from `R/logic.R`.
 
 ::: {.callout-tip appearance="simple"}
-**Going live:** `R/gen_data.R` writes the four CSVs so you can see the shape. Replace them with a read-only CTMS / EDC export carrying the same columns and the console is your portfolio. Nothing writes back to a source system.
+**Going live:** `R/gen_data.R` writes the four CSVs ([`studies.csv`](../shiny/data/studies.csv), [`milestones.csv`](../shiny/data/milestones.csv), [`deliverables.csv`](../shiny/data/deliverables.csv), [`query_trend.csv`](../shiny/data/query_trend.csv)) so you can see the shape. Replace them with a read-only CTMS / EDC export carrying the same columns and the console is your portfolio. Nothing writes back to a source system.
 :::
 
 ## The other formats
 
 | Mode | Artifact |
 |---|---|
-| Run | [Shiny app](../shiny) |
+| Run | [Run &amp; build the Shiny app](lifecycle-build.html) |
 | Share (no R) | [Dashboard](lifecycle-dashboard.html) |
 | Build | [Run-and-build walkthrough](lifecycle-build.html) |
 

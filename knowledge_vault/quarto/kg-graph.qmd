@@ -19,7 +19,7 @@ kg <- kg_load("../shiny/data"); V <- kg_vis(kg); st <- kg_stats(kg)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Shareable interactive graph** (no R server needed - it is a self-contained widget). Drag to explore, hover a note to see its detail. The editable version is the [Shiny app](../shiny); the [visual guide](kg-guide.html) explains the structure. Synthetic study, no PHI.
+**Shareable interactive graph** (no R server needed - it is a self-contained widget). Drag to explore, hover a note to see its detail. The editable version is the [Shiny app](kg-build.html); the [visual guide](kg-guide.html) explains the structure. Synthetic study, no PHI.
 :::
 
 ```{r kpis, results='asis'}

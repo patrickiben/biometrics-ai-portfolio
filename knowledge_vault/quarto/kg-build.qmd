@@ -1,6 +1,6 @@
 ---
 title: "Run and build the Study Knowledge Graph"
-subtitle: "The R Shiny graph, from running it to building it yourself"
+subtitle: "The complete R Shiny graph, every line"
 format:
   html:
     theme: darkly
@@ -10,26 +10,34 @@ format:
     embed-resources: true
     highlight-style: github-dark
     code-copy: true
+    code-fold: false
 execute:
   eval: false
+  echo: true
 ---
 
 ## Run it
+
+The interactive tool is a real R Shiny app. From the package root:
 
 ```r
 install.packages(c("shiny", "bslib", "visNetwork", "igraph"))   # once
 shiny::runApp("knowledge_vault/shiny")
 ```
 
-Filter by note type, click a note to read its detail and neighbours.
+Filter by note type, click a note to read its detail and its neighbours, and read the
+graph metrics (notes, links, clusters, the hub). Synthetic study, no PHI.
 
-## The one principle: separate the logic from the UI
+The whole app is two files, shown here in full, nothing elided:
 
-The graph logic lives in plain functions in `shiny/R/logic.R`. The app, the
-[visual guide](kg-guide.html), the [interactive graph](kg-graph.html), and the unit
-tests all call the same functions.
+- **shiny/R/logic.R** &mdash; the pure graph logic (no Shiny). The [visual guide](kg-guide.html), the [interactive graph](kg-graph.html), and the unit tests call these same functions.
+- **shiny/app.R** &mdash; the UI and the reactive server that draws the graph.
 
-## Step 1 - the data is three CSVs
+The one idea to hold onto: the **graph math** lives in `logic.R`, the **screen** lives in `app.R`. You can change what "important" means without touching the app, and change how it looks without touching the math.
+
+## The data it reads
+
+Three CSVs are the whole vault. Edit them to point the app at your study (keep the column names): [`nodes.csv`](../shiny/data/nodes.csv), [`edges.csv`](../shiny/data/edges.csv), [`types.csv`](../shiny/data/types.csv).
 
 ```
 nodes.csv:  id, title, type, status, owner, cluster, summary
@@ -37,64 +45,101 @@ edges.csv:  from, to
 types.csv:  type, label, color
 ```
 
-The three CSVs *are* the vault. Add a note as a row, wire it up with edges, and it
-appears in the graph. Nothing about the study is hard-coded.
+Each row of `nodes.csv` is one study artifact (protocol, SAP, ADaM specs, DMP, monitoring plan, milestones). Each row of `edges.csv` is one dependency between two notes. `types.csv` gives every note type a label and a colour. Nothing about the study is hard-coded.
 
-## Step 2 - the logic turns CSVs into a graph
+## The complete logic core: shiny/R/logic.R
 
-`igraph` gives you the metrics for free - degree (how connected), betweenness (which
-note brokers between clusters):
+Every line of the graph logic. `kg_load()` reads the three CSVs; `kg_igraph()` builds
+the undirected `igraph`; `kg_metrics()` attaches degree and betweenness to each note;
+`kg_neighbors()` lists what a note links to; `kg_stats()` is the value-box row (notes,
+links, clusters, the hub, the top broker); `kg_vis()` shapes nodes and edges for
+`visNetwork`. Nothing here depends on Shiny, so you can test it in a plain console.
 
-```r
-kg_igraph <- function(kg)
-  igraph::simplify(igraph::graph_from_data_frame(
-    kg$edges[, c("from","to")], directed = FALSE, vertices = kg$nodes["id"]))
-
-kg_metrics <- function(kg) {
-  g <- kg_igraph(kg); n <- kg$nodes
-  n$degree      <- as.integer(igraph::degree(g)[n$id])
-  n$betweenness <- as.integer(round(igraph::betweenness(g, normalized = TRUE)[n$id] * 100))
-  n
-}
+```{r logic, code=readLines("../shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-`kg_vis()` then shapes the nodes/edges for `visNetwork` (colour by type, size by degree,
-an HTML tooltip per note).
+Read the metrics: `kg_metrics()` calls `igraph::degree()` (how many notes link to a
+note, which drives node size) and `igraph::betweenness()` (how much a note sits
+*between* clusters, which finds the broker). `kg_stats()` then sorts by each to pick
+the hub and the broker. Those numbers are computed from the edges, never asserted.
 
-## Step 3 - the app draws it with visNetwork
+## The complete app: shiny/app.R
 
-```r
-output$net <- renderVisNetwork({
-  visNetwork(sub()$nodes, sub()$edges, background = "#141925") |>
-    visOptions(highlightNearest = list(enabled = TRUE, degree = 1, hover = TRUE)) |>
-    visPhysics(solver = "forceAtlas2Based") |>
-    visLegend(useGroups = FALSE, addNodes = legend) |>
-    visEvents(selectNode =
-      "function(n){ Shiny.setInputValue('kg_sel', n.nodes[0], {priority:'event'}); }")
-})
+Every line of the UI and server. Read it top to bottom; the walk-through below points
+at the parts that matter.
+
+```{r app, code=readLines("../shiny/app.R"), eval=FALSE, echo=TRUE}
 ```
 
-The type checkboxes drive `sub()` (a filtered nodes/edges list), so re-checking a type
-re-draws the subgraph. Clicking a node fires `visEvents` -> `input$kg_sel`, which the
-detail panel reads.
+## How the reactivity works, part by part
 
-## Step 4 - the detail panel and metrics
+Follow the data, not the layout. Here is the chain that makes a checkbox redraw the
+graph and a click fill the detail panel.
 
-`kg_neighbors(kg, id)` lists the notes a selected note links to; `kg_stats(kg)` gives
-the value-box numbers (notes, links, clusters, the hub). All from `igraph`.
+**The graph is loaded once, up front.** `kg <- kg_load("data")` and `V <- kg_vis(kg)`
+run when the app starts, so the shaped nodes and edges (`V$nodes`, `V$edges`) are ready
+before any input. The value-box numbers come from `st <- kg_stats(kg)` in the server.
 
-## Verify it
+**The type checkboxes drive one reactive.** The `sub` reactive keeps only the
+nodes whose `group` is in `input$types`, then keeps only the edges whose both ends
+survive. Re-checking a type re-runs `sub()`, which is the only thing `renderVisNetwork`
+reads, so the subgraph redraws. You never redraw by hand.
+
+**Drawing the graph reads that reactive.** `output$net` renders the `visNetwork` from
+`sub()` and attaches a `selectNode` event handler. That JavaScript callback fires
+`Shiny.setInputValue("kg_sel", nodes.nodes[0])` whenever you click a node, which is how
+a click in the browser becomes an R input.
+
+**Selecting a note fills the detail panel.** `selected` is a `reactiveVal` that starts
+at `"hub"`. `observeEvent(input$kg_sel, selected(input$kg_sel))` updates it on a click,
+and the focus dropdown updates it too. `output$detail` reads `selected()`, looks up that
+note, and calls `kg_neighbors(kg, id)` to list what it links to.
+
+**Focus just recenters.** The `input$focus` observer uses a `visNetworkProxy` to
+call `visFocus()` and `visSelectNodes()` on the chosen note, without redrawing the whole
+graph.
+
+**Everything else just reads the loaded data.** The value boxes read `st`, the graph
+reads `sub()`, and the detail panel reads `selected()` plus `kg_neighbors()`. Change the
+CSVs and every one of these updates on the next run.
+
+## Verify it without a browser
+
+The graph logic has no Shiny in it, so you can drive it in a plain console. This is how
+the logic was checked before it was ever opened in a browser:
 
 ```r
-Rscript knowledge_vault/tests/test-logic.R     # 28 notes, 59 links, hub is most-connected
+source("knowledge_vault/shiny/R/logic.R")
+kg <- kg_load("knowledge_vault/shiny/data")
+st <- kg_stats(kg)
+st$n_nodes           # number of notes
+st$n_edges           # number of links
+st$hub_title         # the most-connected note
+st$broker_title      # the note that most brokers between clusters
+nrow(kg_neighbors(kg, "sap"))   # how many notes the SAP links to
+```
+
+## The unit tests: shiny is not involved
+
+The graph logic is covered by a zero-dependency test you run with `Rscript`. It is the
+same file the guide and the interactive graph trust:
+
+```{r tests, code=readLines("../tests/test-logic.R"), eval=FALSE, echo=TRUE}
+```
+
+Run it:
+
+```r
+Rscript knowledge_vault/tests/test-logic.R   # prints: Knowledge-graph logic: all tests passed
 ```
 
 ## Make it yours
 
-- **Add a note:** a row in `nodes.csv` + its links in `edges.csv`.
-- **Add a category:** a row in `types.csv` (type, label, colour).
-- **Change what "important" means:** size nodes by `betweenness` instead of `degree` in `kg_vis()`.
+- **Add a note:** a row in [`nodes.csv`](../shiny/data/nodes.csv) plus its links in [`edges.csv`](../shiny/data/edges.csv). It appears in the graph, sized by how many notes link to it.
+- **Add a category:** a row in [`types.csv`](../shiny/data/types.csv) (type, label, colour), and it becomes a checkbox and a legend entry.
+- **Change what "important" means:** size nodes by `betweenness` instead of `degree` in `kg_vis()`. Nothing else changes, because everything reads that one function.
+- **Add a panel:** another `card()` in the UI and a matching `render*` in the server.
 
-Same principle as the other consoles (logic core, data as CSV, one render path):
-the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html) and the
-[risk console](../../risk_monitor/quarto/risk-build.html).
+The same skeleton, a logic core plus data as CSV plus one render path, builds the
+[lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html) and the
+[UAT tracker](../../uat_irt/quarto/uat-build.html) too.

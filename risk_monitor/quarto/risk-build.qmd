@@ -1,6 +1,6 @@
 ---
 title: "Run and build the Trial-Termination Early-Warning console"
-subtitle: "The R Shiny console, from running it to building it yourself"
+subtitle: "The complete R Shiny console, every line"
 format:
   html:
     theme: darkly
@@ -10,107 +10,99 @@ format:
     embed-resources: true
     highlight-style: github-dark
     code-copy: true
+    code-fold: false
 execute:
   eval: false
+  echo: true
 ---
 
 ## Run it
+
+The interactive tool is a real R Shiny app you own. From the package root:
 
 ```r
 install.packages(c("shiny", "bslib", "DT"))   # once
 shiny::runApp("risk_monitor/shiny")
 ```
 
-Select a signal, set its level, and watch the tier and overall risk re-colour.
+Select a signal, set its level (green / amber / red), and watch the tier RAG and the
+overall termination-risk index re-colour. Use "Reset to feed" to return to the seed
+state. The AI flags and drafts; the SRC / DSMB / medical monitor / PM / account lead
+decide. Synthetic, no PHI, no participant records.
 
-## The one principle: separate the logic from the UI
+The whole console is two files, shown here in full, nothing elided:
 
-The roll-up lives in plain functions in `shiny/R/logic.R`. The app, the
-[visual guide](risk-guide.html), the [dashboard](risk-dashboard.html), and the unit
-tests all call the same functions.
+- **shiny/R/logic.R** &mdash; the pure roll-up scoring (no Shiny). The [visual guide](risk-guide.html), the [dashboard](risk-dashboard.html), and the unit tests call these same functions.
+- **shiny/app.R** &mdash; the UI and the reactive server.
 
-## Step 1 - the transparent roll-up
+The one idea to hold onto: the **rules** live in logic.R, the **screen** lives in app.R. You can change what a tier RAG means without touching the app, and change how it looks without touching the rules.
 
-```r
-SEVERITY <- c(green = 0, amber = 50, red = 100)
+## The data it reads
 
-tier_score <- function(signals, tier) {
-  x <- signals[signals$tier == tier, ]
-  sev <- SEVERITY[as.character(x$level)]
-  score <- sum(sev * x$weight) / sum(x$weight)     # severity-weighted blend
-  list(score = round(score), rag = rag_of(score))
-}
+One CSV is the whole dataset. Edit it to point the console at your study (keep the column names): [`signals.csv`](../shiny/data/signals.csv). It carries `tier, id, signal, category, engine, level, weight, advanced, detail`, a representative subset of the 65-signal catalog. The `advanced = TRUE` rows are the continuous signals from the published-method engine (Optimal Transport / Wasserstein drift, Active Inference / free-energy).
 
-risk_overall <- function(signals) {                 # weight the tiers
-  ts <- vapply(TIERS, function(t) tier_score(signals, t)$score, numeric(1))
-  w  <- c(Participant = .5, Study = .3, Client = .2)[TIERS]
-  round(sum(ts * w) / sum(w))
-}
+## The complete logic core: shiny/R/logic.R
+
+Every line of the roll-up. `risk_load()` reads the CSV and levels the RAG factor; `tier_score()` is the severity-weighted blend of one tier; `risk_overall()` weights the tiers (participant safety heaviest); `risk_feed()` is the firing-only, red-first list; `risk_counts()` is the tally. Nothing here depends on Shiny, so you can test it in a plain console.
+
+```{r logic, code=readLines("../shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-Three levels, per-signal weights, tier and overall blends, RAG thresholds. Change a
-weight or a threshold here and every surface updates.
+Read the roll-up: each signal has a level mapped to a severity in `SEVERITY` (green 0, amber 50, red 100) and a per-signal `weight`. A tier score is the weight-weighted mean of its signals' severities, and `risk_overall()` blends the three tier scores with `TIER_WEIGHT` (Participant 0.50, Study 0.30, Client 0.20). `rag_of()` turns any score into a colour at the thresholds 25 and 55. Change a weight or a threshold on that one line and every surface, the guide, the dashboard, and the app, updates at once.
 
-## Step 2 - the data is a signal feed you can swap
+## The complete app: shiny/app.R
 
-`data/signals.csv` carries `tier, id, signal, category, engine, level, weight,
-advanced, detail`. It is a representative subset of the 65-signal catalog; replace
-it with your live KRI / stopping-rule feed (same columns). `advanced = TRUE` marks
-the continuous signals from the published-method engine (Optimal Transport,
-Active Inference).
+Every line of the UI and server. Read it top to bottom; the walk-through below points at the parts that matter.
 
-```r
-s <- risk_load("data")
-risk_overall(s)$rag          # the portfolio RAG
-risk_feed(s)                 # every firing signal, ranked red-first
+```{r app, code=readLines("../shiny/app.R"), eval=FALSE, echo=TRUE}
 ```
 
-## Step 3 - the app skeleton and the what-if
+## How the reactivity works, part by part
 
-```r
-ui <- page_sidebar(
-  title = "Trial-Termination Early-Warning",
-  theme = bs_theme(version = 5, bootswatch = "darkly"),
-  sidebar = sidebar(
-    selectInput("tier", "Show tier", c("All", TIERS)),
-    selectInput("sig", "Signal", ids),
-    radioButtons("level", NULL, c("green","amber","red"), inline = TRUE)),
-  # value boxes (overall + 3 tiers), signals table, feed ...
-)
+Follow the data, not the layout. Here is the chain that makes a click re-colour the risk index.
 
-server <- function(input, output, session) {
-  rv <- reactiveValues(signals = seed)
-  observeEvent(input$level, {                       # the what-if
-    i <- which(rv$signals$id == input$sig)
-    rv$signals$level[i] <- factor(input$level, levels = c("green","amber","red"))
-  })
-  ov <- reactive(risk_overall(rv$signals))          # recomputes; boxes/feed read it
-}
-```
+**The editable state lives in one place.** `rv <- reactiveValues(signals = seed)` holds the one frame the user can change. Every output reads from `rv$signals`, so when it changes, everything that depends on it recomputes. That is the entire trick.
 
-Setting a signal's level writes to `rv$signals`, which re-runs `ov()`, which
-re-colours the tier boxes and reorders the feed.
+**The what-if writes into that state.** The observer on `input$level` finds the selected signal by `input$sig`, and if the chosen level differs, it writes a new `factor` into `rv$signals$level` for that row. Selecting a row in the table calls `updateSelectInput` so the sidebar `input$sig` follows your click, and switching `input$sig` calls `updateRadioButtons` so the level control shows that signal's current level.
 
-## Step 4 - the value boxes and feed
+**The rule is a reactive expression.** `ov <- reactive(risk_overall(rv$signals))` re-runs automatically whenever `rv$signals` changes. You never call `risk_overall()` by hand.
 
-Colour each value box by its RAG (`renderUI` returning a coloured span), render the
-signals as an editable-select `DT`, and build the feed as ranked red-first rows.
+**The value boxes just read the reactive.** The helper `vb()` reads `ov()`, pulls either the overall score or a named tier from `o$tiers`, colours the span by its RAG, and each of `output$v_overall`, `output$v_part`, `output$v_study`, and `output$v_client` renders it. When `rv$signals` changes, `ov()` recomputes and all four boxes re-colour.
 
-## Verify it headless
+**The table and the feed read the state directly.** `output$signals` renders `rv$signals` (filtered by `input$tier`) as a single-select `DT`; `output$feed` calls `risk_feed(rv$signals)` and lays out the firing signals red-first, badging the `advanced` ones "ADV". Nothing recomputes by hand; changing `rv$signals` drives it all.
+
+**Reset restores the seed.** The observer on `input$reset` assigns `rv$signals <- seed` and re-points the level control at the seed level of the current signal.
+
+## Verify it without a browser
+
+You can drive the reactive graph headless, which is how this console was checked before it was ever opened in a browser:
 
 ```r
 shiny::testServer("risk_monitor/shiny", {
+  # escalate a Study-tier signal and watch that tier rise
   session$setInputs(sig = "ESC-33", level = "red")
-  ov()$tiers$Study$score      # rises as the study signal escalates
+  ov()$tiers$Study$score      # higher than the seed value
+  ov()$score                  # the overall index moves with it
 })
+```
+
+## The unit tests: shiny is not involved
+
+The roll-up is covered by a zero-dependency test you run with `Rscript`. It is the same file the guide and dashboard trust:
+
+```{r tests, code=readLines("../tests/test-logic.R"), eval=FALSE, echo=TRUE}
+```
+
+Run it:
+
+```r
+Rscript risk_monitor/tests/test-logic.R      # prints: Risk logic: all tests passed
 ```
 
 ## Make it yours
 
-- **Change the rule:** edit `rag_of()` / the tier weights in `R/logic.R`.
-- **Change the data:** swap `data/signals.csv` for your KRI feed.
-- **Add a tier or a signal:** add rows and (for a new tier) a `TIER_WEIGHT` entry.
+- **Change the rule:** edit `rag_of()` or the `TIER_WEIGHT` weights in `shiny/R/logic.R`. Nothing else changes, because everything calls those functions.
+- **Change the data:** swap `data/signals.csv` for your live KRI / stopping-rule feed (same columns).
+- **Add a tier or a signal:** add rows to the CSV and, for a new tier, add a `TIER_WEIGHT` entry and a value box in `app.R`.
 
-Same skeleton as the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html),
-the [UAT tracker](../../uat_irt/quarto/uat-build.html), and the
-[find-hours app](../../budget_reconciliation/quarto/hours-build.html).
+The same skeleton, a logic core plus `reactiveValues` plus a reactive rule plus outputs, builds the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html), the [UAT tracker](../../uat_irt/quarto/uat-build.html), and the [find-hours app](../../budget_reconciliation/quarto/hours-build.html) too.

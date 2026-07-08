@@ -2,7 +2,7 @@
 # app.R — IRT / RTSM UAT Execution & Sign-off Tracker (Shiny)
 #
 # A runnable, editable version of the UAT tracker. Select a test and mark it
-# Pass/Fail/..., close a defect, and watch the KPIs and the go-live sign-off
+# Pass/Fail/Blocked, close a defect, and watch the KPIs and the go-live sign-off
 # gate recompute live. Operations-only, synthetic, no PHI.
 #
 # Run:  shiny::runApp("uat_irt/shiny")     (from the package root)

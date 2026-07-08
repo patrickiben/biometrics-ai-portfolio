@@ -24,7 +24,7 @@ f45 <- find_hours(45, d$ledger, d$contingency)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Read-only shareable snapshot**, computed from the effort ledger (`templates/project_hours_ledger.csv`). It connects to no real budget or timesheet. The interactive tool is the [Shiny app](../shiny), and the [visual guide](hours-guide.html) explains it. Hours / effort only, no dollars. Synthetic.
+**Read-only shareable snapshot**, computed from the effort ledger (`templates/project_hours_ledger.csv`). It connects to no real budget or timesheet. The interactive tool is the [runnable R Shiny app](hours-build.html), and the [visual guide](hours-guide.html) explains it. Hours / effort only, no dollars. Synthetic.
 :::
 
 ```{r kpis, results='asis'}

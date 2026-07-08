@@ -1,6 +1,6 @@
 ---
 title: "Run and build the Study Lifecycle Monitor"
-subtitle: "The R Shiny console, from running it to building it yourself"
+subtitle: "The complete R Shiny console, every line"
 format:
   html:
     theme: darkly
@@ -10,107 +10,140 @@ format:
     embed-resources: true
     highlight-style: github-dark
     code-copy: true
+    code-fold: false
 execute:
   eval: false
+  echo: true
 ---
 
 ## Run it
+
+The interactive tool is a real R Shiny app. From the package root:
 
 ```r
 install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
 shiny::runApp("lifecycle_dashboard/shiny")
 ```
 
-Pick a study, then move the what-if sliders and watch its row in the risk heatmap
-re-colour. The scoring is transparent, so every number is defensible.
+Pick a study, then move the what-if sliders (open queries, double-programmed %) and
+watch that study's row in the risk heatmap re-colour. The scoring is transparent, so
+every number is defensible.
 
-## The one principle: separate the logic from the UI
+The whole console is three R files, shown here in full, nothing elided:
 
-The scoring lives in plain functions in `shiny/R/logic.R`. The app, the
-[visual guide](lifecycle-guide.html), the [dashboard](lifecycle-dashboard.html),
-and the unit tests all call the same functions.
+- **shiny/R/logic.R** &mdash; the pure scoring and signal logic (no Shiny). The [visual guide](lifecycle-guide.html), the [dashboard](lifecycle-dashboard.html), and the unit tests call these same functions.
+- **shiny/R/gen_data.R** &mdash; the deterministic synthetic portfolio, the four CSVs the app reads.
+- **shiny/app.R** &mdash; the UI and the reactive server.
 
-## Step 1 - the transparent scoring
+The one idea to hold onto: the **rules** live in logic.R, the **screen** lives in app.R.
+You can change what "risk" means without touching the app, and change how it looks
+without touching the rules.
 
-```r
-score_study <- function(s, overdue) {
-  dblp <- dbl_pressure(s$phase, s$days_to_dbl); repp <- rep_pressure(s$phase)
-  timeline <- clamp(overdue * 22 + dblp * 45)
-  data     <- clamp((min(1, s$open_queries/120)*45 + (1-s$clean_pct)*30 +
-                     (1-s$sdv_pct)*25) * (0.5 + 0.6*dblp))
-  tlf      <- clamp((1 - s$tlf_finalized/s$tlf_planned)*100 * (0.3 + 0.8*repp))
-  resource <- clamp((1 - s$dbl_prog_pct/100)*55 + min(1, s$discrep/18)*45*repp)
-  overall  <- clamp(0.30*timeline + 0.28*data + 0.27*tlf + 0.15*resource)
-  list(Timeline=timeline, Data=data, TLF=tlf, Resource=resource, overall=overall)
-}
+## The data it reads
+
+Four CSVs are the whole dataset. Edit them to point the app at your study (keep the
+column names): [`studies.csv`](../shiny/data/studies.csv), [`milestones.csv`](../shiny/data/milestones.csv), [`deliverables.csv`](../shiny/data/deliverables.csv), [`query_trend.csv`](../shiny/data/query_trend.csv). On a real study you replace them with a read-only CTMS / EDC export carrying the same columns; nothing writes back to a source system.
+
+## The complete logic core: shiny/R/logic.R
+
+Every line of the scoring. `lifecycle_load()` reads the four CSVs; `score_study()` is
+the transparent per-study blend; `score_portfolio()` attaches the score columns and the
+RAG band; `lifecycle_kpis()` is the KPI row; `lifecycle_signals()` ranks the
+early-warning signals. Nothing here depends on Shiny, so you can test it in a plain
+console.
+
+```{r logic, code=readLines("../shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-Four sub-scores, one weighted blend, RAG thresholds at 33 and 66. Change the
-weights or a rule here and every surface updates.
+Read the score: `score_study()` builds four sub-scores, then blends them as
+`overall <- clamp(0.30 * timeline + 0.28 * data + 0.27 * tlf + 0.15 * resource)`, and
+`score_portfolio()` turns that into a RAG band with
+`st$rag <- ifelse(st$overall > 66, "red", ifelse(st$overall > 33, "amber", "green"))`.
+Change those two lines and you have changed what "at risk" means, everywhere, at once.
 
-## Step 2 - the data is CSV you can swap
+## The complete data generator: shiny/R/gen_data.R
 
-`R/gen_data.R` writes four CSVs (`studies`, `milestones`, `deliverables`,
-`query_trend`). On a real study you replace them with a read-only CTMS / EDC
-export carrying the same columns. `lifecycle_load()` reads them; nothing writes back.
+Every line of the synthetic portfolio. `gen_portfolio()` writes the four CSVs
+deterministically (fixed seed), and forces `CP-108` into a clearly at-risk state so the
+red gate and the signals are exercised. Swap this out for a real export and the app does
+not change.
 
-```r
-d <- lifecycle_load("data")
-st <- score_portfolio(d)        # adds Timeline/Data/TLF/Resource/overall/rag
-lifecycle_kpis(st, d)$at_risk   # how many studies over threshold
+```{r gendata, code=readLines("../shiny/R/gen_data.R"), eval=FALSE, echo=TRUE}
 ```
 
-## Step 3 - the app skeleton and the what-if
+## The complete app: shiny/app.R
 
-```r
-ui <- page_sidebar(
-  title = "Study Lifecycle Monitor",
-  theme = bs_theme(version = 5, bootswatch = "darkly"),
-  sidebar = sidebar(
-    selectInput("study", "Study", choices = ids),
-    sliderInput("openq", "Open queries", 0, 150, 0),
-    sliderInput("dblprog", "Double-programmed %", 0, 100, 50)),
-  # value boxes, heatmap, signals, trend, detail ...
-)
+Every line of the UI and server. Read it top to bottom; the walk-through below points
+at the parts that matter.
 
-server <- function(input, output, session) {
-  rv <- reactiveValues(studies = seed$studies)
-  observeEvent(list(input$openq, input$dblprog), {          # the what-if
-    i <- which(rv$studies$id == input$study)
-    rv$studies$open_queries[i] <- input$openq
-    rv$studies$dbl_prog_pct[i] <- input$dblprog
-  })
-  st <- reactive(score_portfolio(list(studies = rv$studies,        # recomputes
-                    milestones = seed$milestones, deliverables = seed$deliverables,
-                    query_trend = seed$query_trend)))
-  # every output reads st(): value boxes, the heatmap, the signals, the detail
-}
+```{r app, code=readLines("../shiny/app.R"), eval=FALSE, echo=TRUE}
 ```
 
-Moving a slider writes to `rv$studies`, which re-runs `st()`, which re-colours the
-heatmap. You never call the scorer by hand; the reactive does.
+## How the reactivity works, part by part
 
-## Step 4 - the heatmap and the detail
+Follow the data, not the layout. Here is the chain that makes a slider re-colour the
+heatmap.
 
-`renderPlot({ ggplot(heat_long(), aes(dim, id, fill = value)) + geom_tile() ... })`
-for the RAG grid; a milestone-track and a TLF-funnel `ggplot` for the selected
-study; a `downloadHandler` is a natural add for exporting the scored portfolio.
+**The editable state lives in one place.** `rv <- reactiveValues(studies = seed$studies)`
+holds the one frame the user can change. Every output reads from a reactive built on
+`rv`, so when `rv$studies` changes, everything that depends on it recomputes. That is the
+entire trick.
 
-## Verify it headless
+**The what-if writes back to that state.** The observer on `list(input$openq, input$dblprog)`
+finds the selected study's row with `which(rv$studies$id == input$study)` and writes the
+slider values into `rv$studies$open_queries[i]` and `rv$studies$dbl_prog_pct[i]`. A
+second observer on `input$study` keeps the sliders in sync when you switch studies, and
+`input$reset` restores `seed$studies`.
+
+**The rules are reactive expressions.** The `data_now` reactive reassembles the portfolio
+(studies from `rv$studies`, plus the seed milestones, deliverables, and query trend),
+`st <- reactive(score_portfolio(data_now()))` re-scores it, and
+`kpi <- reactive(lifecycle_kpis(st(), data_now()))` rolls it up. These re-run automatically
+whenever `rv$studies` changes. You never call the scorer by hand.
+
+**Every output just reads the reactives.** The value boxes read `kpi()`, the heatmap reads
+`st()` through `heat_long()`, the ranked signals read `lifecycle_signals(st(), data_now())`,
+and the per-study milestone track and TLF funnel read `rv$studies` for the selected `input$study`.
+
+**Clicking the heatmap selects a study.** The observer on `input$heat_click` rounds the click
+y-position to a row index into `rev(x$id)` and calls `updateSelectInput()` so the detail
+panels follow. Nothing recomputes by hand; changing `rv` (or the selection) triggers the
+reactive that does.
+
+## Verify it without a browser
+
+You can drive the reactive graph headless, which is how this app was checked before it
+was ever opened in a browser:
 
 ```r
 shiny::testServer("lifecycle_dashboard/shiny", {
+  # push a study's open queries to the top of the slider and watch its risk rise
   session$setInputs(study = "CP-108", openq = 150)
   st()$overall[st()$id == "CP-108"]     # rises as open queries climb
 })
 ```
 
+## The unit tests: shiny is not involved
+
+The scoring is covered by a zero-dependency test you run with `Rscript`. It is the same
+file the guide and dashboard trust:
+
+```{r tests, code=readLines("../tests/test-logic.R"), eval=FALSE, echo=TRUE}
+```
+
+Run it:
+
+```r
+Rscript lifecycle_dashboard/tests/test-logic.R   # prints: Lifecycle logic: all tests passed
+```
+
 ## Make it yours
 
-- **Change the rule:** edit `score_study()` / the signal rules in `R/logic.R`.
-- **Change the data:** swap the CSVs for a CTMS export (same columns).
-- **Add a dimension:** add a sub-score in `score_study()` and a column to the heatmap.
+- **Change the rule:** edit `score_study()` (or the signal rules in `lifecycle_signals()`) in `shiny/R/logic.R`. Nothing else changes, because everything calls those functions.
+- **Change the data:** swap the four CSVs in `shiny/data/` for a CTMS export with the same columns.
+- **Add a dimension:** add a sub-score in `score_study()`, add its column to `score_portfolio()`, and add it to the heatmap's `dims` vector.
+- **Add a panel:** another `card()` in the UI and a matching `render*` in the server.
 
-Same skeleton as the [UAT tracker](../../uat_irt/quarto/uat-build.html) and the
-[find-hours app](../../budget_reconciliation/quarto/hours-build.html): logic core,
-`reactiveValues`, reactive rules, outputs.
+The same skeleton, a logic core plus `reactiveValues` plus reactive rules plus outputs,
+builds the [UAT tracker](../../uat_irt/quarto/uat-build.html) and the
+[find-hours app](../../budget_reconciliation/quarto/hours-build.html) too.

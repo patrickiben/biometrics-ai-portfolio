@@ -30,12 +30,19 @@ DARK <- theme_minimal(base_size=12) + theme(legend.position="top",
   panel.grid=element_line(colour="#2a3242"), plot.title=element_text(colour="#e9edf7", size=12))
 ```
 
+```{=html}
+<style>
+svg[id^="mermaid"]{ width:100% !important; max-width:940px; height:auto; display:block; margin:8px auto; }
+svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !important; }
+</style>
+```
+
 ::: {.callout-important appearance="simple"}
 **Every panel is a SCREENING lens.** It flags a position for the medical monitor / SRC / DSMB. It never reports a clinical number and never adjudicates a DLT or a Hy's-Law case. Reported safety numbers come from the validated safety database.
 :::
 
 ::: {.callout-note appearance="simple"}
-**Run / share / read / build.** This page *shows* the console, the [**Shiny app**](../trialmon_shiny) lets you *click* the eDISH plot to open an evidence packet, the [dashboard](trialmon-dashboard.html) is a shareable snapshot, and the [run-and-build page](trialmon-build.html) shows how it is made. Synthetic, no PHI (values are xULN multiples).
+**Run / share / read / build.** This page *shows* the console, the [**run &amp; build the Shiny app**](trialmon-build.html) page lets you *click* the eDISH plot to open an evidence packet, the [dashboard](trialmon-dashboard.html) is a shareable snapshot, and the [run-and-build page](trialmon-build.html) shows how it is made. Synthetic, no PHI (values are xULN multiples).
 :::
 
 ## The eDISH AND-gate - why it is not just "high ALT"
@@ -43,16 +50,19 @@ DARK <- theme_minimal(base_size=12) + theme(legend.position="top",
 The Hy's-Law screen fires only when transaminase **and** bilirubin are both up. A high ALT alone is not a Hy's position, and the screen must not cry wolf on it.
 
 ```{mermaid}
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
-  A{ALT or AST<br/>> 3x ULN?} -->|no| G[GREEN]
-  A -->|yes| B{TBili<br/>> 2x ULN?}
-  B -->|no| N[ALT-only<br/>near-miss, GREEN]
-  B -->|yes| R[Hy's-Law position<br/>RED - notify medical monitor / SRC]
+  A{"ALT or AST<br/>&gt; 3x ULN?"} -->|no| G["GREEN"]
+  A -->|yes| B{"TBili<br/>&gt; 2x ULN?"}
+  B -->|no| N["ALT-only<br/>near-miss, GREEN"]
+  B -->|yes| R["Hy's-Law position<br/>RED, notify monitor"]
 ```
 
 In the synthetic data, **CP101-014** (ALT 5.6x, TBili 3.1x) sits in the RED quadrant, while **CP101-009** (ALT 4.2x, TBili 1.6x) is the near-miss the AND-gate correctly keeps green.
 
 ## The live screens - computed from the data {#live}
+
+Everything below is computed from three synthetic CSVs you can open directly: [`participants.csv`](../trialmon_shiny/data/participants.csv) (the per-participant screens, xULN multiples), [`aes.csv`](../trialmon_shiny/data/aes.csv) (the adverse-event rows), and [`cohorts.csv`](../trialmon_shiny/data/cohorts.csv) (the dose ladder). Edit those (or run the app) and these panels move.
 
 ```{r kpis, results='asis'}
 st <- trialmon_status(tm)
@@ -120,7 +130,7 @@ shows how it is built from `R/logic.R`.
 
 | Mode | Artifact |
 |---|---|
-| Run | [Shiny app](../trialmon_shiny) |
+| Run | [Run &amp; build the Shiny app](trialmon-build.html) |
 | Share (no R) | [Dashboard](trialmon-dashboard.html) |
 | Build | [Run-and-build walkthrough](trialmon-build.html) |
 

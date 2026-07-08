@@ -1,6 +1,6 @@
 ---
 title: "Run and build TRIALMON"
-subtitle: "The R Shiny safety-screening console, from running it to building it yourself"
+subtitle: "The complete R Shiny safety-screening console, every line"
 format:
   html:
     theme: darkly
@@ -10,92 +10,136 @@ format:
     embed-resources: true
     highlight-style: github-dark
     code-copy: true
+    code-fold: false
 execute:
   eval: false
+  echo: true
 ---
 
 ## Run it
+
+TRIALMON is a real R Shiny app. From the package root:
 
 ```r
 install.packages(c("shiny", "bslib", "ggplot2"))   # once
 shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 ```
 
-Click a point on the eDISH plot to open a participant's evidence packet.
+Click a point on the eDISH plot (or pick a participant in the sidebar) to open that
+participant's evidence packet: the eDISH position, the QTcF tier, the adverse events,
+the disposition, and the analyte trajectory. Every panel is a SCREENING lens. It flags
+a position for the medical monitor / SRC / DSMB, it never reports a clinical number and
+never adjudicates a DLT or a Hy's-Law case. Reported safety numbers come from the
+validated safety database.
 
-## The one principle: separate the logic from the UI
+The whole tool is a few short files, shown here in full, nothing elided:
 
-The screening rules live in plain functions in `trialmon_shiny/R/logic.R`. The app,
-the [visual guide](trialmon-guide.html), the [dashboard](trialmon-dashboard.html),
-and the unit tests all call the same functions.
+- **trialmon_shiny/R/logic.R** &mdash; the pure screening rules (no Shiny). The [visual guide](trialmon-guide.html), the [dashboard](trialmon-dashboard.html), and the unit tests all call these same functions.
+- **trialmon_shiny/R/gen_data.R** &mdash; writes the synthetic CSVs so you can see the shape; swap them for a read-only safety-database export.
+- **trialmon_shiny/app.R** &mdash; the UI and the reactive server.
 
-## Step 1 - the screening rules, as plain functions
+The one idea to hold onto: the **rules** live in logic.R, the **screen** lives in app.R.
+You can change what a screen means without touching the app, and change how it looks
+without touching the rules.
 
-```r
-qtc_sev <- function(qt, dqt)
-  if (qt > 500 || dqt > 60) "RED" else if (qt > 480 || dqt > 30) "AMBER"
-  else if (qt > 450) "watch" else "GREEN"
+## The data it reads
 
-score_participants <- function(p) {
-  p$hys  <- (p$alt > 3 | p$ast > 3) & p$tbl > 2        # the eDISH AND-gate
-  p$qsev <- mapply(qtc_sev, p$qt, p$dqt)               # ICH E14 tiers
-  p
-}
+Three CSVs are the whole dataset. Open them directly, or edit them to point the app at
+your study (keep the column names): [`participants.csv`](../trialmon_shiny/data/participants.csv)
+(one row per participant, values as xULN multiples and ms, not measurements),
+[`aes.csv`](../trialmon_shiny/data/aes.csv) (the adverse-event rows), and
+[`cohorts.csv`](../trialmon_shiny/data/cohorts.csv) (the dose ladder). On a real study
+you replace them with a read-only export from the validated safety database / ADaM
+(ADLB, ADEG, ADAE), same columns. Nothing writes back.
+
+## The complete screening core: R/logic.R
+
+Every line of the screening logic. `trialmon_load()` reads the three CSVs;
+`score_participants()` attaches the eDISH AND-gate and the QTcF tier to each participant;
+`dlt_state()` rolls DLTs up per cohort for the 3+3 ladder; `trialmon_worklist()` builds
+the ranked flag list; `trialmon_status()` and `trialmon_kpis()` summarise the whole
+portfolio. Nothing here depends on Shiny, so you can test it in a plain console.
+
+```{r logic, code=readLines("../trialmon_shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-The **AND-gate** is the whole point: a high ALT alone does not fire; bilirubin must
-be up too. CP101-009 (ALT 4.2x, TBili 1.6x) stays green - a test that would.
+Read the eDISH gate: `p$hys <- (p$alt > 3 | p$ast > 3) & p$tbl > 2`. That single line is
+why a high ALT alone does not fire. Bilirubin must be up too. In the synthetic data
+`CP101-009` (ALT 4.2x, TBili 1.6x) stays green because the second half of the `&` is
+false, while `CP101-014` (ALT 5.6x, TBili 3.1x) lands in the RED quadrant. Change that
+line and you change what "a Hy's-Law position" means, everywhere the guide, the
+dashboard, the app, and the tests, all at once.
 
-## Step 2 - the data is a safety export you can swap
+## The complete data generator: R/gen_data.R
 
-`R/gen_data.R` writes `participants.csv`, `aes.csv`, `cohorts.csv` (values are xULN
-multiples, not measurements). On a real study you replace them with a **read-only**
-export from the validated safety database / ADaM (ADLB, ADEG, ADAE), same columns.
-Nothing writes back.
+Every line of the synthetic-data builder. It writes the three CSVs deterministically
+from one seed, plants the signature illustrative positions (the RED `CP101-014`, the
+near-miss `CP101-009`, the coordinated sub-threshold drift on `CP101-011`), and stops.
+On a real study you delete this step and drop in the safety-database export instead.
 
-```r
-tm <- trialmon_load("data")
-trialmon_status(tm)          # worst of the eDISH / QTcF / 3+3 screens
-trialmon_worklist(tm)        # every firing position, ranked RED-first
+```{r gendata, code=readLines("../trialmon_shiny/R/gen_data.R"), eval=FALSE, echo=TRUE}
 ```
 
-## Step 3 - the signature eDISH scatter
+## The complete app: app.R
 
-```r
-output$edish <- renderPlot({
-  ggplot(P, aes(alt, tbl, colour = flag)) +
-    annotate("rect", xmin=3, xmax=Inf, ymin=2, ymax=Inf, fill="#e8657a", alpha=.08) +
-    geom_hline(yintercept=2, linetype=2) + geom_vline(xintercept=3, linetype=2) +
-    geom_point() + scale_x_log10() + scale_y_log10()
-})
-observeEvent(input$edish_click, {                        # click -> participant
-  np <- nearPoints(P, input$edish_click, xvar="alt", yvar="tbl", maxpoints=1)
-  if (nrow(np)) updateSelectInput(session, "pid", selected = np$id[1])
-})
+Every line of the UI and server. Read it top to bottom; the walk-through below points
+at the parts that matter.
+
+```{r app, code=readLines("../trialmon_shiny/app.R"), eval=FALSE, echo=TRUE}
 ```
 
-`nearPoints()` maps the click on the log-log plot back to the nearest participant,
-which opens the evidence packet.
+## How the reactivity works, part by part
 
-## Step 4 - the worklist, the 3+3 ladder, the packet
+Follow the data, not the layout. Here is the chain that makes a click on the scatter
+open a participant's evidence packet.
 
-`trialmon_worklist()` builds the ranked flag list; `dlt_state()` rolls DLTs up per
-cohort for the 3+3 ladder; the packet reads the selected participant's screens, AEs,
-and disposition. All from `R/logic.R`.
+**The whole portfolio is scored once, up front.** `tm <- trialmon_load("data")` reads the
+CSVs and `P <- score_participants(tm$participants)` attaches the eDISH and QTcF columns.
+The value boxes, the eDISH plot, the worklist, and the 3+3 ladder are all views of that
+one scored frame, so they always agree.
 
-## Verify it
+**The signature scatter is a plot output with a click.** `output$edish` renders the log-log
+ALT-vs-TBili scatter with the Hy's-Law quadrant shaded; the `plotOutput("edish", click="edish_click")`
+in the UI turns every pixel of it into a click target.
+
+**Clicking maps back to a participant.** The observer on `input$edish_click` calls
+`nearPoints(P, input$edish_click, xvar="alt", yvar="tbl", maxpoints=1)` to find the
+nearest point on the log-log plot, then `updateSelectInput(session, "pid", selected = np$id[1])`
+sets the selected participant. You never wire the click to the packet by hand; changing
+`input$pid` is enough.
+
+**The selected participant drives the packet.** `sel <- reactive(P[P$id == input$pid, ])`
+is the one reactive everything on the detail side depends on. When `input$pid` changes,
+`sel()` recomputes, and `output$packet` (the sidebar evidence packet) and `output$traj`
+(the analyte trajectory) both re-render for the new participant.
+
+**The screens read the scored frame, not each other.** `output$worklist` calls
+`trialmon_worklist(tm)`, `output$ladder` calls `dlt_state(tm)`, and the value boxes read
+`trialmon_kpis(tm)`. Each is a pure function of the data, so there is no hidden order of
+operations to get wrong.
+
+## Verify it without a browser
+
+The screening rules are covered by a zero-dependency test you run with `Rscript`. It is
+the same file the guide and dashboard trust, and it pins the AND-gate directly: a high
+ALT with normal bilirubin must NOT be flagged as a Hy's-Law position.
+
+```{r tests, code=readLines("../trialmon_tests/test-logic.R"), eval=FALSE, echo=TRUE}
+```
+
+Run it:
 
 ```r
-Rscript sasr_monitoring_wiki/trialmon_tests/test-logic.R
-# checks the AND-gate: CP101-009 (ALT>3, TBili<2) is NOT a Hy's position
+Rscript sasr_monitoring_wiki/trialmon_tests/test-logic.R   # prints: TRIALMON logic: all tests passed
 ```
 
 ## Make it yours
 
-- **Change a threshold:** edit `qtc_sev()` or the eDISH gate in `R/logic.R`.
-- **Change the data:** swap the CSVs for a safety-DB / ADaM export.
-- **Add a screen:** add a rule and a `trialmon_worklist()` entry.
+- **Change a threshold:** edit `qtc_sev()` or the eDISH gate in `R/logic.R`. Everything that shows a screen updates, because they all call that one function.
+- **Change the data:** swap the three CSVs for a read-only safety-database / ADaM export with the same columns.
+- **Add a screen:** add a rule to `R/logic.R` and a `trialmon_worklist()` entry, then a matching `render*` in `app.R`.
+- **Add a panel:** another `card()` in the UI and a matching `renderPlot`/`renderUI` in the server.
 
-Same skeleton as the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html),
-the [risk console](../../risk_monitor/quarto/risk-build.html), and the
-[knowledge graph](../../knowledge_vault/quarto/kg-build.html).
+The same skeleton, a logic core plus scored frame plus pure summary functions plus
+outputs, builds the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html)
+and the [find-hours app](../../budget_reconciliation/quarto/hours-build.html) too.

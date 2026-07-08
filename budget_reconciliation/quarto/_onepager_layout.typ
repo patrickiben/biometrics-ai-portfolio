@@ -54,9 +54,39 @@
   ]
 )
 
+#v(6pt)
+#grid(columns: (1fr, 1fr), gutter: 14pt,
+[
+  == Where it runs \u{2014} the systems
+  #set list(spacing: 0.5em)
+  - *SOW / budget grid (CTMS)* feeds planned hours into the ledger.
+  - *Timesheet system* feeds actual-to-date.
+  - *Your estimate + progress tracker* set % complete and EAC.
+  - *The tool* rolls these up; it connects to none of them. You transcribe current figures in, so the reconciliation is attributable and stands on its own.
+  - *Contract process* (lead biostat + PM review, sponsor sign-off, SOW amended) handles any residual.
+],
+[
+  == Read the ledger \u{2014} worked
+  #set list(spacing: 0.5em)
+  - Per task, *under-run slack* = max(0, planned #sym.minus EAC). A task forecast under plan gives up slack; a task over-running (EAC > planned) is *watched, not raided*.
+  - Sum the per-task slack to get *net slack* (#netslack h here), then add *contingency* (#cont h) for *net findable* = #findable h.
+  - Source a new ask in order: slack first, then contingency, then the residual is a change order.
+]
+)
+
+#v(6pt)
+== Thresholds \u{2014} how far an ask can go before a change order
+#table(columns: (auto, auto, 1fr), stroke: rgb("#3a4157"), inset: 5pt,
+  fill: (_, row) => if row == 0 { rgb("#2a2f3a") } else { none },
+  text(fill: rgb("#e9edf7"), weight: "bold")[Ask size], text(fill: rgb("#e9edf7"), weight: "bold")[Sourced from], text(fill: rgb("#e9edf7"), weight: "bold")[Verdict],
+  [Up to #netslack h], [Under-run slack only], [Absorbable, reserve untouched],
+  [#netslack h to #findable h], [Slack + contingency], [Absorbable, reserve drawn (log it)],
+  [Above #findable h], [Exceeds net headroom], [Residual is a change order],
+)
+
 #v(8pt)
 #rect(width: 100%, fill: rgb("#1b1f28"), stroke: rgb("#3a4157"), inset: 9pt, radius: 6pt)[
   #text(fill: rgb("#5b8cff"), weight: "bold")[Run it] #h(8pt)
   #text(font: "Menlo", size: 9pt)[shiny::runApp("budget_reconciliation/shiny")]
-  #h(10pt) #text(size: 8pt, fill: rgb("#94a1c0"))[The KPIs and verdict recompute live as you edit an EAC or change the ask.]
+  #h(10pt) #text(size: 8pt, fill: rgb("#94a1c0"))[The KPIs and verdict recompute live as you edit an EAC or change the ask. Hours / effort only; pricing is handled downstream by the PM.]
 ]

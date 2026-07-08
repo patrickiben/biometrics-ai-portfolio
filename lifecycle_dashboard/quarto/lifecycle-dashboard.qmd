@@ -24,7 +24,7 @@ k  <- lifecycle_kpis(st, d)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Read-only shareable snapshot**, computed from the portfolio (`data/*.csv`). The interactive tool is the [Shiny app](../shiny), and the [visual guide](lifecycle-guide.html) explains the scoring. Synthetic, no PHI, no participant-level data.
+**Read-only shareable snapshot**, computed from the portfolio ([`studies.csv`](../shiny/data/studies.csv), [`milestones.csv`](../shiny/data/milestones.csv), [`deliverables.csv`](../shiny/data/deliverables.csv), [`query_trend.csv`](../shiny/data/query_trend.csv)). The interactive tool is the [run-and-build page](lifecycle-build.html), and the [visual guide](lifecycle-guide.html) explains the scoring. Synthetic, no PHI, no participant-level data.
 :::
 
 ```{r kpis, results='asis'}

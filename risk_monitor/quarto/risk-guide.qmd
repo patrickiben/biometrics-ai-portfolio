@@ -26,8 +26,15 @@ s <- risk_load("../shiny/data")
 o <- risk_overall(s)
 ```
 
+```{=html}
+<style>
+svg[id^="mermaid"]{ width:100% !important; max-width:940px; height:auto; display:block; margin:8px auto; }
+svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !important; }
+</style>
+```
+
 ::: {.callout-note appearance="simple"}
-**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up), the [**Shiny app**](../shiny) lets you *run* it and set a what-if, the [dashboard](risk-dashboard.html) is a shareable snapshot, and the [run-and-build page](risk-build.html) shows how it is made. Synthetic, no PHI, no participant records.
+**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up), the [**Run &amp; build the Shiny app**](risk-build.html) lets you *run* it and set a what-if, the [dashboard](risk-dashboard.html) is a shareable snapshot, and the [run-and-build page](risk-build.html) shows how it is made. Synthetic, no PHI, no participant records.
 :::
 
 ::: {.callout-important appearance="simple"}
@@ -37,14 +44,15 @@ o <- risk_overall(s)
 ## Three tiers, one roll-up
 
 ```{mermaid}
-flowchart TB
-  SRC[Data sources<br/>EDC · validated safety DB · labs · ECG · IXRS · CTMS · finance · CRM] --> RT{Route by<br/>data sensitivity}
-  RT -->|participant safety / PK / unblinded| LOC[On-device local model<br/>zero egress]
-  RT -->|non-sensitive ops / commercial| CLD[Cloud Claude, API + BAA]
-  LOC --> ADV[Advanced engine<br/>Optimal Transport + Active Inference<br/>Wasserstein drift · free-energy]
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
+flowchart LR
+  SRC["Data sources<br/>EDC · safety DB · labs<br/>IXRS · CTMS · finance"] --> RT{"Route by<br/>sensitivity"}
+  RT -->|"safety / PK /<br/>unblinded"| LOC["On-device model<br/>zero egress"]
+  RT -->|"non-sensitive<br/>ops"| CLD["Cloud Claude<br/>API + BAA"]
+  LOC --> ADV["Advanced engine<br/>OT + Active Inference"]
   CLD --> ADV
-  ADV --> SC[Scoring: severity-weighted roll-up<br/>to a tier RAG]
-  SC --> ESC[Alert + escalation<br/>safety to SRC/DSMB · study to PM · client to account lead]
+  ADV --> SC["Severity-weighted<br/>roll-up to tier RAG"]
+  SC --> ESC["Alert +<br/>escalation"]
 ```
 
 The scoring is transparent - each signal has a level (green/amber/red) and a
@@ -52,6 +60,8 @@ weight; a tier is the weighted blend, and the overall index weights the tiers
 (participant safety heaviest).
 
 ## The live console - computed from the signal feed {#live}
+
+Everything below is computed from one file, the signal feed: [`signals.csv`](../shiny/data/signals.csv) (in the [`shiny/data/`](../shiny/data/) folder). Edit that CSV (or run the app) and the roll-up, the tiers, and the feed all move.
 
 ```{r kpis, results='asis'}
 box <- function(label, score, rag) {
@@ -99,14 +109,14 @@ Select a signal, set its level, and watch the tier and overall risk re-colour. T
 [run-and-build page](risk-build.html) shows how the console is built from `R/logic.R`.
 
 ::: {.callout-tip appearance="simple"}
-**Going live:** `data/signals.csv` is a representative subset of the 65-signal catalog. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.
+**Going live:** the feed file [`signals.csv`](../shiny/data/signals.csv) is a representative subset of the 65-signal catalog. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.
 :::
 
 ## The other formats
 
 | Mode | Artifact |
 |---|---|
-| Run | [Shiny app](../shiny) |
+| Run | [Run &amp; build the Shiny app](risk-build.html) |
 | Share (no R) | [Dashboard](risk-dashboard.html) |
 | Build | [Run-and-build walkthrough](risk-build.html) |
 
