@@ -91,12 +91,12 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <tr><td><b>Update a row by key from a pipeline</b></td><td>Needs the API (code).</td><td><b>SAS/R SHEETLINK</b> &mdash; Biostatistician package</td></tr>
     </table>
     <p>See it <a href="#screens">on screen, step by step</a> &mdash; then <a href="#build1">build it yourself</a>.</p>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
 <section id="screens" aria-label="See it on screen">
     <h1>See it on screen &mdash; the no-code setup, click by click</h1>
     <p class="lede">No scripting, no add-on, no new vendor. Five screens in Smartsheet&rsquo;s own Automation give you a tracker that keeps itself current. Here is exactly what each one looks like.</p>
     <figure class="shot"><img src="nc_img/nc_step1_grid.png" alt="The CP-101 program tracker in Smartsheet grid view, with operational columns Task, Status, % Complete, Owner, and Due, and the Automation menu in the toolbar">
-      <figcaption><b>1 &middot; The tracker you already keep.</b> Operational columns only &mdash; status, % complete, owner, due. Never participant-level data. The <b>Automation</b> menu sits right in the toolbar.</figcaption></figure>
+      <figcaption><b>1 &middot; The starting grid you set up once.</b> This is the tracker the study team <em>doesn&rsquo;t</em> have today &mdash; you create it in a couple of minutes: operational columns only (status, % complete, owner, due), never participant-level data. The <b>Automation</b> menu in the toolbar is what turns this static grid into one that keeps itself current.</figcaption></figure>
     <figure class="shot"><img src="nc_img/nc_step2_template.png" alt="The Smartsheet Automation menu open with Create from template highlighted, and the template gallery showing the Request an update every week card">
       <figcaption><b>2 &middot; Automation &#9656; Create from template.</b> Smartsheet ships the exact one you want &mdash; <b>&ldquo;Request an update every week.&rdquo;</b></figcaption></figure>
     <figure class="shot"><img src="nc_img/nc_step3_builder.png" alt="The Smartsheet visual workflow builder: a When a date is reached trigger set to weekly Monday recurrence, connected by a line to a Request an update action with recipient and included columns">
@@ -106,7 +106,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <figure class="shot"><img src="nc_img/nc_step5_writeback.png" alt="The Smartsheet grid with the database-cut row updated in place to 75 percent with a new date, still exactly five rows, marked updated just now">
       <figcaption><b>5 &middot; Written back in place.</b> Still five rows &mdash; the data-cut row moved to <b>75%</b> with its new date, updated in place. No duplicate, no copy-paste, no code, and nobody opened the sheet.</figcaption></figure>
     <div class="callout tip"><b>A faithful re-creation of the Smartsheet UI</b>, built from Smartsheet&rsquo;s own help documentation &mdash; the menus, the visual workflow builder, and the update request are all real Smartsheet features. The full click-by-click instructions are in <a href="#build1">Make the tracker update itself</a>.</div>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026.</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026.</div></section>
 <section id="arch" aria-label="How it works (no code)">
     <h1>Two native engines &mdash; and an honest boundary</h1>
     <p>Nothing here is programming, and there&rsquo;s <strong>no Power Automate</strong>. <strong>Smartsheet&rsquo;s own Automation</strong> lives inside the sheet and does the heavy lifting; <strong>Outlook&rsquo;s own Rules</strong> organize your study email. Both are point-and-click features of tools you already have.</p>
@@ -125,7 +125,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <h2>Engine 2 &mdash; Outlook Rules (organize the email)</h2>
     <p>For email, Outlook&rsquo;s own <strong>Rules Wizard</strong> (<em>Rules &rarr; Manage Rules &amp; Alerts &rarr; New Rule</em>) files study-ops mail into a folder, tags, or flags it automatically. The inbox gets organized; the <em>tracker</em> stays current through Smartsheet&rsquo;s update requests and form &mdash; no bridge tool between them.</p>
     <div class="callout warn"><b>The honest boundary.</b> These native tools keep a tracker current, alert, remind, intake, and digest &mdash; all no-code. The one thing they can&rsquo;t do is <b>automatically update a specific existing row by key from your validated pipeline</b> (e.g., write last night&rsquo;s computed status into the matching row). That needs the Smartsheet API &mdash; which is exactly the <b>SAS/R SHEETLINK</b> in the Biostatistician package. For the team, owners keep their own rows current instead.</div>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
 <section id="usecases" aria-label="What to automate">
     <h1>What the study team should automate</h1>
     <p>Everything here is <strong>operational</strong> &mdash; status, dates, counts, ownership. <strong>None of it is participant-level or clinical.</strong></p>
@@ -141,7 +141,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <tr><td><b>Update rows by key from a validated pipeline</b></td><td><em>Needs code/API</em> &mdash; the <b>SAS/R SHEETLINK</b> (Biostatistician package), not no-code.</td><td>Biostatistician</td></tr>
     </table>
     <div class="callout tip"><b>The split to remember:</b> Smartsheet&rsquo;s update requests <em>refresh existing rows</em> (no duplicates); a Smartsheet <em>form</em> adds new ones; Smartsheet&rsquo;s own alerts handle reminders and the weekly digest; Outlook Rules organize the email. Anything that must <em>update an existing row by key automatically from a pipeline</em> is the coded SAS/R version.</div>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
 
 <section id="build1" aria-label="Make it update itself">
     <h1>Make the tracker update itself &mdash; Smartsheet Automation, zero other tools</h1>
@@ -169,7 +169,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <h2>C &mdash; reminders before a due date</h2>
     <p><strong>Automation</strong> &rarr; <b>Trigger:</b> <strong>When a date is reached</strong> &rarr; <code>Due</code>, <em>3 days before</em> &rarr; <b>Action:</b> <strong>Alert someone</strong> (the owner). Smartsheet watches the calendar; you do nothing else.</p>
     <div class="callout warn">Recipients, channels, and escalation live in the workflow &mdash; a PM edits them anytime, no code. Message bodies carry operational signal only (&ldquo;DB lock At&nbsp;Risk, due 20&nbsp;Jun&rdquo;) &mdash; never anything participant-level.</div>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
 <section id="build2" aria-label="Collect updates with a form">
     <h1>Collect new items with a Smartsheet form</h1>
     <p class="lede">When people who don&rsquo;t live in Smartsheet need to send in new items &mdash; CRAs, vendors, data management &mdash; give them a <strong>native Smartsheet form</strong>. Each submission becomes a new row, straight into the sheet, with no other tool. (Forms <em>add</em> rows; to keep existing rows current, use the recurring <a href="#build1">Request an update</a>.)</p>
@@ -181,15 +181,15 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     </ol>
     <div class="callout tip"><b>Why a form, not an email-to-row bridge?</b> A form gives you clean, structured rows every time &mdash; no parsing and no Power Automate. For keeping <em>existing</em> rows fresh, the recurring update request does it; for organizing the study email itself, use <a href="#build3">Outlook Rules</a>.</div>
     
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
 <section id="build3" aria-label="Outlook Rules  the digest">
     <h1>Organize the email &amp; send the digest &mdash; all native</h1>
     <h2>Organize study email with Outlook Rules</h2>
-    <p>Use Outlook&rsquo;s own automation &mdash; Outlook&rsquo;s own Rules Wizard &mdash; so study-ops mail organizes itself. No Power Automate:</p>
+    <p>Use Outlook&rsquo;s own automation &mdash; the built-in <strong>Rules</strong> feature &mdash; so study-ops mail organizes itself. No Power Automate:</p>
     <ol>
-      <li>In Outlook: <strong>Rules &rarr; Manage Rules &amp; Alerts &rarr; New Rule</strong> (the Rules Wizard).</li>
-      <li><b>Condition:</b> <em>with specific words in the subject</em> = <code>CP-101</code> (or <em>from</em> the CRO distribution list).</li>
-      <li><b>Action:</b> <em>move it to</em> a <code>CP-101</code> folder and <em>assign a category</em>; click <strong>Finish</strong>.</li>
+      <li>In <strong>new Outlook</strong> (the current default) or <strong>Outlook on the web</strong>: <strong>Settings&nbsp;&#9881; &rarr; Mail &rarr; Rules &rarr; + Add new rule</strong>. <span style="opacity:.72">(Classic Outlook: <strong>Home &rarr; Rules &rarr; Manage Rules &amp; Alerts &rarr; New Rule</strong> &mdash; the Rules Wizard.)</span></li>
+      <li><b>Condition:</b> <em>Subject includes</em> <code>CP-101</code> (or <em>From</em> the CRO distribution list).</li>
+      <li><b>Action:</b> <em>Move to</em> a <code>CP-101</code> folder, add <em>Mark with category</em>, then <strong>Save</strong>. <span style="opacity:.72">(Classic: the same picks end with <strong>Finish</strong>.)</span></li>
       <li>Now study mail is filed and tagged automatically &mdash; the team works from a clean folder and updates the tracker through the recurring <a href="#build1">Request an update</a> or the <a href="#build2">form</a>.</li>
     </ol>
     <div class="callout tip">Outlook Rules organize the <em>email</em>; Smartsheet keeps the <em>tracker</em> current. Keeping them separate is what lets the whole thing stay no-code &mdash; auto-turning an email&rsquo;s contents into a tracker row would need code/the API (the SAS/R SHEETLINK), and isn&rsquo;t needed here.</div>
@@ -201,7 +201,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <li><b>Or:</b> an <strong>Automation</strong> &mdash; trigger <strong>When a date is reached</strong> (custom weekly recurrence) &rarr; <strong>Alert someone</strong>, with the matching at-risk &amp; overdue rows in the message.</li>
       <li>Either way it&rsquo;s one current summary every week, sent automatically by Smartsheet &mdash; no code, no Power Automate.</li>
     </ol>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
 <section id="gov" aria-label="Governance  limits">
     <h1>Governance, safety &amp; honest limits</h1>
     <h2>The data boundary (the reason this is safe to automate)</h2>
@@ -219,7 +219,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     </ul>
     <h2>The honest limit</h2>
     <div class="callout warn"><b>This keeps a tracker current and fires pre-configured alerts &mdash; it does not triage, narrate, or decide.</b> Smartsheet collects truthful operational updates from owners and forms and sends the alerts &amp; digest; Outlook Rules organize the email; the PM and team own every decision. And the one thing these native tools deliberately can&rsquo;t do &mdash; update an existing row by key from a pipeline &mdash; is exactly what the coded SAS/R SHEETLINK is for.</div>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section>
 <section id="faq" aria-label="FAQ">
     <h1>FAQ</h1>
     <p><b>Do we need Power Automate?</b> No &mdash; we deliberately don&rsquo;t use it. Smartsheet&rsquo;s own Automation keeps rows current and sends the alerts, reminders, and weekly digest; native <b>Smartsheet Forms</b> collect new items; <b>Outlook Rules</b> organize the email. All point-and-click, in tools you already have.</p>
@@ -230,7 +230,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <p><b>Do we have to buy anything?</b> Smartsheet Automation and Forms are included with Smartsheet (building workflows needs a licensed user with Owner/Admin on the sheet). Outlook Rules are included with Outlook. Nothing else.</p>
     <p><b>Could this leak PHI?</b> Only if someone puts PHI on the sheet &mdash; so don&rsquo;t. Keep the columns operational; the tracker is a convenience mirror, not a clinical record.</p>
     <p><b>How is this different from the SAS/R &ldquo;SHEETLINK&rdquo;?</b> Same goal &mdash; a self-current tracker &mdash; with <b>no programming</b>, so the rest of the study team can own it. The SAS/R version does the one thing this can&rsquo;t: <em>update existing rows by key</em> automatically from a validated pipeline.</p>
-  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section></main></div>
+  <div class="footer">Smartsheet, kept current with no code &middot; Smartsheet Automation + Outlook Rules, no Power Automate &middot; ops-only &middot; humans decide &middot; built June 2026, reviewed July 2026 (illustrative; feature names per Smartsheet &amp; Microsoft docs).</div></section></main></div>
 <script>
 const secs=[...document.querySelectorAll('section')];
 const links=[...document.querySelectorAll('#side a[data-t]')];
