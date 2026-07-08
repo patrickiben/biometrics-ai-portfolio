@@ -1,54 +1,106 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Smartsheet for Biostatisticians — SAS/R automation</title><style>
-:root{--indigo:#6FA0DC;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--amber:#D9A94F;--terra:#E0857A;--sas:#5B8FD0;--bg:#0E1124}
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
-#wrap{display:flex;min-height:100vh}
-#side{width:280px;flex:0 0 280px;background:#161B33;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #242a4a}
-#side .brand{padding:0 22px 14px;border-bottom:1px solid #2c3257;margin-bottom:10px}
-#side .brand b{font-family:Georgia,serif;font-size:16px}#side .brand span{display:block;color:#9fb4dd;font-size:11px;margin-top:4px}
-#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #353c66;background:#1b2047;color:#fff;font-size:13px}
-#side a{display:block;color:#c8d2ec;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}
-#side a:hover{background:#1b2047}#side a.active{color:#fff;border-left-color:#5a93e0;background:#1b2047;font-weight:600}
-#main{flex:1;max-width:980px;margin:0 auto;padding:34px 48px 80px}
-section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.3}to{opacity:1}}
-h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
-h2{font-family:Georgia,serif;color:#8FB3EA;font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
-.lede{font-size:16.5px;color:#C3CCE4}p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
-code{background:#20284a;color:#A9C6F2;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
-pre.code{background:#080A18;color:#DCE6FB;padding:16px 18px;border-radius:10px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;border:1px solid var(--line)}
-pre.code code{background:none;color:inherit;padding:0}
-table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px}
+/* AI for Biometrics — Mission Control theme, adapted for the Smartsheet no-code wiki */
+:root{
+  --bg:#06090f;--bg2:#04060b;--panel:#0c1018;--panel2:#10151f;--panelhi:#131a26;
+  --line:#1b2535;--line2:#27344a;--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;
+  --accent:#34e3d4;--teal:#34e3d4;--indigo:#5b8cff;--sas:#34e3d4;
+  --gold:#e6b24c;--green:#46d08a;--amber:#e6a23c;--terra:#ff6a6a;
+  --mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;
+  --sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;--r:6px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.62;min-height:100vh;
+  background:
+    linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,
+    linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,
+    radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),
+    linear-gradient(180deg,#06090f,#04060b 80%);
+  background-attachment:fixed;}
+a{color:var(--accent);text-decoration:none}a:hover{color:#7af0e5}
+
+/* command bar (matches the hub pages) */
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;
+  background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}
+.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}
+.top b::before{content:"◢ ";color:var(--accent)}
+.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.top .nav a{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px}
+.top .nav a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}
+
+#wrap{display:flex;min-height:100vh;max-width:1320px;margin:0 auto}
+#side{width:270px;flex:0 0 270px;background:linear-gradient(180deg,#0a0f18,#080b12);position:sticky;top:44px;height:calc(100vh - 44px);overflow:auto;padding:20px 0;border-right:1px solid var(--line2)}
+#side .brand{padding:0 20px 14px;border-bottom:1px solid var(--line2);margin-bottom:12px}
+#side .brand b{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}
+#side .brand b::before{content:"◢ ";color:var(--accent)}
+#side .brand span{display:block;font-family:var(--mono);color:var(--dim);font-size:10px;letter-spacing:.05em;text-transform:uppercase;margin-top:5px}
+#search{margin:0 16px 14px;width:calc(100% - 32px);padding:8px 10px;border-radius:5px;border:1px solid var(--line2);background:#0d1320;color:var(--ink);font-size:12.5px;font-family:var(--mono)}
+#side a{display:block;color:var(--muted);text-decoration:none;padding:8px 20px;font-family:var(--mono);font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;border-left:3px solid transparent}
+#side a:hover{background:#0e141f;color:var(--ink)}
+#side a.active{color:var(--accent);border-left-color:var(--accent);background:rgba(52,227,212,.06);font-weight:600}
+
+#main{flex:1;max-width:1000px;margin:0 auto;padding:30px 46px 80px}
+section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.35}to{opacity:1}}
+
+h1{font-family:var(--sans);color:var(--ink);font-size:28px;font-weight:680;letter-spacing:-.01em;margin:0 0 14px;line-height:1.16}
+h2{font-family:var(--mono);color:var(--gold);font-size:11.5px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin:30px 0 12px}
+h2::before{content:"▸ ";color:var(--accent)}
+.lede{font-size:16px;color:var(--muted);max-width:880px}
+p,li{font-size:14.6px}ul,ol{padding-left:22px}li{margin:5px 0}
+code{background:#0d1320;color:#8ef0e6;padding:1px 6px;border-radius:5px;font-family:var(--mono);font-size:12.4px;border:1px solid var(--line)}
+pre.code{background:#070b12;color:#dce6fb;padding:15px 17px;border-radius:var(--r);overflow:auto;font-family:var(--mono);font-size:12.4px;line-height:1.55;border:1px solid var(--line2)}
+pre.code code{background:none;color:inherit;padding:0;border:0}
+
+table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
 th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
-th{background:#10142E;color:#fff;font-weight:600}tr:nth-child(even) td{background:var(--panel)}
-.callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}
-.callout.warn{background:#2A1614;border-left:4px solid var(--terra)}
-.callout.tip{background:#0F262A;border-left:4px solid var(--teal)}
-.muted{color:var(--muted);font-size:13px}
+th{background:#0d1320;color:var(--muted);font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+
+.callout{border-radius:var(--r);padding:13px 16px;margin:16px 0;font-size:13.6px;background:linear-gradient(160deg,#0a1422,#0a0f18);border:1px solid var(--line2);border-left:3px solid var(--accent);color:var(--muted)}
+.callout b{color:#cfeeea}
+.callout.warn{border-left-color:var(--gold)}
+.callout.tip{border-left-color:var(--accent)}
+.muted{color:var(--muted);font-size:12.6px}
+
 .flow{margin:18px 0}
-.node{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 16px;box-shadow:0 2px 8px rgba(0,0,0,.30)}
-.node b{display:block;font-size:15px}.node span{display:block;color:var(--muted);font-size:13px;margin-top:3px}
-.node.out{border-left:5px solid var(--sas)}.node.pa{border-left:5px solid var(--indigo)}.node.sp{border-left:5px solid var(--teal)}.node.cs{border-left:5px solid var(--amber)}
-.arrow{text-align:center;color:var(--indigo);font-size:20px;margin:5px 0;font-weight:700}
+.node{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 16px;box-shadow:0 6px 18px rgba(0,0,0,.30)}
+.node::before{content:"";position:absolute;top:0;left:0;width:3px;height:100%;background:linear-gradient(180deg,var(--accent),transparent 70%);opacity:.55;border-radius:var(--r) 0 0 var(--r)}
+.node b{display:block;font-size:14.5px;color:var(--ink)}.node span{display:block;color:var(--muted);font-size:12.6px;margin-top:3px}
+.node.out::before{background:linear-gradient(180deg,var(--indigo),transparent 70%)}
+.node.pa::before{background:linear-gradient(180deg,var(--gold),transparent 70%)}
+.node.sp::before,.node.cs::before{background:linear-gradient(180deg,var(--green),transparent 70%)}
+.arrow{text-align:center;color:var(--accent);font-family:var(--mono);font-size:16px;margin:6px 0;font-weight:700;letter-spacing:.04em}
+.arrow.split{font-size:12px}
 .row{display:flex;gap:14px}.row .node{flex:1}
-.footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
-a{color:var(--indigo)}
+
+.footer{margin-top:38px;padding-top:16px;border-top:1px solid var(--line);color:var(--dim);font-family:var(--mono);font-size:11px;letter-spacing:.02em;line-height:1.7}
+figure.shot{margin:22px 0}
+figure.shot img{width:100%;border:1px solid var(--line2);border-radius:var(--r);box-shadow:0 14px 34px rgba(0,0,0,.5);display:block}
+figure.shot figcaption{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
+figure.shot figcaption b{color:#cfeeea}
 .dl{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}
-.btn{display:inline-block;background:var(--sas);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px}
-.btn.ghost{background:transparent;color:var(--sas);border:1.5px solid var(--sas)}
-.btn:hover{opacity:.92}
-.shots{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}
-.shots figure{margin:0}.shots img{width:100%;border:1px solid var(--line);border-radius:10px;box-shadow:0 3px 12px rgba(20,20,40,.10);display:block}
-.shots figcaption{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
+.btn{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(52,227,212,.08);border:1px solid rgba(52,227,212,.4);padding:8px 14px;border-radius:5px}
+.btn.ghost{background:transparent}
+.btn:hover{background:rgba(52,227,212,.16);box-shadow:0 0 12px rgba(52,227,212,.18)}
+.shots{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0}
+.shots figure{margin:0}
+.shots img{width:100%;border:1px solid var(--line2);border-radius:var(--r);box-shadow:0 2px 10px rgba(0,0,0,.4);display:block}
+.shots figcaption{font-size:12.6px;color:var(--muted);margin-top:7px;line-height:1.45}
+.shots .stp{display:inline-block;font-family:var(--mono);font-weight:700;color:var(--accent);margin-right:5px}
+h3.shots-h{font-family:var(--mono);color:var(--accent);font-size:11px;letter-spacing:.14em;text-transform:uppercase;margin:22px 0 4px}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
-a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
-
+.skip{position:absolute;left:-9999px;top:0;background:#0d1320;color:var(--ink);padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
 @media (prefers-reduced-motion:reduce){section.show{animation:none}}
-@media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
+@media(max-width:860px){#wrap{flex-direction:column}#side{width:100%;flex:none;height:auto;position:static;border-right:0;border-bottom:1px solid var(--line2)}#main{padding:22px}}
+@media print{.top,#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
 </style></head>
-<body><a href="#main" class="skip">Skip to content</a><div id="wrap">
+<body><a href="#main" class="skip">Skip to content</a><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../smartsheet_nocode/Smartsheet_NoCode.html">Smartsheet · no code</a><a href="../START_HERE.html">Full library</a></div></div>
+<div id="wrap">
 <nav id="side" aria-label="Wiki sections"><div class="brand"><b>Smartsheet &times; SAS/R</b><span>Automated tracking — no AI</span></div>
 <label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off">
 <a href="#start" data-t="start">Start here</a>
@@ -106,6 +158,102 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <tr><td><b>Rate limits</b> &mdash; ~300 requests/min/token.</td><td><code>%ss_http</code> / <code>req_retry()</code> retry <b>429 &amp; 5xx with exponential backoff</b>; batch writes go in one array, not row-by-row.</td></tr>
       <tr><td><b>Pagination</b> &mdash; large sheets page their rows.</td><td>Reads request <code>includeAll=true</code> so the key&rarr;row map is complete.</td></tr>
     </table>
+  <!-- SHEETLINK-FULL-PROGRAM -->
+    <p style="margin-top:26px">Everything above is the design. Here is the <b>actual program</b> that runs it, in full: the one file you edit per study, then the nightly job you schedule. It is plain, double-programmed SAS you can read top to bottom, and it is the same code the <a href="#watch">worked example</a> and the runnable <code>_demo/</code> exercise.</p>
+    <h2>The one file you edit per study: ss_config.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 22 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>ss_config.sas is the single per-study file a biostatistician edits to point SHEETLINK at one Smartsheet tracker. It holds the sheet and row ids, the join key, the notification recipients, the token location, and the ops-only allowlist, kept separate from the driver so standing up a new tracker is one file change instead of a code edit. It is meant to be <code>%include</code>-ed before the driver runs, so every one of these values is in scope when the upload job executes. Nothing here reads or writes data on its own: it declares constants the rest of SHEETLINK reads, and it is the place where the PHI boundary is defined in code.</p>
+    <pre class="code"><code>/*====================================================================================
+  ss_config.sas  -  per-study/per-sheet constants for SHEETLINK. %include before the
+  driver. Keeps sheet ids, the key column, recipients, and the OPS-ONLY ALLOWLIST out of
+  the code so a new tracker is one file, not a code edit.
+====================================================================================*/
+%global CFG_SHEET CFG_SUMMARYROW CFG_KEYCOL CFG_KEYCOLNAME CFG_BACKUP CFG_PM
+        CFG_ALLOW CFG_TOKEN_ENV CFG_TOKEN_FILE;
+
+%let CFG_TOKEN_ENV  = SMARTSHEET_TOKEN;          /* env var holding the Bearer token   */
+%let CFG_TOKEN_FILE = ;                           /* OR a perms-600 file path; leave 1  */
+
+%let CFG_SHEET      = 1234567890123456;           /* the CP-101 Program Tracker sheetId */
+%let CFG_SUMMARYROW = 9876543210;                 /* the summary rowId to attach the PDF*/
+%let CFG_KEYCOL     = TaskID;                      /* the SAS variable holding the key   */
+%let CFG_KEYCOLNAME = Task ID;                     /* the Smartsheet column TITLE        */
+
+%let CFG_BACKUP     = biostat.backup@example.com;  /* fail-loud target                   */
+%let CFG_PM         = pm.cp101@example.com;
+
+/* THE OPS-ONLY ALLOWLIST (column titles, UPCASE-insensitive). %ss_guard FAILS LOUD if a
+   job tries to write any column not on this list -&gt; the in-code PHI / sensitive boundary. */
+%let CFG_ALLOW = TASK ID|STATUS|% DONE|OWNER|DUE|TASK;</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>File header and role.</b> The opening comment block states the contract: this file holds per-study and per-sheet constants for SHEETLINK and is meant to be <code>%include</code>-ed before the driver. It keeps sheet ids, the key column, recipients, and the ops-only allowlist out of the executable code so that adding a new tracker is a single configuration edit, not a code change. Reading this header first tells the biostatistician exactly which knobs live here and that everything downstream depends on these values being set correctly.</p>
+      <p><b>The %global declaration block.</b> The <code>%global</code> statement promotes all nine SHEETLINK settings (<code>CFG_SHEET</code>, <code>CFG_SUMMARYROW</code>, <code>CFG_KEYCOL</code>, <code>CFG_KEYCOLNAME</code>, <code>CFG_BACKUP</code>, <code>CFG_PM</code>, <code>CFG_ALLOW</code>, <code>CFG_TOKEN_ENV</code>, <code>CFG_TOKEN_FILE</code>) to the global symbol table. This matters because the file is <code>%include</code>-ed rather than called as a macro, so declaring the names global up front guarantees the driver and the downstream macros can resolve every one of them regardless of where the include happens. Note that <code>CFG_TOKEN_FILE</code> is the one setting deliberately left with an empty value, and the global scope makes each of these nine names visible to the rest of SHEETLINK once the file runs.</p>
+      <p><b>CFG_TOKEN_ENV and CFG_TOKEN_FILE: where the Bearer token lives.</b> These two settings tell SHEETLINK how to authenticate to the Smartsheet API without ever writing the credential into source. <code>CFG_TOKEN_ENV</code> names the environment variable that holds the Bearer token (default <code>SMARTSHEET_TOKEN</code>), and <code>CFG_TOKEN_FILE</code> is the alternative: a path to a permissions-600 file, left blank here so the env-var path is used. The comment instructs you to leave exactly one of the two populated, so the token is sourced from a single well-defined place. Keeping the secret out of the config file means this file can be reviewed and version-controlled safely.</p>
+      <p><b>CFG_SHEET and CFG_SUMMARYROW: the sheet and row targets.</b> <code>CFG_SHEET</code> is the numeric Smartsheet sheetId of the target tracker (the placeholder points at the CP-101 Program Tracker), and it is the sheet every upsert writes into. <code>CFG_SUMMARYROW</code> is the specific rowId on that sheet to which the generated PDF is attached, per its inline comment. These are literal Smartsheet object ids, so a biostatistician standing up a new tracker replaces both placeholders with the ids from their own sheet. Getting the sheetId wrong points the whole job at the wrong tracker, so this is the first pair to verify.</p>
+      <p><b>CFG_KEYCOL and CFG_KEYCOLNAME: the join key on both sides.</b> These two settings define the key that matches a SAS row to a Smartsheet row so updates are idempotent rather than duplicating rows. <code>CFG_KEYCOL</code> is the name of the SAS variable holding the key (<code>TaskID</code>), while <code>CFG_KEYCOLNAME</code> is the Smartsheet column TITLE it maps to (<code>Task ID</code>). The two differ because SAS variable names cannot contain spaces but Smartsheet column titles can, so both forms are needed: one to read the value out of the dataset, the other to find the matching column in the sheet. If either is mismatched, the upsert cannot locate its target and the join breaks.</p>
+      <p><b>CFG_BACKUP and CFG_PM: the notification recipients.</b> <code>CFG_BACKUP</code> is the fail-loud target (the address that gets notified when the job cannot complete), so a broken sync surfaces to a person instead of failing silently. <code>CFG_PM</code> is the project manager address for the CP-101 tracker. Both are ordinary email addresses swapped per study. The fail-loud design means a failed push is treated as an incident to be seen, consistent with the principle that this pipeline should never quietly drift out of sync.</p>
+      <p><b>CFG_ALLOW: the ops-only allowlist and the in-code PHI boundary.</b> <code>CFG_ALLOW</code> is a pipe-delimited list of Smartsheet column titles that this job is permitted to write, compared case-insensitively: here <code>TASK ID|STATUS|% DONE|OWNER|DUE|TASK</code>. Its comment is explicit that <code>%ss_guard</code> FAILS LOUD if a job tries to write any column not on this list, which makes this line the in-code PHI and sensitive-data boundary. Every allowed column is operational metadata (task identity, status, percent done, ownership, due date), so the list structurally prevents this cloud-bound sync from ever carrying PHI, participant-level, unblinded, or reported clinical numbers. Reported clinical results come only from validated tools, never from this sheet, and this allowlist is what enforces that separation at run time: adding a clinical column here would be the single edit that breaks the boundary, so it is the line to review most carefully.</p>
+    <h2>The nightly job you schedule, every line: tracker_update.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 50 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>tracker_update.sas is the nightly SHEETLINK driver: the top-to-bottom SAS job you schedule (cron, Windows Task Scheduler, or SAS batch) to run <b>after</b> your validated nightly extract has refreshed. It pushes the ops-only status of the CP-101 program tracker to Smartsheet idempotently, then lets Smartsheet's own configured workflow send the notifications. Everything it writes is operational (status, % complete, ownership, dates), never PHI, participant-level, unblinded, or reported clinical numbers. The header comment states the flow explicitly: config, macros, init, build ops-only labeled data, upsert, optional status-PDF attach, then heartbeat, with a fail-loud posture throughout.</p>
+    <pre class="code"><code>/*====================================================================================
+  tracker_update.sas  -  the nightly SHEETLINK driver. Schedule this (cron / Task
+  Scheduler / SAS batch) AFTER your validated nightly extract refreshes. It pushes the
+  ops-only status of the CP-101 program tracker to Smartsheet, idempotently, then lets
+  Smartsheet's own configured workflow send the notifications.
+  ------------------------------------------------------------------------------------
+  Flow : config -&gt; macros -&gt; init -&gt; build ops-only data (LABELED) -&gt; upsert -&gt; (attach
+         a status PDF) -&gt; heartbeat.  No PHI. No participant-level data. Fail loud.
+====================================================================================*/
+%let ROOT = /sasdata/cp101/sheetlink;          /* adjust to your install */
+%include "&amp;ROOT/ss_config.sas";
+%include "&amp;ROOT/ss_macros.sas";
+
+/* 1) connect: token from env (never hard-coded/logged), fail-loud target, allowlist */
+%ss_init(tokenenv=&amp;CFG_TOKEN_ENV, tokenfile=&amp;CFG_TOKEN_FILE, backup=&amp;CFG_BACKUP, allow=&amp;CFG_ALLOW);
+
+/* 2) BUILD THE OPS-ONLY SNAPSHOT from your validated derived data.
+      One row per tracked task; the key (&amp;CFG_KEYCOL) is a stable code YOU own.
+      Each value variable is LABELED with its exact Smartsheet column title.
+      &gt;&gt;&gt; Only operational columns. No PHI, no participant-level, no reported clinical numbers. */
+data tracker;
+  length TaskID $40 Status $20 Owner $40 Due $10;
+  /* example: derive these from your milestone / deliverable / QC-status tables */
+  TaskID="CP101-DBL";   Status="At Risk";  PctDone=0.60; Owner="Biostat"; Due="2026-06-20"; output;
+  TaskID="CP101-ADaM";  Status="On Track"; PctDone=0.85; Owner="Biostat"; Due="2026-06-28"; output;
+  TaskID="CP101-TLF";   Status="Watch";    PctDone=0.40; Owner="Biostat"; Due="2026-07-05"; output;
+  label Status="Status" PctDone="% Done" Owner="Owner" Due="Due";   /* labels = Smartsheet TITLES */
+run;
+
+/* 3) IDEMPOTENT upsert by TaskID: existing rows update in place, new rows append.
+      Re-runnable any number of times a night with no duplicates. */
+%ss_upsert(sheet=&amp;CFG_SHEET, keycol=TaskID, keycolname=&amp;CFG_KEYCOLNAME, data=tracker);
+
+/* 4) (optional) attach last night's one-page status PDF to the summary row.
+      Rate-intensive - do it once per run, not per row. Ops-only document. */
+%if %sysfunc(fileexist(&amp;ROOT/out/cp101_status.pdf)) %then %do;
+  %ss_attach(sheet=&amp;CFG_SHEET, row=&amp;CFG_SUMMARYROW, file=&amp;ROOT/out/cp101_status.pdf, name=CP101_status.pdf);
+%end;
+
+/* 5) NOTIFICATIONS are NOT sent from code. Configure them ONCE in Smartsheet:
+        Automation -&gt; "When Status changes to At Risk -&gt; Alert the PM".
+      SAS just writes the truthful cell; Smartsheet decides who to tell. (Pattern A.)
+      For a targeted human-in-the-loop ask, you MAY send an update request: */
+/* %ss_update_request(sheet=&amp;CFG_SHEET, rowids=&amp;CFG_SUMMARYROW, colids=...,
+                      sendto=&amp;CFG_PM, subject=CP101 weekly check,
+                      message=Please confirm the DB-lock date.); */
+
+/* 6) heartbeat: prove the job ran (so silence is unambiguously a failure, not a no-op) */
+%ss_assert(cond=(&amp;SS_RC=0), msg=SHEETLINK finished with errors - see log);
+%put NOTE: [SHEETLINK] tracker_update complete, status=&amp;SS_STATUS;</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header and includes: set ROOT and pull in config plus the macro library.</b> The opening block comment documents the job's purpose and flow, then <code>%let ROOT = /sasdata/cp101/sheetlink</code> defines the install path you must adjust to your own layout. Two <code>%include</code> statements pull in <code>&ROOT/ss_config.sas</code> (which supplies the <code>&CFG_*</code> macro variables used below) and <code>&ROOT/ss_macros.sas</code> (which defines <code>%ss_init</code>, <code>%ss_upsert</code>, <code>%ss_attach</code>, and <code>%ss_assert</code>). Splitting configuration and macros out of the driver keeps this file readable as the whole job at a glance and lets you point one driver at different studies by swapping the config. Nothing runs until these resolve, so a missing or misnamed include fails immediately rather than silently.</p>
+      <p><b>Step 1, ss_init: connect with the token from the environment and load the allowlist.</b> <code>%ss_init(tokenenv=&CFG_TOKEN_ENV, tokenfile=&CFG_TOKEN_FILE, backup=&CFG_BACKUP, allow=&CFG_ALLOW)</code> establishes the Smartsheet connection using a token drawn from the environment variable (or token file) named in config, so per the inline comment the secret is never hard-coded or written to the log. The <code>backup=</code> argument names the fail-loud target, and <code>allow=&CFG_ALLOW</code> loads the column allowlist. That allowlist is the in-code PHI boundary: it enforces which columns may ever be written, so operational fields pass and anything participant-level or clinical is refused before it can reach the cloud. Running init first means the guard and connection are in place before any data is built or pushed.</p>
+      <p><b>Step 2, build the ops-only snapshot in the tracker data set.</b> The <code>data tracker</code> step builds one row per tracked task, where the <code>length</code> statement types <code>TaskID</code> (the stable key code you own, matching <code>&CFG_KEYCOL</code>), <code>Status</code>, <code>Owner</code>, and <code>Due</code> as character, while <code>PctDone</code> is numeric by assignment. The three hard-coded example rows (CP101-DBL at 0.60, CP101-ADaM at 0.85, CP101-TLF at 0.40) are placeholders: in production you derive these from your validated milestone, deliverable, and QC-status tables, as the inline comment directs. The final <code>label</code> statement is <b>load-bearing</b> because each label is the exact Smartsheet column title the upsert writes into (<code>Status</code>, <code>% Done</code> for <code>PctDone</code>, <code>Owner</code>, <code>Due</code>), and note <code>TaskID</code> is left unlabeled because it is the match key. Every variable here is operational only: no PHI, no participant-level records, and no reported clinical numbers, which by policy come from validated tools and never from this sheet.</p>
+      <p><b>Step 3, ss_upsert: idempotent match-on-TaskID push.</b> <code>%ss_upsert(sheet=&CFG_SHEET, keycol=TaskID, keycolname=&CFG_KEYCOLNAME, data=tracker)</code> writes the tracker snapshot to the configured sheet, matching rows on <code>TaskID</code> against the Smartsheet key column named by <code>&CFG_KEYCOLNAME</code>. Per the inline comment, existing rows update in place and previously unseen keys append as new rows, so the operation is idempotent: you can run it any number of times a night and never create duplicates. This is what makes the whole driver safe to re-run after a partial failure or a re-triggered schedule. It also means the sheet always reflects the latest validated extract rather than accumulating stale copies.</p>
+      <p><b>Step 4, ss_attach: optionally attach the one-page status PDF, guarded by fileexist.</b> The <code>%if %sysfunc(fileexist(&ROOT/out/cp101_status.pdf))</code> block runs <code>%ss_attach(sheet=&CFG_SHEET, row=&CFG_SUMMARYROW, file=&ROOT/out/cp101_status.pdf, name=CP101_status.pdf)</code> only when last night's status PDF actually exists, so a missing report skips the attach cleanly instead of erroring. The attachment goes once to the summary row (<code>&CFG_SUMMARYROW</code>), not per data row, because the comment flags attaching as rate-intensive against the API. The comment also marks the PDF as an ops-only document, consistent with the no-PHI boundary: it is a status summary, not participant data. This step is optional and non-fatal, so the job proceeds even when no PDF was produced.</p>
+      <p><b>Step 5, notifications are configured in Smartsheet, not sent from code.</b> This step is documentation, not executable logic: it states that alerts are configured once in Smartsheet's own Automation (for example, when Status changes to At Risk, alert the PM) rather than fired from SAS. The division of labor is deliberate: SAS writes only the truthful operational cell and Smartsheet decides who to tell (called Pattern A here), which keeps notification routing out of the batch job. A commented-out <code>%ss_update_request</code> call shows the one sanctioned exception, a targeted human-in-the-loop update request that passes <code>sheet=&CFG_SHEET</code>, <code>rowids=&CFG_SUMMARYROW</code>, and <code>sendto=&CFG_PM</code> to ask the PM to confirm the DB-lock date, which you can uncomment and complete when you genuinely need a person to respond. Left commented, it does nothing on a normal run.</p>
+      <p><b>Step 6, ss_assert heartbeat: fail loud and prove the job ran.</b> <code>%ss_assert(cond=(&SS_RC=0), msg=SHEETLINK finished with errors - see log)</code> checks the accumulated return code and hard-fails the job with that message if any prior step set <code>&SS_RC</code> nonzero, enforcing the fail-loud contract so a problem cannot pass silently. The closing <code>%put NOTE: [SHEETLINK] tracker_update complete, status=&SS_STATUS;</code> emits a tagged completion line carrying <code>&SS_STATUS</code>. That heartbeat is what makes scheduling trustworthy: because a healthy run always prints this NOTE, its <b>absence</b> in the log unambiguously signals a failed or non-running job rather than a benign no-op, which is exactly what you want a monitored nightly driver to guarantee.</p>
   <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="usecases" aria-label="What to automate">
     <h1>What a biostatistician should automate</h1>
@@ -141,21 +289,33 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <p class="lede">The deterministic job doing its one job: reading the sheet, writing the truthful status by key, attaching the evidence, and letting Smartsheet send the alert &mdash; with zero AI and zero copy-paste.</p>
     <div class="dl">
       <a class="btn" href="CP101_Tracker_Demo.html">&#9654;&nbsp; Run it yourself &mdash; the interactive tracker demo</a>
-      <a class="btn ghost" href="SAS_R_Smartsheet_Screencast_narrated.mp4">&#9654;&nbsp; Watch the 2-min overview &mdash; the live dashboard demo</a>
-      <a class="btn ghost" href="SAS_R_Smartsheet_Example_narrated.mp4">&#9654;&nbsp; Watch the deep version &mdash; the live R job, step by step (~3 min)</a>
+      <a class="btn ghost" href="SAS_R_Smartsheet_Example_narrated.mp4">&#9654;&nbsp; Watch the R job run, step by step (~3 min)</a>
       <a class="btn ghost" href="Smartsheet_SASR_Example_StepGuide.pdf">&#10515;&nbsp; Step-by-step picture guide (PDF)</a>
       <a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; The SAS/R helper library + runnable demo</a>
     </div>
-    <div class="shots">
-      <figure><img src="example_img/beat1.png" alt="The four-part architecture: scheduler, SAS/R program, Smartsheet cells, Smartsheet automation"><figcaption><b>The loop</b> &mdash; scheduler &rarr; SAS/R &rarr; Smartsheet cells &rarr; the alert Smartsheet sends. Code owns the data; Smartsheet owns the notifications.</figcaption></figure>
-      <figure><img src="example_img/beat2.png" alt="Beat 1: the job reads the sheet, building a fresh column map and the key to row map"><figcaption><b>Beat 1 &middot; Read first</b> &mdash; pull a fresh column map (ids are the only stable address) and read existing rows by the Task code, so the job knows what to update vs append.</figcaption></figure>
-      <figure><img src="example_img/beat3.png" alt="Beat 2: status cells updated in place to At Risk and Watch, marked UPDATED"><figcaption><b>Beat 2 &middot; Write by key</b> &mdash; DB&nbsp;lock slips to <b>At&nbsp;Risk</b>, tables move to <b>Watch</b>. Matched on the key, so re-runs converge &mdash; never a duplicate row.</figcaption></figure>
-      <figure><img src="example_img/beat4.png" alt="Beat 3: one upsert call carries the whole batch, splitting updates from appends"><figcaption><b>Beat 3 &middot; One upsert, whole batch</b> &mdash; a single rows array splits cleanly into updates (existing keys) and appends (new keys). Plain, double-programmed SAS/R.</figcaption></figure>
-      <figure><img src="example_img/beat5.png" alt="Beats 4 and 5: a status PDF attaches to the summary row and Smartsheet sends the alert"><figcaption><b>Beats 4&ndash;5 &middot; Attach &amp; let it notify</b> &mdash; the job attaches the ops status PDF, then stops. The instant Status hit At&nbsp;Risk, the Smartsheet workflow alerted the PM. SAS wrote the fact; Smartsheet chose who to tell.</figcaption></figure>
-      <figure><img src="example_img/beat6.png" alt="The four safeguards: idempotent, ops-only allowlist, secret token, rate-limit aware and fail loud"><figcaption><b>Why it&rsquo;s trustworthy</b> &mdash; idempotent by key &middot; coded ops-only allowlist (no PHI to the cloud) &middot; token from a secret, never logged &middot; rate-limit aware &amp; fails loud.</figcaption></figure>
-    </div>
-    <p class="muted">The diagrams above are illustrative; the <a href="CP101_Tracker_Demo.html">interactive demo</a> and the <a href="SAS_R_Smartsheet_Example_narrated.mp4">screencast</a> faithfully reproduce a real nightly run, and the runnable <code>_demo/</code> exercises the <b>real</b> <code>ss_companion.R</code> against a representative Smartsheet API (no live account, no PHI). The division of labor throughout: <b>SAS/R wrote truthful operational cells; Smartsheet sent the notifications; humans made every decision.</b></p>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+
+    <h2>What one scheduled run prints to the log</h2>
+    <p>There is nothing to watch in a UI. The point is that every read and write is an auditable line in the job log, straight from the shipped code. Here is a representative run for the night the database cut slipped (the SAS log shown; the R companion prints the row-level equivalent underneath). Read it top to bottom.</p>
+    <pre class="code"><code># tracker_update.sas, fired by cron / Task Scheduler after the validated nightly extract refreshed
+NOTE: [SHEETLINK] init - token loaded (length hidden); allowlist=TASK ID|STATUS|% DONE|OWNER|DUE|TASK
+NOTE: [SHEETLINK] column map for sheet 1234567890123456 rebuilt (7 columns)
+NOTE: [SHEETLINK] upsert sheet 1234567890123456 done - updated=8 cells / added=5 cells (idempotent by Task ID)
+NOTE: [SHEETLINK] attached CP101_status.pdf to row 9876543210
+NOTE: [SHEETLINK] tracker_update complete, status=OK
+
+# the R companion (ss_companion.R) prints the row-level equivalent:
+[SHEETLINK] upsert sheet 1234567890123456: 4 updated, 1 added (idempotent by TaskID)
+
+# Smartsheet Automation, configured once in the UI:  Status -&gt; At Risk  =&gt;  email to the PM</code></pre>
+    <p class="muted">The run is idempotent. Re-run it ten times tonight and the log converges to <code>updated=0 cells / added=0 cells</code>; a re-run cannot duplicate a row. Silence is never assumed either: a failed run mails the fail-loud address instead of finishing quietly.</p>
+
+    <h2>The run, beat by beat</h2>
+    <p><b>Read first, key by Task&nbsp;ID.</b> The job pulls a fresh column map (columnIds are the only stable address, titles and order drift) and reads the existing rows keyed on the Task code you own, so it knows which rows to update in place and which to append. It never blind-appends, which is why a re-run cannot duplicate a row.</p>
+    <p><b>Write the truthful status by key.</b> From the validated derived data: enrollment drops to At&nbsp;Risk, the database cut moves to Watch with its date slipping (17&nbsp;&rarr;&nbsp;19&nbsp;Jun), the spec ticks to 85%, and one genuinely new CSR row is appended. All of it goes in a single idempotent upsert (existing keys are a PUT, new keys a POST), so re-running converges to the same sheet.</p>
+    <p><b>Cascade dependent dates deterministically.</b> When the cut date moves, the dependent milestones (soft-lock, dry-run TLFs) are recomputed in SAS/R and pushed in the same call, so the timeline stays internally consistent without anyone re-typing a date.</p>
+    <p><b>Attach the evidence, then stop.</b> The job attaches the one-page ops-only status PDF to the summary row, then stops. It sends no email of its own, and only aggregate operational status ever left the environment (the allowlist guard blocks anything else, in code).</p>
+    <p><b>Smartsheet sends the alert, a human decides.</b> The instant Status became At&nbsp;Risk, the Automation a PM set up once fired the notification on whatever channel they chose. The code wrote the fact, Smartsheet chose who to tell, and the medical monitor or PM owns what it means.</p>
+    <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="macros" aria-label="The SAS/R helper library">
     <h1>The helper library &mdash; <code>%ss_*</code> macros &amp; R functions</h1>
     <p>A small, deterministic library so &ldquo;keep the tracker current&rdquo; is a few lines you schedule. It guarantees five things: <b>idempotent</b> (never duplicates), <b>ops-only</b> (coded allowlist), <b>token never logged</b>, <b>rate-limit aware</b>, and <b>fails loud</b>. It also ships a <b>dry run</b> (preview an upsert before you schedule it &mdash; <code>dryrun=Y</code> / <code>dryrun=TRUE</code> / <code>-DryRun</code>), a <b>read-back</b> (<code>%ss_get</code> / <code>ss_get()</code>), and a <b>runnable demo</b> (<code>_demo/</code>) that exercises the real library against a representative Smartsheet API with no account needed.</p>
@@ -166,26 +326,555 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <a class="btn ghost" href="macro_library/ss_config.sas">&#10515;&nbsp; ss_config.sas</a>
       <a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; README</a>
     </div>
-    <h2>The whole nightly job, in SAS</h2>
-    <pre class="code">%include "ss_config.sas";   /* sheet id, key, the ops-only ALLOWLIST */
-%include "ss_macros.sas";
-%ss_init(tokenenv=&amp;CFG_TOKEN_ENV, backup=&amp;CFG_BACKUP, allow=&amp;CFG_ALLOW);
+    <!-- SHEETLINK-FULL-PROGRAM -->
+    <p>These are the <b>actual, complete</b> library files, shown in full below and available as downloads above. The SAS macro library and the R companion are behaviour-matched; the PowerShell script is a laptop-only path with the same guarantees. Read the SAS library first, the R and PowerShell mirror it.</p>
+    <h2>The complete SAS library: ss_macros.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 263 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>ss_macros.sas is the complete SHEETLINK helper library: every <code>%ss_*</code> macro that lets a scheduled, no-AI SAS job drive a Smartsheet tracker over its REST API using only PROC HTTP and the JSON LIBNAME engine on Base SAS 9.4M5+. It runs unattended (typically from a scheduler) to push OPS-ONLY data to the sheet: milestone dates, deliverable and QC status, % complete, aggregate enrollment counts, and ownership. It never carries PHI, participant-level, unblinded, or reported clinical numbers; reported numbers come from validated tools, never from this sheet. You %include this file once to define the macros, call <code>%ss_init</code> to load credentials and the allowlist, then call <code>%ss_upsert</code> (and friends) from your driver program. The file opens by declaring the shared global macro variables <code>SS_BASE SS_TOKEN SS_RC SS_STATUS SS_BACKUP SS_ALLOW</code> that the macros read and write across calls.</p>
+    <pre class="code"><code>/*====================================================================================
+  ss_macros.sas  -  SHEETLINK: a deterministic SAS macro library for driving Smartsheet
+                    from scheduled SAS (no AI). PROC HTTP + the JSON LIBNAME engine.
+  ------------------------------------------------------------------------------------
+  Pattern : scheduled SAS writes ops-only data to Smartsheet by a stable key (idempotent
+            upsert); Smartsheet's own configured workflows send the rich notifications.
+  Prefix  : every macro is %ss_&lt;name&gt;.  Base SAS 9.4M5+ (PROC HTTP + JSON libname).
+  GOVERNANCE (load-bearing): Smartsheet is a CLOUD SaaS -&gt; only NON-SENSITIVE OPERATIONAL
+            data may leave the tenant (milestone dates, deliverable/QC status, % complete,
+            aggregate enrollment counts, ownership). NEVER PHI, participant-level, unblinded,
+            or reported clinical numbers. %ss_guard enforces a column ALLOWLIST in code.
+  SECURITY: the Bearer token is read from an env var / permissioned file at runtime, never
+            hard-coded, never written to the log (OPTIONS NOSOURCE around the read).
+  Idempotency: upsert by a STABLE EXTERNAL KEY (a Deliverable/Milestone code you control),
+            never blind-append -&gt; re-runs converge, never duplicate.
+  Reliability: 300 req/min/token -&gt; %ss_http retries 429/5xx with backoff and FAILS LOUD.
+====================================================================================*/
 
-data tracker;
-  length TaskID $40 Status $20;
-  TaskID="CP101-DBL";  Status="At Risk";  PctDone=0.60; output;
-  TaskID="CP101-ADaM"; Status="On Track"; PctDone=0.85; output;
-  label Status="Status" PctDone="% Done";   /* each label = the Smartsheet column TITLE */
-run;
+%global SS_BASE SS_TOKEN SS_RC SS_STATUS SS_BACKUP SS_ALLOW;
 
-%ss_upsert(sheet=&amp;CFG_SHEET, keycol=TaskID, keycolname=&amp;CFG_KEYCOLNAME, data=tracker);</pre>
-    <h2>The same job, in R</h2>
-    <pre class="code">source("ss_companion.R")
-allow &lt;- c("Task ID","Status","% Done","Owner","Due")
-df &lt;- tibble::tibble(`Task ID` = c("CP101-DBL","CP101-ADaM"),
-                     Status   = c("At Risk","On Track"),
-                     `% Done` = c(0.60, 0.85))
-ss_upsert(sheet = Sys.getenv("CP101_TRACKER_ID"), key = "Task ID", df = df, allow = allow)</pre>
+/*==== %ss_init : base URL, token (from env/file, never logged), fail-loud target =====*/
+%macro ss_init(tokenenv=SMARTSHEET_TOKEN, tokenfile=, backup=, allow=);
+  %let SS_BASE = https://api.smartsheet.com/2.0;   /* pin /2.0 explicitly */
+  %let SS_RC = 0; %let SS_STATUS = OK; %let SS_BACKUP = &amp;backup;
+  %let SS_ALLOW = %upcase(&amp;allow);                 /* the ops-only column allowlist */
+  options noquotelenmax;
+  %local _had; %let _had = %sysfunc(getoption(source));
+  options nosource nonotes;                        /* keep the token out of the log */
+  %if %length(&amp;tokenfile) %then %do;
+    data _null_; infile "&amp;tokenfile" length=l; input; call symputx('SS_TOKEN', strip(_infile_)); run;
+  %end;
+  %else %let SS_TOKEN = %sysget(&amp;tokenenv);
+  options &amp;_had notes;
+  %ss_assert(cond=%length(&amp;SS_TOKEN)&gt;0, msg=Smartsheet token not found (env &amp;tokenenv / file &amp;tokenfile), abort=Y);
+  %put NOTE: [SHEETLINK] init - token loaded (length hidden); allowlist=&amp;SS_ALLOW;
+%mend ss_init;
+
+/*==== %ss_assert : FAIL LOUD. A scheduled job must never fail silently. ===============*/
+%macro ss_assert(cond=, msg=, abort=N);
+  %if not (&amp;cond) %then %do;
+    %let SS_RC = 1; %let SS_STATUS = FAILED;
+    %put ERROR: [SHEETLINK] ASSERT FAILED: &amp;msg;
+    %if %length(&amp;SS_BACKUP) %then %do;
+      filename _ssm email to=("&amp;SS_BACKUP") subject="SHEETLINK FAILURE - &amp;msg" importance="High";
+      data _null_; file _ssm; put "SHEETLINK Smartsheet job FAILED: &amp;msg"; put "The tracker may be stale - do not assume it is current."; run;
+      filename _ssm clear;
+    %end;
+    %if &amp;abort=Y %then %abort cancel;
+  %end;
+%mend ss_assert;
+
+/*==== %ss_http : the core call. Bearer auth, JSON, 429/5xx retry+backoff, fail-loud.
+       method=GET/POST/PUT/DELETE ; path appended to &amp;SS_BASE ; in= request-body fileref ;
+       out= response fileref. Returns the HTTP status in &amp;ss_code.                       */
+%macro ss_http(method=GET, path=, in=, out=_ssresp, ctype=application/json, retries=4);
+  %global ss_code;
+  filename &amp;out temp; filename _sshdr temp;
+  %local try wait; %let try=0; %let wait=2;
+  %do %until(&amp;try &gt; &amp;retries);
+    proc http url="&amp;SS_BASE/&amp;path" method="&amp;method"
+        %if %length(&amp;in) %then in=&amp;in ct="&amp;ctype"; out=&amp;out headerout=_sshdr;
+      headers "Authorization"="Bearer &amp;SS_TOKEN" "Accept"="application/json";
+    run;
+    %let ss_code = &amp;SYS_PROCHTTP_STATUS_CODE;
+    %if &amp;ss_code = 429 or (&amp;ss_code &gt;= 500 and &amp;ss_code &lt;= 599) %then %do;   /* throttled / transient */
+      %put WARNING: [SHEETLINK] HTTP &amp;ss_code on &amp;method &amp;path - backoff &amp;wait.s (try &amp;try);
+      data _null_; rc=sleep(&amp;wait,1); run;  %let wait=%eval(&amp;wait*2); %let try=%eval(&amp;try+1);
+    %end;
+    %else %let try=%eval(&amp;retries+1);   /* done: success or a non-retryable error */
+  %end;
+  %ss_assert(cond=(&amp;ss_code &gt;= 200 and &amp;ss_code &lt; 300), msg=&amp;method &amp;path returned HTTP &amp;ss_code);
+  filename _sshdr clear;
+%mend ss_http;
+
+/*==== %ss_colmap : GET the sheet, build a fresh column NAME -&gt; columnId map (&amp;out).
+       Rebuilt EVERY run - columnIds are the only stable cell address; names/order drift.*/
+%macro ss_colmap(sheet=, out=ss_cols);
+  %ss_http(method=GET, path=sheets/&amp;sheet, out=_sssheet);
+  libname _ssj JSON fileref=_sssheet;
+  /* the JSON engine exposes a COLUMNS table with id + title (verify names vs your response) */
+  data &amp;out; set _ssj.columns(keep=id title type); name=upcase(title); run;
+  libname _ssj clear;
+  %put NOTE: [SHEETLINK] column map for sheet &amp;sheet rebuilt (%obs(&amp;out) columns);
+%mend ss_colmap;
+
+/*==== %ss_get_rows : GET the sheet rows + cells -&gt; a long dataset (&amp;out) of
+       rowId * columnId * value, plus the key-&gt;rowId map keyed on &amp;keycol's column.       */
+%macro ss_get_rows(sheet=, out=ss_rows);
+  %ss_http(method=GET, path=sheets/&amp;sheet?includeAll=true, out=_sssheet);
+  libname _ssj JSON fileref=_sssheet;
+  /* ROWS has id; the cells live in a child table keyed by an ordinal back to ROWS.
+     Join cells-&gt;rows to get rowId, and cells-&gt;columns(name) via columnId.                */
+  proc sql;
+    create table &amp;out as
+      select r.id as rowId, c.columnId, c.value
+      from _ssj.rows r join _ssj.rows_cells c on r.ordinal_rows = c.ordinal_rows;
+  quit;
+  libname _ssj clear;
+%mend ss_get_rows;
+
+/*==== %ss_get : read ONE cell value back by its key (verification / read-after-write).
+       Result is returned in the macro var named by mvar (default ss_value).               */
+%macro ss_get(sheet=, key=, keycolname=, col=, mvar=ss_value);
+  %global &amp;mvar; %let &amp;mvar=;
+  %ss_colmap(sheet=&amp;sheet, out=_ssgc); %ss_get_rows(sheet=&amp;sheet, out=_ssgr);
+  %local kid cid;
+  proc sql noprint;
+    select id into :kid trimmed from _ssgc where name=%upcase("&amp;keycolname");
+    select id into :cid trimmed from _ssgc where name=%upcase("&amp;col");
+    select cats(value) into :&amp;mvar trimmed from _ssgr
+      where columnId=&amp;cid and rowId=(select rowId from _ssgr where columnId=&amp;kid and upcase(cats(value))=%qupcase("&amp;key"));
+  quit;
+  %put NOTE: [SHEETLINK] ss_get &amp;col for &amp;key = %superq(&amp;mvar);
+%mend ss_get;
+
+/*==== %ss_guard : enforce the OPS-ONLY column allowlist in code. The column TITLES a job
+       is about to write MUST all be in &amp;SS_ALLOW - else FAIL LOUD (no PHI to the cloud).
+       cols and SS_ALLOW are PIPE-delimited (Smartsheet titles contain spaces).           */
+%macro ss_guard(cols=);
+  %local i v bad n; %let bad=; %let n=%sysfunc(countw(%superq(cols),|));
+  %do i=1 %to &amp;n; %let v=%qupcase(%qscan(%superq(cols),&amp;i,|));
+    %if %length(&amp;v) and not %sysfunc(indexw(%superq(SS_ALLOW),&amp;v,|)) %then %let bad=&amp;bad.[&amp;v];
+  %end;
+  %ss_assert(cond=(%length(&amp;bad)=0), msg=BLOCKED non-allowlisted column(s) for Smartsheet: &amp;bad - possible PHI/sensitive leak, abort=Y);
+%mend ss_guard;
+
+/*==== %ss_emit : write a Smartsheet rows-array JSON body from a long cells dataset
+       (keyval rowId columnId valstr isnum), grouped one object per keyval.
+       mode=UPDATE -&gt; {"id":rowId,...} ; mode=ADD -&gt; {"toBottom":true,...}.               */
+%macro ss_emit(cells=, body=, mode=UPDATE);
+  filename &amp;body temp;
+  proc sort data=&amp;cells; by keyval; run;
+  data _null_; file &amp;body lrecl=20000; set &amp;cells end=last; by keyval;
+    retain rowsep cellsep; length line $9000 esc $8600;     /* wide: a quote-heavy value ~doubles when escaped */
+    if _n_=1 then put '[';
+    if first.keyval then do;
+      if rowsep then put ',';
+      %if %upcase(&amp;mode)=UPDATE %then %do; line = cats('{"id":', rowId, ',"cells":['); %end;
+      %else %do;                          line = '{"toBottom":true,"cells":[';        %end;
+      l = length(line); put line $varying9000. l;           /* exact width - no padding  */
+      rowsep = 1; cellsep = 0;
+    end;
+    esc = tranwrd(strip(valstr),'\','\\'); esc = tranwrd(esc,'"','\"');   /* JSON-escape */
+    if isnum then line = cats('{"columnId":', columnId, ',"value":',  strip(valstr), '}');
+    else          line = cats('{"columnId":', columnId, ',"value":"', strip(esc),    '"}');
+    if cellsep then line = cats(',', line);
+    l = length(line); put line $varying9000. l;
+    cellsep = 1;
+    if last.keyval then put ']}';
+    if last then put ']';
+  run;
+%mend ss_emit;
+
+/*==== %ss_upsert : the flagship. Idempotent update-by-key, add-if-new. NEVER duplicates.
+       data : one row per record; a key variable (&amp;keycol) plus value variables, each
+              value variable LABELED with its exact Smartsheet column TITLE.
+              e.g.  label Status="Status" PctDone="% Done" DueDate="Due";
+       Existing keys -&gt; PUT (update in place); new keys -&gt; POST (append). Re-runs converge. */
+%macro ss_upsert(sheet=, keycol=, keycolname=, data=, dryrun=N);
+  %ss_colmap(sheet=&amp;sheet, out=_ssc);                          /* name(upcase title)-&gt;id   */
+  %ss_get_rows(sheet=&amp;sheet, out=_ssr);
+
+  /* the key column's id + the current key-value -&gt; rowId map */
+  %local keyid; proc sql noprint; select id into :keyid trimmed from _ssc where name=%upcase("&amp;keycolname"); quit;
+  proc sql; create table _sskey as select rowId, value as keyval from _ssr where columnId=&amp;keyid; quit;
+
+  /* attach the existing rowId (if the key already lives on the sheet).
+     The key should be a TEXT column on the sheet; cats() compares text-exactly and converts
+     a numeric key without leading blanks (a zero-padded code must be stored as text both sides). */
+  proc sql; create table _ssjob as
+    select d.*, k.rowId from &amp;data d left join _sskey k on cats(d.&amp;keycol)=cats(k.keyval); quit;
+
+  /* enumerate the value variables by type (exclude the key + the joined rowId) */
+  %local cv nv nvv nlbl lbls;
+  proc contents data=_ssjob(drop=rowId) out=_ct(keep=name type label) noprint; run;
+  proc sql noprint;
+    select name into :cv separated by ' ' from _ct where upcase(name) ne %upcase("&amp;keycol") and type=2;
+    select name into :nv separated by ' ' from _ct where upcase(name) ne %upcase("&amp;keycol") and type=1;
+    select count(*) into :nvv  trimmed from _ct where upcase(name) ne %upcase("&amp;keycol");
+    select count(*) into :nlbl trimmed from _ct where upcase(name) ne %upcase("&amp;keycol") and label ne '';
+    select distinct upcase(label) into :lbls separated by '|' from _ct
+      where label ne '' and upcase(name) ne %upcase("&amp;keycol");
+  quit;
+
+  /* every value variable MUST be labeled with its title (else it would be silently dropped) */
+  %ss_assert(cond=(&amp;nvv=&amp;nlbl), msg=Every value variable must be LABELED with its Smartsheet column title, abort=Y);
+  /* GUARD: every value-variable label (its Smartsheet title) must be on the ops-only allowlist */
+  %ss_guard(cols=&amp;lbls|%upcase(&amp;keycolname));
+
+  /* transpose value vars to long; PROC TRANSPOSE writes each var's label into _LABEL_.
+     No empty stubs (a stub's short key length would truncate the real key on SET).         */
+  %if %length(&amp;cv) %then %do; proc transpose data=_ssjob out=_lc(rename=(col1=_v));  by &amp;keycol rowId notsorted; var &amp;cv; run; %end;
+  %if %length(&amp;nv) %then %do; proc transpose data=_ssjob out=_ln(rename=(col1=_nv)); by &amp;keycol rowId notsorted; var &amp;nv; run; %end;
+
+  data _cells;
+    set %if %length(&amp;cv) %then _lc(in=inc); %if %length(&amp;nv) %then _ln(in=inn); ;
+    length title $200 valstr $4300;
+    %if %length(&amp;cv) and %length(&amp;nv) %then %do; isnum=inn; if inc then valstr=strip(_v); else valstr=strip(put(_nv,best32.)); %end;
+    %else %if %length(&amp;cv) %then %do; isnum=0; valstr=strip(_v); %end;
+    %else %do; isnum=1; valstr=strip(put(_nv,best32.)); %end;
+    title = upcase(_label_);
+    if missing(valstr) or valstr='.' then delete;   /* don't push empty cells */
+  run;
+  /* always (re)assert the key cell, and resolve every title -&gt; columnId */
+  data _keycell; set _ssjob; length title $200 valstr $4300; title=%upcase("&amp;keycolname");
+    valstr=cats(&amp;keycol); isnum=0; keep &amp;keycol rowId title valstr isnum; run;
+  data _allcells; set _cells _keycell; run;
+  proc sql; create table _cells2 as
+    select c.&amp;keycol as keyval length=200, c.rowId, m.id as columnId, c.valstr, c.isnum
+    from _allcells c join _ssc m on c.title=m.name; quit;
+
+  /* split existing (PUT) from new (POST) and send each only if non-empty */
+  data _cupd _cnew; set _cells2; if rowId&gt;. then output _cupd; else output _cnew; run;
+  %if %upcase(&amp;dryrun)=Y %then %do;   /* preview only: validate a job before you schedule it */
+    %put NOTE: [SHEETLINK] DRY RUN sheet &amp;sheet - would update=%obs(_cupd) cells / add=%obs(_cnew) cells (idempotent by &amp;keycolname) - nothing sent;
+    %return;
+  %end;
+  %if %obs(_cupd) %then %do; %ss_emit(cells=_cupd, body=_bupd, mode=UPDATE);
+    %ss_http(method=PUT,  path=sheets/&amp;sheet/rows, in=_bupd, out=_rupd); filename _bupd clear; %end;
+  %if %obs(_cnew) %then %do; %ss_emit(cells=_cnew, body=_bnew, mode=ADD);
+    %ss_http(method=POST, path=sheets/&amp;sheet/rows, in=_bnew, out=_rnew); filename _bnew clear; %end;
+  %put NOTE: [SHEETLINK] upsert sheet &amp;sheet done - updated=%obs(_cupd) cells / added=%obs(_cnew) cells (idempotent by &amp;keycolname);
+%mend ss_upsert;
+
+/*==== %ss_attach : attach an operational artifact (status PDF/QC summary) to a row.
+       Rate-intensive (~10x): use sparingly. Ops-only files only.                         */
+%macro ss_attach(sheet=, row=, file=, name=);
+  %local fn; %let fn=%sysfunc(coalescec(&amp;name,%scan(&amp;file,-1,/)));
+  filename _ssf "&amp;file" recfm=n;
+  proc http url="&amp;SS_BASE/sheets/&amp;sheet/rows/&amp;row/attachments" method="POST" in=_ssf out=_ssatt headerout=_ssh
+       ct="application/pdf";
+    headers "Authorization"="Bearer &amp;SS_TOKEN" "Content-Disposition"="attachment; filename=""&amp;fn""";
+  run;
+  filename _ssf clear;
+  %ss_assert(cond=(&amp;SYS_PROCHTTP_STATUS_CODE &gt;= 200 and &amp;SYS_PROCHTTP_STATUS_CODE &lt; 300), msg=attach &amp;fn returned &amp;SYS_PROCHTTP_STATUS_CODE);
+  %put NOTE: [SHEETLINK] attached &amp;fn to row &amp;row;
+%mend ss_attach;
+
+/*==== %ss_update_request : the supported human-in-the-loop notification. Emails the
+       recipients a link to update the given rows/columns. Ops-only message text.
+       sendto = SPACE-separated emails ; rowids / colids = COMMA-separated bare ids.        */
+%macro ss_update_request(sheet=, rowids=, colids=, sendto=, subject=, message=);
+  filename _ssur temp;
+  data _null_; file _ssur lrecl=8000;
+    length line $4000 tok $200 subj $600 msg $2000; i=1;
+    subj = tranwrd(tranwrd("&amp;subject",'\','\\'),'"','\"');   /* JSON-escape the free text */
+    msg  = tranwrd(tranwrd("&amp;message",'\','\\'),'"','\"');
+    line='{"sendTo":[';
+    do while(scan("&amp;sendto",i,' ') ne '');     /* recipients as {"email":"..."} */
+      tok=scan("&amp;sendto",i,' ');
+      line=cats(line, ifc(i&gt;1,',',''), '{"email":"', strip(tok), '"}'); i+1;
+    end;
+    line=cats(line, '],"rowIds":[', "&amp;rowids", '],"columnIds":[', "&amp;colids", '],',
+              '"subject":"', strip(subj), '","message":"', strip(msg), '","includeAttachments":false}');
+    l=length(line); put line $varying4000. l;
+  run;
+  %ss_http(method=POST, path=sheets/&amp;sheet/updaterequests, in=_ssur, out=_ssurr);
+  filename _ssur clear;
+  %put NOTE: [SHEETLINK] update request sent to &amp;sendto;
+%mend ss_update_request;
+
+%macro obs(ds); %sysfunc(attrn(%sysfunc(open(&amp;ds)),nlobs)) %mend;
+/*==== End ss_macros.sas. See ss_config.sas, tracker_update.sas, ss_companion.R, README. */</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>ss_init: base URL, token loading, and the allowlist.</b> <code>%ss_init</code> is the setup call you run once before anything else. It pins <code>SS_BASE</code> to <code>https://api.smartsheet.com/2.0</code>, resets the run-status globals (<code>SS_RC=0</code>, <code>SS_STATUS=OK</code>), records the <code>backup</code> email for failure alerts, and stores the <b>ops-only column allowlist</b> uppercased in <code>SS_ALLOW</code>. The Bearer token is read at runtime either from a permissioned file (<code>tokenfile=</code>, via an <code>infile</code> read into <code>SS_TOKEN</code>) or from an environment variable (<code>tokenenv=</code>, default <code>SMARTSHEET_TOKEN</code>, via <code>%sysget</code>), and the read is wrapped in <code>options nosource nonotes</code> so the secret never lands in the log. It finishes by asserting the token is non-empty with <code>abort=Y</code>, so a missing credential stops the job immediately rather than running blind.</p>
+      <p><b>ss_assert: fail loud, never fail silently.</b> <code>%ss_assert</code> is the error spine of the whole library: a scheduled job that fails silently is worse than one that stops, because a stale tracker looks current. When its <code>cond</code> is false it sets <code>SS_RC=1</code> and <code>SS_STATUS=FAILED</code>, writes an <code>ERROR:</code> line to the log, and, if a <code>SS_BACKUP</code> address was configured, sends a high-importance email whose body warns that the tracker may be stale and should not be assumed current. When called with <code>abort=Y</code> it issues <code>%abort cancel</code> to halt the job outright. Every other macro routes its failures through this one, which is why the allowlist guard and the token check can actually stop a run.</p>
+      <p><b>ss_http: the core API call with retry and backoff.</b> <code>%ss_http</code> is the single choke point every request passes through: it calls <code>PROC HTTP</code> against <code>&SS_BASE/&path</code> with the chosen <code>method</code>, attaches <code>Authorization: Bearer &SS_TOKEN</code> and <code>Accept: application/json</code>, sends a request-body fileref (with <code>ct=&ctype</code>) when <code>in=</code> is given, and captures the response in the <code>out=</code> fileref (default <code>_ssresp</code>). Because Smartsheet throttles at 300 requests/min/token, it inspects <code>SYS_PROCHTTP_STATUS_CODE</code> (exposed as <code>&ss_code</code>) and retries on <b>429 or any 5xx</b> with exponential backoff (the <code>wait</code> starts at 2 seconds and doubles), controlled by <code>retries=4</code> so the loop makes up to 5 HTTP attempts. After the loop it asserts the final status is 2xx, so a genuine failure fails loud rather than leaving the sheet half-written.</p>
+      <p><b>ss_colmap: rebuild the column name-to-id map every run.</b> <code>%ss_colmap</code> GETs the sheet metadata and builds a fresh lookup dataset (default <code>ss_cols</code>) mapping the uppercased column title (in the <code>name</code> variable) to its column id (kept in the <code>id</code> variable). It points the JSON LIBNAME engine at the response and keeps <code>id title type</code> from the <code>columns</code> table, setting <code>name=upcase(title)</code> for case-insensitive matching. This is rebuilt on <b>every</b> run on purpose: the column id values are the only stable cell address, while column names and order can drift as people edit the sheet, so caching them would silently corrupt writes.</p>
+      <p><b>ss_get_rows: pull rows and cells into a long dataset.</b> <code>%ss_get_rows</code> GETs the full sheet with <code>?includeAll=true</code> and reshapes it into a long dataset (default <code>ss_rows</code>) of <code>rowId * columnId * value</code>, one observation per cell the API returns for a row. Under the JSON engine the cells live in a child table, so it joins <code>rows</code> to <code>rows_cells</code> on the engine's <code>ordinal_rows</code> link to recover each cell's owning <code>rowId</code>. This long shape is what lets the upsert compare the current sheet state against your incoming data by key, which is the mechanism that makes re-runs converge instead of duplicating.</p>
+      <p><b>ss_get: read one cell back by its key.</b> <code>%ss_get</code> is the read-after-write verification helper: given a <code>key</code> value, the key column's title (<code>keycolname</code>), and a target column (<code>col</code>), it returns that one cell's value in the macro variable named by <code>mvar</code> (default <code>ss_value</code>). It refreshes both the column map and the row data, resolves the key column's and target column's ids, then finds the <code>rowId</code> whose key cell matches (compared as uppercased text via <code>cats</code>) and pulls the requested cell from that row. Use it to confirm a scheduled write actually landed; it moves only operational values, never anything sensitive.</p>
+      <p><b>ss_guard: the in-code PHI boundary.</b> <code>%ss_guard</code> is the load-bearing governance control: it takes the pipe-delimited list of column titles a job is about to write and verifies <b>every</b> one is present in the <code>SS_ALLOW</code> allowlist (both are pipe-delimited because Smartsheet titles contain spaces). It uppercases and scans each title with <code>indexw</code> against the allowlist, accumulating any non-member into <code>bad</code>, then asserts <code>bad</code> is empty with <code>abort=Y</code>. Any column not explicitly approved as operational stops the job cold, which is exactly how the code prevents PHI, participant-level, unblinded, or reported clinical numbers from ever reaching the cloud SaaS. This allowlist is the enforced boundary, so keeping it tight is the whole safety story.</p>
+      <p><b>ss_emit: build the Smartsheet rows-array JSON body.</b> <code>%ss_emit</code> turns a long cells dataset (<code>keyval rowId columnId valstr isnum</code>) into the JSON array Smartsheet's rows endpoints expect, sorting by <code>keyval</code> and emitting one object per key. In <code>mode=UPDATE</code> each object carries an update object keyed on the <code>rowId</code> for an in-place update; in <code>mode=ADD</code> it emits an append object marked <code>"toBottom":true</code> to append. It hand-writes the JSON with <code>$varying</code> puts sized to each line and JSON-escapes backslashes and quotes in text values via <code>tranwrd</code>, while numeric cells (<code>isnum</code>) are written unquoted so Smartsheet stores them as numbers. You do not normally call this directly: <code>%ss_upsert</code> calls it for you.</p>
+      <p><b>ss_upsert: the idempotent flagship.</b> <code>%ss_upsert</code> is the macro you actually schedule: it does an update-by-key, add-if-new so re-runs converge and <b>never duplicate</b>. You pass one row per record in <code>data</code>, a <code>keycol</code> holding a stable external code (a Deliverable or Milestone code you control), and value variables each <b>labeled with its exact Smartsheet column title</b>; it rebuilds the column map and rows, left-joins your data to the existing <code>rowId</code> by comparing keys as text with <code>cats</code>, and splits matched keys to a PUT (update) and new keys to a POST (append). Before sending anything it asserts every value variable is labeled and then calls <code>%ss_guard</code> on those labels plus the key column, so an unapproved column aborts the run before a single write. It supports <code>dryrun=Y</code> to report the would-update and would-add cell counts and send nothing, which lets you validate a job before scheduling it. The key column stores a text key on both sides so a zero-padded code is compared exactly and does not collapse to a number.</p>
+      <p><b>ss_attach: attach an operational artifact to a row.</b> <code>%ss_attach</code> uploads a file (a status PDF or QC summary) to a specific row via a POST to that row's <code>attachments</code> endpoint, deriving the display <code>name</code> from the argument or the file's last path segment. It calls <code>PROC HTTP</code> directly (not through <code>%ss_http</code>), reads the file raw (<code>recfm=n</code>), sets <code>Content-Disposition</code> with the filename, and asserts a 2xx status via <code>%ss_assert</code> so a failed upload fails loud. It is rate-intensive (roughly 10x a normal request), so the header comment says to use it sparingly, and it too is for ops-only files, never participant-level or clinical content.</p>
+      <p><b>ss_update_request: the human-in-the-loop notification.</b> <code>%ss_update_request</code> is the supported way to ask people to fill in cells: it POSTs to the sheet's <code>updaterequests</code> endpoint, emailing each recipient a link to update the named rows and columns. It hand-builds the JSON body: <code>sendto</code> is space-separated emails expanded into individual <code>email</code> objects entries under <code>sendTo</code>, <code>rowids</code> and <code>colids</code> are comma-separated bare ids dropped straight into <code>rowIds</code> and <code>columnIds</code>, and the free-text <code>subject</code> and <code>message</code> are JSON-escaped before insertion. It sets <code>includeAttachments:false</code> and routes the send through <code>%ss_http</code>, and its message text is operational only.</p>
+      <p><b>obs: the row-count helper.</b> <code>%obs</code> is a one-line utility that returns a dataset's logical observation count by opening it with <code>open</code> and reading the <code>nlobs</code> attribute via <code>attrn</code>. The other macros use it inline for their log messages and control flow: for example <code>%ss_upsert</code> reports <code>updated=%obs(_cupd)</code> and <code>added=%obs(_cnew)</code>, and guards each API send with <code>%if %obs(dataset)</code> so an empty update or add batch is skipped entirely. Small as it is, it is what lets the library only make calls it actually needs to.</p>
+    <h2>The same library in R: ss_companion.R</h2>
+    <p class="muted" style="margin-bottom:6px">R (httr2 + jsonlite) &middot; 114 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>ss_companion.R is the R twin of the SHEETLINK SAS library (ss_macros.sas): an httr2-based toolkit (the header names httr2 + jsonlite) that lets scheduled R jobs push operational tracker data into Smartsheet with no AI in the loop. It runs unattended, typically nightly under cronR or taskscheduleR, refreshing status, dates, percent-complete, ownership, and aggregate counts on a shared sheet. The governance model is identical to the SAS version: an ops-only column allowlist enforced in code, the bearer token read from an environment variable rather than hard-coded, idempotent upsert-by-key so re-runs never duplicate rows, retry on 429/5xx, and fail-loud assertions. Reported clinical numbers never travel through this file: those come only from validated tools, and the allowlist is the in-code PHI boundary that keeps participant-level or unblinded data off the cloud SaaS.</p>
+    <pre class="code"><code># =====================================================================================
+# ss_companion.R  -  SHEETLINK R companion: drive Smartsheet from scheduled R (no AI).
+# httr2 + jsonlite. Same governance as ss_macros.sas: ops-only column allowlist, token
+# from an env var (never hard-coded), idempotent upsert-by-key, 429/5xx retry, fail-loud.
+# Schedule with cronR / taskscheduleR; pin packages with renv.
+# =====================================================================================
+suppressPackageStartupMessages({ library(httr2); library(dplyr); library(purrr); library(tibble) })
+
+SS_BASE &lt;- "https://api.smartsheet.com/2.0"
+
+# ---- a request pre-loaded with auth, JSON, and 429/5xx retry with backoff -------------
+ss_req &lt;- function(...) {
+  token &lt;- Sys.getenv("SMARTSHEET_TOKEN")
+  if (!nzchar(token)) stop("[SHEETLINK] SMARTSHEET_TOKEN not set", call. = FALSE)
+  request(SS_BASE) |&gt;
+    req_url_path_append(...) |&gt;
+    req_auth_bearer_token(token) |&gt;
+    req_headers(Accept = "application/json") |&gt;
+    req_retry(max_tries = 5, is_transient = \(resp) resp_status(resp) %in% c(429, 500, 502, 503, 504),
+              backoff = \(i) 2^i)
+}
+
+# ---- FAIL LOUD --------------------------------------------------------------------------
+ss_assert &lt;- function(cond, msg) if (!isTRUE(cond)) stop("[SHEETLINK] ", msg, call. = FALSE)
+
+# ---- enforce the ops-only column ALLOWLIST in code (no PHI to the cloud) ---------------
+ss_guard &lt;- function(cols, allow) {
+  bad &lt;- setdiff(toupper(cols), toupper(allow))
+  ss_assert(length(bad) == 0, paste("BLOCKED non-allowlisted column(s):", paste(bad, collapse = ", "),
+                                     "- possible PHI/sensitive leak"))
+}
+
+# ---- GET the sheet -&gt; fresh column NAME -&gt; columnId map (rebuilt every run) ------------
+ss_colmap &lt;- function(sheet) {
+  body &lt;- ss_req("sheets", sheet) |&gt; req_perform() |&gt; resp_body_json()
+  setNames(map_dbl(body$columns, "id"), toupper(map_chr(body$columns, "title")))
+}
+
+# ---- GET the sheet rows -&gt; tibble(rowId, &lt;Col Title&gt; = value), keyed for upsert --------
+ss_get_rows &lt;- function(sheet, colmap) {
+  body &lt;- ss_req("sheets", sheet) |&gt; req_url_query(includeAll = "true") |&gt; req_perform() |&gt; resp_body_json()
+  id2name &lt;- setNames(names(colmap), as.character(colmap))
+  map_dfr(body$rows, function(r) {
+    vals &lt;- map(r$cells, function(c) c$value %||% NA); names(vals) &lt;- id2name[as.character(map_dbl(r$cells, "columnId"))]
+    tibble(rowId = r$id, !!!vals)
+  })
+}
+
+# ---- the flagship: IDEMPOTENT upsert by a stable external key (never duplicates) -------
+# df: a data.frame with the key column + one column per Smartsheet column title to write.
+ss_upsert &lt;- function(sheet, key, df, allow, dryrun = FALSE) {
+  ss_guard(c(names(df)), allow)
+  colmap  &lt;- ss_colmap(sheet)
+  current &lt;- tryCatch(ss_get_rows(sheet, colmap), error = function(e) tibble(rowId = numeric()))
+  keyname &lt;- toupper(key)
+  existing &lt;- if (nrow(current) &amp;&amp; keyname %in% toupper(names(current)))
+                setNames(current$rowId, current[[which(toupper(names(current)) == keyname)]]) else numeric()
+  rows &lt;- pmap(df, function(...) {
+    r &lt;- list(...); kv &lt;- as.character(r[[key]]); rid &lt;- existing[kv]
+    cells &lt;- imap(r, function(v, nm) list(columnId = unname(colmap[toupper(nm)]), value = v))
+    # drop cells with no mapped column, AND cells whose value is NA: an NA means "leave this
+    # cell untouched" — never write a blank/NA, which would otherwise land in the sheet as the
+    # literal text "NA" (and clobber a real value).
+    cells &lt;- Filter(function(c) !is.na(c$columnId) &amp;&amp;
+                    !(length(c$value) == 1 &amp;&amp; (is.na(c$value) || (is.character(c$value) &amp;&amp; c$value == ""))), cells)
+    if (!is.na(rid)) list(id = unname(rid), cells = unname(cells))
+    else             list(toBottom = TRUE,  cells = unname(cells))
+  })
+  upd &lt;- Filter(function(x) !is.null(x$id), rows); new &lt;- Filter(function(x) is.null(x$id), rows)
+  if (isTRUE(dryrun)) {   # preview what WOULD be sent (validate a job before you schedule it)
+    message(sprintf("[SHEETLINK] DRY RUN sheet %s: would update %d, add %d (idempotent by %s) - nothing sent",
+                    sheet, length(upd), length(new), key))
+    return(invisible(list(update = upd, add = new)))
+  }
+  if (length(upd)) ss_req("sheets", sheet, "rows") |&gt; req_method("PUT")  |&gt; req_body_json(upd) |&gt; req_perform()
+  if (length(new)) ss_req("sheets", sheet, "rows") |&gt; req_method("POST") |&gt; req_body_json(new) |&gt; req_perform()
+  message(sprintf("[SHEETLINK] upsert sheet %s: %d updated, %d added (idempotent by %s)", sheet, length(upd), length(new), key))
+}
+
+# ---- attach an operational artifact to a row (rate-intensive; ops-only files) ---------
+ss_attach &lt;- function(sheet, row, file) {
+  ss_req("sheets", sheet, "rows", row, "attachments") |&gt;
+    req_body_file(file, type = "application/pdf") |&gt;
+    req_headers(`Content-Disposition` = sprintf('attachment; filename="%s"', basename(file))) |&gt;
+    req_perform()
+  message("[SHEETLINK] attached ", basename(file), " to row ", row)
+}
+
+# ---- supported human-in-the-loop notification: an update request (ops-only text) ------
+ss_update_request &lt;- function(sheet, rowIds, columnIds, sendTo, subject, message) {
+  body &lt;- list(sendTo = map(sendTo, ~list(email = .x)), rowIds = rowIds, columnIds = columnIds,
+               subject = subject, message = message, includeAttachments = FALSE)
+  ss_req("sheets", sheet, "updaterequests") |&gt; req_method("POST") |&gt; req_body_json(body) |&gt; req_perform()
+  message("[SHEETLINK] update request sent")
+}
+
+# ---- read ONE cell value back by its key (verification / read-after-write) -------------
+ss_get &lt;- function(sheet, key, keycol, col) {
+  cm &lt;- ss_colmap(sheet); rows &lt;- ss_get_rows(sheet, cm)
+  kc &lt;- which(toupper(names(rows)) == toupper(keycol)); cc &lt;- which(toupper(names(rows)) == toupper(col))
+  if (!length(kc) || !length(cc)) return(NA)
+  hit &lt;- rows[!is.na(rows[[kc]]) &amp; toupper(as.character(rows[[kc]])) == toupper(key), , drop = FALSE]
+  if (!nrow(hit)) NA else hit[[cc]][1]
+}
+
+`%||%` &lt;- function(a, b) if (is.null(a)) b else a
+
+# ---- example nightly driver (schedule with cronR::cron_add / taskscheduleR) -----------
+if (sys.nframe() == 0) {
+  allow &lt;- c("TaskID", "Status", "PctDone", "Owner", "Due")    # the ops-only allowlist
+  df &lt;- tibble(TaskID = c("CP101-ENR", "CP101-ADPC"),
+               Status = c("At Risk", "On Track"), PctDone = c(NA, 0.85), Due = c("", "2026-06-15"))
+  ss_upsert(sheet = Sys.getenv("CP101_TRACKER_ID"), key = "TaskID", df = df, allow = allow)
+}</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header, dependencies, and SS_BASE.</b> The top comment block states the contract this library holds itself to: ops-only column allowlist, token from an env var, idempotent upsert-by-key, 429/5xx retry with backoff, and fail-loud behavior, matching <code>ss_macros.sas</code>. It loads <code>httr2</code>, <code>dplyr</code>, <code>purrr</code>, and <code>tibble</code> quietly, and pins <code>SS_BASE</code> to the Smartsheet API v2 root <code>https://api.smartsheet.com/2.0</code> so every call builds off one base URL. The comment also names the operational expectations: schedule with cronR or taskscheduleR, and pin package versions with renv so a scheduled job is reproducible. Nothing here touches data; it just establishes the environment the rest of the functions assume.</p>
+      <p><b>ss_req: the authenticated, retrying request builder.</b> <code>ss_req</code> reads <code>SMARTSHEET_TOKEN</code> from the environment and stops immediately if it is empty (via <code>nzchar</code>), so the token is never hard-coded into the script and a missing credential fails before any network call. It constructs an httr2 request against <code>SS_BASE</code>, appends whatever path segments you pass through <code>req_url_path_append</code>, attaches the bearer token, and sets the <code>Accept: application/json</code> header. It also installs <code>req_retry</code> with up to 5 tries, treating status 429, 500, 502, 503, and 504 as transient, with a <code>2^i</code> backoff. Every other function routes through this one, so authentication and resilience are defined in exactly one place.</p>
+      <p><b>ss_assert: fail loud.</b> <code>ss_assert</code> takes a condition and a message and stops with a <code>[SHEETLINK]</code>-prefixed error unless the condition is exactly <code>TRUE</code> (via <code>isTRUE</code>). This is the fail-loud primitive: a scheduled job that hits a broken precondition halts with a clear, greppable message rather than silently writing partial or wrong data. It matters most for the allowlist guard, where a false condition means a potential PHI leak and the run must not continue.</p>
+      <p><b>ss_guard: the in-code PHI boundary.</b> <code>ss_guard</code> compares the columns you intend to write against the allowlist, case-insensitively via <code>toupper</code>, and computes the set difference with <code>setdiff</code>. If any column is not on the allowlist, it calls <code>ss_assert</code> with a message that names the blocked columns and warns of a possible PHI or sensitive leak, which halts the run. This is the load-bearing governance control: only ops-only fields (status, dates, percent-complete, ownership, aggregate counts) are permitted to reach the cloud SaaS, and anything participant-level, unblinded, or clinically reported is blocked at the source before a request is ever built. Reported numbers come from validated tools, never from this sheet, and this function is where that boundary is enforced in code.</p>
+      <p><b>ss_colmap: the fresh column-name to id map.</b> <code>ss_colmap</code> GETs the sheet and builds a named vector mapping each uppercased column title to its numeric column <code>id</code>, using <code>map_dbl(body$columns, "id")</code> keyed by <code>toupper</code> of each column title. It is rebuilt on every run so the job always writes against the sheet's current structure rather than a cached, possibly stale, column layout. Smartsheet addresses cells by column id, not by title, so this map is the translation layer that lets the rest of the code work in human-readable column names.</p>
+      <p><b>ss_get_rows: the keyed snapshot of current rows.</b> <code>ss_get_rows</code> GETs the sheet with <code>includeAll=true</code> to pull every row, then inverts the colmap into an id-to-name lookup so each cell can be relabeled by its column title. For each row it collects the cell values (defaulting a null value to <code>NA</code> through the <code>%||%</code> helper), names them by column title via the <code>columnId</code> of each cell, and emits a tibble with <code>rowId</code> plus one column per title via <code>map_dfr</code>. This snapshot is what makes upsert possible: it carries the existing <code>rowId</code> for every key already present in the sheet, so the writer can decide update versus add.</p>
+      <p><b>ss_upsert: the idempotent flagship.</b> <code>ss_upsert</code> is the main entry point: it first calls <code>ss_guard</code> on the data frame's columns so a non-allowlisted field aborts the whole write, then rebuilds the colmap and reads current rows, tolerating a read failure by falling back to an empty tibble. It builds a key-to-<code>rowId</code> index from the existing rows, then for each input row constructs cells and filters them, dropping any cell with no mapped column and, critically, any cell whose value is <code>NA</code> or an empty string so an absent value means <b>leave the cell untouched</b> rather than writing the literal text "NA" and clobbering a real value. Rows whose key already exists become updates carrying that <code>id</code>; new keys become adds with <code>toBottom = TRUE</code>, which is what guarantees a re-run never duplicates a row (idempotent by the stable external key). When <code>dryrun</code> is <code>TRUE</code> it reports the counts it would update and add and sends nothing, letting you validate a job before scheduling it; otherwise it PUTs the updates and POSTs the adds and logs the result.</p>
+      <p><b>ss_attach: attach an operational artifact to a row.</b> <code>ss_attach</code> POSTs a file to a specific row's <code>attachments</code> endpoint, sending it as <code>application/pdf</code> with a <code>Content-Disposition</code> header that preserves the file's base name (via <code>basename</code>). The comment flags it as rate-intensive, so it is meant for occasional operational artifacts rather than bulk use. Consistent with the governance model, this is for ops-only files (for example a status report or a schedule export), not participant-level or clinical outputs, and it logs the attachment on success.</p>
+      <p><b>ss_update_request: the human-in-the-loop notification.</b> <code>ss_update_request</code> POSTs to the <code>updaterequests</code> endpoint to ask named people, given as email addresses, to review or fill in specific rows and columns, with a subject and message. It sets <code>includeAttachments = FALSE</code> so the request carries only the ops-only text and cell references, not files. This is the supported way to bring a person into the loop from an automated job, keeping decisions and edits with a human while the scheduled R job handles the mechanical pushes.</p>
+      <p><b>ss_get: read-after-write verification.</b> <code>ss_get</code> reads a single cell value back by key: it fetches a fresh colmap and rows, locates the key column and the target column case-insensitively, and returns <code>NA</code> if either is absent. It then finds the row whose key column matches the requested key (case-insensitive, ignoring <code>NA</code> keys) and returns the first matching value in the target column, or <code>NA</code> if there is no hit. This supports verification and read-after-write checks, letting a job confirm that a value it pushed actually landed on the sheet.</p>
+      <p><b>The %||% null-coalescing helper.</b> <code>%||%</code> is a small infix operator that returns its left side unless that side is <code>NULL</code>, in which case it returns the right side. <code>ss_get_rows</code> relies on it to turn a null cell value into <code>NA</code> so the resulting tibble has a clean, consistent shape. It is defined here as plain R, so the library does not depend on the same-named operator from another package being loaded.</p>
+      <p><b>The example nightly driver block.</b> The trailing block runs only when the file is executed as a script rather than sourced, guarded by <code>if (sys.nframe() == 0)</code>, so importing the functions does not trigger a live write. It defines an ops-only allowlist (<code>TaskID</code>, <code>Status</code>, <code>PctDone</code>, <code>Owner</code>, <code>Due</code>), builds a small demonstration tibble for a synthetic CP101 tracker, and includes deliberate blanks: <code>PctDone = NA</code> and <code>Due = ""</code> exercise the leave-untouched behavior so those cells are not overwritten. It then calls <code>ss_upsert</code> with the sheet id read from <code>CP101_TRACKER_ID</code> in the environment and <code>TaskID</code> as the key, showing the intended pattern: schedule this file with cronR::cron_add or taskscheduleR to refresh an ops tracker unattended.</p>
+    <h2>Standalone on Windows, no SAS or R: Update-Smartsheet.ps1</h2>
+    <p class="muted" style="margin-bottom:6px">PowerShell 5.1+ &middot; 106 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>Update-Smartsheet.ps1 is a standalone Windows PowerShell 5.1+ script that pushes operational status from a CSV file into a Smartsheet tracker, idempotently, with no SAS or R in the loop and no clicking around the Smartsheet GUI. A biostatistician runs it from a laptop, typically after exporting a small status CSV, to keep a shared tracker current: sheet is found by name, columns are mapped by title, and rows are matched on a stable key so re-runs never duplicate. It is the Windows companion to the SHEETLINK %ss_* SAS and ss_companion.R helpers (use those inside pipelines, this one standalone). Governance is built in: an allowlist guard is the in-code PHI boundary, so only non-sensitive operational fields (status, dates, % complete, counts, ownership) ever leave the machine, never PHI, participant-level, unblinded, or reported clinical numbers, which come only from validated tools.</p>
+    <pre class="code"><code>&lt;#  Update-Smartsheet.ps1  ----------------------------------------------------
+  Push operational status from a CSV into a Smartsheet tracker, IDEMPOTENTLY,
+  with NO Smartsheet GUI hunting. The ONLY Smartsheet UI step is generating the
+  API token once (Account &gt; Apps &amp; Integrations &gt; API Access &gt; Generate). After
+  that everything is the API:
+     * find the sheet BY NAME            (no copying IDs from the URL)
+     * map columns BY TITLE              (no copying column IDs)
+     * upsert rows by a stable key       (re-run-safe, never duplicates)
+     * ops-only allowlist guard          (the in-code PHI boundary)
+
+  The Windows companion to the SHEETLINK %ss_* SAS / ss_companion.R helpers (use
+  those inside EG / R pipelines; use this standalone on the laptop). Token comes
+  from $env:SMARTSHEET_TOKEN and is NEVER logged. Windows PowerShell 5.1+.
+
+  Example:
+    setx SMARTSHEET_TOKEN "xxxxx"     # once, in a normal terminal (or use a secret store)
+    .\Update-Smartsheet.ps1 -SheetName "CP-101 Deliverables" -CsvPath .\status.csv `
+        -KeyColumn "Deliverable" -AllowColumns "Deliverable","Status","% Complete","Owner","Due"
+  CSV headers MUST equal the Smartsheet column titles; one of them is -KeyColumn.
+  Ops content only: never push PHI / participant-level / unblinded / reported clinical numbers.
+--------------------------------------------------------------------------- #&gt;
+param(
+  [Parameter(Mandatory)][string]   $SheetName,
+  [Parameter(Mandatory)][string]   $CsvPath,
+  [Parameter(Mandatory)][string]   $KeyColumn,
+  [Parameter(Mandatory)][string[]] $AllowColumns,         # ops-only allowlist (PHI boundary)
+  [switch] $DryRun,                                       # preview the upsert; send nothing
+  [string] $Token   = $env:SMARTSHEET_TOKEN,
+  [string] $BaseUrl = "https://api.smartsheet.com/2.0"
+)
+$ErrorActionPreference = 'Stop'
+if (-not $Token) { throw "Set `$env:SMARTSHEET_TOKEN first (Account &gt; Apps &amp; Integrations &gt; API Access). Never hard-code or log it." }
+$Headers = @{ Authorization = "Bearer $Token" }            # token lives only here; never written out
+
+function Invoke-SS([string]$Method,[string]$Path,[string]$BodyJson){
+  for ($try = 1; $try -le 5; $try++){
+    try {
+      $p = @{ Method=$Method; Uri="$BaseUrl$Path"; Headers=$Headers; ContentType='application/json' }
+      if ($BodyJson) { $p.Body = $BodyJson }
+      return Invoke-RestMethod @p
+    } catch {
+      $resp = $_.Exception.Response
+      $code = if ($resp) { [int]$resp.StatusCode } else { 0 }
+      if ($code -eq 429 -or $code -ge 500) { Start-Sleep -Seconds ([math]::Pow(2,$try)); continue }  # backoff
+      throw
+    }
+  }
+  throw "Smartsheet API failed after retries: $Method $Path"
+}
+function To-JsonArray($items){                              # always emit a JSON array (even for 1 item)
+  if (-not $items -or @($items).Count -eq 0) { return '[]' }
+  '[' + ((@($items) | ForEach-Object { $_ | ConvertTo-Json -Depth 10 -Compress }) -join ',') + ']'
+}
+
+# 1) resolve the sheet by NAME ------------------------------------------------
+$sheets = (Invoke-SS 'GET' '/sheets' $null).data
+$sheet  = $sheets | Where-Object { $_.name -eq $SheetName } | Select-Object -First 1
+if (-not $sheet) { throw "Sheet '$SheetName' not found. Sheets you can see: $((@($sheets.name)) -join ', ')" }
+$full = Invoke-SS 'GET' "/sheets/$($sheet.id)" $null
+
+# 2) column TITLE -&gt; id -------------------------------------------------------
+$colId = @{}; foreach ($c in $full.columns) { $colId[$c.title] = $c.id }
+if (-not $colId.ContainsKey($KeyColumn)) { throw "Key column '$KeyColumn' is not on the sheet." }
+
+# 3) ops-only allowlist guard (the PHI boundary) -----------------------------
+$csv = @(Import-Csv $CsvPath)
+if (-not $csv.Count) { Write-Host "No rows in $CsvPath; nothing to do."; return }
+$incoming = ($csv | Select-Object -First 1).psobject.Properties.Name
+$bad = $incoming | Where-Object { $_ -notin $AllowColumns }
+if ($bad) { throw "BLOCKED: CSV has non-allowlisted column(s): $($bad -join ', '). Only add NON-sensitive operational fields to -AllowColumns." }
+foreach ($col in $AllowColumns) { if (-not $colId.ContainsKey($col)) { throw "Allowlisted column '$col' not found on the sheet." } }
+
+# 4) existing rows: key value (TEXT) -&gt; rowId --------------------------------
+$keyColId = $colId[$KeyColumn]; $existing = @{}
+foreach ($r in $full.rows) {
+  $kc = $r.cells | Where-Object { $_.columnId -eq $keyColId } | Select-Object -First 1
+  if ($kc -and $null -ne $kc.value) { $existing["$($kc.value)"] = $r.id }     # cast to string = text-exact key
+}
+
+# 5) split into update (PUT) and add (POST) ----------------------------------
+$toUpdate = @(); $toAdd = @()
+foreach ($row in $csv) {
+  $cells = foreach ($col in $AllowColumns) { $v = [string]$row.$col; if ($v -ne '') { @{ columnId = $colId[$col]; value = $v } } }  # skip empties: leave the cell untouched, never write a blank
+  $k = "$($row.$KeyColumn)"
+  if ($existing.ContainsKey($k)) { $toUpdate += @{ id = $existing[$k]; cells = @($cells) } }
+  else                           { $toAdd    += @{ cells = @($cells); toBottom = $true } }
+}
+
+# 6) send in batches of &lt;=500 ------------------------------------------------
+function Send-Rows([string]$Method,$Rows){
+  $n = 0; $Rows = @($Rows)
+  for ($i = 0; $i -lt $Rows.Count; $i += 500) {
+    $chunk = @($Rows[$i..([math]::Min($i+499, $Rows.Count-1))])
+    Invoke-SS $Method "/sheets/$($sheet.id)/rows" (To-JsonArray $chunk) | Out-Null
+    $n += $chunk.Count
+  }
+  $n
+}
+if ($DryRun) {
+  Write-Host ("DRY RUN '{0}': would update {1} row(s), add {2} (idempotent on key '{3}') - nothing sent." -f $SheetName, @($toUpdate).Count, @($toAdd).Count, $KeyColumn)
+  return
+}
+$u = Send-Rows 'PUT'  $toUpdate
+$a = Send-Rows 'POST' $toAdd
+Write-Host ("Smartsheet '{0}': {1} row(s) updated, {2} added (idempotent on key '{3}')." -f $SheetName, $u, $a, $KeyColumn)</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header comment and the one manual Smartsheet step.</b> The opening comment block states the contract: this pushes operational status from a CSV into a Smartsheet tracker <b>idempotently</b>, and the only Smartsheet UI step ever required is generating an API token once under Account > Apps & Integrations > API Access > Generate. Everything else (finding the sheet by name, mapping columns by title, upserting by a stable key) is done through the API, so nobody copies IDs out of a URL. It names the allowlist guard as the in-code PHI boundary and states the rule plainly: never push PHI, participant-level, unblinded, or reported clinical numbers. The token comes from <code>$env:SMARTSHEET_TOKEN</code> and is never logged, which matters because the whole point is to keep the credential off disk and out of transcripts.</p>
+      <p><b>param block: the required inputs and the safety switches.</b> The <code>param</code> block declares four mandatory inputs (<code>$SheetName</code>, <code>$CsvPath</code>, <code>$KeyColumn</code>, and the string array <code>$AllowColumns</code>) plus a <code>$DryRun</code> switch, a <code>$Token</code> defaulting to <code>$env:SMARTSHEET_TOKEN</code>, and a <code>$BaseUrl</code> defaulting to the Smartsheet 2.0 API. <code>$AllowColumns</code> is the ops-only allowlist and is load-bearing: it is the list of column titles the operator explicitly vouches for as non-sensitive, and nothing outside it is allowed to be sent. <code>$KeyColumn</code> is the stable key used to decide update-vs-add, so its choice (for example a deliverable name) determines idempotency. <code>$DryRun</code> lets the biostatistician preview the planned upsert without touching the cloud sheet, which is the recommended first run.</p>
+      <p><b>Token check and headers: the credential lives in exactly one place.</b> After <code>$ErrorActionPreference = 'Stop'</code> makes any error fatal (so a failed call cannot silently proceed to a partial push), the script throws immediately if <code>$Token</code> is empty, pointing the operator to set the environment variable rather than hard-coding it. It then builds <code>$Headers</code> with a Bearer token, and that hashtable is reused on every request. The token exists only in this in-memory hashtable and is never written to output, keeping the secret out of logs and console history, which is the intended handling for a cloud-SaaS credential.</p>
+      <p><b>Invoke-SS: the retrying API wrapper.</b> <code>Invoke-SS</code> is the single choke point for all Smartsheet calls: it takes a method, path, and optional JSON body, prepends <code>$BaseUrl</code>, attaches <code>$Headers</code>, and sends with <code>Invoke-RestMethod</code> at content type application/json. It wraps the call in a loop of up to five tries and inspects the HTTP status on failure: on a 429 (rate limit) or any 5xx it sleeps for a backoff of <code>[math]::Pow(2,$try)</code> seconds and retries, otherwise it rethrows at once. This makes transient throttling and server hiccups survivable without masking real errors like a bad token or a missing sheet, and if all five tries are exhausted it throws a clear message naming the method and path.</p>
+      <p><b>To-JsonArray: always send a JSON array.</b> <code>To-JsonArray</code> serializes a set of row objects into a JSON array string, returning <code>'[]'</code> when there is nothing to send. It converts each item with <code>ConvertTo-Json -Depth 10 -Compress</code> and joins them inside brackets so that even a single row is emitted as a one-element array rather than a bare object. This matters because the Smartsheet rows endpoint expects an array, and PowerShell would otherwise unwrap a single item into a scalar, producing a body the API rejects.</p>
+      <p><b>Part 1: resolve the sheet by name.</b> The script GETs <code>/sheets</code>, then filters the returned <code>data</code> for the one whose <code>name</code> exactly equals <code>$SheetName</code>, taking the first match. If none matches it throws and lists every sheet name the token can see, which turns a typo or a permissions gap into an actionable message instead of a silent no-op. It then GETs the full sheet by its id (<code>/sheets/$($sheet.id)</code>) into <code>$full</code>, pulling the columns and existing rows needed for the rest of the run.</p>
+      <p><b>Part 2: build the column-title-to-id map.</b> Looping over <code>$full.columns</code>, the script builds the <code>$colId</code> hashtable from each column's <code>title</code> to its numeric <code>id</code>, which is what lets the operator work in human-readable titles instead of copying column IDs. It immediately checks that <code>$KeyColumn</code> is present as a title and throws if not, because without a resolvable key there is no way to match rows for idempotent upsert. This title-based mapping is also why the CSV headers must equal the Smartsheet column titles exactly.</p>
+      <p><b>Part 3: the ops-only allowlist guard, the PHI boundary.</b> This is the governance gate. It imports the CSV, returns early if there are no rows, then reads the header names from the first record and computes <code>$bad</code> as any incoming header not in <code>$AllowColumns</code>. If <b>any</b> non-allowlisted column is present it throws a BLOCKED error and refuses to send anything, so a CSV that accidentally carries a participant-level, unblinded, or otherwise sensitive field is stopped in code before it can reach the cloud sheet. It then verifies every allowlisted column actually exists on the sheet, failing fast on a title mismatch. Because reported clinical numbers must come from validated tools and never from this tracker, this guard is the enforced boundary that keeps only non-sensitive operational fields flowing outward.</p>
+      <p><b>Part 4: index existing rows by key value.</b> Using <code>$keyColId</code> from the column map, the script walks <code>$full.rows</code> and, for each row, finds the cell in the key column and records its value in the <code>$existing</code> hashtable mapping key-value to <code>$r.id</code>. The value is cast to a string (<code>"$($kc.value)"</code>) so matching is text-exact, and any row lacking a key cell or carrying a null key value is skipped. This index is the memory that makes the whole operation re-run-safe: it is how the script later knows whether an incoming CSV row corresponds to a row already on the sheet.</p>
+      <p><b>Part 5: split incoming rows into update and add.</b> For each CSV row the script builds a <code>cells</code> list over the allowlisted columns only, coercing each value to a string and <b>skipping empties</b> so a blank CSV field leaves the existing cell untouched rather than overwriting it with a blank. It then computes the row's key string and routes the row: if the key is already in <code>$existing</code> it goes to <code>$toUpdate</code> carrying that row's <code>id</code> (a PUT), otherwise it goes to <code>$toAdd</code> with <code>toBottom = $true</code> (a POST appending to the end). This key-based split is exactly what delivers idempotency: existing deliverables are edited in place and only genuinely new keys create new rows, so repeated runs never duplicate.</p>
+      <p><b>Send-Rows: chunk into batches of at most 500.</b> <code>Send-Rows</code> takes an HTTP method and the list of prepared rows and walks them in slices of at most 500, sending each chunk to <code>/sheets/$($sheet.id)/rows</code> through <code>Invoke-SS</code> after serializing with <code>To-JsonArray</code>. It accumulates and returns the count of rows sent, and pipes the API response to <code>Out-Null</code> since only the tally is needed. Batching keeps large status pushes within a per-call bound while still going through the same retrying wrapper, so backoff on 429/5xx applies per chunk.</p>
+      <p><b>Part 6: dry-run branch or send updates then adds.</b> If <code>$DryRun</code> is set the script prints how many rows it <b>would</b> update and add, names the key column, and returns without sending anything, giving a safe preview before any cloud write. Otherwise it calls <code>Send-Rows 'PUT' $toUpdate</code> then <code>Send-Rows 'POST' $toAdd</code> and prints the final tally of rows updated and added. Doing updates before adds, combined with the key-based routing, is what makes a re-run converge the sheet to the CSV's operational state without creating duplicates.</p>
+    <h2>Scheduling it: the whole setup, once</h2>
+    <p>The only one-time Smartsheet UI step is generating the API token
+    (<b>Account &rarr; Apps &amp; Integrations &rarr; API Access &rarr; Generate new access token</b>). After that everything is code.</p>
+    <ol>
+      <li><b>Store the token as a secret.</b> Put it in the <code>SMARTSHEET_TOKEN</code> environment variable (or a permissions-<code>600</code> file); the library reads it at runtime inside <code>OPTIONS NOSOURCE</code> (SAS) / <code>Sys.getenv()</code> (R), so it is never hard-coded and never written to a log. Rotate it Smartsheet-side without touching code.</li>
+      <li><b>Point the driver at your install.</b> Edit the one <code>%let ROOT=</code> in <code>tracker_update.sas</code> and the constants in <code>ss_config.sas</code> (sheet id, key column, allowlist).</li>
+      <li><b>Dry-run first.</b> Run once with <code>dryrun=Y</code> (SAS) / <code>dryrun=TRUE</code> (R) / <code>-DryRun</code> (PowerShell) to see exactly what would update and append, with nothing sent.</li>
+      <li><b>Schedule it after your validated nightly extract refreshes,</b> under a dedicated service account:
+        <ul>
+          <li><b>SAS on Linux (cron):</b> <code>0 2 * * * sas -nodms -sysin /sasdata/cp101/sheetlink/tracker_update.sas -log /sasdata/cp101/sheetlink/log/tracker_$(date +\%F).log</code></li>
+          <li><b>SAS on Windows (Task Scheduler):</b> a daily task running <code>sas.exe -sysin C:\sheetlink\tracker_update.sas -log C:\sheetlink\log\tracker.log</code></li>
+          <li><b>R:</b> <code>cronR::cron_add(command = cronR::cron_rscript("ss_companion.R"), frequency = "daily", at = "02:00")</code>, or <code>taskscheduleR::taskscheduler_create()</code> on Windows. Pin packages with <code>renv</code>.</li>
+          <li><b>Standalone laptop (PowerShell):</b> a Task Scheduler job running <code>Update-Smartsheet.ps1</code> against a CSV your validated report writes.</li>
+        </ul>
+      </li>
+      <li><b>Trust the heartbeat.</b> The job fails loud on any error and emits a completion NOTE, so a stale tracker announces itself instead of masquerading as fresh.</li>
+    </ol>
     <h2>The toolbox</h2>
     <table>
       <tr><th>SAS</th><th>R</th><th>Does</th></tr>
@@ -249,10 +938,10 @@ window.addEventListener('afterprint',sync);sync();
 /* portable reproducibility kit: copy-buttons on code + Print/PDF + print stylesheet (theme-agnostic) */
 (function(){
   var css=''
-   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
-   +'.repro-copybtn:hover{opacity:1;background:#4a5680} .repro-copybtn.ok{background:#1f9d55}'
-   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#4338CA;color:#fff;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
-   +'.repro-print:hover{background:#312C8A}'
+   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#131a26;color:#e7eef9;border:1px solid rgba(52,227,212,.4);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
+   +'.repro-copybtn:hover{opacity:1;background:#1b2535} .repro-copybtn.ok{background:#46d08a;color:#06090f}'
+   +'.repro-print{position:fixed;bottom:16px;right:16px;background:rgba(52,227,212,.1);color:#34e3d4;border:1px solid rgba(52,227,212,.4);border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
+   +'.repro-print:hover{background:rgba(52,227,212,.18)}'
    +'@media print{nav,aside,#side,.sidebar,.skip,.repro-copybtn,.repro-print,[role=\'navigation\']{display:none!important}'
    +' #wrap,#main,main,article,.content,section,body{display:block!important;width:auto!important;max-width:100%!important;margin:0!important;float:none!important}'
    +' *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';

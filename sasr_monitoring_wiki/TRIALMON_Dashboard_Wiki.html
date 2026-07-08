@@ -1,36 +1,36 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>TRIALMON Dashboard &mdash; Field Guide</title><style>
-:root{--navy:#8FB3DC;--steel:#6FA0DC;--steel2:#6FA0DC;--teal:#3FB6C2;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--green:#35C07E;--amber:#D9A94F;--red:#E0857A;--bg:#0E1124}
+:root{--navy:#8FB3DC;--steel:#5b8cff;--steel2:#5b8cff;--teal:#34e3d4;--ink:#e7eef9;--muted:#7e8ca6;--line:#1b2535;--panel:#0c1018;--green:#46d08a;--amber:#e6b24c;--red:#ff6a6a;--bg:#06090f}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
 #wrap{display:flex;min-height:100vh}
-#side{width:296px;flex:0 0 296px;background:linear-gradient(185deg,#101d2e,#16293f 60%,#1c3450);color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #242a4a}
+#side{width:296px;flex:0 0 296px;background:linear-gradient(185deg,#101d2e,#16293f 60%,#1c3450);color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #27344a}
 #side .brand{padding:0 22px 14px;border-bottom:1px solid #294056;margin-bottom:10px}
 #side .brand .mk{display:inline-flex;align-items:center;gap:9px;margin-bottom:9px}
 #side .brand .mk i{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#3f7fc4,#2a5e96);display:flex;align-items:center;justify-content:center;font-style:normal;font-size:15px;font-weight:800;color:#fff}
-#side .brand b{font-family:Georgia,serif;font-size:16.5px;line-height:1.25;display:block}#side .brand span{display:block;color:#9fb6cc;font-size:11px;margin-top:5px}
+#side .brand b{font-family:var(--mono);font-size:16.5px;line-height:1.25;display:block}#side .brand span{display:block;color:#9fb6cc;font-size:11px;margin-top:5px}
 #side .brand .tag{display:inline-block;margin-top:9px;background:var(--steel2);color:#fff;font-size:10px;font-weight:800;letter-spacing:1px;padding:2px 8px;border-radius:20px}
 #search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #2f4a63;background:#1d3346;color:#fff;font-size:13px}
 #side a{display:block;color:#c4d4e2;text-decoration:none;padding:7.5px 22px;font-size:13.5px;border-left:3px solid transparent}
 #side a:hover{background:#1d3346}#side a.active{color:#fff;border-left-color:#3f7fc4;background:#1d3346;font-weight:600}
 #main{flex:1;max-width:1000px;margin:0 auto;padding:34px 52px 90px}
 section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.35}to{opacity:1}}
-h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.16}
-h2{font-family:Georgia,serif;color:var(--steel);font-size:20px;margin:28px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+h1{font-family:var(--mono);color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.16}
+h2{font-family:var(--mono);color:var(--steel);font-size:20px;margin:28px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
 h3{font-size:15.5px;margin:18px 0 6px;color:var(--navy)}
-.lede{font-size:17px;color:#C3CCE4}
+.lede{font-size:17px;color:#9fb0c9}
 p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
 a{color:var(--steel2)}a:hover{color:var(--navy)}
 code{background:#20284a;color:#9FC0E8;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
 .muted{color:var(--muted);font-size:13px}
 .callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14.5px}
-.callout.rule{background:#2A1614;border-left:4px solid var(--red)}.callout.rule b,.callout.rule strong{color:#E0857A}
-.callout.honest{background:#2A2412;border-left:4px solid var(--amber)}.callout.honest b,.callout.honest strong{color:#E0B850}
+.callout.rule{background:#2A1614;border-left:4px solid var(--red)}.callout.rule b,.callout.rule strong{color:#ff6a6a}
+.callout.honest{background:#2A2412;border-left:4px solid var(--amber)}.callout.honest b,.callout.honest strong{color:#e6b24c}
 .callout.win{background:#11261C;border-left:4px solid var(--green)}
 .callout.key{background:#141E2E;border-left:4px solid var(--steel)}
 .callout.tip{background:#0F262A;border-left:4px solid var(--teal)}
 table.cat{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
 table.cat th,table.cat td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
-table.cat th{background:#20284a;color:#E7ECF8;font-weight:600}table.cat tr:nth-child(even) td{background:var(--panel)}
+table.cat th{background:#20284a;color:#e7eef9;font-weight:600}table.cat tr:nth-child(even) td{background:var(--panel)}
 .dl{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}
 .btn{display:inline-block;background:var(--steel2);color:#fff;text-decoration:none;font-weight:700;font-size:14px;padding:11px 18px;border-radius:9px}
 .btn.ghost{background:transparent;color:var(--steel2);border:1.5px solid var(--steel2)}.btn:hover{opacity:.92}
@@ -38,15 +38,16 @@ table.cat th{background:#20284a;color:#E7ECF8;font-weight:600}table.cat tr:nth-c
 @media(max-width:820px){#wrap{flex-direction:column}#side{width:100%;height:auto;position:static}#main{padding:24px 22px 70px}}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
-a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
+.skip{position:absolute;left:-9999px;top:0;background:#0a0f18;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #34e3d4;outline-offset:2px}
 
 
 @media (prefers-reduced-motion:reduce){section.show{animation:none}}
 @media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
 figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid var(--line);border-radius:10px}figure.diagram figcaption{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.5}figure.diagram figcaption b{color:var(--ink)}
-</style></head>
-<body><a href="#main" class="skip">Skip to content</a><div id="wrap">
+</style><style>/* === Mission Control override (appended) === */:root{--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panelhi:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--amber:#e6b24c;--terra:#ff6a6a;--red:#ff6a6a;--emer:#46d08a;--green:#46d08a;--cloud:#5b8cff;--blue:#5b8cff;--indigo:#34e3d4;--slate:#34e3d4;--steel:#34e3d4;--navy:#0c1018;--sas:#34e3d4;--cloud2:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;--r:6px}html{scroll-behavior:smooth}body{font-family:var(--sans)!important;color:var(--ink);background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.top b::before{content:"\25E2 ";color:var(--accent)}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}#wrap{max-width:1320px;margin:0 auto}#side{background:linear-gradient(180deg,#0a0f18,#080b12)!important;top:44px!important;height:calc(100vh - 44px)!important;border-right:1px solid var(--line2)!important;color:var(--ink)}#side .brand{border-bottom:1px solid var(--line2)!important}#side .brand b{font-family:var(--mono)!important;font-size:12px!important;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}#side .brand b::before{content:"\25E2 ";color:var(--accent)}#side .brand span{font-family:var(--mono);color:var(--dim)!important;font-size:10px!important;letter-spacing:.05em;text-transform:uppercase}#search{border:1px solid var(--line2)!important;background:#0d1320!important;color:var(--ink)!important;border-radius:5px!important;font-family:var(--mono);font-size:12.5px}#side a{color:var(--muted)!important;font-family:var(--mono)!important;font-size:11.5px!important;letter-spacing:.05em;text-transform:uppercase}#side a:hover{background:#0e141f!important;color:var(--ink)!important}#side a.active{color:var(--accent)!important;border-left-color:var(--accent)!important;background:rgba(52,227,212,.06)!important}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;font-size:11.5px!important;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-bottom:0!important;padding-bottom:0!important;margin:30px 0 12px}h2::before{content:"\25B8 ";color:var(--accent)}h3{font-family:var(--mono)!important;color:var(--ink);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}.lede{color:var(--muted)!important}a{color:var(--accent)}a:hover{color:#7af0e5}code{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)!important;font-family:var(--mono)}pre,pre.prompt,pre.code{background:#070b12!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:#dce6fb!important;border-radius:var(--r)}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.06em;text-transform:uppercase}tr:nth-child(even) td{background:rgba(255,255,255,.015)}.callout{background:linear-gradient(160deg,#0a1422,#0a0f18)!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:var(--muted);border-radius:var(--r)}.callout b{color:#cfeeea}.callout.warn{border-left-color:var(--gold)!important}.callout.tip{border-left-color:var(--accent)!important}.node{position:relative;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:var(--r)}.node b{color:var(--ink)}.arrow{color:var(--accent)!important;font-family:var(--mono)}.footer{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono);font-size:11px;letter-spacing:.02em}.skip{background:#0d1320!important;color:var(--ink)!important}figure.diagram svg,figure svg{background:#0a0f18;border-color:var(--line2)!important}@media(max-width:860px){#wrap{flex-direction:column}#side{width:100%!important;flex:none!important;height:auto!important;position:static!important}}@media print{.top{display:none!important}}</style></head>
+<body><a href="#main" class="skip">Skip to content</a><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../Biostatistics.html">Biostatistics</a><a href="../START_HERE.html">Full library</a></div></div>
+<div id="wrap">
 <nav id="side" aria-label="Wiki sections"><div class="brand"><span class="mk"><i>T</i></span><b>TRIALMON Dashboard<br>Field Guide</b><span>How to read the deterministic safety-monitoring dashboard &mdash; every section, panel, threshold &amp; rule, in depth</span><span class="tag">FOR BIOSTATISTICIANS &amp; MEDICAL MONITORS</span></div>
 <label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the field guide..." autocomplete="off">
 <a href="#start" data-t="start">Start here</a>
@@ -67,7 +68,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
 <a href="#faq" data-t="faq">FAQ</a></nav>
 <main id="main" tabindex="-1"><section id="start" aria-label="Start here"><h1>Start here</h1>
 <p class="lede">The TRIALMON Dashboard is the <strong>deterministic safety-monitoring backbone of an early-phase trial, made visible</strong>. It takes the same auditable rules that the validated <code>%tm_*</code> monitoring job runs every load &mdash; freshness gates, screening bands, the eDISH AND-gate, the 3+3 state machine &mdash; and renders them as one self-contained, offline, click-through picture so a biostatistician or medical monitor can <em>see where the screen is pointing</em> before they pick up the phone. It is a teaching and illustration view. It is not a console, not a record, and not a place a reported number ever comes from.</p>
-<p style="margin:14px 0 4px"><a href="TRIALMON_Dashboard_Screencast_narrated.mp4" style="display:inline-block;background:var(--steel);color:#0E1124;font-weight:700;font-size:14px;padding:10px 18px;border-radius:9px;text-decoration:none;margin:0 10px 8px 0">&#9654;&nbsp; Watch the dashboard in action (~2 min)</a><a href="TRIALMON_Dashboard.html" style="display:inline-block;background:transparent;color:var(--steel);border:1.5px solid var(--steel);font-weight:700;font-size:14px;padding:9px 18px;border-radius:9px;text-decoration:none">&#10530;&nbsp; Open the interactive dashboard</a></p>
+<p style="margin:14px 0 4px"><a href="TRIALMON_Dashboard_Screencast_narrated.mp4" style="display:inline-block;background:var(--steel);color:#06090f;font-weight:700;font-size:14px;padding:10px 18px;border-radius:9px;text-decoration:none;margin:0 10px 8px 0">&#9654;&nbsp; Watch the dashboard in action (~2 min)</a><a href="TRIALMON_Dashboard.html" style="display:inline-block;background:transparent;color:var(--steel);border:1.5px solid var(--steel);font-weight:700;font-size:14px;padding:9px 18px;border-radius:9px;text-decoration:none">&#10530;&nbsp; Open the interactive dashboard</a></p>
 
 <figure class="diagram" role="img" aria-labelledby="dgm-start-t">
 <svg viewBox="0 0 900 360" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
@@ -122,7 +123,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
 
 <!-- the hard line -->
 <rect x="20" y="288" width="860" height="52" rx="9" fill="#2A1614" stroke="var(--red)"/>
-<text x="34" y="310" font-size="12.5" font-weight="700" fill="#E0857A">The hard line:</text>
+<text x="34" y="310" font-size="12.5" font-weight="700" fill="#ff6a6a">The hard line:</text>
 <text x="120" y="310" font-size="12" fill="var(--ink)">a RED tile means "look now," never "this is a finding."  The dashboard contributes ZERO reportable values —</text>
 <text x="34" y="328" font-size="12" fill="var(--ink)">reported numbers come only from the validated tools (dashed box), and the determination is always a human's.</text>
 </svg>
@@ -286,8 +287,8 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 
 <!-- gate -->
 <polygon points="445,150 475,182 445,214 415,182" fill="#2A1614" stroke="var(--red)" stroke-width="1.5"/>
-<text x="445" y="178" text-anchor="middle" font-size="10.5" font-weight="700" fill="#E0857A">needs</text>
-<text x="445" y="191" text-anchor="middle" font-size="10.5" font-weight="700" fill="#E0857A">judgement?</text>
+<text x="445" y="178" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ff6a6a">needs</text>
+<text x="445" y="191" text-anchor="middle" font-size="10.5" font-weight="700" fill="#ff6a6a">judgement?</text>
 
 <!-- DISPLAYS column -->
 <rect x="490" y="50" width="390" height="262" rx="10" fill="var(--panel)" stroke="var(--line)"/>
@@ -452,11 +453,11 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 <text x="115" y="247" text-anchor="middle" font-size="11" fill="var(--muted)">rank 0 — context only</text>
 <text x="205" y="237" font-size="16" fill="var(--muted)">&lt;</text>
 <rect x="228" y="210" width="150" height="46" rx="8" fill="#2A2412" stroke="var(--amber)"/>
-<text x="303" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="#E0B850">AMBER</text>
+<text x="303" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="#e6b24c">AMBER</text>
 <text x="303" y="247" text-anchor="middle" font-size="11" fill="var(--muted)">rank 1 — same-day review</text>
 <text x="393" y="237" font-size="16" fill="var(--muted)">&lt;</text>
 <rect x="416" y="210" width="150" height="46" rx="8" fill="#2A1614" stroke="var(--red)"/>
-<text x="491" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="#E0857A">RED</text>
+<text x="491" y="230" text-anchor="middle" font-size="12" font-weight="700" fill="#ff6a6a">RED</text>
 <text x="491" y="247" text-anchor="middle" font-size="11" fill="var(--muted)">rank 2 — look today, page</text>
 <text x="600" y="226" font-size="11.5" fill="var(--ink)">The headline takes the worst of values that already</text>
 <text x="600" y="244" font-size="11.5" fill="var(--ink)">exist below — so it can never be greener than its panels.</text>
@@ -597,8 +598,8 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 
 <!-- upper-right shaded = Hy's law quadrant -->
 <rect x="330" y="56" width="320" height="160" fill="#2A1614" opacity="0.6"/>
-<text x="490" y="100" text-anchor="middle" font-size="12.5" font-weight="700" fill="#E0857A">Upper-right — potential Hy's-Law quadrant</text>
-<text x="490" y="118" text-anchor="middle" font-size="10.5" fill="#E0857A">AND-gate fires: ALT&gt;3× AND TBili&gt;2×</text>
+<text x="490" y="100" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ff6a6a">Upper-right — potential Hy's-Law quadrant</text>
+<text x="490" y="118" text-anchor="middle" font-size="10.5" fill="#ff6a6a">AND-gate fires: ALT&gt;3× AND TBili&gt;2×</text>
 <text x="490" y="133" text-anchor="middle" font-size="10.5" fill="var(--muted)">screening position pending confirmation — never a "case"</text>
 
 <!-- 014 point + trail (right then up) -->
@@ -607,7 +608,7 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 <circle cx="360" cy="322" r="4" fill="var(--bg)" stroke="var(--red)"/>
 <circle cx="430" cy="300" r="4" fill="var(--bg)" stroke="var(--red)"/>
 <circle cx="470" cy="150" r="7" fill="var(--red)"/>
-<text x="486" y="148" font-size="11.5" font-weight="700" fill="#E0857A">CP101-014</text>
+<text x="486" y="148" font-size="11.5" font-weight="700" fill="#ff6a6a">CP101-014</text>
 <text x="486" y="163" font-size="10" fill="var(--muted)">ALT 5.6× · TBili 3.1× · RED</text>
 <text x="486" y="176" font-size="10" fill="var(--muted)">trail: rises right, then up</text>
 
@@ -733,19 +734,19 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 <!-- amber -->
 <rect x="80" y="148" width="600" height="40" rx="8" fill="#2A2412" stroke="var(--amber)"/>
 <rect x="80" y="148" width="9" height="40" rx="3" fill="var(--amber)"/>
-<text x="100" y="173" font-size="12.5" font-weight="700" fill="#E0B850">AMBER</text>
+<text x="100" y="173" font-size="12.5" font-weight="700" fill="#e6b24c">AMBER</text>
 <text x="290" y="166" font-size="11.5" fill="var(--ink)">QTcF &gt;480 ms · &Delta; &gt;30 ms</text>
 <text x="290" y="181" font-size="10.5" fill="var(--muted)">open prompt — route to the medical monitor (CP101-006: 486 ms)</text>
 
 <!-- red -->
 <rect x="100" y="96" width="600" height="40" rx="8" fill="#2A1614" stroke="var(--red)"/>
 <rect x="100" y="96" width="9" height="40" rx="3" fill="var(--red)"/>
-<text x="120" y="121" font-size="12.5" font-weight="700" fill="#E0857A">RED</text>
+<text x="120" y="121" font-size="12.5" font-weight="700" fill="#ff6a6a">RED</text>
 <text x="310" y="114" font-size="11.5" fill="var(--ink)">QTcF &gt;500 ms · &Delta; &gt;60 ms</text>
 <text x="310" y="129" font-size="10.5" fill="var(--muted)">highest prompt — gets a person on the phone (CP101-018: 503 ms)</text>
 
 <!-- escalation arrow -->
-<text x="730" y="120" font-size="11" font-weight="700" fill="#E0857A">↑</text>
+<text x="730" y="120" font-size="11" font-weight="700" fill="#ff6a6a">↑</text>
 <text x="752" y="120" font-size="10.5" fill="var(--muted)">escalating</text>
 <text x="752" y="134" font-size="10.5" fill="var(--muted)">severity</text>
 <text x="58" y="62" font-size="11.5" fill="var(--ink)">A tier is a routing decision, not a clinical verdict — bands are bins with hard edges, so a single value is confirmed on repeat before anyone reasons about a drug effect.</text>
@@ -905,7 +906,7 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 <text x="360" y="193" text-anchor="middle" font-size="10.5" fill="var(--muted)">expand cohort to 6</text>
 <!-- >=2/3 -->
 <rect x="270" y="252" width="180" height="52" rx="9" fill="#2A1614" stroke="var(--red)"/>
-<text x="360" y="274" text-anchor="middle" font-size="12" font-weight="700" fill="#E0857A">&ge;2 / 3 DLTs</text>
+<text x="360" y="274" text-anchor="middle" font-size="12" font-weight="700" fill="#ff6a6a">&ge;2 / 3 DLTs</text>
 <text x="360" y="291" text-anchor="middle" font-size="10.5" fill="var(--muted)">dose exceeded</text>
 
 <line x1="190" y1="170" x2="266" y2="86" stroke="var(--steel)" stroke-width="1.6" marker-end="url(#arAe)"/>
@@ -914,10 +915,10 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 
 <!-- from 1/3 expand -> 1/6 and >=2/6 -->
 <rect x="500" y="128" width="170" height="46" rx="9" fill="#2A2412" stroke="var(--amber)"/>
-<text x="585" y="148" text-anchor="middle" font-size="11.5" font-weight="700" fill="#E0B850">1 / 6 → escalate</text>
+<text x="585" y="148" text-anchor="middle" font-size="11.5" font-weight="700" fill="#e6b24c">1 / 6 → escalate</text>
 <text x="585" y="164" text-anchor="middle" font-size="10" fill="var(--muted)">AMBER — C3: CP101-010</text>
 <rect x="500" y="184" width="170" height="46" rx="9" fill="#2A1614" stroke="var(--red)"/>
-<text x="585" y="204" text-anchor="middle" font-size="11.5" font-weight="700" fill="#E0857A">&ge;2 / 6 → MTD-exceeded</text>
+<text x="585" y="204" text-anchor="middle" font-size="11.5" font-weight="700" fill="#ff6a6a">&ge;2 / 6 → MTD-exceeded</text>
 <text x="585" y="220" text-anchor="middle" font-size="10" fill="var(--muted)">RED — C4: 014 + 013 = 2/6</text>
 <line x1="450" y1="180" x2="496" y2="151" stroke="var(--steel)" stroke-width="1.6" marker-end="url(#arAe)"/>
 <line x1="450" y1="180" x2="496" y2="207" stroke="var(--steel)" stroke-width="1.6" marker-end="url(#arAe)"/>
@@ -1149,7 +1150,7 @@ These all describe a <em>position on a plot</em> awaiting human work &mdash; nev
 
 <h2>The four panels, and how to read them</h2>
 <table class="cat"><thead><tr><th>Panel</th><th>What it shows</th><th>How to read it</th></tr></thead><tbody>
-<tr><td><b>PCA embedding</b></td><td>A 2-D PCA projection of the 10-feature space; each dot a participant, coloured by its H&#8320; cluster at the chosen radius &epsilon;*.</td><td>Dots that sit apart from the main cloud are structurally unusual. A <b style="color:#E0857A">red ring</b> marks a participant that already carries a deterministic screening flag &mdash; watch where those land.</td></tr>
+<tr><td><b>PCA embedding</b></td><td>A 2-D PCA projection of the 10-feature space; each dot a participant, coloured by its H&#8320; cluster at the chosen radius &epsilon;*.</td><td>Dots that sit apart from the main cloud are structurally unusual. A <b style="color:#ff6a6a">red ring</b> marks a participant that already carries a deterministic screening flag &mdash; watch where those land.</td></tr>
 <tr><td><b>&beta;&#8320; curve</b></td><td>The number of components remaining as the radius &epsilon; grows, from <em>n</em> down to 1.</td><td>A long flat plateau means a stable cluster structure; the dashed &epsilon;* line marks where the largest gap defines the natural number of subpopulations.</td></tr>
 <tr><td><b>H&#8320; barcode</b></td><td>One horizontal bar per component, length = how long it survived before merging.</td><td>The longest bars are the most-separated participants &mdash; the topological outliers. Short bars are participants that joined the crowd early.</td></tr>
 <tr><td><b>Site network</b></td><td>Synthetic sites positioned by their participants' mean location in feature space; an edge joins similar sites; node size = enrolment.</td><td>A red-ringed node is a site holding a flagged participant. H&#8320; of this graph = how many disconnected groups of sites exist &mdash; how fragmented enrolment is in safety-feature space.</td></tr>

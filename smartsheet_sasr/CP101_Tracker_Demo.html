@@ -1,23 +1,23 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CP-101 Program Tracker — interactive demo (Smartsheet × SAS/R)</title>
 <style>
-:root{--dark:#15183A;--ink:#1A1E33;--muted:#5A607E;--ice:#D5DAF5;--line:#DDE1EE;--panel:#F4F5FB;--subtle:#F7F8FC;
- --ss:#3A6FB0;--ssbg:#EAF1FA;--indigo:#4338CA;--indigoink:#312C8A;--indbg:#ECECFB;--term:#012456;
+:root{--dark:#0d1320;--ink:#0c1018;--muted:#5A607E;--ice:#D5DAF5;--line:#DDE1EE;--panel:#F4F5FB;--subtle:#F7F8FC;
+ --ss:#3A6FB0;--ssbg:#EAF1FA;--indigo:#5b8cff;--indigoink:#5b8cff;--indbg:#ECECFB;--term:#070b12;
  --green:#1F9D55;--greenbg:#E6F6EC;--amber:#C2891C;--amberbg:#FBF1D8;--red:#C0392B;--redbg:#FBECEA;--slatebg:#EEF0F6;
  /* shared dark theme (page chrome only — the Smartsheet grid stays light) */
- --pg:#0E1124;--pgink:#E7ECF8;--pgmuted:#9AA6C8;--pgline:#272D4D;--pgcard:#181D38;--acc:#6FA0DC;}
+ --pg:#06090f;--pgink:#e7eef9;--pgmuted:#7e8ca6;--pgline:#1b2535;--pgcard:#0c1018;--acc:#34e3d4;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Calibri,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--pgink);background:var(--pg);line-height:1.5}
+body{font-family:Calibri,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--pgink);line-height:1.5;background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%);background-attachment:fixed}
 .wrap{max-width:1280px;margin:0 auto;padding:26px 22px 80px}
-header.top{background:linear-gradient(135deg,#1b1e44,var(--dark));color:#fff;border-radius:14px;padding:24px 28px;margin-bottom:18px}
-.top .eyebrow{font-size:13px;font-weight:700;letter-spacing:3px;color:var(--ice);text-transform:uppercase}
-.top h1{font-family:Georgia,serif;font-size:30px;margin:6px 0 6px}
-.top p{font-size:15px;color:var(--ice);max-width:840px}
-.top .rep{display:inline-block;margin-top:11px;font-size:12px;background:#2a2f5a;border:1px solid #3a3e72;border-radius:20px;padding:4px 12px;color:#cdd4ef}
+header.hero{padding:10px 2px 6px;margin-bottom:16px}
+.hero .eyebrow{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.2em;color:#34e3d4;text-transform:uppercase}.hero .eyebrow::before{content:"// "}
+.hero h1{font-family:var(--sans);font-size:28px;font-weight:680;letter-spacing:-.01em;color:var(--pgink);margin:6px 0 6px}
+.hero p{font-size:15px;color:var(--pgmuted);max-width:840px}
+.hero .rep{display:inline-block;margin-top:11px;font-family:var(--mono);font-size:11px;letter-spacing:.05em;text-transform:uppercase;background:#0d1320;border:1px solid var(--pgline);border-radius:20px;padding:4px 12px;color:var(--pgmuted)}
 .controls{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px}
-.btn{font-family:inherit;font-size:14.5px;font-weight:700;border:none;border-radius:10px;padding:11px 17px;cursor:pointer;transition:opacity .15s}
-.btn.run{background:var(--acc);color:#0E1124}.btn.alt{background:transparent;color:var(--acc);border:1.5px solid var(--acc)}
-.btn.guard{background:transparent;color:#ff8a7a;border:1.5px solid #ff8a7a}.btn.reset{background:transparent;color:var(--pgmuted);border:1.5px solid var(--pgline)}
+.btn{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;border:none;border-radius:5px;padding:11px 16px;cursor:pointer;transition:opacity .15s}
+.btn.run{background:var(--acc);color:#06090f}.btn.alt{background:rgba(52,227,212,.08);color:var(--acc);border:1px solid rgba(52,227,212,.4)}
+.btn.guard{background:transparent;color:#ff6a6a;border:1px solid rgba(255,106,106,.5)}.btn.reset{background:transparent;color:var(--pgmuted);border:1.5px solid var(--pgline)}
 .btn:hover{opacity:.9}.btn:disabled{opacity:.4;cursor:not-allowed}
 .cols{display:grid;grid-template-columns:1.55fr 1fr;gap:18px}
 @media(max-width:980px){.cols{grid-template-columns:1fr}}
@@ -40,7 +40,7 @@ header.top{background:linear-gradient(135deg,#1b1e44,var(--dark));color:#fff;bor
 .gc.changed{animation:flash 1.1s ease}.gnew{box-shadow:inset 3px 0 0 var(--green)}
 @keyframes flash{0%{background:#fff7e0;box-shadow:inset 0 0 0 2px #ffd27a}100%{background:transparent}}
 /* console */
-.console .sbar{background:#1b2046}
+.console .sbar{background:#0d1320}
 .clog{background:var(--term);color:#eeedf0;font-family:Consolas,"Cascadia Mono",monospace;font-size:13px;line-height:1.55;
  padding:14px 16px;min-height:380px;max-height:520px;overflow:auto;white-space:pre-wrap}
 .clog .ok{color:#16c60c;font-weight:700}.clog .key{color:#f9f1a5}.clog .com{color:#9fb0e8;font-style:italic}.clog .bad{color:#ff9d8a}.clog .hd{color:#8fd0ff;font-weight:700}.clog .dim{color:#aab3d6}
@@ -54,9 +54,10 @@ header.top{background:linear-gradient(135deg,#1b1e44,var(--dark));color:#fff;bor
 .gov code{color:var(--pgink)}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 2px 0;font-size:12.5px;color:var(--pgmuted)}
 .legend .pill{font-size:11px}
-</style></head>
-<body><div class="wrap">
-  <header class="top">
+.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--pgline);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--pgink)}.top b::before{content:"◢ ";color:#34e3d4}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--pgmuted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--pgink);border-color:var(--pgline);background:#0e141f}</style></head>
+<body><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="Smartsheet_SASR.html">Smartsheet · SAS/R</a><a href="../START_HERE.html">Full library</a></div></div>
+<div class="wrap">
+  <header class="hero">
     <div class="eyebrow">SMARTSHEET × SAS/R · CP-101 · NO AI</div>
     <h1>The program tracker that updates itself</h1>
     <p>Click <b>Run the nightly job</b> and watch a scheduled SAS/R job push the night's operational status to the tracker by a stable key — then re-run it to see it converge (never duplicate), and watch the ops-only allowlist block a non-operational column. The grid runs the <b>same deterministic logic</b> as the shipped <code>ss_macros.sas</code> / <code>ss_companion.R</code>.</p>
@@ -76,7 +77,7 @@ header.top{background:linear-gradient(135deg,#1b1e44,var(--dark));color:#fff;bor
       <div class="grid" id="grid"></div>
     </div>
     <div class="card console">
-      <div class="sbar" style="background:#1b2046"><span style="font-family:Consolas;color:#16c60c;font-weight:700">&gt;_</span><span>nightly job — SAS/R → Smartsheet API</span></div>
+      <div class="sbar" style="background:#0d1320"><span style="font-family:Consolas;color:#16c60c;font-weight:700">&gt;_</span><span>nightly job — SAS/R → Smartsheet API</span></div>
       <div class="clog" id="clog"></div>
     </div>
   </div>

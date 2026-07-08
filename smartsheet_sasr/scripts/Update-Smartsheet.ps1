@@ -17,7 +17,7 @@
     .\Update-Smartsheet.ps1 -SheetName "CP-101 Deliverables" -CsvPath .\status.csv `
         -KeyColumn "Deliverable" -AllowColumns "Deliverable","Status","% Complete","Owner","Due"
   CSV headers MUST equal the Smartsheet column titles; one of them is -KeyColumn.
-  Ops content only: never push PHI / subject-level / unblinded / reported clinical numbers.
+  Ops content only: never push PHI / participant-level / unblinded / reported clinical numbers.
 --------------------------------------------------------------------------- #>
 param(
   [Parameter(Mandatory)][string]   $SheetName,

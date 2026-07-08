@@ -1,23 +1,23 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SAS/R Trial-Monitoring Automation</title><style>
-:root{--indigo:#8B86F0;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--amber:#D9A94F;--terra:#E0857A;--sas:#6FA0DC;--bg:#0E1124}
+:root{--indigo:#34e3d4;--ink:#e7eef9;--muted:#7e8ca6;--line:#1b2535;--panel:#0c1018;--teal:#34e3d4;--amber:#e6b24c;--terra:#ff6a6a;--sas:#5b8cff;--bg:#06090f}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
 #wrap{display:flex;min-height:100vh}
-#side{width:280px;flex:0 0 280px;background:#15183A;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #2a2f52}
-#side .brand{padding:0 22px 14px;border-bottom:1px solid #2c2f55;margin-bottom:10px}
-#side .brand b{font-family:Georgia,serif;font-size:16px}#side .brand span{display:block;color:#aeb4e0;font-size:11px;margin-top:4px}
-#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #3a3e72;background:#1d2150;color:#fff;font-size:13px}
-#side a{display:block;color:#cfd3f3;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}
-#side a:hover{background:#1d2150}#side a.active{color:#fff;border-left-color:#8b86f0;background:#1d2150;font-weight:600}
+#side{width:280px;flex:0 0 280px;background:#0a0f18;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #27344a}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #27344a;margin-bottom:10px}
+#side .brand b{font-family:var(--mono);font-size:16px}#side .brand span{display:block;color:#566179;font-size:11px;margin-top:4px}
+#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #27344a;background:#0d1320;color:#fff;font-size:13px}
+#side a{display:block;color:#7e8ca6;text-decoration:none;padding:8px 22px;font-size:13.5px;border-left:3px solid transparent}
+#side a:hover{background:#0d1320}#side a.active{color:#fff;border-left-color:#34e3d4;background:#0d1320;font-weight:600}
 #main{flex:1;max-width:980px;margin:0 auto;padding:34px 48px 80px}
 section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.3}to{opacity:1}}
-h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
-h2{font-family:Georgia,serif;color:#A9A4F5;font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
-.lede{font-size:16.5px;color:#C3CCE4}p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
+h1{font-family:var(--mono);color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
+h2{font-family:var(--mono);color:#34e3d4;font-size:20px;margin:26px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:16.5px;color:#9fb0c9}p,li{font-size:15px}ul,ol{padding-left:22px}li{margin:5px 0}
 code{background:#20284a;color:#A9C6F2;padding:1px 6px;border-radius:5px;font-family:Consolas,monospace;font-size:12.5px}
 table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px}
 th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
-th{background:#15183A;color:#fff;font-weight:600}tr:nth-child(even) td{background:var(--panel)}
+th{background:#0a0f18;color:#fff;font-weight:600}tr:nth-child(even) td{background:var(--panel)}
 .callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}
 .callout.warn{background:#2A1614;color:var(--ink);border-left:4px solid var(--terra)}
 .callout.tip{background:#0F262A;color:var(--ink);border-left:4px solid var(--teal)}
@@ -39,14 +39,15 @@ a{color:var(--indigo)}
 .shots figcaption{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
-a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
+.skip{position:absolute;left:-9999px;top:0;background:#0a0f18;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #34e3d4;outline-offset:2px}
 
 
 @media (prefers-reduced-motion:reduce){section.show{animation:none}}
 @media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
-</style></head>
-<body><a href="#main" class="skip">Skip to content</a><div id="wrap">
+</style><style>/* === Mission Control override (appended) === */:root{--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panelhi:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--amber:#e6b24c;--terra:#ff6a6a;--red:#ff6a6a;--emer:#46d08a;--green:#46d08a;--cloud:#5b8cff;--blue:#5b8cff;--indigo:#34e3d4;--slate:#34e3d4;--steel:#34e3d4;--navy:#0c1018;--sas:#34e3d4;--cloud2:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;--r:6px}html{scroll-behavior:smooth}body{font-family:var(--sans)!important;color:var(--ink);background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.top b::before{content:"\25E2 ";color:var(--accent)}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}#wrap{max-width:1320px;margin:0 auto}#side{background:linear-gradient(180deg,#0a0f18,#080b12)!important;top:44px!important;height:calc(100vh - 44px)!important;border-right:1px solid var(--line2)!important;color:var(--ink)}#side .brand{border-bottom:1px solid var(--line2)!important}#side .brand b{font-family:var(--mono)!important;font-size:12px!important;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}#side .brand b::before{content:"\25E2 ";color:var(--accent)}#side .brand span{font-family:var(--mono);color:var(--dim)!important;font-size:10px!important;letter-spacing:.05em;text-transform:uppercase}#search{border:1px solid var(--line2)!important;background:#0d1320!important;color:var(--ink)!important;border-radius:5px!important;font-family:var(--mono);font-size:12.5px}#side a{color:var(--muted)!important;font-family:var(--mono)!important;font-size:11.5px!important;letter-spacing:.05em;text-transform:uppercase}#side a:hover{background:#0e141f!important;color:var(--ink)!important}#side a.active{color:var(--accent)!important;border-left-color:var(--accent)!important;background:rgba(52,227,212,.06)!important}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;font-size:11.5px!important;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-bottom:0!important;padding-bottom:0!important;margin:30px 0 12px}h2::before{content:"\25B8 ";color:var(--accent)}h3{font-family:var(--mono)!important;color:var(--ink);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}.lede{color:var(--muted)!important}a{color:var(--accent)}a:hover{color:#7af0e5}code{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)!important;font-family:var(--mono)}pre,pre.prompt,pre.code{background:#070b12!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:#dce6fb!important;border-radius:var(--r)}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.06em;text-transform:uppercase}tr:nth-child(even) td{background:rgba(255,255,255,.015)}.callout{background:linear-gradient(160deg,#0a1422,#0a0f18)!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:var(--muted);border-radius:var(--r)}.callout b{color:#cfeeea}.callout.warn{border-left-color:var(--gold)!important}.callout.tip{border-left-color:var(--accent)!important}.node{position:relative;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:var(--r)}.node b{color:var(--ink)}.arrow{color:var(--accent)!important;font-family:var(--mono)}.footer{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono);font-size:11px;letter-spacing:.02em}.skip{background:#0d1320!important;color:var(--ink)!important}figure.diagram svg,figure svg{background:#0a0f18;border-color:var(--line2)!important}@media(max-width:860px){#wrap{flex-direction:column}#side{width:100%!important;flex:none!important;height:auto!important;position:static!important}}@media print{.top{display:none!important}}</style></head>
+<body><a href="#main" class="skip">Skip to content</a><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../Biostatistics.html">Biostatistics</a><a href="../START_HERE.html">Full library</a></div></div>
+<div id="wrap">
 <nav id="side" aria-label="Wiki sections"><div class="brand"><b>SAS / R Monitoring</b><span>Automated coverage — no AI</span></div>
 <label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off">
 <a href="#start" data-t="start">Start here</a>
@@ -97,6 +98,151 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <div class="callout warn"><b>The single most common silent-failure cause:</b> running under the lead&rsquo;s personal login. Use a <b>dedicated service / functional account</b>, and confirm <em>before departure</em> that it has the SAS licence, network-share access, and SMTP relay rights. A personal account&rsquo;s credentials/VPN go idle on leave &mdash; and the job dies the moment they do.</div>
     <h2>Scheduled data ingestion</h2>
     <p>The job&rsquo;s first step reads the latest validated extract deterministically: SDTM/ADaM <code>.sas7bdat</code>/<code>.xpt</code> (<code>libname xport</code>, <code>haven::read_xpt()</code>), EDC CSV exports, a read-only DB view to the safety/IXRS database (SAS/ACCESS, <code>DBI</code>+<code>odbc</code>). A small macro resolves the newest dated file so &ldquo;latest export&rdquo; is unambiguous. <b>It is only as fresh as the upstream cadence</b> &mdash; document each source&rsquo;s refresh frequency in the report header (see the <a href="#safeguards">freshness gate</a>).</p>
+  <!-- SHEETLINK-FULL-PROGRAM -->
+    <p style="margin-top:26px">Everything above is the design. Here is the <b>actual program</b> that runs it: the one file you edit per study, then the nightly job you schedule. Plain, double-programmed SAS you can read top to bottom.</p>
+    <h2>The one file you edit per study: tm_config.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 39 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>tm_config.sas is the single per-study configuration file for the TRIALMON monitoring library, the deterministic SAS/R monitor that watches a study's data feeds and raises safety and operations flags. You copy this one file per study and edit only its <code>%let</code> values, then <code>%include</code> it before monitor_driver.sas so all study-specific facts (study id, filesystem paths, mail server, recipients, the medical monitor, the feed list, and the pre-specified thresholds) live here instead of being hard-coded into the driver. The header comment states that the file is intended to be included ahead of monitor_driver.sas so the driver and the macros it calls can read these global macro variables to know where the data is, who to notify, and what limits to test against. Nothing in this file computes a result or makes a decision: it only supplies constants that the validated SAS/R code downstream consumes, so a second study or a rotating medical monitor is a one-file change, not a code edit. Every reported number comes from the validated SAS/R tools, not from this file, which merely holds the pre-specified cut-points those tools apply.</p>
+    <pre class="code"><code>/*====================================================================================
+  tm_config.sas  -  per-study constants for the TRIALMON monitor. Copy + edit per study;
+  %include before monitor_driver.sas. Keeps study id, paths, recipients, the medical
+  monitor, feeds, and thresholds OUT of the driver so a second study (or a rotating MM)
+  is one file, not a code edit.
+====================================================================================*/
+%global CFG_STUDY CFG_ROOT CFG_SMTP CFG_STATE CFG_SDTM CFG_ADAM CFG_SAFE CFG_IXRS
+        CFG_SUPPORT CFG_BACKUP CFG_ALIAS CFG_PM CFG_MGR CFG_MM_NAME CFG_MM_PHONE
+        CFG_FEEDS CFG_MAXAGE CFG_ALTM CFG_BILM CFG_DOSEVAR CFG_ENROLL_KRI CFG_QRY_AGE;
+
+/* --- study &amp; paths --- */
+%let CFG_STUDY  = CP101;
+%let CFG_ROOT   = /opt/trialmon/cp101;
+%let CFG_SMTP   = smtp.internal.example.com;
+%let CFG_STATE  = /opt/trialmon/cp101/state;       /* persistent: seen-flags + heartbeat */
+%let CFG_SDTM   = /data/cp101/sdtm;
+%let CFG_ADAM   = /data/cp101/adam;
+%let CFG_SAFE   = /data/cp101/safety;
+%let CFG_IXRS   = /data/cp101/ixrs;
+
+/* --- recipients &amp; escalation (role aliases + a backup, never one inbox) --- */
+%let CFG_SUPPORT= biostat.cover@example.com;
+%let CFG_BACKUP = biostat.backup@example.com;       /* also the watchdog / fail-loud target */
+%let CFG_ALIAS  = biostat-cover@example.com;
+%let CFG_PM     = pm.cp101@example.com;
+%let CFG_MGR    = manager@example.com;
+%let CFG_MM_NAME= %str(Dr. R. Okafor);
+%let CFG_MM_PHONE= +1-555-0100;
+
+/* --- feeds &amp; freshness --- */
+%let CFG_FEEDS  = adam.adlb adam.adeg adam.adae safe.sae ixrs.rand;
+%let CFG_MAXAGE = 26;                                /* hours before a feed is flagged stale */
+
+/* --- thresholds (pre-specified from the protocol/SAP) --- */
+%let CFG_ALTM     = 3;       /* Hy's-Law ALT/AST multiple of ULN (strict &gt;)  */
+%let CFG_BILM     = 2;       /* Hy's-Law total bilirubin multiple of ULN     */
+%let CFG_DOSEVAR  = COHORT;  /* the DOSE-LEVEL key for the 3+3 DLT tally; set to DOSELVL if cohort != dose level */
+%let CFG_ENROLL_KRI = 0.80;  /* enrollment KRI floor (fraction of plan)      */
+%let CFG_QRY_AGE  = 30;      /* open-query aging threshold (days)            */</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>File header comment.</b> The opening comment block states the file's contract: these are per-study constants for the TRIALMON monitor, you copy and edit the file per study, and you <code>%include</code> it before monitor_driver.sas. It explains the design intent, keeping study id, paths, recipients, the medical monitor, feeds, and thresholds OUT of the driver so that onboarding a second study or swapping a rotating medical monitor (abbreviated MM in the comment) is a single edited file rather than a change to the monitoring logic. This matters because it enforces the separation between validated code (the driver) and study-specific configuration (this file), which keeps the monitor's tested behavior stable across studies.</p>
+      <p><b>%global declaration of all CFG_ variables.</b> A single <code>%global</code> statement declares every configuration macro variable the file will set: <code>CFG_STUDY</code>, <code>CFG_ROOT</code>, <code>CFG_SMTP</code>, <code>CFG_STATE</code>, <code>CFG_SDTM</code>, <code>CFG_ADAM</code>, <code>CFG_SAFE</code>, <code>CFG_IXRS</code>, <code>CFG_SUPPORT</code>, <code>CFG_BACKUP</code>, <code>CFG_ALIAS</code>, <code>CFG_PM</code>, <code>CFG_MGR</code>, <code>CFG_MM_NAME</code>, <code>CFG_MM_PHONE</code>, <code>CFG_FEEDS</code>, <code>CFG_MAXAGE</code>, <code>CFG_ALTM</code>, <code>CFG_BILM</code>, <code>CFG_DOSEVAR</code>, <code>CFG_ENROLL_KRI</code>, and <code>CFG_QRY_AGE</code>. Declaring them global (rather than letting them default to local scope) makes the values available to the driver and every macro it calls after this file is included. Because this file is included at the top, the global scope is what lets the whole monitoring cycle read one consistent set of constants.</p>
+      <p><b>Study identifier and filesystem paths.</b> This block sets the study key and the locations the monitor reads and writes: <code>CFG_STUDY</code> is the study id (CP101), <code>CFG_ROOT</code> is the monitor's base directory (/opt/trialmon/cp101), and <code>CFG_SMTP</code> is the mail server used to send notifications. <code>CFG_STATE</code> points to a persistent directory that, per its inline comment, holds seen-flags and the heartbeat, which is how the monitor remembers what it already reported and records that it ran between cycles. <code>CFG_SDTM</code>, <code>CFG_ADAM</code>, <code>CFG_SAFE</code>, and <code>CFG_IXRS</code> are the input data paths for SDTM, ADaM, safety, and IXRS/randomization sources. These are the concrete values a biostatistician must change first when standing up a new study, since every downstream read and write resolves against them.</p>
+      <p><b>Recipients and escalation.</b> This block defines who gets notified, and its inline comment states the rule: use role aliases plus a backup, never one inbox. <code>CFG_SUPPORT</code> is the covering biostatistics address, <code>CFG_BACKUP</code> is a second address that its comment identifies as the watchdog and fail-loud target, <code>CFG_ALIAS</code> is an additional alias address (biostat-cover@example.com), and <code>CFG_PM</code> and <code>CFG_MGR</code> are the project manager and manager addresses. Routing to roles and a backup rather than one person matters because monitoring must reach someone even during leave or turnover, and the fail-loud backup ensures that if the monitor itself has a problem, a human is told rather than the failure going silent. A human at these addresses owns every decision that follows a flag: the monitor only delivers the notification.</p>
+      <p><b>Medical monitor contact.</b> <code>CFG_MM_NAME</code> holds the medical monitor's name, set with <code>%str()</code> so the value (Dr. R. Okafor) is stored as literal text, and <code>CFG_MM_PHONE</code> holds that person's phone number (+1-555-0100). These are carried in the config so that a safety alert can name and reach the correct clinician, and so a rotating medical monitor is updated in this one file rather than in the driver. The <code>%str()</code> wrapper matters practically because it masks the periods in the name from the macro processor so the value is taken as a plain string.</p>
+      <p><b>Feeds and freshness.</b> <code>CFG_FEEDS</code> lists the data feeds the monitor tracks as a space-delimited set of library-dot-dataset names: adam.adlb, adam.adeg, adam.adae, safe.sae, and ixrs.rand. <code>CFG_MAXAGE</code> is the freshness limit in hours (26), and per its comment a feed older than this is flagged as stale. Together they let the driver iterate over exactly the expected feeds and raise an operations flag when any one has not updated recently, which catches a broken or delayed data delivery before it silently starves the safety checks.</p>
+      <p><b>Hy's-Law liver thresholds.</b> <code>CFG_ALTM</code> is set to 3 and <code>CFG_BILM</code> to 2, the pre-specified Hy's-Law multiples of the upper limit of normal for ALT/AST and for total bilirubin respectively, taken from the protocol and SAP as the block comment notes. The <code>CFG_ALTM</code> comment specifies a strict greater-than comparison, so the intended rule flags values that exceed 3x ULN rather than values that merely equal it; the <code>CFG_BILM</code> comment states the bilirubin multiple without repeating that qualifier. Holding these limits as named constants keeps the numeric cut-points pre-specified and auditable: the validated SAS/R code applies them to the data and computes the flag, and a clinician reviews any resulting signal.</p>
+      <p><b>Dose-level key for the 3+3 DLT tally.</b> <code>CFG_DOSEVAR</code> names the variable that identifies dose level for the 3+3 dose-limiting-toxicity count, defaulting to COHORT. Its comment instructs you to set it to DOSELVL instead when cohort is not the same as dose level, which handles studies where those two concepts diverge. This matters because the DLT tally must group participants by the correct dose-defining key: choosing the wrong variable would count toxicities against the wrong dose grouping. The setting only tells the validated code which column to group by; the tally itself is computed by SAS/R and interpreted by the safety review team.</p>
+      <p><b>Enrollment KRI floor.</b> <code>CFG_ENROLL_KRI</code> is set to 0.80, the enrollment key-risk-indicator floor expressed as a fraction of plan per its comment. When actual enrollment falls below 80 percent of the planned figure, the driver can raise an operations flag for under-enrollment. Keeping this as a pre-specified fraction rather than a hard-coded rule inside the driver lets each study set its own tolerance while the flag logic stays validated and unchanged.</p>
+      <p><b>Open-query aging threshold.</b> <code>CFG_QRY_AGE</code> is set to 30, the age in days at which an open data query is treated as aged. The driver uses this to flag queries that have stayed open beyond the threshold, surfacing a data-cleaning backlog before it delays downstream deliverables. As with the other constants, the number lives here so it is study-configurable and traceable, while the counting and comparison are performed by the validated tool and acted on by a human.</p>
+    <h2>The nightly monitoring job you schedule, every line: monitor_driver.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 72 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>monitor_driver.sas is the top-level SAS program you schedule to run unattended once a day for Study CP-101: it is the whole nightly monitoring job, top to bottom, orchestrating a fixed sequence (INGEST, freshness gate, data guards, deterministic checks, roll-up, digest, tier-2 alert, heartbeat). It is meant to run in batch under a service account (schtasks on Windows or cron 06:00 Mon-Fri on Linux), not a personal login, so it never depends on someone being logged in. Every number and every pass/fail decision here is produced by validated <code>%tm_*</code> macros in SAS; the driver only sequences them and routes output. It is designed to fail loud: a broken feed or a missing column surfaces as a red run rather than a silent green.</p>
+    <pre class="code"><code>/*====================================================================================
+  monitor_driver.sas  -  the daily unattended monitoring job (Study CP-101).
+  Schedule in batch under a SERVICE account (not a personal login):
+     Windows : schtasks /create /tn "CP101_monitor" /tr "run_monitor.bat" /sc DAILY /st 06:00 /ru SVC-BIOSTAT
+     Linux   : 0 6 * * 1-5  /opt/jobs/run_monitor.sh    # sas -sysin monitor_driver.sas -batch
+  run_monitor.bat: sas.exe -sysin monitor_driver.sas -log "logs\cp101_%date%.log" -nosplash -batch -noterminal
+  Flow: INGEST -&gt; FRESHNESS GATE -&gt; GUARD -&gt; checks -&gt; roll-up -&gt; DIGEST, + a tier-2
+  ALERT on a de-duplicated RED finding, always closed by a HEARTBEAT. Fails LOUD.
+====================================================================================*/
+%include "/opt/trialmon/tm_macros.sas";
+%include "/opt/trialmon/tm_config.sas";     /* per-study constants: paths, recipients, MM, thresholds, feeds */
+
+/* 1. init (values come from tm_config.sas) ---------------------------------------- */
+%tm_init(study=&amp;CFG_STUDY, root=&amp;CFG_ROOT, smtp=&amp;CFG_SMTP, statelib=&amp;CFG_STATE, backup=&amp;CFG_BACKUP);
+
+libname sdtm "&amp;CFG_SDTM"; libname adam "&amp;CFG_ADAM"; libname safe "&amp;CFG_SAFE"; libname ixrs "&amp;CFG_IXRS";
+
+/* 2. FRESHNESS GATE first - stale-green is worse than red -------------------------- */
+%tm_freshness(feeds=&amp;CFG_FEEDS, tsvar=_loaddttm, maxage=&amp;CFG_MAXAGE);
+%tm_status(in=_tm_fresh);
+
+/* 3. GUARD - assert expected columns exist, are numeric, pass range-sanity --------- */
+%tm_guard(ds=adam.adlb_edish, numvars=alt_x ast_x tbl_x alp_x, sanity=(0&lt;=alt_x&lt;=400 and 0&lt;=tbl_x&lt;=60));
+%tm_guard(ds=adam.adeg, numvars=QTCF DQTCF, sanity=(200&lt;=QTCF&lt;=700));
+
+/* 4. deterministic checks ---------------------------------------------------------- */
+%tm_chk_hyslaw(in=adam.adlb_edish, altmult=&amp;CFG_ALTM, bilmult=&amp;CFG_BILM);
+%tm_chk_qtcf  (in=adam.adeg);
+%tm_chk_ae    (in=adam.adae);
+%tm_chk_dlt   (in=adam.adsl_dlt, dosevar=&amp;CFG_DOSEVAR);
+%tm_chk_enroll(in=adam.enroll_summary, kri=&amp;CFG_ENROLL_KRI);
+%tm_chk_queries(in=safe.queries, age_amb=&amp;CFG_QRY_AGE);
+%tm_chk_visits(in=adam.expected_visits);
+%tm_chk_ixrs  (clin=adam.adsl, ixrs=ixrs.rand);
+
+/* 5. roll worst severity into the run status --------------------------------------- */
+%tm_status(in=_tm_hyslaw); %tm_status(in=_tm_qtcf); %tm_status(in=_tm_ae);
+%tm_status(in=_tm_dlt);    %tm_status(in=_tm_enroll); %tm_status(in=_tm_vis); %tm_status(in=_tm_ixrs);
+
+/* 6. tier-1 digest to the cover (ALWAYS sent - silence is never assumed) ------------ */
+%tm_digest(title=CP-101 Daily Safety Digest,
+           sections=_tm_fresh _tm_enroll _tm_ae _tm_dlt _tm_qtcf _tm_hyslaw _tm_qry _tm_vis,
+           to=&amp;CFG_SUPPORT, dest=pdf);
+
+/* 7. tier-2 urgent alert ONLY on a NEW (de-duplicated, PARTICIPANT-keyed) RED finding ---
+   sigkey includes the participant/dose so a SECOND participant's RED is never suppressed.     */
+data _tm_red;
+  set _tm_hyslaw(in=a) _tm_qtcf(in=b) _tm_dlt(in=c);
+  length subj $40 sigkey $200;
+  if a or b then subj = USUBJID; else if c then subj = strip(vvalue(&amp;CFG_DOSEVAR));
+  where sev="RED";
+  sigkey = catx('|', "&amp;TM_STUDY", coalescec(subj,''), flag);
+run;
+%tm_dedup(in=_tm_red, key=sigkey, out=_tm_red_new);
+
+/* build the per-participant evidence packet, then alert (attaches it if it exists) ------ */
+%tm_evidence(in=_tm_red_new, lab=adam.adlb_edish, out=&amp;TM_OUT/evidence_&amp;TM_RUNID..pdf);
+%tm_alert(in=_tm_red_new, to=&amp;CFG_SUPPORT, backup=&amp;CFG_BACKUP, alias=&amp;CFG_ALIAS, cc=&amp;CFG_PM,
+          mm_name=&amp;CFG_MM_NAME, mm_phone=&amp;CFG_MM_PHONE, evidence=&amp;TM_OUT/evidence_&amp;TM_RUNID..pdf);
+
+/* 8. HEARTBEAT - records counted with a single, closed handle (no leak) ------------- */
+%let _did=%sysfunc(open(adam.adae)); %let _n=0;
+%if &amp;_did %then %let _n=%sysfunc(attrn(&amp;_did,nlobs)); %let _rc=%sysfunc(close(&amp;_did));
+%tm_heartbeat(records=&amp;_n, watcher_to=&amp;CFG_BACKUP);
+
+/* Friday: weekly status pack + a numeric manager one-pager ------------------------- */
+%if %sysfunc(weekday(%sysfunc(today())))=6 %then %do;
+  %tm_digest(title=CP-101 Weekly Status, sections=_tm_enroll _tm_ae _tm_dlt _tm_qry _tm_vis, to=&amp;CFG_SUPPORT &amp;CFG_MGR, dest=pdf);
+%end;
+
+%put NOTE: [TRIALMON] run complete - status=&amp;TM_STATUS rc=&amp;TM_RC;
+endsas;</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header block and scheduling contract.</b> The opening comment fixes how this job is meant to be launched: in batch, under a dedicated service account (<code>SVC-BIOSTAT</code>) rather than a personal login, on a daily schedule via <code>schtasks</code> on Windows or a weekday cron entry on Linux. It also records the exact wrapper invocation (<code>sas.exe</code> with <code>-sysin</code>, a dated <code>-log</code>, <code>-nosplash -batch -noterminal</code>) so the job runs headless and writes a per-day log. The stated flow is INGEST then FRESHNESS GATE then GUARD then checks then roll-up then DIGEST, plus a tier-2 alert on a de-duplicated RED finding, always closed by a heartbeat. This matters because the governance model depends on the job actually running every day under an account that outlives any individual, and on it failing loud rather than quietly skipping.</p>
+      <p><b>Macro and config includes.</b> Two <code>%include</code> statements pull in the shared code and the per-study constants: <code>tm_macros.sas</code> defines every <code>%tm_*</code> macro used below, and <code>tm_config.sas</code> supplies the study-specific values (paths, recipients, the medical monitor, thresholds, feed names) as <code>&CFG_*</code> macro variables. Keeping constants in <code>tm_config.sas</code> means the driver itself is study-agnostic: you point it at a new study by swapping the config, not by editing this file. The validated logic lives in the included macros, so the driver stays a thin, auditable sequencer.</p>
+      <p><b>Step 1: initialization.</b> <code>%tm_init</code> is called with the study id, root path, SMTP server, state library, and backup destination, all sourced from the <code>&CFG_*</code> variables just loaded. This establishes the run context (run id, output locations, status accumulators) that the rest of the program reads and updates. Because these values come from <code>tm_config.sas</code>, the same driver initializes cleanly for any configured study.</p>
+      <p><b>Library assignments.</b> Four <code>libname</code> statements bind the SDTM, ADaM, safety, and IXRS input locations to the librefs <code>sdtm</code>, <code>adam</code>, <code>safe</code>, and <code>ixrs</code> using the configured paths. Every downstream check reads its data through these librefs, so this line is where the job's inputs are wired in. Pointing these at validated study datasets is what lets SAS own every number the job later reports.</p>
+      <p><b>Step 2: freshness gate.</b> <code>%tm_freshness</code> checks each configured feed's load timestamp (<code>_loaddttm</code>) against a maximum allowed age (<code>&CFG_MAXAGE</code>) and writes its verdict to <code>_tm_fresh</code>, which <code>%tm_status</code> then rolls into the run status. This runs first on purpose: the comment states that stale-green is worse than red, so a feed that silently stopped updating must degrade the run before any check reads its data. Without this gate, downstream checks could pass on yesterday's data and give false reassurance.</p>
+      <p><b>Step 3: data guards.</b> Two <code>%tm_guard</code> calls assert structural and range sanity before any statistical check runs. The first guards <code>adam.adlb_edish</code>, requiring the numeric variables <code>alt_x ast_x tbl_x alp_x</code> and enforcing that ALT and total bilirubin sit in plausible ranges; the second guards <code>adam.adeg</code>, requiring numeric <code>QTCF DQTCF</code> with QTcF bounded to 200-700. Guarding first means a renamed column, a character-typed number, or an out-of-range value halts loudly instead of quietly corrupting a check result. This is a determinism safeguard: the checks only run against data whose shape and ranges have been verified.</p>
+      <p><b>Step 4: deterministic checks.</b> Eight <code>%tm_chk_*</code> macros run the study's monitoring rules, each reading a specific validated dataset: Hy's-law screening on <code>adam.adlb_edish</code> using configured ALT and bilirubin multiples, QTcF on <code>adam.adeg</code>, adverse events on <code>adam.adae</code>, DLT on <code>adam.adsl_dlt</code> keyed by the configured dose variable, enrollment KRI on <code>adam.enroll_summary</code>, query aging on <code>safe.queries</code>, expected-visit completeness on <code>adam.expected_visits</code>, and an IXRS reconciliation of <code>adam.adsl</code> against <code>ixrs.rand</code>. Each macro is a validated tool that computes its own numbers and assigns a severity; the driver does not compute or reconcile any value itself. These are deterministic SAS checks: given the same data and thresholds they always return the same flags, and a human, not this job, decides what to do about them.</p>
+      <p><b>Step 5: roll worst severity into run status.</b> Seven <code>%tm_status</code> calls fold the per-check result datasets (<code>_tm_hyslaw</code>, <code>_tm_qtcf</code>, <code>_tm_ae</code>, <code>_tm_dlt</code>, <code>_tm_enroll</code>, <code>_tm_vis</code>, <code>_tm_ixrs</code>) into the overall run status. The roll-up takes the worst severity seen, so a single red check makes the whole run red regardless of how many others are green. This gives one authoritative run status without discarding the individual check outputs, which are still carried into the digest.</p>
+      <p><b>Step 6: tier-1 daily digest.</b> <code>%tm_digest</code> builds the CP-101 Daily Safety Digest as a PDF and sends it to the configured support address, assembling sections in a fixed order from the freshness, enrollment, AE, DLT, QTcF, Hy's-law, query, and visit result datasets. The comment is explicit that this digest is ALWAYS sent, so silence is never assumed to mean all-clear: recipients get a report every day whether the run is green or red. This is the routine reporting channel, distinct from the urgent alert that follows.</p>
+      <p><b>Step 7a: build the de-duplicated RED finding set.</b> A DATA step stacks the Hy's-law, QTcF, and DLT result datasets into <code>_tm_red</code>, keeps only rows where <code>sev="RED"</code>, and constructs a participant-scoped signature key. For Hy's-law and QTcF findings it sets <code>subj</code> from <code>USUBJID</code>; for DLT it uses the formatted dose value, and <code>sigkey</code> is <code>catx</code> of the study, that participant/dose, and the flag. The key deliberately includes the participant so, as the comment notes, a second participant's RED is never suppressed by a first one already seen. <code>%tm_dedup</code> then compares <code>sigkey</code> against prior state and writes only genuinely new findings to <code>_tm_red_new</code>, so the same participant's same red does not re-page every day.</p>
+      <p><b>Step 7b: evidence packet and tier-2 alert.</b> <code>%tm_evidence</code> assembles a per-participant evidence PDF for the new red findings from <code>adam.adlb_edish</code>, written to a run-stamped path under <code>&TM_OUT</code>. <code>%tm_alert</code> then sends the urgent tier-2 notification to support with a backup destination, alias, and PM on cc, carrying the medical monitor's name and phone from config, and attaching the evidence PDF if it was produced. Both calls are unconditional, but they are passed <code>_tm_red_new</code>, which is empty on a green day, so the channel notifies only on a new, de-duplicated, participant-keyed RED finding and does not spam repeats. The alert notifies humans; it does not decide or act, the medical monitor and team own the response.</p>
+      <p><b>Step 8: heartbeat.</b> This block opens <code>adam.adae</code> with <code>%sysfunc(open(adam.adae))</code>, reads the observation count via <code>attrn(&_did,nlobs)</code> only if the open returned a nonzero handle, and immediately closes the handle with <code>%sysfunc(close(&_did))</code> so no dataset handle leaks. <code>%tm_heartbeat</code> then records that count and pings the backup watcher address supplied as <code>watcher_to=&CFG_BACKUP</code>. The heartbeat is what proves the job actually ran to completion: if the daily heartbeat is missing, the watcher knows the job died rather than assuming all was well.</p>
+      <p><b>Friday weekly pack.</b> An <code>%if</code> tests whether today is Friday (<code>weekday(today())=6</code>) and, only then, calls <code>%tm_digest</code> again to build the CP-101 Weekly Status PDF from the enrollment, AE, DLT, query, and visit sections, sending it to both support and the manager. This adds a lower-frequency rollup for leadership on top of the daily digest without changing the daily behavior on other weekdays. It reuses the same validated result datasets, so the weekly numbers are the same numbers SAS already produced during the run.</p>
+      <p><b>Completion note and endsas.</b> A final <code>%put NOTE:</code> writes a tagged one-line summary to the log with the overall run status and return code (<code>&TM_STATUS</code>, <code>&TM_RC</code>), giving the batch log a single grep-able line that says how the run ended. <code>endsas;</code> then terminates the SAS session cleanly so the batch wrapper gets a definite exit. Together these make the run's outcome unambiguous to both the log reader and the scheduler.</p>
   <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="checks" aria-label="The checks catalog">
     <h1>The monitoring-checks catalog</h1>
@@ -115,6 +261,547 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <tr><td><b>Visit compliance</b></td><td>Missed / overdue / out-of-window visits vs the schedule &mdash; critical for DLT-window safety visits &amp; PK timepoints.</td><td>Run-date dependent (uses &ldquo;today&rdquo;), so a daily job keeps &ldquo;overdue&rdquo; current.</td></tr>
       <tr><td><b>Randomization / IXRS reconciliation</b></td><td>Every randomized participant in both systems; kit/dose matches cohort; drug accountability.</td><td>Discrepancies escalate to a human (DM / unblinded pharmacist); never auto-resolved; blinding preserved.</td></tr>
     </table>
+  <!-- SHEETLINK-FULL-PROGRAM -->
+    <p style="margin-top:22px">The catalog above says <b>what</b> is checked. Here is the <b>library that implements it</b>, in full, plus the R twin. These are the actual shipped files, also available as downloads.</p>
+    <div class="dl"><a class="btn ghost" href="macro_library/tm_macros.sas">&#10515;&nbsp; tm_macros.sas</a><a class="btn ghost" href="macro_library/tm_companion.R">&#10515;&nbsp; tm_companion.R</a><a class="btn ghost" href="macro_library/monitor_driver.sas">&#10515;&nbsp; monitor_driver.sas</a><a class="btn ghost" href="macro_library/tm_config.sas">&#10515;&nbsp; tm_config.sas</a><a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; README.md</a></div>
+    <h2>The complete SAS monitoring library: tm_macros.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 344 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>tm_macros.sas is the complete TRIALMON macro library: a deterministic, no-AI Base SAS 9.4 backbone for unattended early-phase trial monitoring, designed for covering a study while a biostatistician is on leave. It defines every <code>%tm_*</code> macro in one loop: scheduler to ingest to freshness gate to guard to safety and operational checks to status roll-up to a tier-1 digest, with a de-duplicated tier-2 RED alert and a closing heartbeat. The library is loaded once (via <code>%include</code>) at the top of a driver such as <code>monitor_driver.sas</code>, then its macros are called in order on each scheduled run. Every number and every check here is owned by validated SAS: these macros only DETECT, PACKAGE, and EMAIL pre-specified deterministic flags, and a human (the medical monitor, the covering biostatistician) owns every decision.</p>
+    <pre class="code"><code>/*====================================================================================
+  tm_macros.sas  -  TRIALMON: a deterministic SAS macro library for unattended
+                    early-phase trial-monitoring automation (no AI).
+  ------------------------------------------------------------------------------------
+  Loop : scheduler -&gt; ingest -&gt; FRESHNESS GATE -&gt; GUARD -&gt; checks -&gt; roll-up -&gt; digest,
+         + a tier-2 urgent ALERT on a de-duplicated RED finding, always closed by a
+         HEARTBEAT. Built for "covering while on leave"; the standing monitoring backbone.
+  Prefix  : %tm_&lt;name&gt;.  Tested concept: Base SAS 9.4. No third-party packages.
+  Honest  : these macros DETECT, PACKAGE and EMAIL pre-specified deterministic flags.
+            They DO NOT triage, interpret, or adjudicate. A flag is a prompt for a human;
+            the medical monitor and the covering biostatistician decide.
+  Validate: validate the threshold logic + scheduling wrapper as study programs; keep
+            anything REPORTED independently double-programmed.
+  v2 - corrected after an independent SAS/clinical review (see README, "Change log").
+====================================================================================*/
+
+%global TM_STUDY TM_RUNID TM_RUNDT TM_OUT TM_LOG TM_STATE TM_RC TM_STATUS TM_FRESH_OK TM_BACKUP;
+
+/*==== %tm_init : initialise a run (paths, options, run id, persistent state lib) =====*/
+%macro tm_init(study=, root=, smtp=, statelib=, backup=);
+  %let TM_STUDY = &amp;study;
+  %let TM_RUNDT = %sysfunc(datetime(), e8601dt19.);
+  %let TM_RUNID = &amp;study._%sysfunc(datetime(), b8601dn15.);
+  %let TM_OUT   = &amp;root/out;
+  %let TM_LOG   = &amp;root/logs;
+  %let TM_RC    = 0;            /* run return code: 0 ok, &gt;0 problem (fail loud)        */
+  %let TM_STATUS= GREEN;        /* GREEN &lt; AMBER &lt; RED &lt; ERROR                          */
+  %let TM_FRESH_OK = 1;
+  %let TM_BACKUP = &amp;backup;     /* watchdog / fail-loud recipient                      */
+  options nodate nonumber noquotelenmax;
+  %if %length(&amp;smtp) %then %do; options emailsys=smtp emailhost="&amp;smtp" emailport=25; %end;
+  %if %length(&amp;statelib) %then %do; libname tmstate "&amp;statelib"; %let TM_STATE = tmstate; %end;
+  %else %let TM_STATE = work;
+  %put NOTE: [TRIALMON] init study=&amp;TM_STUDY run=&amp;TM_RUNID out=&amp;TM_OUT;
+%mend tm_init;
+
+/*==== %tm_assert : FAIL LOUD. For an unattended job "no news" must never be good news.
+       On a false condition: set TM_RC, force status to ERROR, email the backup, write a
+       FAILED heartbeat, and (if abort=Y) stop. Wrap every fragile step in this.        */
+%macro tm_assert(cond=, msg=, abort=N);
+  %if not (&amp;cond) %then %do;
+    %let TM_RC = 1; %let TM_STATUS = ERROR;
+    %put ERROR: [TRIALMON] ASSERT FAILED: &amp;msg;
+    data _null_; file "&amp;TM_OUT/heartbeat.txt";
+      put "&amp;TM_STUDY FAILED " "%sysfunc(datetime(),datetime19.)" " &amp;msg"; run;
+    %if %length(&amp;TM_BACKUP) %then %do;
+      data _null_; file "&amp;TM_OUT/_fail_body.txt"; put "TRIALMON job FAILED: &amp;msg"; put "Run &amp;TM_RUNID - the unattended monitor needs attention. Do not assume GREEN."; run;
+      %tm_email(to=&amp;TM_BACKUP, subject=TRIALMON FAILURE - &amp;TM_STUDY - &amp;msg, bodyfile=&amp;TM_OUT/_fail_body.txt, importance=High);
+    %end;
+    %if &amp;abort=Y %then %abort cancel;
+  %end;
+%mend tm_assert;
+
+/*==== %tm_guard : before any safety threshold runs, assert the expected columns exist,
+       are numeric, and pass a range-sanity check (catches a unit change / renamed var).*/
+%macro tm_guard(ds=, numvars=, sanity=);
+  %tm_assert(cond=%sysfunc(exist(&amp;ds)), msg=missing dataset &amp;ds, abort=Y);
+  %let i=1;
+  %do %while(%scan(&amp;numvars,&amp;i,%str( )) ne );
+    %let v=%scan(&amp;numvars,&amp;i,%str( ));
+    %let dsid=%sysfunc(open(&amp;ds)); %let vn=%sysfunc(varnum(&amp;dsid,&amp;v)); %let vt=;
+    %if &amp;vn %then %let vt=%sysfunc(vartype(&amp;dsid,&amp;vn)); %let rc=%sysfunc(close(&amp;dsid));
+    %tm_assert(cond=(&amp;vn&gt;0), msg=&amp;ds missing expected column &amp;v);
+    %tm_assert(cond=(%superq(vt)=N), msg=&amp;ds column &amp;v is not numeric (unit/type change?));
+    %let i=%eval(&amp;i+1);
+  %end;
+  %if %length(&amp;sanity) %then %do;
+    proc sql noprint; select count(*) into :_bad trimmed from &amp;ds where not (&amp;sanity); quit;
+    %tm_assert(cond=(&amp;_bad=0), msg=&amp;ds failed range-sanity (&amp;sanity) on &amp;_bad rows - possible unit error);
+  %end;
+%mend tm_guard;
+
+/*==== %tm_latest : newest dated file in a dir (unambiguous "latest export") ===========*/
+%macro tm_latest(dir=, ext=sas7bdat, outvar=tm_latest_path);
+  %global &amp;outvar;
+  filename _tmdir "&amp;dir";
+  data _tm_files;
+    length fname $260 fpath $400; format mtime datetime19.;
+    did = dopen("_tmdir");
+    if did then do i = 1 to dnum(did);
+      fname = dread(did, i);
+      if lowcase(scan(fname,-1,'.')) = lowcase("&amp;ext") then do;
+        fpath = catx('/', "&amp;dir", fname);
+        rc = filename("_tmf", fpath); fid = fopen("_tmf");
+        if fid then do; mtime = input(finfo(fid,"Last Modified"), anydtdtm40.); rc=fclose(fid); end; /* numeric dttm - sorts chronologically */
+        rc = filename("_tmf"); output;
+      end;
+    end;
+    rc = dclose(did);
+  run;
+  proc sql noprint; select fpath into :&amp;outvar trimmed from _tm_files having mtime = max(mtime); quit;
+  %put NOTE: [TRIALMON] latest &amp;ext in &amp;dir -&gt; &amp;&amp;&amp;outvar;
+%mend tm_latest;
+
+/*==== %tm_freshness : THE GATE (run FIRST). One coherent per-feed pass -&gt; &amp;out. A
+       MISSING / dead feed is the worst case and must flag (never silently pass green). */
+%macro tm_freshness(feeds=, tsvar=_loaddttm, maxage=26, out=_tm_fresh);
+  data &amp;out; length feed $41 status $7 sev $6; format newest age_h 8.; stop; run;
+  %let i=1;
+  %do %while(%scan(&amp;feeds,&amp;i,%str( )) ne );
+    %let f=%scan(&amp;feeds,&amp;i,%str( ));
+    %if %sysfunc(exist(&amp;f)) %then %do;
+      proc sql noprint; select max(&amp;tsvar) into :_mx trimmed from &amp;f; quit;
+    %end; %else %let _mx=.;
+    data _r; length feed $41 status $7 sev $6; format newest age_h 8.;
+      feed="&amp;f"; newest=&amp;_mx;
+      if missing(newest) then do; status="MISSING"; age_h=.; sev="AMBER"; end;     /* dead feed -&gt; flag loud */
+      else do; age_h=(datetime()-newest)/3600;
+               if age_h &gt; &amp;maxage then do; status="STALE"; sev="AMBER"; end;
+               else do; status="FRESH"; sev="GREEN"; end; end;
+    run;
+    proc append base=&amp;out data=_r force; run;
+    %let i=%eval(&amp;i+1);
+  %end;
+  proc sql noprint; select sum(sev ne "GREEN")&gt;0 into :_anystale trimmed from &amp;out; quit;
+  %if &amp;_anystale %then %do; %let TM_FRESH_OK=0; %if &amp;TM_STATUS=GREEN %then %let TM_STATUS=AMBER; %let TM_RC=1;
+    %put WARNING: [TRIALMON] one or more feeds STALE/MISSING - GREEN on stale data is worse than RED; %end;
+%mend tm_freshness;
+
+/*==== %tm_status : roll a flagged dataset's worst sev into the run status (exist-guarded)*/
+%macro tm_status(in=, sevvar=sev);
+  %if %sysfunc(exist(&amp;in))=0 %then %do; %put WARNING: [TRIALMON] &amp;in missing - status skipped; %tm_assert(cond=0, msg=check output &amp;in missing); %return; %end;
+  proc sql noprint;
+    select case when sum(&amp;sevvar="RED")&gt;0 then "RED"
+                when sum(&amp;sevvar="AMBER")&gt;0 then "AMBER" else "GREEN" end
+      into :_worst trimmed from &amp;in;
+  quit;
+  %if &amp;_worst=RED and &amp;TM_STATUS ne ERROR %then %let TM_STATUS=RED;
+  %else %if &amp;_worst=AMBER and &amp;TM_STATUS in (GREEN) %then %let TM_STATUS=AMBER;
+  %put NOTE: [TRIALMON] %superq(in) worst=&amp;_worst run-status=&amp;TM_STATUS;
+%mend tm_status;
+
+/*====================================================================================
+  SAFETY CHECKS  -&gt;  each returns a flagged dataset with a SEV column. Deterministic.
+====================================================================================*/
+
+/* ---- Hy's-Law / eDISH screening flag (CORRECTED) -----------------------------------
+   RED if (ALT or AST &gt; altmult x ULN) AND (TBili &gt; bilmult x ULN).  STRICT '&gt;'.
+   NEVER downgraded by ALP: a high ALP does NOT exclude Hy's Law. Report the R-ratio
+   (ALT/ULN over ALP/ULN) for CONTEXT only - hepatocellular when R&gt;=5.  in: USUBJID +
+   peak alt_x ast_x tbl_x alp_x (x-ULN).  Screening flag, NOT a diagnosis.            */
+%macro tm_chk_hyslaw(in=, out=_tm_hyslaw, altmult=3, astmult=3, bilmult=2);
+  data &amp;out;
+    set &amp;in;
+    length flag $60 sev $6;
+    hy = ((alt_x &gt; &amp;altmult) or (ast_x &gt; &amp;astmult)) and (tbl_x &gt; &amp;bilmult);   /* strict &gt; */
+    if hy then do;
+      r_ratio = divide(alt_x, alp_x);                      /* context only - never downgrades */
+      length pattern $14; pattern = ifc(r_ratio&gt;=5,"hepatocellular",ifc(r_ratio&lt;=2,"cholestatic","mixed"));
+      flag = catx(' ', "Hy's-Law pattern (", strip(pattern), "R=", put(r_ratio,4.1), ")");
+      sev = "RED"; output;
+    end;
+  run;
+  %put NOTE: [TRIALMON] Hy's-Law screen (SCREENING flag - ALP never downgrades a RED case);
+%mend tm_chk_hyslaw;
+
+/* ---- QTcF prolongation flags (ICH E14): 450 watch / 480 AMBER / 500 RED ------------*/
+%macro tm_chk_qtcf(in=, out=_tm_qtcf, abs_red=500, dqt_red=60, abs_amb=480, dqt_amb=30, abs_low=450);
+  data &amp;out;
+    set &amp;in;
+    length flag $40 sev $6;
+    if QTCF &gt; &amp;abs_red or DQTCF &gt; &amp;dqt_red then sev="RED";
+    else if QTCF &gt; &amp;abs_amb or DQTCF &gt; &amp;dqt_amb then sev="AMBER";
+    else if QTCF &gt; &amp;abs_low then sev="GREEN";   /* tracked watch level */
+    else delete;
+    flag = cats("QTcF ",put(QTCF,4.)," / dQTcF ",put(DQTCF,4.));
+    if sev ne "GREEN" then output;              /* alert AMBER/RED; GREEN-watch tracked but not alerted */
+  run;
+%mend tm_chk_qtcf;
+
+/* ---- AE / SAE running tally by cohort. AETOXGR is CHARACTER in CDISC -&gt; input() -----
+   SAE -&gt; AMBER by default (scope RED to SUSAR/related via AEREL if your team prefers). */
+%macro tm_chk_ae(in=, out=_tm_ae);
+  proc sql;
+    create table &amp;out as
+    select COHORT,
+           count(distinct case when AESER='Y' then USUBJID end)                  as n_sae_subj,
+           sum(AESER='Y')                                                         as n_sae_evt,
+           count(distinct case when input(AETOXGR,best.)&gt;=3 then USUBJID end)     as n_g3_subj,
+           count(distinct USUBJID)                                               as n_ae_subj,
+           case when sum(AESER='Y')&gt;0 or count(distinct case when input(AETOXGR,best.)&gt;=3 then USUBJID end)&gt;0
+                then 'AMBER' else 'GREEN' end as sev length=6,
+           catx(' ','cohort',COHORT,'-',put(calculated n_sae_evt,3.),'SAE,',put(calculated n_g3_subj,3.),'Gr&gt;=3') as flag length=40
+    from &amp;in where TRTEMFL='Y' group by COHORT;
+  quit;
+%mend tm_chk_ae;
+
+/* ---- Candidate-DLT tally vs 3+3. Group by the DOSE-LEVEL key (default COHORT - assert
+   COHORT==dose level for this study, else pass dosevar=DOSELVL). Against an ADJUDICATED
+   DLTFL and a completed window (DLT_EVAL='Y'). Does NOT make the escalation decision.  */
+%macro tm_chk_dlt(in=, out=_tm_dlt, dosevar=COHORT);
+  proc sql;
+    create table &amp;out as
+    select &amp;dosevar,
+           sum(DLT_EVAL='Y')               as n_eval,
+           sum(DLTFL='Y' and DLT_EVAL='Y') as n_dlt,
+           case when calculated n_dlt &gt;= 2 then 'RED'
+                when calculated n_dlt = 1  then 'AMBER' else 'GREEN' end as sev length=6,
+           catx(' ','dose',&amp;dosevar,'DLT',put(calculated n_dlt,2.),'/',put(calculated n_eval,2.)) as flag length=40
+    from &amp;in group by &amp;dosevar;
+  quit;
+  %put NOTE: [TRIALMON] DLT tally vs 3+3 - flags the count; does NOT make the escalation call;
+%mend tm_chk_dlt;
+
+/* ---- Labs / vitals out-of-range &amp; PCS ----------------------------------------------*/
+%macro tm_chk_labs(in=, out=_tm_labs);
+  data &amp;out; set &amp;in; length flag $40 sev $6;
+    if PCSFL='Y' then do; flag=cats(PARAM," PCS"); sev="AMBER"; output; end;
+  run;
+%mend tm_chk_labs;
+
+/*==== OPERATIONAL CHECKS =============================================================*/
+%macro tm_chk_enroll(in=, out=_tm_enroll, kri=0.80);
+  data &amp;out; set &amp;in; length flag $60 sev $6;
+    pct = divide(N_ENROLLED, N_PLANNED_TO_DATE);
+    if pct &lt; &amp;kri then do; sev="AMBER"; flag=cats("Enrollment ",put(pct,percent7.1)," &lt; KRI ",put(&amp;kri,percent7.0)); end;
+    else do; sev="GREEN"; flag=cats("Enrollment ",put(pct,percent7.1)," (on track)"); end;
+    output;
+  run;
+%mend tm_chk_enroll;
+%macro tm_chk_queries(in=, out=_tm_qry, age_amb=30);
+  proc sql; create table &amp;out as
+    select sum(OPEN_FL='Y') as n_open, sum(OPEN_FL='Y' and QUERY_AGE_DAYS&gt;&amp;age_amb) as n_aged,
+           case when sum(OPEN_FL='Y' and QUERY_AGE_DAYS&gt;&amp;age_amb)&gt;0 then 'AMBER' else 'GREEN' end as sev length=6,
+           catx(' ',put(calculated n_open,4.),'open,',put(calculated n_aged,4.),'aged &gt;&amp;age_amb.d') as flag length=40
+    from &amp;in; quit;
+%mend tm_chk_queries;
+%macro tm_chk_visits(in=, out=_tm_vis);
+  data &amp;out; set &amp;in; length flag $40 sev $6;
+    if missing(ACTDT) and PLANDT &lt; today() then do; flag=cats("Overdue ",strip(VISIT)); sev="AMBER"; output; end;
+    else if not missing(ACTDT) and abs(ACTDT-PLANDT) &gt; WINDOW_DAYS then do; flag=cats("Out-of-window ",strip(VISIT)); sev="AMBER"; output; end;
+  run;
+%mend tm_chk_visits;
+%macro tm_chk_ixrs(clin=, ixrs=, out=_tm_ixrs);
+  proc sql; create table &amp;out as
+    select coalesce(a.USUBJID,b.USUBJID) as USUBJID, a.TRT01P, b.IXRS_TRT,
+           case when a.USUBJID is null then 'In IXRS, not in clinical DB'
+                when b.USUBJID is null then 'Randomized, missing in IXRS'
+                when a.TRT01P ne b.IXRS_TRT then 'Treatment mismatch' else '' end as flag length=40,
+           'AMBER' as sev length=6
+    from &amp;clin a full join &amp;ixrs b on a.USUBJID=b.USUBJID where calculated flag ne ''; quit;
+  %put NOTE: [TRIALMON] IXRS reconciliation - discrepancies escalate to DM/unblinded pharmacist, never auto-resolved;
+%mend tm_chk_ixrs;
+
+/*==== %tm_evidence : per-RED-participant one-page PDF (eDISH + lab trajectory) ============
+   in: the RED hyslaw dataset (USUBJID, alt_x..); lab: full lab history for the plot.   */
+%macro tm_evidence(in=, lab=, out=);
+  %let out=%sysfunc(coalescec(&amp;out,&amp;TM_OUT/evidence_&amp;TM_RUNID..pdf));
+  ods pdf file="&amp;out" style=journal; options nobyline;
+  proc sql noprint; select distinct USUBJID into :_subs separated by ' ' from &amp;in; quit;
+  %if %length(&amp;_subs)=0 %then %do; ods pdf close; %return; %end;
+  /* eDISH scatter with 3xULN / 2xULN reference lines, RED participant highlighted */
+  proc sgplot data=&amp;lab;
+    title "Evidence packet - eDISH (peak ALT vs peak total bilirubin, x-ULN) - Run &amp;TM_RUNID";
+    scatter x=alt_x y=tbl_x / group=red_fl markerattrs=(symbol=circlefilled);
+    refline 3 / axis=x lineattrs=(pattern=shortdash); refline 2 / axis=y lineattrs=(pattern=shortdash);
+    xaxis label="peak ALT (x ULN)"; yaxis label="peak total bilirubin (x ULN)";
+  run;
+  /* per-participant lab trajectory */
+  %let j=1;
+  %do %while(%scan(&amp;_subs,&amp;j,%str( )) ne );
+    %let su=%scan(&amp;_subs,&amp;j,%str( ));
+    proc sgplot data=&amp;lab(where=(USUBJID="&amp;su"));
+      title "Participant &amp;su - lab trajectory (x ULN by visit)";
+      series x=visitnum y=alt_x / markers; series x=visitnum y=ast_x / markers;
+      series x=visitnum y=tbl_x / markers; series x=visitnum y=alp_x / markers;
+    run; %let j=%eval(&amp;j+1);
+  %end;
+  title; ods pdf close;
+  %put NOTE: [TRIALMON] evidence packet -&gt; &amp;out;
+%mend tm_evidence;
+
+/*==== DE-DUPLICATION (key MUST include participant so distinct participants are not collapsed)*/
+%macro tm_dedup(in=, key=, out=_tm_new);
+  %if %sysfunc(exist(&amp;TM_STATE..tm_seen))=0 %then %do;
+    data &amp;TM_STATE..tm_seen; length sigkey $200; format first_dttm datetime19.; first_dttm=.; stop; run; %end;
+  proc sql;
+    create table &amp;out as select a.* from &amp;in a where a.&amp;key not in (select sigkey from &amp;TM_STATE..tm_seen);
+    insert into &amp;TM_STATE..tm_seen (sigkey, first_dttm)
+      select distinct &amp;key, datetime() from &amp;in where &amp;key not in (select sigkey from &amp;TM_STATE..tm_seen);
+  quit;
+%mend tm_dedup;
+
+/*==== NOTIFICATION ===================================================================*/
+%macro tm_email(to=, cc=, subject=, bodyfile=, attach=, importance=Normal);
+  filename _tmmail email to=(&amp;to) %if %length(&amp;cc) %then cc=(&amp;cc); subject="&amp;subject"
+     %if %length(&amp;attach) %then %if %sysfunc(fileexist(&amp;attach)) %then attach=("&amp;attach"); importance="&amp;importance";
+  data _null_; file _tmmail;
+    %if %length(&amp;bodyfile) %then %do; infile "&amp;bodyfile" length=l; input line $varying2000. l; put line; %end;
+    %else %do; put "&amp;TM_STUDY &amp;subject"; %end;
+  run;
+  filename _tmmail clear;
+  %put NOTE: [TRIALMON] emailed "&amp;subject" to &amp;to;
+%mend tm_email;
+
+/* tier-1 digest: ODS report + RAG status, always with a heartbeat line. Body created here. */
+%macro tm_digest(title=, sections=, to=, dest=pdf);
+  %let _f=&amp;TM_OUT/digest_&amp;TM_RUNID..&amp;dest;
+  %let _imp=Normal; %if &amp;TM_STATUS=RED or &amp;TM_STATUS=ERROR %then %let _imp=High;
+  ods &amp;dest file="&amp;_f" style=journal; ods escapechar='^';
+  title "^S={font_size=14pt}&amp;title - %sysfunc(today(),date9.) - [&amp;TM_STATUS]";
+  %let i=1; %do %while(%scan(&amp;sections,&amp;i,%str( )) ne ); %let s=%scan(&amp;sections,&amp;i,%str( ));
+    %if %sysfunc(exist(&amp;s)) %then %do; proc print data=&amp;s noobs label; run; %end; %let i=%eval(&amp;i+1); %end;
+  data _hb; length txt $200;
+    txt=cats("HEARTBEAT ran ",put(datetime(),datetime19.)," SYSCC=&amp;TM_RC data-fresh=",ifc(symgetn('TM_FRESH_OK'),'OK','STALE/MISSING')); run;
+  proc print data=_hb noobs; run; title; ods &amp;dest close;
+  data _null_; file "&amp;TM_OUT/_digest_body.txt";
+    put "&amp;TM_STUDY daily digest [&amp;TM_STATUS] - %sysfunc(today(),date9.) - see attached PDF."; run;
+  %tm_email(to=&amp;to, subject=&amp;TM_STUDY digest [&amp;TM_STATUS] %sysfunc(today(),date9.),
+            bodyfile=&amp;TM_OUT/_digest_body.txt, attach=&amp;_f, importance=&amp;_imp);
+%mend tm_digest;
+
+/* tier-2 urgent ALERT (de-identified body; severity routing; contact-the-MM; evidence) */
+%macro tm_alert(in=, to=, backup=, alias=, cc=, mm_name=, mm_phone=, evidence=);
+  %if %sysfunc(exist(&amp;in))=0 %then %return;
+  proc sql noprint; select count(*) into :_n trimmed from &amp;in where sev="RED"; quit;
+  %if &amp;_n=0 %then %do; %put NOTE: [TRIALMON] no RED findings to alert; %return; %end;
+  data _null_; file "&amp;TM_OUT/_alert_body.txt";
+    put "URGENT safety alert - &amp;TM_STUDY - auto-sent " "%sysfunc(datetime(),datetime19.)";
+    put "A pre-specified deterministic threshold was met. SCREENING flag, NOT a diagnosis. The medical monitor adjudicates.";
+    put " "; put "&gt;&gt; CONTACT THE MEDICAL MONITOR NOW: &amp;mm_name &amp;mm_phone";
+    put "&gt;&gt; Acknowledge within 30 minutes (reply to confirm receipt)."; put "&gt;&gt; Evidence packet attached."; put " ";
+  run;
+  data _null_; set &amp;in(where=(sev="RED")); file "&amp;TM_OUT/_alert_body.txt" mod; put "  - " flag; run;
+  %tm_email(to=&amp;to, cc=&amp;backup &amp;alias &amp;cc, subject=RED ALERT - &amp;TM_STUDY - safety threshold met - ACTION REQUIRED,
+            bodyfile=&amp;TM_OUT/_alert_body.txt, attach=&amp;evidence, importance=High);
+  %if &amp;TM_STATUS ne ERROR %then %let TM_STATUS=RED;
+  %put WARNING: [TRIALMON] RED alert dispatched (primary+backup+alias);
+%mend tm_alert;
+
+/*==== %tm_heartbeat : the dead-man's switch. An INDEPENDENT watcher (separate host/cron,
+       e.g. tm_watchdog.sh) escalates if this ping stops. "No news" is never "good news".*/
+%macro tm_heartbeat(records=, watcher_to=);
+  %if %sysfunc(exist(&amp;TM_STATE..tm_heartbeat))=0 %then %do;
+    data &amp;TM_STATE..tm_heartbeat; length runid $40 status $7; format run_dttm datetime19.; run_dttm=.; stop; run; %end;
+  proc sql; insert into &amp;TM_STATE..tm_heartbeat (runid, run_dttm, status)
+              values ("&amp;TM_RUNID", %sysfunc(datetime()), "&amp;TM_STATUS"); quit;
+  data _null_; file "&amp;TM_OUT/heartbeat.txt";
+    put "&amp;TM_STUDY &amp;TM_STATUS " "%sysfunc(datetime(),datetime19.)" " SYSCC=&amp;TM_RC N=&amp;records FRESH=&amp;TM_FRESH_OK"; run;
+  %put NOTE: [TRIALMON] heartbeat written - external watcher (&amp;watcher_to) alerts if it stops;
+%mend tm_heartbeat;
+
+/*==== End of tm_macros.sas. See monitor_driver.sas, tm_watchdog.sh, tm_config.sas, and
+      the README for the catalog, parameters, the config pattern, and validation notes. */</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header banner and design contract.</b> The opening comment block states the whole contract you are building against: a deterministic, no-AI SAS library for unattended early-phase monitoring, whose loop runs scheduler to ingest to freshness gate to guard to checks to roll-up to digest, plus a tier-2 urgent alert on a de-duplicated RED finding and a closing heartbeat. It is explicit that these macros DETECT, PACKAGE, and EMAIL flags but do NOT triage, interpret, or adjudicate: a flag is a prompt for a human, and the medical monitor and covering biostatistician decide. It tells you to validate the threshold logic and scheduling wrapper as study programs and to keep anything REPORTED independently double-programmed. Reading this first tells you where the human gate sits and what you are on the hook to validate before this runs on a live study.</p>
+      <p><b>Global macro variables.</b> The single <code>%global</code> statement declares the run-scoped state that every macro reads and writes: <code>TM_STUDY</code>, <code>TM_RUNID</code>, <code>TM_RUNDT</code>, <code>TM_OUT</code>, <code>TM_LOG</code>, <code>TM_STATE</code>, <code>TM_RC</code>, <code>TM_STATUS</code>, <code>TM_FRESH_OK</code>, and <code>TM_BACKUP</code>. Declaring them global once means the status, return code, and freshness flags set by one macro (for example the freshness gate) are visible to the digest, alert, and heartbeat later in the same run. When you build, treat these as the shared bus: the checks push severity into <code>TM_STATUS</code> and problems into <code>TM_RC</code>, and the closing macros read them back.</p>
+      <p><b>%tm_init: initialise a run.</b> <code>%tm_init</code> stamps the run: it sets <code>TM_STUDY</code>, a human-readable <code>TM_RUNDT</code> and a sortable <code>TM_RUNID</code> from the study name and the current datetime, derives the <code>out</code> and <code>logs</code> directories under <code>root</code>, and seeds <code>TM_RC=0</code>, <code>TM_STATUS=GREEN</code>, and <code>TM_FRESH_OK=1</code>. It sets safe options (<code>nodate nonumber noquotelenmax</code>), and only if <code>smtp</code> is supplied does it configure SMTP email; only if <code>statelib</code> is supplied does it assign a persistent <code>tmstate</code> library and point <code>TM_STATE</code> at it, otherwise <code>TM_STATE</code> falls back to <code>work</code>. It also captures <code>TM_BACKUP</code>, the fail-loud recipient used later by the assertion macro. Call this first in your driver, and pass a real <code>statelib</code> so de-duplication and heartbeat history survive across runs.</p>
+      <p><b>%tm_assert: fail loud.</b> <code>%tm_assert</code> is the fail-loud primitive: on a false <code>cond</code> it sets <code>TM_RC=1</code>, forces <code>TM_STATUS</code> to ERROR, writes a FAILED line into <code>heartbeat.txt</code>, and, if <code>TM_BACKUP</code> is set, emails the backup a high-importance failure notice telling the recipient not to assume GREEN. If <code>abort=Y</code> it stops the step with <code>%abort cancel</code>. This exists because for an unattended job silence must never read as success: a broken step has to surface loudly rather than pass green. Wrap every fragile step (dataset existence, column types, range sanity) in this so a covering biostatistician is paged rather than misled.</p>
+      <p><b>%tm_guard: pre-check data contract.</b> <code>%tm_guard</code> enforces the data contract before any safety threshold runs. It asserts (aborting) that <code>ds</code> exists, then loops over the space-delimited <code>numvars</code> using <code>open</code>/<code>varnum</code>/<code>vartype</code>/<code>close</code> to assert each expected column is present and numeric, which catches a renamed variable or a unit/type change. If a <code>sanity</code> expression is supplied it counts rows failing <code>where not (&sanity)</code> and asserts the count is zero, flagging a possible unit error. This matters because a silent unit change (mg to ng, or a re-derived x-ULN) would otherwise let a threshold fire wrongly or not at all: guard the inputs so the downstream numbers stay trustworthy.</p>
+      <p><b>%tm_latest: newest dated file in a directory.</b> <code>%tm_latest</code> resolves the unambiguous latest export from a directory. It opens <code>dir</code> with <code>dopen</code>, reads each entry, keeps files whose extension matches <code>ext</code> (default <code>sas7bdat</code>), and for each opens the file to read its Last Modified attribute via <code>finfo</code>, parsing it into a numeric SAS datetime that sorts chronologically. A final <code>proc sql</code> selects the <code>fpath</code> whose <code>mtime</code> equals the maximum into the requested output macro variable (default <code>tm_latest_path</code>). Use this when the feed drops timestamped files and you must ingest the newest one deterministically rather than guessing by filename.</p>
+      <p><b>%tm_freshness: the gate (run first).</b> <code>%tm_freshness</code> is THE gate and is meant to run first: for each feed in <code>feeds</code> it reads <code>max(&tsvar)</code> (default <code>_loaddttm</code>) as the newest timestamp, computes age in hours, and classifies each feed as MISSING (dead feed, AMBER), STALE if older than <code>maxage</code> hours (default 26, AMBER), or FRESH (GREEN), appending one row per feed to <code>out</code>. If any feed is not GREEN it clears <code>TM_FRESH_OK</code> to 0, bumps <code>TM_STATUS</code> from GREEN to AMBER, sets <code>TM_RC=1</code>, and warns that GREEN on stale data is worse than RED. This is the core honesty mechanism: a dead or stale feed must flag loudly rather than let the run report a false all-clear, so build it as the first check in the sequence.</p>
+      <p><b>%tm_status: roll worst severity into run status.</b> <code>%tm_status</code> rolls one flagged dataset's worst severity into the overall run status. If <code>in</code> does not exist it warns and calls <code>%tm_assert</code> with a false condition (so a missing check output itself fails loud), then returns. Otherwise it computes the dataset's worst <code>sevvar</code> (RED beats AMBER beats GREEN) and promotes <code>TM_STATUS</code> to RED (unless already ERROR) or to AMBER (only when currently GREEN), never downgrading a worse status. Call it once per check output so the final <code>TM_STATUS</code> reflects the most severe finding across all checks, which is what the digest importance and alert routing key off.</p>
+      <p><b>%tm_chk_hyslaw: Hy's-Law / eDISH screening flag.</b> <code>%tm_chk_hyslaw</code> flags RED when (<code>alt_x</code> or <code>ast_x</code> exceeds its multiple, defaults 3) AND <code>tbl_x</code> exceeds <code>bilmult</code> (default 2), using strict greater-than, on peak x-ULN inputs keyed by USUBJID. The comment is emphatic that a high ALP does NOT exclude Hy's Law: the R-ratio (<code>alt_x</code> over <code>alp_x</code>) is computed and labelled hepatocellular, cholestatic, or mixed for CONTEXT only and never downgrades a RED case. It writes a descriptive <code>flag</code> string with the pattern and R value and outputs only the participants who meet the rule. This is a screening flag, not a diagnosis: it hands the medical monitor a pre-specified deterministic case to adjudicate, and the corrected logic (ALP never downgrades) is the load-bearing fix from the independent review.</p>
+      <p><b>%tm_chk_qtcf: QTcF prolongation flags.</b> <code>%tm_chk_qtcf</code> applies ICH E14 QTcF thresholds: RED if <code>QTCF</code> exceeds <code>abs_red</code> (500) or <code>DQTCF</code> exceeds <code>dqt_red</code> (60), AMBER if above <code>abs_amb</code> (480) or <code>dqt_amb</code> (30), and GREEN as a tracked watch level if above <code>abs_low</code> (450); anything below is deleted. It builds a <code>flag</code> showing the QTcF and dQTcF values and outputs only AMBER and RED rows, so the GREEN watch level is retained in logic but not alerted. This gives you the standard 450 watch / 480 AMBER / 500 RED tiering with change-from-baseline as a parallel trigger, which is what a cardiac safety reviewer expects to see surfaced.</p>
+      <p><b>%tm_chk_ae: AE / SAE running tally by cohort.</b> <code>%tm_chk_ae</code> summarises treatment-emergent AEs (<code>where TRTEMFL='Y'</code>) grouped by COHORT: distinct participants and event counts for serious AEs (<code>AESER='Y'</code>), distinct participants with a Grade 3 or higher event (via <code>input(AETOXGR,best.)</code> since AETOXGR is character in CDISC), and total distinct AE participants. Severity is AMBER when there is any SAE or any Grade 3-plus participant, else GREEN, with a compact <code>flag</code> string per cohort. The comment notes SAE defaults to AMBER and that a team may instead scope RED to SUSAR or related events via AEREL. Use this as the cohort-level running tally; the <code>input()</code> conversion is the detail to preserve so grade comparisons are numeric.</p>
+      <p><b>%tm_chk_dlt: candidate-DLT tally vs 3+3.</b> <code>%tm_chk_dlt</code> counts adjudicated DLTs against a 3+3 frame, grouped by the dose-level key (<code>dosevar</code>, default COHORT, with the comment asking you to assert COHORT equals dose level or else pass <code>DOSELVL</code>). It counts evaluable participants (<code>DLT_EVAL='Y'</code>) and DLTs (<code>DLTFL='Y' and DLT_EVAL='Y'</code>), then sets RED at two or more DLTs, AMBER at exactly one, else GREEN. The <code>flag</code> concatenates the literal word dose, the dose-level value, the token DLT, the DLT count, a slash, and the evaluable count. It runs against an already-adjudicated <code>DLTFL</code> and a completed evaluation window, and the note states plainly it flags the count and does NOT make the escalation call: the escalation decision stays with the dose-escalation committee while this macro only surfaces the tally.</p>
+      <p><b>%tm_chk_labs: labs / vitals out-of-range and PCS.</b> <code>%tm_chk_labs</code> is a compact potentially-clinically-significant screen: for rows where <code>PCSFL='Y'</code> it emits an AMBER flag naming the PARAM plus the token PCS and outputs only those rows. It relies on an upstream-derived PCS flag rather than re-deriving reference ranges here, so the criterion for clinical significance lives in the validated lab-flagging program that set <code>PCSFL</code>. Keep that derivation double-programmed if any of it feeds a reported number, since this macro trusts the flag it is handed.</p>
+      <p><b>%tm_chk_enroll: enrollment vs KRI.</b> <code>%tm_chk_enroll</code> is the first operational check: it computes <code>pct = divide(N_ENROLLED, N_PLANNED_TO_DATE)</code> and flags AMBER when the fraction is below the key risk indicator <code>kri</code> (default 0.80), else GREEN with an on-track note, and always outputs a row per input record. It uses <code>divide()</code> so a zero planned-to-date does not throw. This surfaces under-enrollment against plan as an operational amber for the covering biostatistician and the study team, not a safety signal.</p>
+      <p><b>%tm_chk_queries: open and aged data queries.</b> <code>%tm_chk_queries</code> tallies data-management queries in one <code>proc sql</code>: <code>n_open</code> counts open queries (<code>OPEN_FL='Y'</code>) and <code>n_aged</code> counts open queries older than <code>age_amb</code> days (default 30), with severity AMBER when any aged query exists and a flag summarising both counts. It is an operational cleanliness signal: aged open queries are the amber, since they indicate data that has been sitting unresolved. Point it at your query-status extract and it gives the team a running open-and-aged number each run.</p>
+      <p><b>%tm_chk_visits: overdue and out-of-window visits.</b> <code>%tm_chk_visits</code> flags scheduling problems per participant-visit: it emits an AMBER Overdue flag when <code>ACTDT</code> is missing and <code>PLANDT</code> is before <code>today()</code>, and an AMBER Out-of-window flag when an actual date exists but its absolute distance from the planned date exceeds <code>WINDOW_DAYS</code>. Only flagged rows are output. This catches both missed visits and visits performed outside their protocol window, both of which are operational amber items the site and CRA need to see.</p>
+      <p><b>%tm_chk_ixrs: clinical-to-IXRS reconciliation.</b> <code>%tm_chk_ixrs</code> full-joins the clinical dataset (<code>clin</code>) to the IXRS/RTSM dataset (<code>ixrs</code>) on USUBJID and flags AMBER discrepancies: a participant present in IXRS but not clinical, randomized but missing in IXRS, or a treatment mismatch between <code>TRT01P</code> and <code>IXRS_TRT</code>, keeping only rows with a non-empty flag. The note is load-bearing: these discrepancies escalate to data management or the unblinded pharmacist and are NEVER auto-resolved. The macro only detects the mismatch; a human reconciles it, which keeps the blind and the treatment assignment under human control.</p>
+      <p><b>%tm_evidence: per-RED-participant one-page PDF.</b> <code>%tm_evidence</code> builds the evidence packet attached to a RED alert. It defaults the output path under <code>TM_OUT</code>, opens an ODS PDF, pulls the distinct RED USUBJIDs from <code>in</code> (returning early and closing the PDF if that list is empty), draws an eDISH scatter of peak ALT versus peak total bilirubin (x-ULN) with 3x and 2x reference lines and the RED participants highlighted via <code>red_fl</code>, then loops each RED participant to plot their per-visit ALT, AST, TBili, and ALP trajectory. This packages the underlying data behind the flag so the medical monitor sees the trajectory, not just the alert line. It reads from the full lab history you pass as <code>lab</code>, so make sure that source is the validated lab dataset.</p>
+      <p><b>%tm_dedup: signature de-duplication across runs.</b> <code>%tm_dedup</code> stops the same finding from re-alerting every run. It creates the persistent <code>tm_seen</code> table (with a <code>sigkey</code> column) in <code>TM_STATE</code> on first use, selects into <code>out</code> only the input rows whose <code>key</code> is not already stored in <code>sigkey</code>, then inserts the new distinct key values with the current datetime as <code>first_dttm</code>. The header comment is a hard rule: the <code>key</code> MUST include the participant so distinct participants with the same numeric pattern are not collapsed into one and silently suppressed. When you build the alert path, construct the dedup key from USUBJID plus the check signature so a genuine new participant always breaks through.</p>
+      <p><b>%tm_email: notification primitive.</b> <code>%tm_email</code> is the shared send primitive used by the assertion, digest, and alert macros. It assigns a <code>_tmmail</code> email fileref with <code>to</code>, optional <code>cc</code>, subject, optional attachment (attached only if the file actually exists), and importance, then writes the body either from a supplied <code>bodyfile</code> (read line by line) or a default one-line body, and clears the fileref. It relies on the SMTP options set in <code>%tm_init</code>. This is the single choke point for outbound mail, so any change to routing or formatting is made here once.</p>
+      <p><b>%tm_digest: tier-1 daily digest with heartbeat.</b> <code>%tm_digest</code> produces the routine tier-1 report. It builds an ODS file (default PDF) under <code>TM_OUT</code>, titles it with the study, date, and current <code>TM_STATUS</code>, and prints each existing dataset named in <code>sections</code>. It then always appends a HEARTBEAT line reporting the run time, <code>SYSCC=&TM_RC</code>, and whether data was fresh (reading <code>TM_FRESH_OK</code> via <code>symgetn</code>), and emails the digest with importance escalated to High when status is RED or ERROR. The always-present heartbeat and the freshness line mean a reader can never mistake a stale or failed run for a clean one; the RAG status in the title carries the roll-up from every check.</p>
+      <p><b>%tm_alert: tier-2 urgent RED alert.</b> <code>%tm_alert</code> is the tier-2 urgent path and returns immediately if <code>in</code> does not exist or contains no RED rows. When RED findings exist it writes a de-identified body stating a pre-specified deterministic threshold was met, that this is a SCREENING flag and NOT a diagnosis that the medical monitor adjudicates, and instructing the reader to contact the named medical monitor (<code>mm_name</code>, <code>mm_phone</code>) now and acknowledge within 30 minutes, then appends each RED <code>flag</code> line. It emails <code>to</code> as primary and puts <code>backup</code>, <code>alias</code>, and <code>cc</code> on the CC line at High importance with the evidence packet attached, forces <code>TM_STATUS</code> to RED unless already ERROR, and warns that a RED alert was dispatched. The body carries only flags and contact instructions, keeping the alert de-identified while pointing a human straight to the decision-maker.</p>
+      <p><b>%tm_heartbeat: the dead-man's switch.</b> <code>%tm_heartbeat</code> closes every run and is the dead-man's switch. It creates the persistent <code>tm_heartbeat</code> table in <code>TM_STATE</code> if absent, inserts a row with <code>TM_RUNID</code>, the current datetime, and <code>TM_STATUS</code>, and overwrites <code>heartbeat.txt</code> with a one-line status carrying the study, status, timestamp, <code>SYSCC=&TM_RC</code>, the record count <code>records</code>, and <code>FRESH=&TM_FRESH_OK</code>. The comment names an INDEPENDENT watcher on a separate host or cron (for example <code>tm_watchdog.sh</code>, addressed by <code>watcher_to</code>) that escalates if the ping stops. This is why the whole design holds: if the job itself dies silently, the external watcher sees the missing heartbeat and raises the alarm, so no news is never treated as good news.</p>
+      <p><b>End-of-file pointer.</b> The closing comment points you to the rest of the operating set: <code>monitor_driver.sas</code> (the driver that includes this library and calls the macros in order), <code>tm_watchdog.sh</code> (the independent external watcher), <code>tm_config.sas</code> (the config pattern), and the README (the macro catalog, parameters, and validation notes). When you build and run, this is your map: this file is only the library, and those companion files supply the sequencing, watchdog, per-study parameters, and the validation record you need to stand behind on a live study.</p>
+    <h2>The same library in R: tm_companion.R</h2>
+    <p class="muted" style="margin-bottom:6px">R &middot; 139 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>tm_companion.R is the R companion to tm_macros.sas: a deterministic TRIALMON monitoring library that runs the same "ingest to freshness to guard to checks to report to notify" loop with no AI anywhere in it. It is meant to run unattended on a schedule (cronR or taskscheduleR) against ADaM XPT extracts, with packages pinned by renv for byte-reproducibility. Every reported number comes from these validated R functions and every check is deterministic; the functions detect and email pre-specified flags, they do not triage or judge, and a flag is a prompt for a human where the medical monitor decides. The header comment records that this is v2, corrected after an independent review to enforce strict Hy's-Law logic, an NA-safe freshness gate, %.0f formatting (not %d, since QTcF and dQTcF are doubles), lowercase columns, deferred de-dup commit, and fail-loud behavior.</p>
+    <pre class="code"><code># =====================================================================================
+# tm_companion.R  -  TRIALMON R companion to tm_macros.sas (no AI).
+# Same deterministic "ingest -&gt; freshness -&gt; guard -&gt; checks -&gt; report -&gt; notify" loop.
+# Schedule with cronR / taskscheduleR; pin packages with renv for byte-reproducibility.
+# v2 - corrected after an independent review (strict Hy's-Law, NA-safe gate, %.0f,
+#      lowercase columns, deferred de-dup commit, fail-loud assert/guard).
+#
+# Honest: these functions DETECT and EMAIL pre-specified deterministic flags. They do
+# NOT triage or judge. A flag is a prompt for a human; the medical monitor decides.
+# =====================================================================================
+suppressPackageStartupMessages({
+  library(dplyr); library(haven); library(gt); library(blastula)
+})
+
+# ---- FAIL LOUD: an unattended job must never let "no news" read as "good news" -------
+tm_assert &lt;- function(cond, msg, backup = NULL) {
+  if (!isTRUE(cond)) {
+    writeLines(sprintf("CP101 FAILED %s %s", format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), msg), "out/heartbeat.txt")
+    if (!is.null(backup)) try(tm_email(backup, paste("TRIALMON FAILURE -", msg),
+                                       "The unattended monitor needs attention. Do not assume GREEN.", urgent = TRUE), silent = TRUE)
+    stop("[TRIALMON] ASSERT FAILED: ", msg, call. = FALSE)
+  }
+}
+
+# ---- read an extract and NORMALISE column names to lowercase (stable contract) -------
+# haven::read_xpt preserves UPPERCASE CDISC names; lowercasing once means every check
+# can reference alt_x / qtcf / usubjid regardless of the source casing.
+tm_read &lt;- function(path) {
+  tm_assert(file.exists(path), paste("missing extract", path))
+  read_xpt(path) |&gt; rename_with(tolower)
+}
+
+# ---- GUARD: required columns exist, are numeric, and pass a range-sanity check -------
+tm_guard &lt;- function(df, numvars, sanity = NULL) {
+  miss &lt;- setdiff(numvars, names(df))
+  tm_assert(length(miss) == 0, paste("missing columns:", paste(miss, collapse = ", ")))
+  for (v in numvars) tm_assert(is.numeric(df[[v]]), paste(v, "is not numeric (unit/type change?)"))
+  if (!is.null(sanity)) tm_assert(all(sanity(df), na.rm = TRUE), "failed range-sanity (possible unit error)")
+  invisible(TRUE)
+}
+
+# ---- DATA-FRESHNESS GATE (run FIRST). NA-safe: a MISSING feed file is the worst case -
+tm_freshness &lt;- function(feeds, max_age_h = 26) {
+  now &lt;- Sys.time()
+  out &lt;- tibble::tibble(feed = names(feeds), path = unlist(feeds)) |&gt;
+    mutate(age_h = as.numeric(difftime(now, file.mtime(path), units = "hours")),
+           stale = is.na(age_h) | age_h &gt; max_age_h,                       # NA (absent file) -&gt; stale
+           sev   = ifelse(stale, "AMBER", "GREEN"))
+  if (any(out$stale, na.rm = TRUE))
+    message("WARNING [TRIALMON] STALE/MISSING FEED: ", paste(out$feed[out$stale], collapse = ", "),
+            " -- GREEN on stale data is worse than RED")
+  out
+}
+
+# ---- Hy's-Law / eDISH screening (CORRECTED): RED on ALT/AST&gt;3 AND TBili&gt;2, STRICT '&gt;',
+#      NEVER downgraded by ALP. R-ratio (ALT/ULN over ALP/ULN) is context only. --------
+tm_chk_hyslaw &lt;- function(df, altmult = 3, astmult = 3, bilmult = 2) {
+  df |&gt;
+    mutate(hy = (alt_x &gt; altmult | ast_x &gt; astmult) &amp; tbl_x &gt; bilmult,
+           r_ratio = alt_x / alp_x,
+           pattern = case_when(r_ratio &gt;= 5 ~ "hepatocellular", r_ratio &lt;= 2 ~ "cholestatic", TRUE ~ "mixed")) |&gt;
+    filter(hy) |&gt;
+    transmute(usubjid, flag = sprintf("Hy's-Law pattern (%s, R=%.1f)", pattern, r_ratio), sev = "RED")
+}
+
+# ---- QTcF (ICH E14). Use %.0f, not %d (QTcF/dQTcF are doubles) -----------------------
+tm_chk_qtcf &lt;- function(df, abs_red = 500, dqt_red = 60, abs_amb = 480, dqt_amb = 30) {
+  df |&gt;
+    mutate(sev = case_when(qtcf &gt; abs_red | dqtcf &gt; dqt_red ~ "RED",
+                           qtcf &gt; abs_amb | dqtcf &gt; dqt_amb ~ "AMBER", TRUE ~ "GREEN")) |&gt;
+    filter(sev != "GREEN") |&gt;
+    transmute(usubjid, flag = sprintf("QTcF %.0f / dQTcF %.0f", qtcf, dqtcf), sev)
+}
+
+tm_chk_enroll &lt;- function(n_enrolled, n_planned, kri = 0.80) {
+  pct &lt;- n_enrolled / n_planned
+  tibble::tibble(flag = sprintf("Enrollment %.0f%% of plan (KRI %.0f%%)", 100*pct, 100*kri),
+                 sev  = ifelse(pct &lt; kri, "AMBER", "GREEN"))
+}
+
+tm_status &lt;- function(...) {
+  sevs &lt;- unlist(lapply(list(...), function(d) d$sev))
+  if (any(sevs == "RED")) "RED" else if (any(sevs == "AMBER")) "AMBER" else "GREEN"
+}
+
+# ---- de-dup: return fresh findings; COMMIT the seen-store only AFTER successful send -
+tm_dedup &lt;- function(new, key, store = "state/tm_seen.rds") {
+  seen &lt;- if (file.exists(store)) readRDS(store) else character(0)
+  list(fresh = new[!new[[key]] %in% seen, , drop = FALSE], keys = unique(new[[key]]), store = store, seen = seen)
+}
+tm_commit_seen &lt;- function(dd) saveRDS(union(dd$seen, dd$keys), dd$store)   # call ONLY after delivery succeeds
+
+tm_email &lt;- function(to, subject, body_md, attach = NULL, urgent = FALSE, smtp = creds_file("smtp_creds")) {
+  em &lt;- compose_email(body = md(body_md))
+  if (!is.null(attach) &amp;&amp; file.exists(attach)) em &lt;- add_attachment(em, file = attach)
+  smtp_send(em, to = to, from = "biostat-monitor@example.com",
+            subject = paste0(if (urgent) "[URGENT] " else "", subject), credentials = smtp)
+  message("NOTE [TRIALMON] emailed: ", subject)
+}
+
+# ---- per-RED-participant evidence packet: eDISH scatter + lab trajectory -&gt; one PDF ------
+tm_evidence &lt;- function(red, lab, out = "out/evidence.pdf") {
+  if (!nrow(red)) return(invisible(NULL))
+  grDevices::pdf(out)
+  with(lab, plot(alt_x, tbl_x, xlab = "peak ALT (x ULN)", ylab = "peak total bilirubin (x ULN)",
+                 main = "eDISH evidence packet", pch = ifelse(lab$usubjid %in% red$usubjid, 19, 1)))
+  abline(v = 3, h = 2, lty = 2)
+  for (su in unique(red$usubjid)) {
+    d &lt;- lab[lab$usubjid == su, ]
+    matplot(d$visitnum, d[, c("alt_x","ast_x","tbl_x","alp_x")], type = "b", pch = 1,
+            xlab = "visit", ylab = "x ULN", main = paste("Participant", su, "- lab trajectory"))
+  }
+  grDevices::dev.off(); message("NOTE [TRIALMON] evidence -&gt; ", out)
+}
+
+tm_heartbeat &lt;- function(study, status, n, fresh_ok, file = "out/heartbeat.txt") {
+  writeLines(sprintf("%s %s %s SYSCC=0 N=%d FRESH=%d", study, status,
+                     format(Sys.time(), "%Y-%m-%dT%H:%M:%S"), n, as.integer(fresh_ok)), file)
+  invisible(TRUE)
+}
+
+# ---- example daily driver (schedule with cronR::cron_add / taskscheduleR) ------------
+if (sys.nframe() == 0) {
+  feeds  &lt;- list(adlb = "/data/cp101/adam/adlb.xpt")
+  fresh  &lt;- tm_freshness(feeds)                                   # GATE first (NA-safe)
+  adlb   &lt;- tm_read(feeds$adlb)                                   # lowercased columns
+  tm_guard(adlb, c("alt_x","ast_x","tbl_x","alp_x"), sanity = \(d) d$alt_x &gt;= 0 &amp; d$alt_x &lt;= 400)
+  hy     &lt;- tm_chk_hyslaw(adlb)
+  status &lt;- tm_status(hy, fresh)
+  dd     &lt;- tm_dedup(filter(hy, sev == "RED"), key = "usubjid")
+  if (nrow(dd$fresh)) {
+    tm_evidence(dd$fresh, adlb)
+    tm_email("biostat.cover@example.com", "RED ALERT - CP101 - safety threshold met",
+             "A SCREENING flag met. Contact the medical monitor. Evidence attached.",
+             attach = "out/evidence.pdf", urgent = TRUE)
+    tm_commit_seen(dd)                                            # commit ONLY after the send
+  }
+  tm_heartbeat("CP101", status, n = nrow(adlb), fresh_ok = !any(fresh$stale, na.rm = TRUE))
+}</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header and honest-scope comment.</b> The opening comment block names the file, states that it mirrors <code>tm_macros.sas</code> with no AI, and lays out the same six-stage loop the SAS version runs. It directs the biostatistician to schedule with cronR or taskscheduleR and to pin packages with renv so runs are byte-reproducible. It records the v2 corrections (strict Hy's-Law, NA-safe gate, %.0f, lowercase columns, deferred de-dup commit, fail-loud assert/guard) and states the honest scope: these functions detect and email deterministic flags but do not triage or judge, and the medical monitor decides. This framing is load-bearing because the deterministic R code owns every number and every check while a human owns every decision, which is the governance boundary the rest of the code is built to respect.</p>
+      <p><b>Package loading.</b> A single <code>suppressPackageStartupMessages</code> call loads <code>dplyr</code> for the data manipulation verbs, <code>haven</code> for reading SAS transport files, <code>gt</code> for tables, and <code>blastula</code> for composing and sending email. Suppressing startup chatter keeps the unattended log clean so that real warnings stand out. Pinning these under renv (as the header instructs) is what makes a scheduled run reproducible over time.</p>
+      <p><b>tm_assert (fail-loud guard).</b> <code>tm_assert</code> takes a condition, a message, and an optional backup recipient, and does nothing when the condition passes <code>isTRUE</code>. If the condition fails it writes a timestamped "CP101 FAILED" line to <code>out/heartbeat.txt</code>, optionally emails the backup recipient an urgent failure notice telling them not to assume GREEN, then stops the run with a clear error. This exists so an unattended job can never let "no news" read as "good news": a silent crash would otherwise look identical to an all-clear, so every downstream check routes its failures through this function.</p>
+      <p><b>tm_read (ingest and lowercase column names).</b> <code>tm_read</code> first asserts that the extract file exists, then reads it with <code>read_xpt</code> and pipes the result through <code>rename_with(tolower)</code> to force every column name to lowercase. Because <code>haven::read_xpt</code> preserves the UPPERCASE CDISC names, lowercasing once here means every later check can reference <code>alt_x</code>, <code>qtcf</code>, or <code>usubjid</code> without worrying about source casing. This gives the whole library a single stable naming contract.</p>
+      <p><b>tm_guard (column presence, type, and range sanity).</b> <code>tm_guard</code> takes a data frame, a vector of required numeric variable names, and an optional <code>sanity</code> predicate. It asserts that no required column is missing, asserts each required column <code>is.numeric</code> (catching a unit or type change), and if a sanity function is supplied asserts that it holds across the data with <code>na.rm = TRUE</code> to catch a possible unit error. It returns <code>invisible(TRUE)</code> on success. This guard is what stops a malformed extract from silently flowing into the clinical threshold checks and producing a wrong number.</p>
+      <p><b>tm_freshness (data-freshness gate, run first).</b> <code>tm_freshness</code> takes a named list of feed paths and a maximum age in hours (default 26) and builds a tibble of each feed's file modification age. A feed is marked <code>stale</code> when its age is <code>NA</code> (an absent file) or exceeds <code>max_age_h</code>, and severity is set to AMBER when stale and GREEN otherwise. If any feed is stale it emits a warning naming the stale feeds and reminding the reader that GREEN on stale data is worse than RED. The NA-safe treatment is deliberate: a missing feed file is the worst case, so it must never pass the gate as if fresh.</p>
+      <p><b>tm_chk_hyslaw (Hy's-Law and eDISH screening).</b> <code>tm_chk_hyslaw</code> flags participants meeting the corrected Hy's-Law pattern: <code>(alt_x > altmult | ast_x > astmult) & tbl_x > bilmult</code> with strict greater-than and default multiples of 3, 3, and 2 times ULN. It computes an <code>r_ratio</code> of <code>alt_x / alp_x</code> and classifies the pattern as hepatocellular, cholestatic, or mixed for context only, and it never lets ALP downgrade the RED flag. It filters to flagged rows and returns <code>usubjid</code>, a formatted <code>flag</code> string carrying the pattern and R value, and <code>sev = "RED"</code>. This is a screening prompt for the medical monitor, not an adjudication of DILI.</p>
+      <p><b>tm_chk_qtcf (QTcF per ICH E14).</b> <code>tm_chk_qtcf</code> grades cardiac risk from absolute <code>qtcf</code> and change-from-baseline <code>dqtcf</code>, defaulting to RED above 500 or 60 ms, AMBER above 480 or 30 ms, and GREEN otherwise. It keeps only non-GREEN rows and returns <code>usubjid</code>, a formatted flag, and the severity. The formatting uses <code>%.0f</code> rather than <code>%d</code> because QTcF and dQTcF are doubles, so <code>%d</code> would error or misprint; this is one of the v2 corrections.</p>
+      <p><b>tm_chk_enroll (enrollment KRI).</b> <code>tm_chk_enroll</code> takes the enrolled and planned counts and a key risk indicator threshold (default 0.80), computes the fraction of plan, and returns a one-row tibble with a formatted flag and a severity of AMBER when the fraction is below the KRI and GREEN otherwise. It reports the percentage of plan and the KRI percentage in the flag text. This is an operational, non-safety signal, so its worst severity is AMBER rather than RED.</p>
+      <p><b>tm_status (overall roll-up).</b> <code>tm_status</code> accepts any number of check-result data frames passed as variadic dots arguments, pulls each one's <code>sev</code> column, and returns "RED" if any severity is RED, otherwise "AMBER" if any is AMBER, otherwise "GREEN". This is the deterministic worst-case roll-up that decides the study-level color for the heartbeat. It encodes the rule that a single RED anywhere dominates the overall status.</p>
+      <p><b>tm_dedup and tm_commit_seen (deferred de-duplication).</b> <code>tm_dedup</code> reads a persisted seen-store of keys (default <code>state/tm_seen.rds</code>), and returns a list with <code>fresh</code> (new findings whose key is not already seen), the full set of <code>keys</code> in the new findings, the store path, and the prior <code>seen</code> vector. <code>tm_commit_seen</code> then writes the union of the old seen keys and the new keys back to the store, and its comment says to call it ONLY after delivery succeeds. Splitting detection from commit is what guarantees that a finding is never marked "seen" unless its alert email actually went out, so a failed send re-alerts on the next run instead of going silent.</p>
+      <p><b>tm_email (notification).</b> <code>tm_email</code> composes an email from Markdown body text with <code>compose_email(body = md(body_md))</code>, attaches a file when one is supplied and exists, and sends it via <code>smtp_send</code> using credentials from <code>creds_file("smtp_creds")</code>. When <code>urgent</code> is TRUE it prefixes the subject line with "[URGENT] ", and it logs a note after sending. This is the delivery mechanism the driver invokes before committing the seen-store, and it is also the channel <code>tm_assert</code> uses to escalate a monitor failure.</p>
+      <p><b>tm_evidence (per-RED evidence packet).</b> <code>tm_evidence</code> takes the RED findings and the lab data and, if there is at least one RED row, opens a PDF and draws an eDISH scatter of <code>alt_x</code> against <code>tbl_x</code> from the lab data (axes labeled in x ULN) with flagged participants shown as filled points and reference lines at ALT=3 and TBili=2. It then draws, per flagged <code>usubjid</code>, a lab trajectory of <code>alt_x</code>, <code>ast_x</code>, <code>tbl_x</code>, and <code>alp_x</code> against <code>visitnum</code> before closing the device. This assembles the human-readable evidence a medical monitor reviews, and it returns early with no file when there are no RED participants.</p>
+      <p><b>tm_heartbeat (liveness and status record).</b> <code>tm_heartbeat</code> writes a single line to <code>out/heartbeat.txt</code> recording the study, overall status, an ISO timestamp, <code>SYSCC=0</code>, the row count passed as <code>n</code>, and a <code>FRESH</code> flag coerced from a boolean with <code>as.integer</code>. Because a successful run always overwrites this file with a fresh timestamp, an external watcher can distinguish a healthy run from a stalled or crashed job (whose heartbeat would be old, or would carry the FAILED line written by <code>tm_assert</code>). It returns <code>invisible(TRUE)</code>.</p>
+      <p><b>Example daily driver (main block).</b> The block guarded by <code>if (sys.nframe() == 0)</code> runs at the top level (the intent per the header comment is a scheduled script run rather than being sourced as a library), and it wires the functions into order for CP101. It runs the freshness gate first, reads and lowercases <code>adlb.xpt</code>, guards the four lab columns with a range-sanity check that <code>alt_x</code> lies in [0, 400], runs the Hy's-Law check, and rolls up status by passing both <code>hy</code> and <code>fresh</code> to <code>tm_status</code>. It then de-dups the RED findings by <code>usubjid</code>, and only if there are fresh ones does it build the evidence PDF, send the urgent RED-alert email whose body says a SCREENING flag met and to contact the medical monitor, and commit the seen-store after the send. Finally it always writes the heartbeat with the row count and freshness flag; the ordering (send before commit, heartbeat always) is what keeps the unattended job honest.</p>
+    <h2>Scheduling it: the whole setup, once</h2>
+    <p>The token and any credentials are read at run time from an environment variable or a permissions-<code>600</code> file, never hard-coded and never written to a log. Point the driver at your install (the <code>%let</code> paths and the config file), dry-run once, then schedule it under a dedicated service account, after your validated nightly extract refreshes.</p>
+    <ul>
+      <li><b>SAS on Linux (cron):</b> <code>0 2 * * * sas -nodms -sysin monitoring/monitor_driver.sas -log monitoring/log/monitor_$(date +\%F).log</code></li>
+      <li><b>SAS on Windows (Task Scheduler):</b> a daily task running <code>sas.exe -sysin C:\monitoring\monitor_driver.sas -log C:\monitoring\log\monitor.log</code></li>
+      <li><b>R:</b> <code>cronR::cron_add(command = cronR::cron_rscript("tm_companion.R"), frequency = "daily", at = "02:00")</code>, or <code>taskscheduleR::taskscheduler_create()</code> on Windows. Pin packages with <code>renv</code>.</li>
+      <li><b>Dry-run first,</b> then trust the heartbeat: the job fails loud on any error and emits a completion NOTE, so a stale run announces itself instead of masquerading as fresh.</li>
+    </ul>
   <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="alerts" aria-label="Reporting  alerting">
     <h1>Two-tier reporting &amp; escalation</h1>
@@ -146,16 +833,31 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <a class="btn ghost" href="SAS_R_OnLeave_Example_StepGuide.pdf">&#10515;&nbsp; Step-by-step picture guide (PDF)</a>
       <a class="btn ghost" href="SAS_R_Coverage_Runbook.pdf">&#10515;&nbsp; The coverage runbook (PDF)</a>
     </div>
-    <div class="shots">
-      <figure><img src="example_img/beat1.png" alt="Setup"><figcaption><b>Beat 0 &middot; Before leaving</b> &mdash; schedule the already-validated programs under a service account; hand over a one-page coverage runbook (GREEN / AMBER / RED, recipients, escalation).</figcaption></figure>
-      <figure><img src="example_img/beat2.png" alt="Week 1"><figcaption><b>Week 1 &middot; GREEN</b> &mdash; the daily digest is all-clear, and the <b>heartbeat</b> proves the job ran on fresh data. Silence is never assumed.</figcaption></figure>
-      <figure><img src="example_img/beat3.png" alt="Week 2"><figcaption><b>Week 2 &middot; AMBER</b> &mdash; an enrollment KRI dips; it stays in the routine channel, the cover acts, the manager just sees it was handled.</figcaption></figure>
-      <figure><img src="example_img/beat4.png" alt="Week 3 RED"><figcaption><b>Week 3 &middot; RED</b> &mdash; a candidate Hy&rsquo;s-Law lab pattern trips the urgent tier outside the digest &mdash; to primary + backup + alias, with the medical monitor&rsquo;s number and the evidence attached.</figcaption></figure>
-      <figure><img src="example_img/beat5.png" alt="Evidence"><figcaption><b>Week 3 &middot; the evidence is pre-packaged</b> &mdash; eDISH plot, lab trajectory, dosing timeline, the exact rule that fired; the escalation log is time-stamped automatically. <b>Detect, page, package &mdash; humans decide.</b></figcaption></figure>
-      <figure><img src="example_img/beat6.png" alt="Return"><figcaption><b>Week 4 &middot; the lead returns</b> &mdash; a complete, time-stamped, reproducible audit trail. Nothing to reconstruct; no &ldquo;what did the AI decide&rdquo;; no PHI egress to explain.</figcaption></figure>
-    </div>
-    <p class="muted">Illustrative mockups. The honest division of labor throughout: the SAS/R system <b>detected, paged, and packaged</b> pre-specified threshold crossings; the <b>medical monitor and the covering colleague made every clinical decision</b>.</p>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+
+    <h2>What one scheduled run prints to the log</h2>
+    <p>There is nothing to watch in a UI. The value is that every check and every decision is an auditable line in the job log, straight from the shipped <code>%tm_*</code> library. Here is a representative RED night (the interesting case, which exercises the whole path). Read it top to bottom.</p>
+    <pre class="code"><code># monitor_driver.sas, fired nightly by cron under a service account, after the validated extract refreshed
+NOTE: [TRIALMON] init study=CP101 run=20260622T0200 out=/opt/trialmon/cp101/out
+NOTE: [TRIALMON] latest sas7bdat in /data/cp101/adam -&gt; adlb            # all 5 feeds current (&lt;= 26h)
+NOTE: [TRIALMON] Hy's-Law screen (SCREENING flag - ALP never downgrades a RED case)
+NOTE: [TRIALMON] liver worst=RED run-status=RED                         # ALT 4.2x ULN with total bilirubin 1.6x: a prompt to look, not a diagnosis
+NOTE: [TRIALMON] DLT tally vs 3+3 - flags the count; does NOT make the escalation call
+NOTE: [TRIALMON] IXRS reconciliation - discrepancies escalate to DM/unblinded pharmacist, never auto-resolved
+NOTE: [TRIALMON] evidence packet -&gt; /opt/trialmon/cp101/out/CP101_evidence_20260622.pdf
+WARNING: [TRIALMON] RED alert dispatched (primary+backup+alias)
+NOTE: [TRIALMON] emailed "URGENT safety alert - CP101" to biostat-cover@example.com pm.cp101@example.com
+NOTE: [TRIALMON] heartbeat written - external watcher (biostat.backup@example.com) alerts if it stops
+NOTE: [TRIALMON] run complete - status=RED rc=0
+
+# on a quiet night the same job prints run-status=GREEN, emails only the tier-1 digest, and writes the heartbeat; nothing escalates</code></pre>
+    <p class="muted">Silence is never assumed: a failed run mails the fail-loud address, and the external watchdog alerts if the heartbeat stops.</p>
+    <h2>The run, beat by beat</h2>
+    <p><b>Freshness gate first, before any check.</b> The job records the latest file for each feed and refuses to trust stale data. A feed older than the configured limit (26 hours) raises a WARNING, because a GREEN on stale data is worse than a RED. Only fresh feeds proceed to the checks.</p>
+    <p><b>Run the pre-specified deterministic checks.</b> The liver Hy's-Law screen, QTcF, the 3+3 DLT tally, enrollment-vs-plan, query aging, and IXRS reconciliation each run as a pure computation in validated SAS/R and return a severity. Every one is a SCREENING flag, a prompt to look, never a diagnosis or an adjudication.</p>
+    <p><b>Worst-case roll-up decides the run status.</b> The run is GREEN, AMBER, or RED by the worst single finding. On this night the liver screen met the pre-specified criteria (ALT 4.2x ULN together with total bilirubin 1.6x), so the run is RED. The AND-gate is the point: a high transaminase on its own does not trip it.</p>
+    <p><b>Tier-1 digest always, tier-2 urgent alert only on RED.</b> Every run emails the daily digest with the status and the attached PDF. A RED run additionally dispatches an urgent alert to the covering biostatistician, the PM, and a backup alias, naming the medical monitor to contact and the 30-minute acknowledgement window. The job routes attention, it never adjudicates.</p>
+    <p><b>Evidence packet, then the heartbeat.</b> The job writes a one-page evidence packet for the flagged finding, then a heartbeat that proves it ran. An external watcher alerts if the heartbeat stops, so silence is never mistaken for GREEN. The medical monitor and the covering biostatistician own every decision that follows.</p>
+    <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="safeguards" aria-label="Won't fail silently">
     <h1>Why it won&rsquo;t fail silently</h1>
     <div class="callout warn"><b>The SOP rule:</b> &ldquo;no news&rdquo; is <b>never</b> interpreted as &ldquo;all clear.&rdquo; A successful, data-fresh run must say so explicitly, and the <em>absence</em> of any message is itself escalated.</div>
@@ -213,10 +915,10 @@ window.addEventListener('afterprint',sync);sync();
 /* portable reproducibility kit: copy-buttons on code + Print/PDF + print stylesheet (theme-agnostic) */
 (function(){
   var css=''
-   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
-   +'.repro-copybtn:hover{opacity:1;background:#4a5680} .repro-copybtn.ok{background:#1f9d55}'
-   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#8B86F0;color:#15183A;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
-   +'.repro-print:hover{background:#A9A4F5}'
+   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#131a26;color:#e7eef9;border:1px solid rgba(52,227,212,.4);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
+   +'.repro-copybtn:hover{opacity:1;background:#1b2535} .repro-copybtn.ok{background:#46d08a;color:#06090f}'
+   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#34e3d4;color:#0a0f18;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
+   +'.repro-print:hover{background:#34e3d4}'
    +'@media print{nav,aside,#side,.sidebar,.skip,.repro-copybtn,.repro-print,[role=\'navigation\']{display:none!important}'
    +' #wrap,#main,main,article,.content,section,body{display:block!important;width:auto!important;max-width:100%!important;margin:0!important;float:none!important}'
    +' *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';

@@ -1,45 +1,46 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hybrid AI Trial-Operations Wiki</title><style>
-:root{--indigo:#8B86F0;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--cloud:#6FA0DC;--amber:#D9A94F;--terra:#E0857A;--emer:#35C07E;--bg:#0E1124}
+:root{--indigo:#34e3d4;--ink:#e7eef9;--muted:#7e8ca6;--line:#1b2535;--panel:#0c1018;--teal:#34e3d4;--cloud:#5b8cff;--amber:#e6b24c;--terra:#ff6a6a;--emer:#46d08a;--bg:#06090f}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}
 #wrap{display:flex;min-height:100vh}
-#side{width:268px;flex:0 0 268px;background:#15183A;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #2a2f52}
-#side .brand{padding:0 22px 14px;border-bottom:1px solid #2c2f55;margin-bottom:10px}
-#side .brand b{font-family:Georgia,serif;font-size:16px}#side .brand span{display:block;color:#aeb4e0;font-size:11px;margin-top:4px}
-#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #3a3e72;background:#1d2150;color:#fff;font-size:13px}
-#side a{display:block;color:#cfd3f3;text-decoration:none;padding:7px 22px;font-size:13px;border-left:3px solid transparent}
-#side a:hover{background:#1d2150}#side a.active{color:#fff;border-left-color:#8b86f0;background:#1d2150;font-weight:600}
+#side{width:268px;flex:0 0 268px;background:#0a0f18;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #27344a}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #27344a;margin-bottom:10px}
+#side .brand b{font-family:var(--mono);font-size:16px}#side .brand span{display:block;color:#566179;font-size:11px;margin-top:4px}
+#search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #27344a;background:#0d1320;color:#fff;font-size:13px}
+#side a{display:block;color:#7e8ca6;text-decoration:none;padding:7px 22px;font-size:13px;border-left:3px solid transparent}
+#side a:hover{background:#0d1320}#side a.active{color:#fff;border-left-color:#34e3d4;background:#0d1320;font-weight:600}
 #main{flex:1;max-width:1080px;margin:0 auto;padding:32px 46px 80px}
 section{display:none}section.show{display:block;animation:f .2s}@keyframes f{from{opacity:.3}to{opacity:1}}
-h1{font-family:Georgia,serif;color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
-h2{font-family:Georgia,serif;color:#A9A4F5;font-size:19px;margin:24px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
-.lede{font-size:16px;color:#C3CCE4}p,li{font-size:14.5px}ul,ol{padding-left:22px}li{margin:5px 0}
-pre.prompt{background:#080A18;color:#e6e8ff;padding:13px 15px;border-radius:10px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;border:1px solid var(--line);border-left:4px solid var(--indigo);white-space:pre-wrap}
+h1{font-family:var(--mono);color:var(--ink);font-size:29px;margin:0 0 14px;line-height:1.15}
+h2{font-family:var(--mono);color:#34e3d4;font-size:19px;margin:24px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:16px;color:#9fb0c9}p,li{font-size:14.5px}ul,ol{padding-left:22px}li{margin:5px 0}
+pre.prompt{background:#070b12;color:#8ef0e6;padding:13px 15px;border-radius:10px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;border:1px solid var(--line);border-left:4px solid var(--indigo);white-space:pre-wrap}
 table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}
 th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
-th{background:#15183A;color:#fff;font-weight:600;font-size:12px}
+th{background:#0a0f18;color:#fff;font-weight:600;font-size:12px}
 table.uc td:nth-child(1){width:18%}table.uc td:nth-child(2){width:34%}
 .trg{color:var(--indigo);font-size:11px;font-style:italic}.val{color:var(--emer);font-size:12px}
 .tc{text-align:center;font-weight:700;white-space:nowrap}
-.tc.tg{background:#11261C;color:#7FE3B0}.tc.ta{background:#2A2412;color:#F0D58A}.tc.tr{background:#2A1614;color:#F0AFA6}.tc.tn{color:var(--muted)}
+.tc.tg{background:#11261C;color:#7fe3b0}.tc.ta{background:#2A2412;color:#f0d58a}.tc.tr{background:#2A1614;color:#f0afa6}.tc.tn{color:var(--muted)}
 .callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}
 .callout.warn{background:#2A1614;border-left:4px solid var(--terra)}.callout.tip{background:#0F262A;border-left:4px solid var(--teal)}
 .flow{margin:16px 0}.node{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 15px;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .node b{display:block;font-size:14px}.node span{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
-.node.orch{border-left:5px solid #64748b}.node.gw{border-left:5px solid var(--indigo)}.node.loc{border-left:5px solid var(--teal)}.node.cld{border-left:5px solid var(--cloud)}.node.rag{border-left:5px solid var(--amber)}.node.conn{border-left:5px solid #7c5cbf}.node.hil{border-left:5px solid var(--emer)}
+.node.orch{border-left:5px solid #566179}.node.gw{border-left:5px solid var(--indigo)}.node.loc{border-left:5px solid var(--teal)}.node.cld{border-left:5px solid var(--cloud)}.node.rag{border-left:5px solid var(--amber)}.node.conn{border-left:5px solid #5b8cff}.node.hil{border-left:5px solid var(--emer)}
 .arrow{text-align:center;color:var(--indigo);font-size:17px;margin:5px 0;font-weight:700}
 .row{display:flex;gap:12px}.row .node{flex:1}
 .footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 a{color:var(--indigo)}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
-a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
+.skip{position:absolute;left:-9999px;top:0;background:#0a0f18;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #34e3d4;outline-offset:2px}
 
 
 figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid var(--line);border-radius:10px}figure.diagram figcaption{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.5}figure.diagram figcaption b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){section.show{animation:none}}
 @media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
-</style></head><body><a href="#main" class="skip">Skip to content</a><div id="wrap"><nav id="side" aria-label="Wiki sections"><div class="brand"><b>Hybrid AI &middot; Trial Ops</b><span>75-automation operating wiki</span></div><label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off"><a href="#start" data-t="start">Start here</a>
+</style><style>/* === Mission Control override (appended) === */:root{--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panelhi:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--amber:#e6b24c;--terra:#ff6a6a;--red:#ff6a6a;--emer:#46d08a;--green:#46d08a;--cloud:#5b8cff;--blue:#5b8cff;--indigo:#34e3d4;--slate:#34e3d4;--steel:#34e3d4;--navy:#0c1018;--sas:#34e3d4;--cloud2:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;--r:6px}html{scroll-behavior:smooth}body{font-family:var(--sans)!important;color:var(--ink);background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.top b::before{content:"\25E2 ";color:var(--accent)}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}#wrap{max-width:1320px;margin:0 auto}#side{background:linear-gradient(180deg,#0a0f18,#080b12)!important;top:44px!important;height:calc(100vh - 44px)!important;border-right:1px solid var(--line2)!important;color:var(--ink)}#side .brand{border-bottom:1px solid var(--line2)!important}#side .brand b{font-family:var(--mono)!important;font-size:12px!important;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}#side .brand b::before{content:"\25E2 ";color:var(--accent)}#side .brand span{font-family:var(--mono);color:var(--dim)!important;font-size:10px!important;letter-spacing:.05em;text-transform:uppercase}#search{border:1px solid var(--line2)!important;background:#0d1320!important;color:var(--ink)!important;border-radius:5px!important;font-family:var(--mono);font-size:12.5px}#side a{color:var(--muted)!important;font-family:var(--mono)!important;font-size:11.5px!important;letter-spacing:.05em;text-transform:uppercase}#side a:hover{background:#0e141f!important;color:var(--ink)!important}#side a.active{color:var(--accent)!important;border-left-color:var(--accent)!important;background:rgba(52,227,212,.06)!important}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;font-size:11.5px!important;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-bottom:0!important;padding-bottom:0!important;margin:30px 0 12px}h2::before{content:"\25B8 ";color:var(--accent)}h3{font-family:var(--mono)!important;color:var(--ink);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}.lede{color:var(--muted)!important}a{color:var(--accent)}a:hover{color:#7af0e5}code{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)!important;font-family:var(--mono)}pre,pre.prompt,pre.code{background:#070b12!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:#dce6fb!important;border-radius:var(--r)}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.06em;text-transform:uppercase}tr:nth-child(even) td{background:rgba(255,255,255,.015)}.callout{background:linear-gradient(160deg,#0a1422,#0a0f18)!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:var(--muted);border-radius:var(--r)}.callout b{color:#cfeeea}.callout.warn{border-left-color:var(--gold)!important}.callout.tip{border-left-color:var(--accent)!important}.node{position:relative;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:var(--r)}.node b{color:var(--ink)}.arrow{color:var(--accent)!important;font-family:var(--mono)}.footer{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono);font-size:11px;letter-spacing:.02em}.skip{background:#0d1320!important;color:var(--ink)!important}figure.diagram svg,figure svg{background:#0a0f18;border-color:var(--line2)!important}@media(max-width:860px){#wrap{flex-direction:column}#side{width:100%!important;flex:none!important;height:auto!important;position:static!important}}@media print{.top{display:none!important}}</style></head><body><a href="#main" class="skip">Skip to content</a><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../Biostatistics.html">Biostatistics</a><a href="../START_HERE.html">Full library</a></div></div>
+<div id="wrap"><nav id="side" aria-label="Wiki sections"><div class="brand"><b>Hybrid AI &middot; Trial Ops</b><span>75-automation operating wiki</span></div><label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off"><a href="#start" data-t="start">Start here</a>
 <a href="#platform" data-t="platform">The platform</a>
 <a href="#pm" data-t="pm">Project &amp; timeline</a>
 <a href="#etmf" data-t="etmf">eTMF &amp; documents</a>
@@ -53,7 +54,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
 <a href="#faq" data-t="faq">FAQ</a>
 <a href="#transcript" data-t="transcript">Transcript</a></nav><main id="main" tabindex="-1"><section id="start" aria-label="Start here">
     <h1>Hybrid AI &mdash; Trial-Operations Operating Wiki</h1>
-    <div style="background:#6b46c1;color:#fff;border-radius:8px;padding:11px 16px;margin:12px 0 18px;font-size:13.5px;font-family:'Segoe UI',Arial,sans-serif">⚠ <b>PROPOSED — pending management approval, not in production today.</b> This describes a <b>proposed future-state</b> operating layer, not how we work now. Today's deliverables run through validated tools + our in-house team; every AI output is human-signed. New here? Start with <a href="../New_Hire_Start_Here.html" style="color:#fff;text-decoration:underline">the onboarding page</a>.</div>
+    <div style="background:linear-gradient(160deg,#161d33,#0a0f18);color:#dfe7f3;border:1px solid #27344a;border-left:3px solid #e6b24c;border-radius:6px;padding:11px 16px;margin:12px 0 18px;font-size:13.5px;font-family:'Segoe UI',Arial,sans-serif">⚠ <b>PROPOSED — pending management approval, not in production today.</b> This describes a <b>proposed future-state</b> operating layer, not how we work now. Today's deliverables run through validated tools + our in-house team; every AI output is human-signed. New here? Start with <a href="../New_Hire_Start_Here.html" style="color:#fff;text-decoration:underline">the onboarding page</a>.</div>
     <p class="lede">An agentic <strong>project-management, trial-management, and monitoring</strong> layer built on the hybrid <strong>Claude + local</strong> stack: 75 automations across the study lifecycle &mdash; recurrent data-validity QC, SOP/WI/study-document ingestion, eTMF filing, Smartsheet timeline automation, and risk-based monitoring &mdash; each routed by data sensitivity, tiered by risk, and gated by a human.</p>
     <figure class="diagram"><svg viewBox="0 0 920 250" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" aria-labelledby="dgmloop-t"><title id="dgmloop-t">The governed agent loop: trigger, classify and route, propose to a human queue, then write of record</title>
       <defs><marker id="ah" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto" markerUnits="userSpaceOnUse"><path d="M0,0 L7,3 L0,6 Z" fill="var(--indigo)"/></marker></defs>
@@ -140,7 +141,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <h1>Governance &amp; routing</h1>
     <h2>The tier model</h2>
     <figure class="diagram"><svg viewBox="0 0 920 232" width="100%" role="img" xmlns="http://www.w3.org/2000/svg" aria-labelledby="dgmgov-t"><title id="dgmgov-t">Three-tier risk ladder: green advisory, amber human-verify, red validated-tool-plus-human decides</title>
-      <style>.g-t{font:700 14px -apple-system,Segoe UI,Arial,sans-serif;fill:var(--ink)}.g-d{font:13px -apple-system,Segoe UI,Arial,sans-serif;fill:var(--muted)}.g-c{font:700 22px Georgia,serif}.g-l{font:11px -apple-system,Segoe UI,Arial,sans-serif;fill:var(--muted)}.g-a{font:700 11px -apple-system,Segoe UI,Arial,sans-serif}</style>
+      <style>.g-t{font:700 14px -apple-system,Segoe UI,Arial,sans-serif;fill:var(--ink)}.g-d{font:13px -apple-system,Segoe UI,Arial,sans-serif;fill:var(--muted)}.g-c{font:700 22px var(--mono)}.g-l{font:11px -apple-system,Segoe UI,Arial,sans-serif;fill:var(--muted)}.g-a{font:700 11px -apple-system,Segoe UI,Arial,sans-serif}</style>
       <rect x="12" y="12" width="896" height="62" rx="9" fill="var(--panel)" stroke="var(--emer)" stroke-width="1.5"/><rect x="12" y="12" width="7" height="62" rx="3" fill="var(--emer)"/>
       <text x="40" y="40" class="g-a" fill="var(--emer)">GREEN</text><text x="40" y="58" class="g-l">advisory only</text>
       <text x="150" y="38" class="g-c" fill="var(--emer)">14</text><text x="150" y="56" class="g-l">automations</text>
@@ -252,10 +253,10 @@ window.addEventListener('afterprint',sync);sync();
 /* portable reproducibility kit: copy-buttons on code + Print/PDF + print stylesheet (theme-agnostic) */
 (function(){
   var css=''
-   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
-   +'.repro-copybtn:hover{opacity:1;background:#4a5680} .repro-copybtn.ok{background:#1f9d55}'
-   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#4f46b8;color:#fff;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
-   +'.repro-print:hover{background:#615ad0}'
+   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#131a26;color:#e7eef9;border:1px solid rgba(52,227,212,.4);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
+   +'.repro-copybtn:hover{opacity:1;background:#1b2535} .repro-copybtn.ok{background:#46d08a;color:#06090f}'
+   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#34e3d4;color:#fff;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
+   +'.repro-print:hover{background:#34e3d4}'
    +'@media print{nav,aside,#side,.sidebar,.skip,.repro-copybtn,.repro-print,[role=\'navigation\']{display:none!important}'
    +' #wrap,#main,main,article,.content,section,body{display:block!important;width:auto!important;max-width:100%!important;margin:0!important;float:none!important}'
    +' *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';

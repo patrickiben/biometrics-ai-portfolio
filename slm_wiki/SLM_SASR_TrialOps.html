@@ -1,39 +1,40 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>On-device SLM + SAS/R — Trial-Ops</title><style>
-:root{--indigo:#3FB6C2;--ink:#E7ECF8;--muted:#9AA6C8;--line:#272D4D;--panel:#181D38;--teal:#3FB6C2;--emer:#35C07E;--amber:#D9A94F;--terra:#E0857A;--bg:#0E1124}
+:root{--indigo:#34e3d4;--ink:#e7eef9;--muted:#7e8ca6;--line:#1b2535;--panel:#0c1018;--teal:#34e3d4;--emer:#46d08a;--amber:#e6b24c;--terra:#ff6a6a;--bg:#06090f}
 *{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:var(--ink);background:var(--bg);line-height:1.55}a{color:var(--indigo)}
-#wrap{display:flex;min-height:100vh}#side{width:266px;flex:0 0 266px;background:#0E2330;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #2a2f52}
-#side .brand{padding:0 22px 14px;border-bottom:1px solid #244049;margin-bottom:10px}#side .brand b{font-family:Georgia,serif;font-size:15px}#side .brand span{display:block;color:#9fc3c8;font-size:11px;margin-top:4px}
+#wrap{display:flex;min-height:100vh}#side{width:266px;flex:0 0 266px;background:#0E2330;color:#fff;position:sticky;top:0;height:100vh;overflow:auto;padding:22px 0;border-right:1px solid #27344a}
+#side .brand{padding:0 22px 14px;border-bottom:1px solid #244049;margin-bottom:10px}#side .brand b{font-family:var(--mono);font-size:15px}#side .brand span{display:block;color:#9fc3c8;font-size:11px;margin-top:4px}
 #search{margin:0 16px 12px;width:calc(100% - 32px);padding:8px 10px;border-radius:8px;border:1px solid #2c4a53;background:#15333d;color:#fff;font-size:13px}
-#side a{display:block;color:#c5dadd;text-decoration:none;padding:7px 22px;font-size:13px;border-left:3px solid transparent}#side a:hover{background:#15333d}#side a.active{color:#fff;border-left-color:#3fb6c2;background:#15333d;font-weight:600}
+#side a{display:block;color:#c5dadd;text-decoration:none;padding:7px 22px;font-size:13px;border-left:3px solid transparent}#side a:hover{background:#15333d}#side a.active{color:#fff;border-left-color:#34e3d4;background:#15333d;font-weight:600}
 #main{flex:1;max-width:1080px;margin:0 auto;padding:32px 46px 80px}section{display:none}section.show{display:block}
-h1{font-family:Georgia,serif;color:var(--ink);font-size:28px;margin:0 0 14px;line-height:1.15}h2{font-family:Georgia,serif;color:#5FC9D2;font-size:19px;margin:24px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
-.lede{font-size:16px;color:#C3CCE4}p,li{font-size:14.5px}ul,ol{padding-left:22px}li{margin:5px 0}.note{color:var(--muted);font-size:13px}.muted{color:var(--muted);font-size:13px}
-.verdict{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}.vbox{flex:1;min-width:130px;border-radius:10px;padding:14px;text-align:center;border:1px solid var(--line)}.vbox b{display:block;font-family:Georgia,serif;font-size:32px}.vbox span{font-size:12px}
-.vbox.vy{background:#11261C}.vbox.vy b{color:#35C07E}.vbox.vc{background:#2A2412}.vbox.vc b{color:#D9A94F}.vbox.vn{background:#2A1614}.vbox.vn b{color:#E0857A}.vbox.vp{background:#141E2E}.vbox.vp b{color:#7FA8E0}
+h1{font-family:var(--mono);color:var(--ink);font-size:28px;margin:0 0 14px;line-height:1.15}h2{font-family:var(--mono);color:#5FC9D2;font-size:19px;margin:24px 0 10px;border-bottom:1px solid var(--line);padding-bottom:5px}
+.lede{font-size:16px;color:#9fb0c9}p,li{font-size:14.5px}ul,ol{padding-left:22px}li{margin:5px 0}.note{color:var(--muted);font-size:13px}.muted{color:var(--muted);font-size:13px}
+.verdict{display:flex;gap:12px;margin:16px 0;flex-wrap:wrap}.vbox{flex:1;min-width:130px;border-radius:10px;padding:14px;text-align:center;border:1px solid var(--line)}.vbox b{display:block;font-family:var(--mono);font-size:32px}.vbox span{font-size:12px}
+.vbox.vy{background:#11261C}.vbox.vy b{color:#46d08a}.vbox.vc{background:#2A2412}.vbox.vc b{color:#e6b24c}.vbox.vn{background:#2A1614}.vbox.vn b{color:#ff6a6a}.vbox.vp{background:#141E2E}.vbox.vp b{color:#7FA8E0}
 table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13px}th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}th{background:#0E2330;color:#fff;font-weight:600;font-size:12px}
 table.uc td:nth-child(1){width:23%}.vc-h{width:10%;text-align:center}
-.vc{text-align:center;font-weight:700;white-space:nowrap}.vc.vy{background:#11261C;color:#35C07E}.vc.vc{background:#2A2412;color:#D9A94F}.vc.vn{background:#2A1614;color:#E0857A}.vc.vp{background:#141E2E;color:#7FA8E0}
-.lim{color:#E0857A;font-size:12px}
+.vc{text-align:center;font-weight:700;white-space:nowrap}.vc.vy{background:#11261C;color:#46d08a}.vc.vc{background:#2A2412;color:#e6b24c}.vc.vn{background:#2A1614;color:#ff6a6a}.vc.vp{background:#141E2E;color:#7FA8E0}
+.lim{color:#ff6a6a;font-size:12px}
 .callout{border-radius:10px;padding:13px 16px;margin:16px 0;font-size:14px}.callout.warn{background:#2A1614;border-left:4px solid var(--terra)}.callout.tip{background:#0F262A;border-left:4px solid var(--teal)}
 .flow{margin:16px 0}.node{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 15px;box-shadow:0 2px 6px rgba(0,0,0,.30);border-left:5px solid var(--indigo)}.node b{display:block;font-size:14px}.node span{display:block;color:var(--muted);font-size:12.5px;margin-top:3px}
-.node.a{border-left-color:#64748b}.node.b{border-left-color:var(--indigo)}.node.c{border-left-color:var(--amber)}.node.d{border-left-color:var(--teal)}.node.e{border-left-color:var(--emer)}.node.f{border-left-color:#7c5cbf}
+.node.a{border-left-color:#566179}.node.b{border-left-color:var(--indigo)}.node.c{border-left-color:var(--amber)}.node.d{border-left-color:var(--teal)}.node.e{border-left-color:var(--emer)}.node.f{border-left-color:#5b8cff}
 .arrow{text-align:center;color:var(--indigo);font-size:17px;margin:5px 0;font-weight:700}
-.nob{background:#2A1614;border-left:4px solid var(--terra);border-radius:8px;padding:11px 14px;margin:9px 0}.nob b{display:block;color:#E0857A;font-size:14.5px}.nob span{display:block;color:var(--ink);font-size:12.5px;margin-top:3px}
+.nob{background:#2A1614;border-left:4px solid var(--terra);border-radius:8px;padding:11px 14px;margin:9px 0}.nob b{display:block;color:#ff6a6a;font-size:14.5px}.nob span{display:block;color:var(--ink);font-size:12.5px;margin-top:3px}
 pre.code,code{font-family:Consolas,monospace}code{background:#11302F;color:#7FD6DD;padding:1px 6px;border-radius:5px;font-size:12.5px}
-pre.code{background:#080A18;color:#dceaec;padding:14px 16px;border-radius:10px;overflow:auto;font-size:12.5px;line-height:1.5;border:1px solid var(--line)}pre.code code{background:none;color:inherit;padding:0}
-.dl{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}.btn{display:inline-block;background:var(--indigo);color:#0E1124;text-decoration:none;font-weight:700;font-size:14px;padding:10px 16px;border-radius:9px}.btn.ghost{background:transparent;color:var(--indigo);border:1.5px solid var(--indigo)}.btn:hover{opacity:.92}
+pre.code{background:#070b12;color:#dceaec;padding:14px 16px;border-radius:10px;overflow:auto;font-size:12.5px;line-height:1.5;border:1px solid var(--line)}pre.code code{background:none;color:inherit;padding:0}
+.dl{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}.btn{display:inline-block;background:var(--indigo);color:#06090f;text-decoration:none;font-weight:700;font-size:14px;padding:10px 16px;border-radius:9px}.btn.ghost{background:transparent;color:var(--indigo);border:1.5px solid var(--indigo)}.btn:hover{opacity:.92}
 .shots{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:18px 0}.shots figure{margin:0}.shots img{width:100%;border:1px solid var(--line);border-radius:10px;box-shadow:0 3px 12px rgba(0,0,0,.35);display:block}.shots figcaption{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
 .footer{margin-top:36px;padding-top:14px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
-.skip{position:absolute;left:-9999px;top:0;background:#15183A;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
-a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #8b86f0;outline-offset:2px}
+.skip{position:absolute;left:-9999px;top:0;background:#0a0f18;color:#fff;padding:10px 16px;z-index:100}.skip:focus{left:0}
+a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible,#main:focus-visible{outline:3px solid #34e3d4;outline-offset:2px}
 
 
 @media (prefers-reduced-motion:reduce){section.show{animation:none}}
 @media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
 figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid var(--line);border-radius:10px}figure.diagram figcaption{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.5}figure.diagram figcaption b{color:var(--ink)}
-</style></head><body><a href="#main" class="skip">Skip to content</a><div id="wrap"><nav id="side" aria-label="Wiki sections"><div class="brand"><b>On-device SLM &times; SAS/R</b><span>75-component, offline, no big model</span></div><label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search..." autocomplete="off"><a href="#start" data-t="start">Start here</a>
+</style><style>/* === Mission Control override (appended) === */:root{--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panelhi:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--amber:#e6b24c;--terra:#ff6a6a;--red:#ff6a6a;--emer:#46d08a;--green:#46d08a;--cloud:#5b8cff;--blue:#5b8cff;--indigo:#34e3d4;--slate:#34e3d4;--steel:#34e3d4;--navy:#0c1018;--sas:#34e3d4;--cloud2:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;--r:6px}html{scroll-behavior:smooth}body{font-family:var(--sans)!important;color:var(--ink);background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.top b::before{content:"\25E2 ";color:var(--accent)}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}#wrap{max-width:1320px;margin:0 auto}#side{background:linear-gradient(180deg,#0a0f18,#080b12)!important;top:44px!important;height:calc(100vh - 44px)!important;border-right:1px solid var(--line2)!important;color:var(--ink)}#side .brand{border-bottom:1px solid var(--line2)!important}#side .brand b{font-family:var(--mono)!important;font-size:12px!important;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}#side .brand b::before{content:"\25E2 ";color:var(--accent)}#side .brand span{font-family:var(--mono);color:var(--dim)!important;font-size:10px!important;letter-spacing:.05em;text-transform:uppercase}#search{border:1px solid var(--line2)!important;background:#0d1320!important;color:var(--ink)!important;border-radius:5px!important;font-family:var(--mono);font-size:12.5px}#side a{color:var(--muted)!important;font-family:var(--mono)!important;font-size:11.5px!important;letter-spacing:.05em;text-transform:uppercase}#side a:hover{background:#0e141f!important;color:var(--ink)!important}#side a.active{color:var(--accent)!important;border-left-color:var(--accent)!important;background:rgba(52,227,212,.06)!important}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;font-size:11.5px!important;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-bottom:0!important;padding-bottom:0!important;margin:30px 0 12px}h2::before{content:"\25B8 ";color:var(--accent)}h3{font-family:var(--mono)!important;color:var(--ink);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}.lede{color:var(--muted)!important}a{color:var(--accent)}a:hover{color:#7af0e5}code{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)!important;font-family:var(--mono)}pre,pre.prompt,pre.code{background:#070b12!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:#dce6fb!important;border-radius:var(--r)}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.06em;text-transform:uppercase}tr:nth-child(even) td{background:rgba(255,255,255,.015)}.callout{background:linear-gradient(160deg,#0a1422,#0a0f18)!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:var(--muted);border-radius:var(--r)}.callout b{color:#cfeeea}.callout.warn{border-left-color:var(--gold)!important}.callout.tip{border-left-color:var(--accent)!important}.node{position:relative;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:var(--r)}.node b{color:var(--ink)}.arrow{color:var(--accent)!important;font-family:var(--mono)}.footer{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono);font-size:11px;letter-spacing:.02em}.skip{background:#0d1320!important;color:var(--ink)!important}figure.diagram svg,figure svg{background:#0a0f18;border-color:var(--line2)!important}@media(max-width:860px){#wrap{flex-direction:column}#side{width:100%!important;flex:none!important;height:auto!important;position:static!important}}@media print{.top{display:none!important}}</style></head><body><a href="#main" class="skip">Skip to content</a><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../Biostatistics.html">Biostatistics</a><a href="../START_HERE.html">Full library</a></div></div>
+<div id="wrap"><nav id="side" aria-label="Wiki sections"><div class="brand"><b>On-device SLM &times; SAS/R</b><span>75-component, offline, no big model</span></div><label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search..." autocomplete="off"><a href="#start" data-t="start">Start here</a>
 <a href="#why" data-t="why">Why on-device SLM + SAS/R</a>
 <a href="#envelope" data-t="envelope">What a small model can/can't do</a>
 <a href="#architecture" data-t="architecture">The SLM + SAS/R architecture</a>
@@ -52,7 +53,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
 <a href="#faq" data-t="faq">FAQ</a>
 <a href="#transcript" data-t="transcript">Transcript</a></nav><main id="main" tabindex="-1"><section id="start" aria-label="Start here">
     <h1>On-device Small Language Models + SAS/R &mdash; the 75-component stack</h1>
-    <div style="background:#6b46c1;color:#fff;border-radius:8px;padding:11px 16px;margin:12px 0 18px;font-size:13.5px;font-family:'Segoe UI',Arial,sans-serif">⚠ <b>PROPOSED — pending management approval, not in production today.</b> This describes a <b>proposed future-state</b> operating layer, not how we work now. Today's deliverables run through validated tools + our in-house team; every AI output is human-signed. New here? Start with <a href="../New_Hire_Start_Here.html" style="color:#fff;text-decoration:underline">the onboarding page</a>.</div>
+    <div style="background:linear-gradient(160deg,#161d33,#0a0f18);color:#dfe7f3;border:1px solid #27344a;border-left:3px solid #e6b24c;border-radius:6px;padding:11px 16px;margin:12px 0 18px;font-size:13.5px;font-family:'Segoe UI',Arial,sans-serif">⚠ <b>PROPOSED — pending management approval, not in production today.</b> This describes a <b>proposed future-state</b> operating layer, not how we work now. Today's deliverables run through validated tools + our in-house team; every AI output is human-signed. New here? Start with <a href="../New_Hire_Start_Here.html" style="color:#fff;text-decoration:underline">the onboarding page</a>.</div>
     <p class="lede">We took the <strong>75-component hybrid trial-operations platform</strong> and re-assessed <strong>every component</strong> for a <strong>SMALL open-weight model running on-device</strong> (a 1&ndash;9B quantized model on a workstation, fully offline) paired with <strong>SAS/R</strong>. The principle is strict: <strong>SAS/R owns every number and check; the small model only classifies, extracts, routes, and drafts &mdash; always behind a human gate.</strong></p>
     <div class="verdict"><div class="vbox vy"><b>12</b><span>✅ on-device ready</span></div><div class="vbox vc"><b>36</b><span>⚠️ with guardrails</span></div><div class="vbox vn"><b>15</b><span>❌ beyond a small model</span></div><div class="vbox vp"><b>12</b><span>◇ platform / SAS&middot;R</span></div></div>
     <figure class="diagram"><svg viewBox="0 0 920 322" width="100%" role="img" aria-labelledby="leadT leadD" font-family="Segoe UI,Arial,sans-serif"><title id="leadT">On-device SLM and SAS/R division of labor and the 75-component split</title><desc id="leadD">SAS/R owns every number and calls a small offline model for one narrow language task, behind a validator and a human gate; the 75 components split into 12 ready, 36 with guardrails, 15 beyond, 12 platform.</desc>
@@ -542,6 +543,372 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     </div>
     
     <div class="callout tip"><b>Five guarantees:</b> offline (loopback-only, asserted in code) &middot; schema-constrained output &middot; SAS/R-validated against an allowlist (never trust free text) &middot; the model pinned &amp; frozen for reproducibility &middot; a human gate before any write. The model never produces a number.</div>
+  <!-- SHEETLINK-FULL-PROGRAM -->
+    <p style="margin-top:22px">Below is the <b>complete, actual program</b>, every line. SAS/R owns every number and every check; the on-device small model only drafts language, never a reported number. These are the real shipped files (also linked above).</p>
+    <h2>The one file you edit per study: slm_config.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 20 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p><code>slm_config.sas</code> is the single per-deployment configuration file for LOCALMIND, the on-device small-language-model triage library in the SLM wiki macro library. It holds nothing but constants: the pinned model tag, the loopback endpoint, the reproducibility seed, a fail-loud contact, and the controlled vocabularies the model's drafted output is validated against. You <code>%include</code> it before the driver, so the driver macros read fixed values instead of hard-coded literals. Nothing here calls the model or produces a number: every reported number and every check still comes from validated SAS/R, the model only drafts language, and a human owns every decision.</p>
+    <pre class="code"><code>/*====================================================================================
+  slm_config.sas  -  per-deployment constants for LOCALMIND. %include before the driver.
+  Pin the model here; keep the allowlists (the controlled vocabularies the model's output
+  is validated against) in one place so adding a label is a config edit, not a code edit.
+====================================================================================*/
+%global CFG_MODEL CFG_BASE CFG_SEED CFG_BACKUP
+        CFG_OWNERS CFG_SEVERITY CFG_NOVELTY;
+
+/* The PINNED model: exact tag + quantization. Must be `ollama pull`-ed already.
+   Prefer an Apache-2.0/MIT model (Qwen2.5, Granite, Phi) to avoid licence friction.    */
+%let CFG_MODEL = qwen2.5:7b-instruct-q8_0;
+%let CFG_BASE  = http://127.0.0.1:11434;     /* loopback only - %slm_init refuses anything else */
+%let CFG_SEED  = 42;                          /* fixed seed + temperature 0 = reproducible       */
+%let CFG_BACKUP= biostat.backup@example.com;  /* fail-loud target                                */
+
+/* The controlled vocabularies (pipe-delimited). The model's output is rejected if it is
+   not on these lists - the in-code trust boundary, analogous to SHEETLINK's allowlist.   */
+%let CFG_OWNERS   = DM|PROGRAMMING|PK|MEDICAL CODING|SITE|BIOSTAT;
+%let CFG_SEVERITY = CRITICAL|MAJOR|MINOR;
+%let CFG_NOVELTY  = NEW|KNOWN;</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>File header comment.</b> The opening block states the file's contract: these are the per-deployment constants for LOCALMIND, and you <code>%include</code> this file before the driver. It records the design intent that the model is pinned here and that the allowlists (the controlled vocabularies the model's output is validated against) live in one place, so adding a label is a config edit rather than a code edit. This keeps the trust boundary auditable: a reviewer can see exactly which model and which vocabularies a run used by reading one short file.</p>
+      <p><b>%global declaration of the seven configuration macro variables.</b> The <code>%global</code> statement declares <code>CFG_MODEL</code>, <code>CFG_BASE</code>, <code>CFG_SEED</code>, <code>CFG_BACKUP</code>, <code>CFG_OWNERS</code>, <code>CFG_SEVERITY</code>, and <code>CFG_NOVELTY</code> so they exist in the global symbol table and remain visible to the driver macros after this file finishes including. Declaring them global before assignment guarantees the driver reads the study's intended values and not a stale or locally scoped copy. If you add a configuration key later, it must be declared here as well as assigned below, or the downstream macros will not see it.</p>
+      <p><b>CFG_MODEL: the pinned model tag and quantization.</b> <code>%let CFG_MODEL = qwen2.5:7b-instruct-q8_0;</code> pins the exact model, including its quantization (<code>q8_0</code>), so every run uses an identical frozen local model. The comment directs you to have it <code>ollama pull</code>-ed already and to prefer an Apache-2.0/MIT model such as Qwen2.5, Granite, or Phi to avoid licence friction. Pinning the tag is what makes the drafting step reproducible and defensible: the same weights produce the same behavior across runs, and this is language drafting only, never a source of a reported number.</p>
+      <p><b>CFG_BASE: the loopback-only endpoint.</b> <code>%let CFG_BASE = http://127.0.0.1:11434;</code> sets the model server address to the local loopback interface on Ollama's default port. The inline comment notes that <code>%slm_init</code> refuses anything else, so this value cannot silently point the library at a remote host. Keeping inference on <code>127.0.0.1</code> is the data-sovereignty guarantee: participant-adjacent text drafted by the model never leaves the machine.</p>
+      <p><b>CFG_SEED: the fixed reproducibility seed.</b> <code>%let CFG_SEED = 42;</code> supplies the fixed random seed for the model. The comment states that the fixed seed plus temperature 0 make generation reproducible, so the same prompt yields the same draft text. This supports validation and audit of the language the model produces, while the numbers in any deliverable still come from validated SAS/R rather than from this seeded generation.</p>
+      <p><b>CFG_BACKUP: the fail-loud contact.</b> <code>%let CFG_BACKUP = biostat.backup@example.com;</code> defines the constant the comment labels as the fail-loud target, a named human contact for the deployment. It exists so that a failure surfaces to a person rather than being swallowed silently, which is consistent with the governance stance that a person, not the model, owns every decision. Replace the placeholder value with the real biostatistics backup contact for the study before running.</p>
+      <p><b>CFG_OWNERS: the controlled vocabulary of functional owners.</b> <code>%let CFG_OWNERS = DM|PROGRAMMING|PK|MEDICAL CODING|SITE|BIOSTAT;</code> is the pipe-delimited allowlist of the only functional owners the model may assign. The comment frames these lists as the in-code trust boundary: the model's output is rejected if it is not on the list, analogous to SHEETLINK's allowlist. This is how a free-text drafting step is constrained to a validated controlled vocabulary, so an owner the model invents is caught and refused rather than reported.</p>
+      <p><b>CFG_SEVERITY: the controlled vocabulary of severity levels.</b> <code>%let CFG_SEVERITY = CRITICAL|MAJOR|MINOR;</code> is the pipe-delimited allowlist of permitted severity labels. Any severity the model emits that is not one of <code>CRITICAL</code>, <code>MAJOR</code>, or <code>MINOR</code> is rejected at the same trust boundary. Constraining severity to three fixed values keeps the drafted triage language on a known scale that a human reviewer can act on, and the severity assignment remains a suggestion for a person to confirm, not a decision the model makes.</p>
+      <p><b>CFG_NOVELTY: the controlled vocabulary of novelty flags.</b> <code>%let CFG_NOVELTY = NEW|KNOWN;</code> is the pipe-delimited allowlist for the novelty flag, restricting the model's output to <code>NEW</code> or <code>KNOWN</code>. As with the other vocabularies, a value outside this list is rejected rather than passed through. To extend any of these three allowlists you edit the pipe-delimited string here, which is the config-edit-not-code-edit design the header describes, and the validated SAS/R downstream still enforces the boundary and owns every check.</p>
+    <h2>The complete SAS side of the glue: slm_macros.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 146 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>slm_macros.sas is the complete SAS side of the LOCALMIND triage library: the set of %slm_* macros that let a SAS program call a local, offline small language model (Ollama or llama.cpp) for the language layer only. The library is invoked at the top of any triage or routing job, before any per-row classification loop, and it enforces the governing pattern in code: the on-device model classifies, extracts, routes, and drafts under a schema constraint, while SAS owns every number and every check and a human owns every decision. The header comment states the model is an untrusted text source whose output is grammar-constrained at the server and allowlist-validated here (belt and suspenders), and that the pipeline is frozen for GAMP-5 and 21 CFR Part 11 via temperature 0, a fixed seed, and a pinned model. The model never produces, reconciles, or decides a reported number; those come from the validated SAS/R tools.</p>
+    <pre class="code"><code>/*====================================================================================
+  slm_macros.sas  -  LOCALMIND: a SAS macro library to call a LOCAL, OFFLINE small
+                     language model (Ollama / llama.cpp) for the LANGUAGE layer only.
+  ------------------------------------------------------------------------------------
+  Pattern : SAS/R owns every number and check; the on-device SLM only classifies /
+            extracts / routes / drafts, with SCHEMA-CONSTRAINED output, a SAS validator,
+            and a human gate. The model never produces a reported number.
+  Prefix  : every macro is %slm_&lt;name&gt;.  Base SAS 9.4M5+ (PROC HTTP + JSON libname).
+  OFFLINE : the endpoint MUST be loopback (127.0.0.1 / localhost). %slm_init refuses any
+            routable host -&gt; "nothing leaves the box" is enforced in code, not by policy.
+  REPRO   : temperature 0 + fixed seed + a PINNED model (tag + quantization + sha256
+            digest) = a frozen, re-runnable artifact for GAMP-5 / 21 CFR Part 11.
+  TRUST   : the model is an UNTRUSTED text source. Output is grammar-constrained at the
+            server AND allowlist-validated here (belt + suspenders). Reject, never coerce.
+====================================================================================*/
+
+%global SLM_BASE SLM_MODEL SLM_SEED SLM_DIGEST SLM_RC SLM_BACKUP;
+
+/*==== %slm_assert : FAIL LOUD. ========================================================*/
+%macro slm_assert(cond=, msg=, abort=N);
+  %if not (&amp;cond) %then %do;
+    %let SLM_RC=1;
+    %put ERROR: [LOCALMIND] ASSERT FAILED: &amp;msg;
+    %if %length(&amp;SLM_BACKUP) %then %do;
+      filename _slmm email to=("&amp;SLM_BACKUP") subject="LOCALMIND FAILURE - &amp;msg" importance="High";
+      data _null_; file _slmm; put "LOCALMIND job FAILED: &amp;msg"; run; filename _slmm clear;
+    %end;
+    %if &amp;abort=Y %then %abort cancel;
+  %end;
+%mend slm_assert;
+
+/*==== %slm_init : pin the model, ASSERT loopback + offline, assert the model is pulled,
+       capture the model digest for provenance. base defaults to the Ollama loopback.    */
+%macro slm_init(model=, base=http://127.0.0.1:11434, seed=42, backup=);
+  %let SLM_BASE=&amp;base; %let SLM_MODEL=&amp;model; %let SLM_SEED=&amp;seed; %let SLM_RC=0; %let SLM_BACKUP=&amp;backup;
+  /* GUARD: only a loopback host may ever be called (no egress) */
+  %slm_assert(cond=%sysfunc(prxmatch(%str(/^http:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d+)?(\/|$)/i),&amp;SLM_BASE)),
+              msg=non-loopback endpoint blocked (&amp;SLM_BASE) - egress not allowed, abort=Y);
+  /* liveness probe (local only) */
+  filename _slmv temp;
+  proc http url="&amp;SLM_BASE/api/version" method="GET" out=_slmv; run;
+  %slm_assert(cond=(&amp;SYS_PROCHTTP_STATUS_CODE=200), msg=local model server not reachable at &amp;SLM_BASE - is it running?, abort=Y);
+  filename _slmv clear;
+  /* assert the exact model tag is already pulled (no silent download) */
+  filename _slmt temp;
+  proc http url="&amp;SLM_BASE/api/tags" method="GET" out=_slmt; run;
+  libname _slmj JSON fileref=_slmt;
+  %local _has; %let _has=0;
+  proc sql noprint; select count(*) into :_has trimmed from _slmj.models where upcase(name)=upcase("&amp;SLM_MODEL"); quit;
+  libname _slmj clear; filename _slmt clear;
+  %slm_assert(cond=(&amp;_has&gt;0), msg=model "&amp;SLM_MODEL" is not pulled (run: ollama pull &amp;SLM_MODEL), abort=Y);
+  /* capture the model digest (provenance / model-freeze) */
+  filename _slms temp; filename _slmsi temp;
+  data _null_; file _slmsi; put '{"model":"' "&amp;SLM_MODEL" '"}'; run;
+  proc http url="&amp;SLM_BASE/api/show" method="POST" in=_slmsi out=_slms ct="application/json"; run;
+  libname _slmj JSON fileref=_slms;
+  proc sql noprint; select digest into :SLM_DIGEST trimmed from _slmj.details; quit;   /* may be .model_info; see README */
+  libname _slmj clear; filename _slms clear; filename _slmsi clear;
+  %put NOTE: [LOCALMIND] init OK - model=&amp;SLM_MODEL seed=&amp;SLM_SEED endpoint=&amp;SLM_BASE (loopback, offline) digest=&amp;SLM_DIGEST;
+%mend slm_init;
+
+/*==== %slm_esc : JSON-escape helper text for a request body (call inside a data step).  */
+%macro slm_esc(src, dst);
+  &amp;dst = tranwrd(strip(&amp;src),'\','\\'); &amp;dst = tranwrd(&amp;dst,'"','\"');
+  &amp;dst = tranwrd(&amp;dst,'0A'x,' ');       &amp;dst = tranwrd(&amp;dst,'0D'x,' ');   /* no raw newlines */
+%mend slm_esc;
+
+/*==== %slm_chat : the core call. POST /api/chat with stream=false, temp 0 + seed, and a
+       caller-supplied JSON-SCHEMA string (&amp;schema) as the grammar constraint. Double-
+       parses (envelope -&gt; message.content is itself a JSON string -&gt; parse again) into
+       &amp;out. &amp;sys / &amp;usr are escaped. num_predict generous so the JSON object isn't cut.  */
+%macro slm_chat(out=slm_out, num_predict=512, num_ctx=8192);   /* reads globals _SLM_SYS _SLM_USR _SLM_SCHEMA */
+  filename _req temp; filename _resp temp; filename _hdr temp;
+  data _null_; file _req lrecl=60000; length line $58000 s $20000 u $20000;
+    %slm_esc(symget('_SLM_SYS'), s); %slm_esc(symget('_SLM_USR'), u);
+    line = cats('{"model":"', "&amp;SLM_MODEL", '","stream":false,'
+      , '"keep_alive":"-1","options":{"temperature":0,"seed":', "&amp;SLM_SEED"
+      , ',"top_k":1,"top_p":1,"repeat_penalty":1,"num_predict":', "&amp;num_predict"
+      , ',"num_ctx":', "&amp;num_ctx", '},'
+      , '"format":', symget('_SLM_SCHEMA'), ','
+      , '"messages":[{"role":"system","content":"', strip(s), '"},'
+      , '{"role":"user","content":"', strip(u), '"}]}');
+    l=length(line); put line $varying58000. l;
+  run;
+  proc http url="&amp;SLM_BASE/api/chat" method="POST" in=_req out=_resp headerout=_hdr ct="application/json"; run;
+  %slm_assert(cond=(&amp;SYS_PROCHTTP_STATUS_CODE=200), msg=local model HTTP &amp;SYS_PROCHTTP_STATUS_CODE, abort=Y);
+  /* envelope: message.content holds the schema JSON as a STRING */
+  libname _o JSON fileref=_resp;
+  %local _slmcontent _msgtab;
+  %if %sysfunc(exist(_o.message)) %then %let _msgtab=_o.message; %else %let _msgtab=_o.root;
+  data _null_; set &amp;_msgtab; call symputx('_slmcontent', content, 'L'); run;
+  libname _o clear;
+  filename _c temp; data _null_; file _c lrecl=60000; length z $58000; z=symget('_slmcontent'); l=length(z); put z $varying58000. l; run;
+  libname _p JSON fileref=_c;
+  data &amp;out; set _p.root; run;     /* flat object -&gt; ROOT (or ALLDATA; see README) */
+  libname _p clear;
+  filename _req clear; filename _resp clear; filename _hdr clear; filename _c clear;
+%mend slm_chat;
+
+/*==== %slm_validate : the trust boundary. Check a label var against a pipe-delimited
+       allowlist (UPCASE) and confidence in [0,1]; reject+fail-loud on any miss.          */
+%macro slm_validate(ds=, field=, allow=, conf=confidence);
+  %local bad; %let bad=0;
+  data &amp;ds; set &amp;ds; length _v $200;
+    _v=upcase(&amp;field);
+    /* EXACT whole-element compare vs the pipe list (indexw would split a value with a
+       space, e.g. "MEDICAL CODING", and false-reject it) */
+    _ok=0; do _k=1 to countw("&amp;allow",'|');
+      if strip(_v)=strip(upcase(scan("&amp;allow",_k,'|'))) then _ok=1; end;
+    if not _ok then do;
+      put "ERROR: [LOCALMIND] off-allowlist &amp;field=" _v " (allowed: &amp;allow)"; call symputx('bad','1'); end;
+    %if %length(&amp;conf) %then %do;
+      if not missing(&amp;conf) and (&amp;conf&lt;0 or &amp;conf&gt;1) then do;
+        put "ERROR: [LOCALMIND] &amp;conf out of range=" &amp;conf; call symputx('bad','1'); end;
+    %end;
+    /* provenance stamp on every row */
+    slm_model="&amp;SLM_MODEL"; slm_digest="&amp;SLM_DIGEST"; slm_seed=&amp;SLM_SEED; slm_temp=0; slm_endpoint="&amp;SLM_BASE";
+    drop _v _ok _k;
+  run;
+  %slm_assert(cond=(&amp;bad=0), msg=model output failed validation - NOT writing anything, abort=Y);
+%mend slm_validate;
+
+/*==== %slm_classify : convenience = build a one-enum-field schema from &amp;allow, call the
+       model, and validate. Returns &amp;out with the label (&amp;field), confidence, rationale,
+       and provenance columns. The flagship for triage/routing/labelling tasks.           */
+%macro slm_classify(sys=, usr=, field=label, allow=, out=slm_out);
+  /* _SLM_SYS / _SLM_USR carry the prompt text (set here if passed, else the caller set
+     them via CALL SYMPUTX for per-row free text that may contain commas/quotes).         */
+  %global _SLM_SCHEMA _SLM_SYS _SLM_USR;
+  %if %length(%superq(sys)) %then %let _SLM_SYS=%superq(sys);
+  %if %length(%superq(usr)) %then %let _SLM_USR=%superq(usr);
+  /* build the enum-constrained JSON schema from the pipe-delimited allowlist */
+  data _null_; length enumj $4000 sch $6000;
+    do i=1 to countw("&amp;allow",'|');
+      enumj=cats(enumj, ifc(i&gt;1,',',''), '"', strip(scan("&amp;allow",i,'|')), '"'); end;
+    sch=cats('{"type":"object","properties":{"', "&amp;field", '":{"type":"string","enum":[', enumj, ']},'
+      , '"confidence":{"type":"number"},"rationale":{"type":"string"}},'
+      , '"required":["', "&amp;field", '","confidence","rationale"],"additionalProperties":false}');
+    call symputx('_SLM_SCHEMA', sch, 'L');
+  run;
+  %slm_chat(out=&amp;out);
+  %slm_validate(ds=&amp;out, field=&amp;field, allow=&amp;allow);
+  %put NOTE: [LOCALMIND] classify ok (&amp;field in {&amp;allow});
+%mend slm_classify;
+
+/*==== End slm_macros.sas. See slm_config.sas, triage_driver.sas, slm_companion.R, README. */</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header block and design contract.</b> The opening comment declares LOCALMIND's operating rule: SAS/R owns every number and check while the on-device model only classifies, extracts, routes, or drafts under schema-constrained output, a SAS validator, and a human gate. It fixes the naming convention (every macro is <code>%slm_</code> prefixed) and the platform floor (Base SAS 9.4M5+ for <code>PROC HTTP</code> plus the JSON libname engine). It also states the three non-negotiables the code later enforces: the endpoint must be loopback so nothing leaves the box, reproducibility comes from temperature 0 plus a fixed seed plus a pinned model (tag, quantization, sha256 digest), and the model is treated as an untrusted source whose output is rejected rather than coerced. This matters because it is the governance charter the macros implement, not a description of aspiration.</p>
+      <p><b>Global macro variable declarations.</b> The <code>%global</code> statement declares <code>SLM_BASE</code>, <code>SLM_MODEL</code>, <code>SLM_SEED</code>, <code>SLM_DIGEST</code>, <code>SLM_RC</code>, and <code>SLM_BACKUP</code> so the pinned configuration and run state survive across every macro call in the session. <code>SLM_RC</code> is the library return code that <code>%slm_assert</code> flips to 1 on failure, and <code>SLM_DIGEST</code> is the captured model digest stamped onto output for provenance. Making these global is what lets one <code>%slm_init</code> call configure the whole job and later macros read the same frozen settings.</p>
+      <p><b>%slm_assert.</b> This is the fail-loud primitive: it takes <code>cond=</code>, <code>msg=</code>, and an <code>abort=</code> flag (default N), and when the condition is false it sets <code>SLM_RC=1</code> and writes an <code>ERROR:</code> line to the log. If <code>SLM_BACKUP</code> holds an address, it also sends a high-importance failure email via a <code>filename</code> email fileref so a human is notified out of band. When called with <code>abort=Y</code> it issues <code>%abort cancel</code> to stop the job rather than let a bad run continue. Every downstream guard routes through this macro, so a violated invariant halts work instead of silently producing something.</p>
+      <p><b>%slm_init.</b> This macro pins the run and enforces the offline guarantees before any classification happens. It records <code>base</code> (defaulting to the Ollama loopback <code>http://127.0.0.1:11434</code>), <code>model</code>, and <code>seed</code> (default 42) into the globals, then asserts with a <code>prxmatch</code> regex that the endpoint is a loopback host (127.0.0.1, localhost, or the IPv6 <code>[::1]</code>) and aborts otherwise, so egress is blocked in code and not merely by policy. It then probes <code>/api/version</code> for a 200 liveness check, calls <code>/api/tags</code> and counts models whose name matches <code>SLM_MODEL</code> in the parsed JSON to assert the exact tag is already pulled (no silent download), and posts to <code>/api/show</code> to capture the digest from the parsed <code>details</code> table into <code>SLM_DIGEST</code> for the model-freeze provenance. Each of these steps aborts on failure, so a job cannot proceed against a routable host, a dead server, an unpinned model, or an unknown digest.</p>
+      <p><b>%slm_esc.</b> This helper JSON-escapes free text before it is placed in a request body, and it is meant to be called inside a data step against a source variable <code>src</code> writing to <code>dst</code>. It backslash-escapes existing backslashes first, then double quotes, then replaces raw line-feed (<code>0A</code>x) and carriage-return (<code>0D</code>x) bytes with spaces so no raw newline breaks the JSON. It matters because prompt text is participant or study free text that routinely contains quotes and line breaks, and an unescaped body would produce malformed JSON or, worse, let content alter the request structure.</p>
+      <p><b>%slm_chat.</b> This is the core call that POSTs to <code>/api/chat</code> with <code>stream=false</code>. It builds the request body in a data step, escaping the system and user prompts (read from globals <code>_SLM_SYS</code> and <code>_SLM_USR</code>) via <code>%slm_esc</code>, and it hard-codes the reproducibility and load options: <code>temperature 0</code>, the fixed <code>seed</code>, <code>top_k 1</code>, <code>top_p 1</code>, <code>repeat_penalty 1</code>, <code>keep_alive -1</code>, and the <code>num_predict</code> and <code>num_ctx</code> parameters (defaults 512 and 8192) so the JSON object is not truncated. It passes the caller's JSON schema (<code>_SLM_SCHEMA</code>) as the server-side grammar constraint via the <code>format</code> field, asserts a 200 status, then double-parses the response: the outer envelope's <code>message.content</code> (falling back to the JSON root table if no message table exists) is itself a JSON string, so it is written back to a fileref and parsed again into the output dataset named by <code>out=</code> (default <code>slm_out</code>). This double-parse is why the model's constrained answer lands as ordinary SAS columns rather than as an opaque string.</p>
+      <p><b>%slm_validate.</b> This macro is the trust boundary that runs after the model answers. It re-checks the <code>field</code> value against the same pipe-delimited allowlist the schema used, comparing whole elements after <code>upcase</code> and <code>strip</code> (deliberately not <code>indexw</code>, which would split a multi-word value like MEDICAL CODING and false-reject it), and it range-checks the confidence variable to lie in [0,1] when the <code>conf=</code> variable is present and non-missing. Any off-allowlist label or out-of-range confidence writes an <code>ERROR:</code> line, sets a local <code>bad</code> flag via <code>call symputx</code>, and triggers <code>%slm_assert</code> with <code>abort=Y</code> so nothing is written on a miss. It also stamps every row with provenance columns (<code>slm_model</code>, <code>slm_digest</code>, <code>slm_seed</code>, <code>slm_temp</code> fixed at 0, and <code>slm_endpoint</code>), which is what makes each labeled row auditable and re-runnable. Because the server grammar and this validator are independent, an untrusted model cannot slip a value past both.</p>
+      <p><b>%slm_classify.</b> This is the flagship convenience macro for triage, routing, and labeling: it assembles a one-enum-field JSON schema from the pipe-delimited <code>allow</code> list, calls the model, and validates the result in one step. It sets the prompt globals <code>_SLM_SYS</code> and <code>_SLM_USR</code> via <code>%superq</code> when <code>sys</code> and <code>usr</code> are passed (otherwise the caller sets them by <code>CALL SYMPUTX</code> for per-row free text with commas or quotes), then builds a schema object requiring the <code>field</code> label, <code>confidence</code>, and <code>rationale</code> with <code>additionalProperties:false</code>. It invokes <code>%slm_chat</code> to get the output dataset and immediately runs <code>%slm_validate</code> against the same allowlist, so the enum constraint is enforced at both the server and the validator. The returned dataset carries the label, confidence, rationale, and the provenance columns, and the model here still only proposes a category: the allowlist, the validation, and any human review own what is accepted.</p>
+      <p><b>Closing pointer comment.</b> The final comment marks the end of the file and points to its companions: <code>slm_config.sas</code>, <code>triage_driver.sas</code>, <code>slm_companion.R</code>, and the README. This tells the biostatistician that this file defines the macros but does not run a job on its own: configuration lives in <code>slm_config.sas</code>, an actual per-row triage loop lives in <code>triage_driver.sas</code>, and the R side handles its share of the deterministic work. Reading those alongside this file is how you go from the macro definitions to a runnable, validated triage pipeline.</p>
+    <h2>The driver: deterministic checks first, then language only: triage_driver.sas</h2>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 67 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>triage_driver.sas is the runnable worked example for the LOCALMIND small-language-model (SLM) macro library: a scheduled QC-finding triage where validated SAS owns every number and every check, the local model only labels and drafts language, and a human approves before anything is written. It runs against a set of QC findings that already came out of validated work (Pinnacle 21 plus the study's own edit-checks and reconciliation), classifies each finding for routing and novelty, assembles a ranked worklist, and on human approval writes a Part 11 audit line per actioned row. The header comment states the contract plainly: nothing the model emits is written until a human approves it, and the model emits no number. The program is 68 lines and executes as an ordinary SAS program once the config and macro includes resolve.</p>
+    <pre class="code"><code>/*====================================================================================
+  triage_driver.sas  -  the worked example as runnable SAS: a scheduled QC-finding triage
+  where SAS owns every number/check and a LOCAL small model only labels, routes, and drafts.
+  ------------------------------------------------------------------------------------
+  Flow : config -&gt; macros -&gt; init (loopback+pinned model) -&gt; SAS owns the findings
+         (deterministic) -&gt; per finding, the SLM returns NEW/KNOWN + owner + draft (JSON,
+         validated) -&gt; assemble ranked worklist -&gt; HUMAN approves -&gt; write + Part 11 audit.
+  Nothing the model emits is written until a human approves it. The model emits no number.
+====================================================================================*/
+%let ROOT = /sasdata/cp101/localmind;
+%include "&amp;ROOT/slm_config.sas";
+%include "&amp;ROOT/slm_macros.sas";
+
+/* 1) PIN + go offline-safe: loopback guard, liveness, model-pulled, capture digest */
+%slm_init(model=&amp;CFG_MODEL, base=&amp;CFG_BASE, seed=&amp;CFG_SEED, backup=&amp;CFG_BACKUP);
+
+/* 2) SAS owns the findings. These come from validated work (Pinnacle 21 + the study's
+      own edit-checks / reconciliation). The MODEL NEVER PRODUCES A COUNT. Here: a stub. */
+data findings;
+  length finding_id $12 rule $20 findtext $600;
+  finding_id="SD0064"; rule="AE date order"; findtext="AESTDTC is after AEENDTC for 3 records in domain AE."; output;
+  finding_id="SD0011"; rule="Required var";  findtext="LBSTRESN missing for 12 records where LBSTRESC is numeric."; output;
+  finding_id="PK0003"; rule="Timing dev";    findtext="ADPC actual sampling time deviates &gt;10% from nominal at the 4h timepoint for 2 participants."; output;
+run;
+
+/* 3) Per finding, ask the local model THREE narrow things as schema-constrained JSON,
+      each validated against a controlled vocabulary. Set the per-row text via SYMPUTX so
+      free text (commas/quotes) is safe. */
+%macro triage(ds=findings, out=worklist);
+  %local n i; proc sql noprint; select count(*) into :n trimmed from &amp;ds; quit;
+  proc datasets nolist lib=work; delete &amp;out; quit;
+  %do i=1 %to &amp;n;
+    data _null_; set &amp;ds(firstobs=&amp;i obs=&amp;i);
+      call symputx('fid', finding_id); call symputx('_SLM_USR', findtext, 'G');  /* global so %slm_chat reads it */
+    run;
+    /* (a) new-vs-known, (b) owner routing - two constrained classifications */
+    %slm_classify(sys=%nrstr(You triage ONE clinical-data QC finding for routing. Use only the schema. Never invent or change any number.),
+                  field=owner, allow=&amp;CFG_OWNERS, out=_own);
+    %slm_classify(field=novelty, allow=&amp;CFG_NOVELTY, out=_nov);   /* reuses the same _SLM_USR/_SLM_SYS */
+    data _row; merge _own(keep=owner confidence rationale slm_model slm_digest slm_seed)
+                     _nov(keep=novelty); length finding_id $12; finding_id="&amp;fid"; run;
+    data &amp;out; set %if &amp;i&gt;1 %then &amp;out; _row; run;
+  %end;
+%mend triage;
+%triage(ds=findings, out=worklist);
+
+/* 4) SAS assembles + ranks the worklist deterministically (severity/aging - SAS's math,
+      not the model's). Join back the SAS-owned facts; the model's label rides ALONGSIDE. */
+proc sql; create table worklist2 as
+  select f.finding_id, f.rule, f.findtext, w.novelty, w.owner, w.confidence, w.rationale,
+         w.slm_model, w.slm_digest
+  from findings f left join worklist w on f.finding_id=w.finding_id
+  order by w.owner, f.finding_id; quit;
+
+/* 5) HUMAN GATE: the biostatistician reviews worklist2 (SAS facts beside the model label
+      + draft) and sets approved=1 on the rows to action. (Here: assume reviewed.)        */
+data approved; set worklist2; approved=1; /* &lt;- set by the reviewer, not the model */ run;
+
+/* 6) Only approved rows are written, each with a Part 11 audit line incl. the model digest.
+      The query text of record is issued by SAS to the EDC; the model's draft was advisory. */
+data _null_; set approved; where approved=1;
+  file "&amp;ROOT/audit/triage_audit.txt" mod;
+  put finding_id +1 owner +1 novelty +1 "model=" slm_model +1 "digest=" slm_digest +1
+      "seed=&amp;CFG_SEED temp=0 reviewer=&amp;SYSUSERID datetime=" "%sysfunc(datetime(),e8601dt.)";
+run;
+%slm_assert(cond=(&amp;SLM_RC=0), msg=LOCALMIND triage finished with errors - see log);
+%put NOTE: [LOCALMIND] triage complete - SAS owned the numbers, the model only labelled/drafted, a human approved.;</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header comment and the ownership contract.</b> The opening block comment states what the program is: the worked example as runnable SAS, a scheduled QC-finding triage in which <b>SAS owns every number and check</b> and a local small model only labels, routes, and drafts. It lays out the flow in order: config, macros, init (loopback plus pinned model), SAS owns the deterministic findings, per finding the SLM returns a NEW/KNOWN novelty plus owner plus a draft as validated JSON, assemble a ranked worklist, a human approves, then write plus a Part 11 audit. Two sentences carry the governance that the rest of the file enforces: nothing the model emits is written until a human approves it, and the model emits no number. This matters because it fixes the boundary up front, the model produces language only and the biostatistician stays the decision-maker.</p>
+      <p><b>ROOT macro variable and the config and macro includes.</b> <code>%let ROOT</code> pins the on-disk base path <code>/sasdata/cp101/localmind</code> for this study's LOCALMIND install, and the two <code>%include</code> statements pull in <code>slm_config.sas</code> and <code>slm_macros.sas</code> from under that root. The config include defines the <code>CFG_*</code> settings referenced later (model name, base URL, seed, backup, and the controlled vocabularies <code>CFG_OWNERS</code> and <code>CFG_NOVELTY</code>), while the macro include defines the <code>%slm_*</code> macros this driver calls. Resolving <code>ROOT</code> once and building every later path from <code>&ROOT</code> keeps the program relocatable to another study directory by editing a single line. Nothing here talks to the model yet, it only stages configuration and the macro library.</p>
+      <p><b>Step 1, slm_init: pin the model and go offline-safe.</b> <code>%slm_init</code> is called with the config values (<code>model=&CFG_MODEL</code>, <code>base=&CFG_BASE</code>, <code>seed=&CFG_SEED</code>, <code>backup=&CFG_BACKUP</code>). Per the comment on the numbered step, it pins the model and goes offline-safe: it applies a loopback guard (the endpoint must be local, not an external service), checks liveness, confirms the model is pulled, and captures the model digest. Pinning a specific model plus a fixed seed and capturing the digest is what makes a run reproducible and auditable, the same frozen local model answers the same way and the digest later lands in the audit line. This is the step that keeps the small model on the participant-data-safe local host rather than reaching out over the network.</p>
+      <p><b>Step 2, the findings data step (SAS owns the counts).</b> The <code>data findings</code> step declares typed columns <code>finding_id</code>, <code>rule</code>, and <code>findtext</code>, then hard-codes three example rows and <code>output</code>s each. The step comment is load-bearing: these findings come from validated work (Pinnacle 21 plus the study's own edit-checks and reconciliation), and <b>the model never produces a count</b>, this is only a stub standing in for that validated source. Every number that appears (AESTDTC after AEENDTC for 3 records, LBSTRESN missing for 12 records, a greater-than-10% timing deviation for 2 participants at the 4h timepoint) originates in SAS and its validated inputs, not the model. In a real run you would replace this stub with a read of the actual validated findings dataset, and the counts would still be SAS-owned.</p>
+      <p><b>Step 3, the triage macro definition.</b> <code>%macro triage(ds=findings, out=worklist)</code> defines the per-finding loop that asks the local model narrow things as schema-constrained, controlled-vocabulary-validated JSON. It declares locals <code>n</code> and <code>i</code>, uses <code>proc sql</code> to count the rows of <code>&ds</code> into <code>&n</code>, and runs <code>proc datasets</code> to delete any prior <code>&out</code> so the run starts clean. The comment states the design intent: the model is asked only to classify and draft, each answer validated against a controlled vocabulary, and per-row free text is passed by <code>SYMPUTX</code> so commas and quotes in <code>findtext</code> are safe. The macro contains no arithmetic on the findings, it routes and labels, it does not recompute or reconcile any count.</p>
+      <p><b>Step 3, per-row setup inside the loop (fid and _SLM_USR).</b> The <code>%do i=1 %to &n</code> loop reads exactly one finding per iteration via <code>set &ds(firstobs=&i obs=&i)</code>. A <code>data _null_</code> step uses <code>call symputx</code> to place that row's <code>finding_id</code> into macro variable <code>fid</code> and its <code>findtext</code> into <code>_SLM_USR</code> with the <code>'G'</code> (global) scope so <code>%slm_chat</code> can read it as the user prompt. Using <code>symputx</code> rather than string-building the prompt inline is deliberate: it moves the finding's free text (which contains commas, quotes, and comparison operators) into a macro variable safely, avoiding quoting breakage. The finding text becomes the model's input, but the model is being asked to classify it, not to trust or restate its numbers as fact.</p>
+      <p><b>Step 3, the two slm_classify calls (owner and novelty).</b> Two <code>%slm_classify</code> calls perform the constrained classifications. The first sets <code>field=owner</code> with <code>allow=&CFG_OWNERS</code> and output <code>out=_own</code>, and passes a system prompt (via <code>%nrstr</code>) instructing the model to triage one clinical-data QC finding for routing, use only the schema, and never invent or change any number. The second sets <code>field=novelty</code> with <code>allow=&CFG_NOVELTY</code> and <code>out=_nov</code>, and its comment states it reuses the same <code>_SLM_USR</code> and <code>_SLM_SYS</code> from the first call. Constraining each answer to the <code>allow</code> vocabulary is what keeps the model's output a validated label from a fixed set rather than free-form text, and the explicit no-number instruction reinforces that the model routes and names, it does not decide a value.</p>
+      <p><b>Step 3, merging the per-row result and appending to the worklist.</b> A <code>data _row</code> step merges <code>_own</code> (keeping <code>owner</code>, <code>confidence</code>, <code>rationale</code>, <code>slm_model</code>, <code>slm_digest</code>, <code>slm_seed</code>) with <code>_nov</code> (keeping <code>novelty</code>), declares <code>finding_id</code> with length 12, and stamps it from <code>&fid</code>. The next step appends <code>_row</code> to <code>&out</code>, reading the existing <code>&out</code> first only when <code>&i>1</code> so the first iteration creates the table and later ones grow it. Carrying <code>slm_model</code> and <code>slm_digest</code> on every row is what lets the later worklist and audit record which pinned model produced each label. The result of the macro is one worklist row per finding, each row holding the model's labels beside the provenance fields, and <code>%triage(ds=findings, out=worklist)</code> invokes it.</p>
+      <p><b>Step 4, SAS assembles and ranks the worklist deterministically.</b> A <code>proc sql</code> creates <code>worklist2</code> by left-joining the SAS-owned <code>findings</code> table to the model-labelled <code>worklist</code> on <code>finding_id</code>, keeping the SAS facts (<code>finding_id</code>, <code>rule</code>, <code>findtext</code>) alongside the model outputs (<code>novelty</code>, <code>owner</code>, <code>confidence</code>, <code>rationale</code>, <code>slm_model</code>, <code>slm_digest</code>), ordered by <code>owner</code> then <code>finding_id</code>. The comment is explicit that ranking (severity and aging) is SAS's math, not the model's, and that the model's label rides alongside the SAS-owned facts rather than replacing them. Driving the join from <code>findings</code> means every validated finding survives even if a model label is missing, the deterministic side stays the spine of the table. Ordering and any severity or aging logic live in SAS, keeping the worklist's structure reproducible and independent of the model.</p>
+      <p><b>Step 5, the human gate.</b> A <code>data approved</code> step copies <code>worklist2</code> and sets <code>approved=1</code>, with an inline comment stating this flag is set by the reviewer, not the model, and that the current line only assumes the rows were reviewed. This is the point where the biostatistician reads each row (the SAS facts beside the model's label and draft) and decides which findings to action. In real use this hard-coded assignment is replaced by the reviewer's actual per-row decision, the program deliberately stops short of automating it. This gate is the mechanism that keeps a human owning every decision, no model output becomes actionable without an explicit human approval.</p>
+      <p><b>Step 6, write approved rows with a Part 11 audit line.</b> A <code>data _null_</code> step reads <code>approved</code>, subsets to <code>approved=1</code>, and appends to <code>&ROOT/audit/triage_audit.txt</code> using <code>file</code> with the <code>mod</code> option. Each <code>put</code> writes the <code>finding_id</code>, <code>owner</code>, and <code>novelty</code>, then <code>model=</code> with <code>slm_model</code> and <code>digest=</code> with <code>slm_digest</code>, then a literal <code>seed=&CFG_SEED temp=0</code>, the reviewer via <code>&SYSUSERID</code>, and an ISO 8601 datetime from <code>%sysfunc(datetime(),e8601dt.)</code>. The comment states the query text of record is issued by SAS to the EDC and the model's draft was only advisory, so what gets written is the SAS-owned action, annotated with which pinned model advised it and who approved. Only approved rows are written, and each carries a reproducibility-and-attribution trail (model, digest, seed, temperature, reviewer, timestamp) suitable for a Part 11 audit.</p>
+      <p><b>Closing assertion and completion note.</b> <code>%slm_assert(cond=(&SLM_RC=0), msg=LOCALMIND triage finished with errors - see log)</code> checks the library's return code <code>&SLM_RC</code> and fails loudly if the triage finished with errors, pointing to the log. The final <code>%put NOTE:</code> restates the invariant in one line: SAS owned the numbers, the model only labelled and drafted, and a human approved. Ending on an asserted return code plus a plain-language restatement of the contract makes the run self-documenting, a reader of the log sees both whether it succeeded and what division of responsibility it enforced. Together these two lines close the program on the same governance stance it opened with: validated tools own the numbers and checks, the model owns language only, and a human owns the decision.</p>
+    <h2>The same glue in R: slm_companion.R</h2>
+    <p class="muted" style="margin-bottom:6px">R &middot; 71 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p>slm_companion.R is the R twin of the LOCALMIND SAS macro library (<code>slm_macros.sas</code>): it calls a local, offline small language model (via Ollama on the loopback interface) for the language layer only, using <code>httr2</code> for HTTP and <code>jsonlite</code> for JSON. It runs when a validated SAS/R pipeline has already produced numbers and checks and you want the model to draft or label text about a finding, never to compute, reconcile, or decide a number. The file enforces the same contract as the SAS side: loopback-only (no egress), schema-constrained output, an allowlist validator, deterministic decoding (temperature 0 plus a fixed seed), a pinned model, and a human gate. Every reported number comes from the validated SAS/R tools and every decision belongs to a person; the model only supplies language.</p>
+    <pre class="code"><code># =====================================================================================
+# slm_companion.R  -  LOCALMIND R companion: call a LOCAL, OFFLINE small language model
+# (Ollama) for the language layer only. httr2 + jsonlite. Same contract as slm_macros.sas:
+# loopback-only (no egress), schema-constrained output, allowlist validator, temp0+seed,
+# pinned model, human gate. The model NEVER produces a number.
+# =====================================================================================
+suppressPackageStartupMessages({ library(httr2); library(jsonlite) })
+
+# ---- pin the model + assert loopback/offline + assert the model is pulled -------------
+slm_init &lt;- function(model, base = "http://127.0.0.1:11434", seed = 42L) {
+  if (!grepl("^http://(127\\.0\\.0\\.1|localhost|\\[::1\\])(:[0-9]+)?(/|$)", base))
+    stop("[LOCALMIND] non-loopback endpoint blocked: ", base, " - egress not allowed", call. = FALSE)
+  live &lt;- tryCatch(request(base) |&gt; req_url_path_append("api", "version") |&gt; req_timeout(5) |&gt;
+                     req_perform() |&gt; resp_status(), error = function(e) 0)
+  if (!identical(live, 200L)) stop("[LOCALMIND] local model server not reachable at ", base, call. = FALSE)
+  tags &lt;- request(base) |&gt; req_url_path_append("api", "tags") |&gt; req_perform() |&gt; resp_body_json()
+  names &lt;- vapply(tags$models, function(m) tolower(m$name), character(1))
+  if (!tolower(model) %in% names)
+    stop("[LOCALMIND] model '", model, "' is not pulled (run: ollama pull ", model, ")", call. = FALSE)
+  show &lt;- request(base) |&gt; req_url_path_append("api", "show") |&gt; req_method("POST") |&gt;
+    req_body_json(list(model = model)) |&gt; req_perform() |&gt; resp_body_json()
+  digest &lt;- show$details$digest %||% show$model_info$general.digest %||% NA_character_
+  structure(list(model = model, base = base, seed = as.integer(seed), digest = digest), class = "slm")
+}
+
+# ---- the trust boundary: validate a parsed result against an allowlist + range --------
+slm_validate &lt;- function(x, field, allow, conf = "confidence") {
+  v &lt;- toupper(as.character(x[[field]]))
+  if (!v %in% toupper(allow))
+    stop(sprintf("[LOCALMIND] off-allowlist %s: %s (allowed: %s)", field, v, paste(allow, collapse = ", ")), call. = FALSE)
+  if (!is.null(x[[conf]]) &amp;&amp; (!is.numeric(x[[conf]]) || x[[conf]] &lt; 0 || x[[conf]] &gt; 1))
+    stop(sprintf("[LOCALMIND] %s out of range: %s", conf, x[[conf]]), call. = FALSE)
+  invisible(TRUE)
+}
+
+# ---- classify/route/label: build a one-enum schema, call locally, validate, stamp -----
+# sys = system instruction; usr = the SHORT finding text. allow = character vector of labels.
+slm_classify &lt;- function(con, sys, usr, field = "label", allow, num_predict = 512L, num_ctx = 8192L) {
+  stopifnot(inherits(con, "slm"))
+  # build the enum-constrained JSON schema (set the label field by name)
+  props &lt;- list(); props[[field]] &lt;- list(type = "string", enum = as.list(allow))
+  props$confidence &lt;- list(type = "number"); props$rationale &lt;- list(type = "string")
+  schema &lt;- list(type = "object", properties = props,
+                 required = as.list(c(field, "confidence", "rationale")), additionalProperties = FALSE)
+
+  resp &lt;- request(con$base) |&gt; req_url_path_append("api", "chat") |&gt;
+    req_body_json(list(model = con$model, stream = FALSE, keep_alive = "-1",
+      options = list(temperature = 0, seed = con$seed, top_k = 1L, top_p = 1, repeat_penalty = 1,
+                     num_predict = num_predict, num_ctx = num_ctx),
+      format = schema,                                   # server-side grammar constraint
+      messages = list(list(role = "system", content = sys),
+                      list(role = "user",   content = usr))), auto_unbox = TRUE) |&gt;
+    req_timeout(180) |&gt; req_perform() |&gt; resp_body_json()
+
+  out &lt;- fromJSON(resp$message$content)                  # message.content is a JSON string -&gt; parse again
+  slm_validate(out, field = field, allow = allow)        # reject -&gt; stop() (fail loud, no write)
+  c(out, list(slm_model = con$model, slm_digest = con$digest, slm_seed = con$seed,
+              slm_temp = 0, slm_endpoint = con$base))    # provenance
+}
+
+`%||%` &lt;- function(a, b) if (is.null(a) || length(a) == 0 || is.na(a[1])) b else a
+
+# ---- example -------------------------------------------------------------------------
+if (sys.nframe() == 0) {
+  con &lt;- slm_init("llama3.1:8b-instruct-q8_0")
+  r &lt;- slm_classify(con,
+    sys = "You triage a CDISC conformance finding. Reply only as the schema. Do not invent numbers.",
+    usr = "SD0064: AESTDTC is after AEENDTC for 3 records in domain AE.",
+    field = "owner", allow = c("DM", "PROGRAMMING", "PK", "MEDICAL CODING", "SITE"))
+  str(r)
+}</code></pre>
+    <p class="muted" style="margin:14px 0 2px;letter-spacing:.04em;text-transform:uppercase;font-size:11px">Walkthrough, part by part</p>
+      <p><b>Header contract and dependencies.</b> The banner comment fixes the operating contract in one place: the R companion talks to a LOCAL, OFFLINE model through Ollama, handles the language layer only, and mirrors <code>slm_macros.sas</code> point for point (loopback-only, schema-constrained output, allowlist validator, temp0 plus seed, pinned model, human gate). The last line of the banner is the load-bearing rule: the model NEVER produces a number. The single executable line loads <code>httr2</code> and <code>jsonlite</code> inside <code>suppressPackageStartupMessages</code> so package chatter does not contaminate logs or captured output.</p>
+      <p><b>slm_init: pin the model and prove the endpoint is local, live, and pulled.</b> <code>slm_init</code> takes a <code>model</code> name, a <code>base</code> URL defaulting to <code>http://127.0.0.1:11434</code>, and a <code>seed</code> defaulting to <code>42L</code>. It has three hard gates that call <code>stop()</code>: first a regex check that <code>base</code> is a loopback address (127.0.0.1, localhost, or the bracketed IPv6 form), which is the egress block that keeps participant-adjacent text on the machine; second a check that the server answers status 200 on <code>api/version</code>; third a check that lists pulled models via <code>api/tags</code> and errors with a copy-pasteable <code>ollama pull</code> hint if the requested model is absent. After those gates pass it reads <code>api/show</code> to capture a model digest, falling back through <code>show$details$digest</code>, then <code>show$model_info$general.digest</code>, then <code>NA_character_</code> if neither is present (so a missing digest does not halt). It returns an object of class <code>slm</code> holding <code>model</code>, <code>base</code>, the integer <code>seed</code>, and <code>digest</code>, so downstream calls carry a pinned, identifiable model rather than a moving target.</p>
+      <p><b>slm_validate: the trust boundary against an allowlist and a confidence range.</b> <code>slm_validate</code> is where model output stops being trusted text and must earn its way through a gate; it takes the parsed result <code>x</code>, a <code>field</code>, an <code>allow</code> set, and a <code>conf</code> key name defaulting to <code>"confidence"</code>. It uppercases the value at <code>field</code> and calls <code>stop()</code> if it is not in the uppercased <code>allow</code> set, so the model can only ever return one of a closed list of labels, never free-form or invented categories. If the <code>conf</code> key is present it must be numeric and within the 0 to 1 range, otherwise the function errors; the function returns <code>invisible(TRUE)</code> on success. This is a deliberate fail-loud design: an off-allowlist or out-of-range result raises rather than silently passing, and because the model emits only labels and a rationale, this validator never touches or blesses a reported number.</p>
+      <p><b>slm_classify: build an enum schema, call locally, validate, and stamp provenance.</b> <code>slm_classify</code> is the one working entry point: given an <code>slm</code> connection <code>con</code>, a system instruction <code>sys</code>, the short finding text <code>usr</code>, a target <code>field</code> (default <code>label</code>), an <code>allow</code> vector, and generation caps <code>num_predict</code> (default <code>512L</code>) and <code>num_ctx</code> (default <code>8192L</code>), it constructs a JSON schema whose <code>field</code> is a string constrained to <code>enum = allow</code>, plus a numeric <code>confidence</code> and a string <code>rationale</code>, all three listed in <code>required</code> and with <code>additionalProperties = FALSE</code>. It posts to <code>api/chat</code> with deterministic decoding options (<code>temperature = 0</code>, the pinned <code>seed</code>, <code>top_k = 1L</code>, <code>top_p = 1</code>, <code>repeat_penalty = 1</code>) alongside <code>num_predict</code> and <code>num_ctx</code>, passes the schema as <code>format</code> so the server enforces the grammar, sets <code>keep_alive = "-1"</code> to hold the model resident, and applies a 180-second request timeout. It parses <code>resp$message$content</code> a second time with <code>fromJSON</code> (the content arrives as a JSON string), runs <code>slm_validate</code> so a bad answer halts before anything is written, and returns the validated result augmented with provenance fields (<code>slm_model</code>, <code>slm_digest</code>, <code>slm_seed</code>, <code>slm_temp</code> set to 0, and <code>slm_endpoint</code>). The design keeps the model in its lane: it routes or labels a finding and explains why, while every number and every final decision stays with the validated SAS/R tools and the human reviewer.</p>
+      <p><b>The null-coalescing helper %||%.</b> <code>%||%</code> is a small infix operator that returns its left operand unless that operand is <code>NULL</code>, has length 0, or has an <code>NA</code> first element, in which case it returns the right operand. It is defined here specifically to back the digest fallback chain in <code>slm_init</code>, where the digest may live under <code>show$details$digest</code> or <code>show$model_info$general.digest</code> or be absent (<code>NA_character_</code>). Defining it near the bottom is fine because R resolves the function at call time, not at parse time, so <code>slm_init</code> can reference it even though the operator appears later in source order.</p>
+      <p><b>The guarded example block.</b> The trailing block runs only when the file is sourced as the top-level script (<code>sys.nframe() == 0</code>), so importing these functions into a larger program does not trigger a live model call. It demonstrates the intended flow: pin <code>llama3.1:8b-instruct-q8_0</code>, then triage a CDISC conformance finding into an owner drawn from the allowlist <code>c("DM", "PROGRAMMING", "PK", "MEDICAL CODING", "SITE")</code>, with a system instruction that explicitly tells the model to reply only as the schema and not to invent numbers. The example targets <code>field = "owner"</code> rather than the default label, showing the same function routes a finding to a responsible team, and <code>str(r)</code> prints the validated, provenance-stamped result for a human to review before any action is taken.</p>
+    <h2>Scheduling it: the whole setup, once</h2>
+    <p>The token and any credentials are read at run time from an environment variable or a permissions-<code>600</code> file, never hard-coded and never written to a log. Point the driver at your install (the <code>%let</code> paths and the config file), dry-run once, then schedule it under a dedicated service account, after your validated nightly extract refreshes.</p>
+    <ul>
+      <li><b>SAS on Linux (cron):</b> <code>0 2 * * * sas -nodms -sysin slm/triage_driver.sas -log slm/log/monitor_$(date +\%F).log</code></li>
+      <li><b>SAS on Windows (Task Scheduler):</b> a daily task running <code>sas.exe -sysin C:\slm\triage_driver.sas -log C:\slm\log\monitor.log</code></li>
+      <li><b>R:</b> <code>cronR::cron_add(command = cronR::cron_rscript("slm_companion.R"), frequency = "daily", at = "02:00")</code>, or <code>taskscheduleR::taskscheduler_create()</code> on Windows. Pin packages with <code>renv</code>.</li>
+      <li><b>Dry-run first,</b> then trust the heartbeat: the job fails loud on any error and emits a completion NOTE, so a stale run announces itself instead of masquerading as fresh.</li>
+    </ul>
   <div class="footer">On-device SLM + SAS/R &middot; Trial-Ops &middot; 75 components (✅12 ⚠️36 ❌15 ◇12) &middot; SAS/R owns every number; the small model is human-gated &middot; offline = zero egress &middot; built June 2026 (illustrative).</div></section>
 <section id="watch" aria-label="A morning of on-device triage">
     <h1>A morning of on-device triage &mdash; one offline workstation</h1>
@@ -582,11 +949,24 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
       <a class="btn ghost" href="SLM_OnDevice_Example_StepGuide.pdf">&#10515;&nbsp; Step-by-step picture guide (PDF)</a>
       <a class="btn ghost" href="IT_SLM_Enablement_Runbook.pdf">&#10515;&nbsp; IT enablement runbook (PDF)</a>
     </div>
-    <div class="shots">
-      <figure><img src="example_img/beat1.png" alt="Worked-example beat 1"><figcaption><b>Beat 1 &middot; The loop: numbers from SAS/R, words from a small local model</b> &mdash; One overnight cycle on Study CP-101: a scheduled SAS/R job does every deterministic check; a small on-device model only labels, classifies, and drafts; the biostatistician approves before anything is written.</figcaption></figure><figure><img src="example_img/beat2.png" alt="Worked-example beat 2"><figcaption><b>Beat 2 &middot; The offline setup: workstation, Ollama, one pinned model</b> &mdash; An ordinary validated workstation runs Ollama serving a pinned, quantized 7B model on 127.0.0.1. No GPU farm, no cloud account, no telemetry — the box is offline and the network cable is unplugged.</figcaption></figure><figure><img src="example_img/beat3.png" alt="Worked-example beat 3"><figcaption><b>Beat 3 &middot; SAS/R runs the deterministic checks — the counts are SAS/R's</b> &mdash; Overnight the scheduled job runs the Pinnacle 21 CDISC conformance run plus the study's own edit checks and reconciliation; it produces 214 findings, every count and rule owned by validated code, not the model.</figcaption></figure><figure><img src="example_img/beat4.png" alt="Worked-example beat 4"><figcaption><b>Beat 4 &middot; SAS/R calls the local model to triage — JSON out, nothing else</b> &mdash; Via PROC HTTP / httr2 to 127.0.0.1, SAS/R sends each finding's short text to the model for three narrow decisions — new-vs-known, type/severity, owner/queue — returned as schema-constrained JSON.</figcaption></figure><figure><img src="example_img/beat5.png" alt="Worked-example beat 5"><figcaption><b>Beat 5 &middot; Validator + RAG-grounded draft — the safety net around the model</b> &mdash; SAS/R checks every returned field against an allowlist and drops anything malformed; for valid findings the model drafts a candidate query grounded by RAG over the study's own specs, marked DRAFT and unsent.</figcaption></figure><figure><img src="example_img/beat6.png" alt="Worked-example beat 6"><figcaption><b>Beat 6 &middot; The human gate: the biostatistician approves each draft</b> &mdash; The biostatistician works the ranked worklist, sees each finding's SAS/R facts beside the model's suggested label and draft text, and approves, edits, or rejects — nothing proceeds without a human decision.</figcaption></figure>
-    </div>
-    <p class="muted">Illustrative mockups. Throughout: <b>SAS/R produced every count and check; the small on-device model only labelled, classified, and drafted; the biostatistician decided.</b></p>
-  <div class="footer">On-device SLM + SAS/R &middot; Trial-Ops &middot; 75 components (✅12 ⚠️36 ❌15 ◇12) &middot; SAS/R owns every number; the small model is human-gated &middot; offline = zero egress &middot; built June 2026 (illustrative).</div></section>
+
+    <h2>What one scheduled run prints to the log</h2>
+    <p>There is nothing to watch in a UI, and nothing leaves the workstation. Every step is an auditable line from the shipped <code>%slm_*</code> library. SAS/R owns the numbers; the local model only drafts language, and the validator refuses anything off the allowlist. Read the run top to bottom.</p>
+    <pre class="code"><code># triage_driver.sas, run on one offline workstation; nothing leaves 127.0.0.1
+NOTE: [LOCALMIND] init OK - model=qwen2.5:7b-instruct-q8_0 seed=42 endpoint=http://127.0.0.1:11434 (loopback, offline) digest=sha256:9f2c8ab1
+# 1) SAS/R computes the numbers first; the model is handed a finding to label, never a record to score
+NOTE: [LOCALMIND] classify ok (owner in {DM|PROGRAMMING|PK|MEDICAL CODING|SITE|BIOSTAT})
+NOTE: [LOCALMIND] classify ok (severity in {CRITICAL|MAJOR|MINOR})
+# the SAS/R validator refuses any off-allowlist label the model emits:
+ERROR: [LOCALMIND] off-allowlist owner=SPONSOR (allowed: DM|PROGRAMMING|PK|MEDICAL CODING|SITE|BIOSTAT)   # refused in code, queued for a human
+NOTE: [LOCALMIND] triage complete - SAS owned the numbers, the model only labelled/drafted, a human approved.</code></pre>
+    <p class="muted">Silence is never assumed: a failed run mails the fail-loud address, and the external watchdog alerts if the heartbeat stops.</p>
+    <h2>The run, beat by beat</h2>
+    <p><b>SAS/R computes the numbers first.</b> The deterministic checks run exactly as they do without any model: SAS/R owns every count, threshold, and flag. The on-device model is never handed a raw participant record to score, and it never produces a reported number.</p>
+    <p><b>The local model drafts language, offline.</b> For each flag the pinned model (a quantized open-weight model on <code>127.0.0.1</code>, seed fixed, temperature 0) drafts a short label and narrative under a constrained JSON schema. It runs on loopback only, so participant-adjacent text never leaves the workstation, and the fixed seed makes the draft reproducible.</p>
+    <p><b>The validator checks every field against an allowlist.</b> Before anything reaches a person, a SAS/R validator checks each drafted field against a controlled vocabulary (owner, severity, novelty). An off-list value, such as an invented <code>SPONSOR</code> owner, is refused in code, not passed through. This is the same in-code trust boundary as the monitoring allowlist.</p>
+    <p><b>A human approves before any write.</b> The accepted drafts are queued for a person to confirm or edit; nothing is auto-sent and nothing is written of record. The model labelled and drafted, the validated tools owned the numbers, and a human made every decision.</p>
+    <div class="footer">On-device SLM + SAS/R &middot; Trial-Ops &middot; 75 components (✅12 ⚠️36 ❌15 ◇12) &middot; SAS/R owns every number; the small model is human-gated &middot; offline = zero egress &middot; built June 2026 (illustrative).</div></section>
 <section id="gov" aria-label="Governance & limits"><h1>Governance &amp; honest limits</h1>
 
 <p>The governance is the same as every companion in this program; only the model changes. The line that does not move: <strong>SAS/R and the validated engines own every number and every record of truth. The small on-device model never produces a value, never reconciles, never decides.</strong> It classifies, extracts, routes, and drafts words &mdash; and a human approves before anything is written. Swapping cloud Claude for a small (roughly 1&ndash;9B-parameter), quantized model on a workstation tightens the data-egress story; it does not loosen the controls.</p>
@@ -653,10 +1033,10 @@ window.addEventListener('afterprint',sync);sync();
 /* portable reproducibility kit: copy-buttons on code + Print/PDF + print stylesheet (theme-agnostic) */
 (function(){
   var css=''
-   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
-   +'.repro-copybtn:hover{opacity:1;background:#4a5680} .repro-copybtn.ok{background:#1f9d55}'
-   +'.repro-print{position:fixed;bottom:16px;right:16px;background:#4338CA;color:#fff;border:none;border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
-   +'.repro-print:hover{background:#312C8A}'
+   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#131a26;color:#e7eef9;border:1px solid rgba(52,227,212,.4);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
+   +'.repro-copybtn:hover{opacity:1;background:#1b2535} .repro-copybtn.ok{background:#46d08a;color:#06090f}'
+   +'.repro-print{position:fixed;bottom:16px;right:16px;background:rgba(52,227,212,.1);color:#34e3d4;border:1px solid rgba(52,227,212,.4);border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
+   +'.repro-print:hover{background:rgba(52,227,212,.18)}'
    +'@media print{nav,aside,#side,.sidebar,.skip,.repro-copybtn,.repro-print,[role=\'navigation\']{display:none!important}'
    +' #wrap,#main,main,article,.content,section,body{display:block!important;width:auto!important;max-width:100%!important;margin:0!important;float:none!important}'
    +' *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
