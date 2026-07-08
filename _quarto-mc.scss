@@ -1,0 +1,128 @@
+/*-- scss:defaults --*/
+// Mission Control theme for Quarto (layered over `darkly`). Matches site.css tokens.
+$mc-bg:      #06090f;
+$mc-bg2:     #04060b;
+$mc-panel:   #0c1018;
+$mc-panelhi: #131a26;
+$mc-line:    #1b2535;
+$mc-line2:   #27344a;
+$mc-ink:     #e7eef9;
+$mc-body:    #c7d2e6;
+$mc-mut:     #7e8ca6;
+$mc-dim:     #566179;
+$mc-teal:    #34e3d4;
+$mc-blue:    #5b8cff;
+$mc-gold:    #e6b24c;
+$mc-green:   #46d08a;
+$mc-amber:   #e6a23c;
+$mc-red:     #ff6a6a;
+$mc-mono:    ui-monospace, "JetBrains Mono", "SF Mono", Menlo, Consolas, monospace;
+$mc-sans:    "Segoe UI", Inter, system-ui, Arial, sans-serif;
+
+// Bootstrap variable overrides
+$body-bg:                 $mc-bg;
+$body-color:              $mc-body;
+$font-family-sans-serif:  $mc-sans;
+$font-family-monospace:   $mc-mono;
+$headings-font-family:    $mc-sans;
+$primary:                 $mc-teal;
+$link-color:              $mc-teal;
+$link-hover-color:        #7af0e5;
+$border-color:            $mc-line;
+$code-color:              #8ef0e6;
+$card-bg:                 $mc-panel;
+$card-border-color:       $mc-line2;
+$card-cap-bg:             $mc-panelhi;
+$table-border-color:      $mc-line;
+$input-bg:                #0d1320;
+$input-border-color:      $mc-line2;
+$input-color:             $mc-ink;
+$pre-bg:                  #070b12;
+
+/*-- scss:rules --*/
+// blueprint-grid page background (the MC signature)
+body {
+  background:
+    linear-gradient(rgba(52,227,212,.025) 1px, transparent 1px) 0 0 / 44px 44px,
+    linear-gradient(90deg, rgba(52,227,212,.025) 1px, transparent 1px) 0 0 / 44px 44px,
+    radial-gradient(1200px 600px at 50% -10%, rgba(91,140,255,.08), transparent 60%),
+    linear-gradient(180deg, #06090f, #04060b 80%);
+  background-attachment: fixed;
+  color: $mc-body;
+}
+
+// a Mission Control command bar pinned above the Quarto navbar / content
+.mc-top {
+  position: relative; z-index: 1080;
+  display: flex; align-items: center; gap: 18px;
+  margin: 0 0 8px; padding: 9px 22px;
+  background: linear-gradient(180deg, #080c14ee, #070a11dd);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid $mc-line2;
+  box-shadow: 0 1px 0 rgba(52,227,212,.12), 0 8px 24px rgba(0,0,0,.4);
+  font-family: $mc-mono;
+  b { font-size: 12.5px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: $mc-ink; }
+  b::before { content: "\25E2 "; color: $mc-teal; }
+  .nav { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+  a { color: $mc-mut; font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+      padding: 5px 10px; border: 1px solid transparent; border-radius: 5px; text-decoration: none; }
+  a:hover { color: $mc-ink; border-color: $mc-line2; background: #0e141f; }
+}
+
+// title block
+.quarto-title-block .quarto-title .title,
+h1, h1.title { font-family: $mc-sans !important; color: $mc-ink !important; font-weight: 680; letter-spacing: -.01em; }
+.quarto-title-block .subtitle, .quarto-title .subtitle { color: $mc-mut !important; font-family: $mc-sans; }
+.quarto-title-banner { background: transparent; }
+
+// headings: mono uppercase gold h2 with teal marker; mono uppercase h3/h4
+h2, .quarto-section-content h2 {
+  font-family: $mc-mono !important; color: $mc-gold !important;
+  text-transform: uppercase; letter-spacing: .14em; font-size: 1.02rem; font-weight: 700;
+  border-bottom: 0 !important; margin-top: 2rem;
+}
+h2::before { content: "\25B8 "; color: $mc-teal; }
+h3, h4, h5 { font-family: $mc-mono !important; color: $mc-ink !important; text-transform: uppercase; letter-spacing: .06em; font-size: .92rem; }
+
+// links
+a { color: $mc-teal; }
+a:hover { color: #7af0e5; }
+
+// TOC / sidebar
+#quarto-margin-sidebar, #TOC, .sidebar, nav[role="doc-toc"] {
+  a { color: $mc-mut; font-family: $mc-mono; font-size: 11.5px; letter-spacing: .03em; }
+  a.active, a:hover { color: $mc-teal !important; border-left-color: $mc-teal !important; }
+  .sidebar-title, .toc-title { color: $mc-dim; font-family: $mc-mono; text-transform: uppercase; letter-spacing: .1em; font-size: 11px; }
+}
+nav[role="doc-toc"] > ul li a.active { border-left: 2px solid $mc-teal; }
+
+// navbar (if present)
+.navbar { background: linear-gradient(180deg,#080c14,#070a11) !important; border-bottom: 1px solid $mc-line2; }
+.navbar .navbar-brand, .navbar .nav-link { color: $mc-ink !important; font-family: $mc-mono; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; }
+
+// cards / panels
+.card, .panel, .quarto-figure { background: $mc-panel; border: 1px solid $mc-line2; }
+
+// callouts -> MC panels with a teal/gold left bar
+.callout { background: linear-gradient(160deg, #0a1422, #0a0f18) !important; border: 1px solid $mc-line2 !important; border-left: 3px solid $mc-teal !important; border-radius: 6px; color: $mc-body; }
+.callout .callout-title, .callout .callout-body { background: transparent !important; color: $mc-body; }
+.callout-note { border-left-color: $mc-teal !important; }
+.callout-important, .callout-warning { border-left-color: $mc-gold !important; }
+.callout-tip { border-left-color: $mc-green !important; }
+
+// code
+pre, pre.sourceCode, code { background: #070b12 !important; }
+code:not(pre code) { color: #8ef0e6; background: #0d1320; border: 1px solid $mc-line; border-radius: 5px; padding: 1px 5px; }
+.code-tools-button, .code-fold, details > summary { color: $mc-teal; font-family: $mc-mono; }
+
+// tables
+table, .table { color: $mc-body; }
+.table > thead th, table thead th { background: #0d1320; color: $mc-mut; font-family: $mc-mono; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; border-color: $mc-line; }
+.table td, table td { border-color: $mc-line; }
+
+// horizontal rule + footer
+hr { border-color: $mc-line2; }
+.nav-footer, footer { border-top: 1px solid $mc-line; color: $mc-dim; font-family: $mc-mono; font-size: 11px; }
+
+// mermaid diagram frame
+figure svg[id^="mermaid"] { background: #0a0f18; border: 1px solid $mc-line2; border-radius: 6px; }

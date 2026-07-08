@@ -3,7 +3,10 @@ title: "TRIALMON - Participant-Safety Screening"
 subtitle: "A visual, runnable guide to the safety-screening console"
 format:
   html:
-    theme: darkly
+    theme:
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
     toc-title: On this page

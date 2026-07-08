@@ -3,7 +3,10 @@ title: "Run and build the Study Knowledge Graph"
 subtitle: "The complete R Shiny graph, every line"
 format:
   html:
-    theme: darkly
+    theme:
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
     toc-title: On this page

@@ -2,7 +2,10 @@
 title: "Study Knowledge Graph - Interactive"
 format:
   html:
-    theme: darkly
+    theme:
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     embed-resources: true
     page-layout: full
     toc: false

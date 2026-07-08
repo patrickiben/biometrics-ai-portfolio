@@ -3,7 +3,10 @@ title: "IRT / RTSM User Acceptance Testing"
 subtitle: "A visual, runnable guide, from the biostatistics lens"
 format:
   html:
-    theme: darkly
+    theme:
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
     toc-title: On this page

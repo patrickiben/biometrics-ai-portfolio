@@ -3,7 +3,10 @@ title: "Run and build the UAT tracker"
 subtitle: "The complete R Shiny app, every line"
 format:
   html:
-    theme: darkly
+    theme:
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
     toc-title: On this page

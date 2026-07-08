@@ -1,34 +1,35 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Study Operations Knowledge Base - two ways to build it</title><style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:#E7ECF8;background:#0E1124;line-height:1.55}
-a.skip{position:absolute;left:-999px}a.skip:focus{left:8px;top:8px;background:#181D38;color:#fff;padding:8px 14px;border-radius:6px;z-index:10}
-header{background:#181D38;color:#fff;padding:34px 7% 28px}
-header .k{font-size:12px;letter-spacing:2px;font-weight:700;color:#9AA6C8}
-header h1{font-family:Georgia,serif;font-size:31px;margin:8px 0 6px}
-header .sub{font-size:16px;color:#C3CCE4;font-style:italic;max-width:920px}
-header .bar{height:5px;background:#35C07E;margin:24px -7% 0}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,Segoe UI,Calibri,Arial,sans-serif;color:#e7eef9;background:#06090f;line-height:1.55}
+a.skip{position:absolute;left:-999px}a.skip:focus{left:8px;top:8px;background:#0c1018;color:#fff;padding:8px 14px;border-radius:6px;z-index:10}
+header{background:#0c1018;color:#fff;padding:34px 7% 28px}
+header .k{font-size:12px;letter-spacing:2px;font-weight:700;color:#7e8ca6}
+header h1{font-family:var(--sans);font-size:31px;margin:8px 0 6px}
+header .sub{font-size:16px;color:#c7d2e6;font-style:italic;max-width:920px}
+header .bar{height:5px;background:#46d08a;margin:24px -7% 0}
 main{max-width:1060px;margin:0 auto;padding:8px 7% 70px}
-.rule{background:#2A1614;border-left:4px solid #E0857A;border-radius:10px;padding:13px 16px;margin:20px 0;font-size:14.5px}
-h2{font-family:Georgia,serif;font-size:21px;color:#6FA0DC;margin:30px 0 6px;border-bottom:2px solid #272D4D;padding-bottom:6px}
-.blurb{color:#9AA6C8;font-size:14px;margin:0 0 12px}
+.rule{background:#1c1010;border-left:4px solid #ff6a6a;border-radius:10px;padding:13px 16px;margin:20px 0;font-size:14.5px}
+h2{font-family:var(--sans);font-size:21px;color:#5b8cff;margin:30px 0 6px;border-bottom:2px solid #1b2535;padding-bottom:6px}
+.blurb{color:#7e8ca6;font-size:14px;margin:0 0 12px}
 .choose{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:14px 0}
-.col{border:1px solid #272D4D;border-radius:12px;padding:16px 18px;background:#181D38;box-shadow:0 2px 8px rgba(0,0,0,.25)}
-.col.slm{border-top:5px solid #35C07E}.col.cop{border-top:5px solid #8B86F0}
-.col h3{margin:0 0 4px;font-size:17px}.col .when{font-size:12.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#9AA6C8;margin-bottom:8px}
+.col{border:1px solid #1b2535;border-radius:12px;padding:16px 18px;background:#0c1018;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+.col.slm{border-top:5px solid #46d08a}.col.cop{border-top:5px solid #34e3d4}
+.col h3{margin:0 0 4px;font-size:17px}.col .when{font-size:12.5px;font-weight:800;letter-spacing:.5px;text-transform:uppercase;color:#7e8ca6;margin-bottom:8px}
 .col ul{margin:8px 0;padding-left:20px}.col li{font-size:13.5px;margin:4px 0}
-.col .pro{color:#35C07E}.col .con{color:#E0B850}
+.col .pro{color:#46d08a}.col .con{color:#e6b24c}
 .cards{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:8px 0}
-.card{border:1px solid #272D4D;border-left:5px solid #3A4267;border-radius:10px;padding:14px 18px;background:#181D38}
-.card.slm{border-left-color:#35C07E}.card.cop{border-left-color:#8B86F0}
-.card h3{margin:0 0 5px;font-size:16px}.card p{font-size:13.5px;color:#C3CCE4;margin:0 0 9px}
+.card{border:1px solid #1b2535;border-left:5px solid #27344a;border-radius:10px;padding:14px 18px;background:#0c1018}
+.card.slm{border-left-color:#46d08a}.card.cop{border-left-color:#34e3d4}
+.card h3{margin:0 0 5px;font-size:16px}.card p{font-size:13.5px;color:#c7d2e6;margin:0 0 9px}
 .links{display:flex;gap:8px;flex-wrap:wrap}
-.links a{display:inline-block;background:#6FA0DC;color:#0E1124;text-decoration:none;font-weight:700;font-size:12px;padding:6px 11px;border-radius:7px}
-.card.slm .links a{background:#35C07E}.card.cop .links a{background:#8B86F0}.links a.ghost{background:var(--panel,#181D38);color:#6FA0DC;border:1px solid #6FA0DC}
-.honest{background:#2A2412;border-left:4px solid #D9A94F;border-radius:10px;padding:13px 16px;margin:18px 0;font-size:14px}.honest b{color:#E0B850}
-.foot{color:#9AA6C8;font-size:12px;margin-top:24px;border-top:1px solid #272D4D;padding-top:10px}
+.links a{display:inline-block;background:#5b8cff;color:#06090f;text-decoration:none;font-weight:700;font-size:12px;padding:6px 11px;border-radius:7px}
+.card.slm .links a{background:#46d08a}.card.cop .links a{background:#34e3d4}.links a.ghost{background:var(--panel,#0c1018);color:#5b8cff;border:1px solid #5b8cff}
+.honest{background:#1c1608;border-left:4px solid #e6b24c;border-radius:10px;padding:13px 16px;margin:18px 0;font-size:14px}.honest b{color:#e6b24c}
+.foot{color:#7e8ca6;font-size:12px;margin-top:24px;border-top:1px solid #1b2535;padding-top:10px}
 @media(max-width:760px){.choose,.cards{grid-template-columns:1fr}}
-</style></head>
-<body><a class="skip" href="#main">Skip to content</a>
+</style><style>/* === Mission Control override (bespoke) === */:root{--ink:#e7eef9;--text:#c7d2e6;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panel2:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--navy:#34e3d4;--indigo:#34e3d4;--green:#46d08a;--terra:#ff6a6a;--red:#ff6a6a;--blue:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif}html,body{background:#06090f!important;color:var(--text)!important}body{font-family:var(--sans)!important;background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.mcbar{position:relative;z-index:50;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14,#070a11);border-bottom:1px solid var(--line2);font-family:var(--mono)}.mcbar b{font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.mcbar b::before{content:"\25E2 ";color:var(--accent)}.mcbar .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}.mcbar a{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.mcbar a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;text-transform:uppercase;letter-spacing:.12em;font-weight:700;border-bottom:0!important}h2::before{content:"\25B8 ";color:var(--accent)}h3,h4{font-family:var(--mono)!important;color:var(--ink)!important;text-transform:uppercase;letter-spacing:.06em}a{color:var(--accent)}a:hover{color:#7af0e5}code,kbd{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)}pre{background:#070b12!important;border:1px solid var(--line2)!important}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;text-transform:uppercase;letter-spacing:.05em;font-size:11px}td,th{border-color:var(--line)!important}.card,.cards>*,.box,.panel,.note,.rule,.qc,.qc-c,.masthead,.setup,.honest,.rec,.pr,.feed,.featvid{background:var(--panel)!important;border-color:var(--line2)!important;color:var(--text)}header,.masthead,header .top{background:linear-gradient(180deg,#0a1018,#0c1018)!important;border-color:var(--line2)!important}.badge,.badge2,.tag,.pill,.kick,.k{background:rgba(52,227,212,.08)!important;color:var(--accent)!important;border:1px solid rgba(52,227,212,.4)!important}.lede,.sub,.blurb,.cap,.d{color:var(--muted)!important}.footer,.foot{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono)}@media print{.mcbar{display:none!important}}</style></head>
+<body><a class="skip" href="#main">Skip to content</a><div class="mcbar"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../Biostatistics.html">Biostatistics</a><a href="../START_HERE.html">Full library</a></div></div>
+
 <header><div class="k">FOR BIOSTATISTICIANS</div><h1>Study Operations Knowledge Base &mdash; two ways to build it</h1>
 <div class="sub">A self-updating, queryable knowledge base built automatically from your study Outlook mail &mdash; either on <b>M365 Copilot</b>, or <b>Copilot-free on a local Small Language Model</b>. Same goal, two very different IT and reproducibility profiles.</div><div class="bar"></div></header>
 <main id="main">
@@ -53,7 +54,7 @@ h2{font-family:Georgia,serif;font-size:21px;color:#6FA0DC;margin:30px 0 6px;bord
 </div>
 <div class="honest"><b>And the option that ships Monday:</b> Outlook + SharePoint + native search + a light template &mdash; <i>no model at all</i> &mdash; captures a surprising share of the value with zero AI entitlement and zero validation burden. If that is enough, it is a fair reason to <i>defer</i> standing up either AI path; the model&rsquo;s marginal value must clear its own cost.</div>
 
-<h2>Track 1 &middot; The Copilot-free local-SLM path <span style="font-weight:400;color:#9AA6C8;font-size:14px">(new)</span></h2>
+<h2>Track 1 &middot; The Copilot-free local-SLM path <span style="font-weight:400;color:#7e8ca6;font-size:14px">(new)</span></h2>
 <div class="cards">
   <div class="card slm"><h3>Local SLM operating wiki</h3><p>The full Copilot-free build: a local scheduled Graph job, an on-prem frozen SLM doing schema-constrained extraction (LOCALMIND), a human-gated parse-guard, SharePoint store, a local RAG &ldquo;ask the KB&rdquo;, and a deterministic-first weekly digest &mdash; with the honest reliability story and the IT-readiness contrast kept in the headline.</p><div class="links"><a href="Local_SLM_Operating_Wiki.html">Open wiki (HTML)</a><a class="ghost" href="Local_SLM_Operating_Wiki.pdf">PDF</a></div></div>
   <div class="card slm"><h3>The engine &amp; the IT playbook (reused)</h3><p>The LOCALMIND <code>%slm_*</code> library (loopback-guard, schema-constrained, allowlist-validator) that does the extract+validate+gate, the on-device worked example, and the IT/Security/QA enablement runbook with the hurdles + open-weight-licence landscape to hand to IT.</p><div class="links"><a href="../slm_wiki/SLM_SASR_TrialOps.html">On-device SLM wiki</a><a class="ghost" href="../slm_wiki/IT_SLM_Enablement_Runbook.pdf">IT runbook</a><a class="ghost" href="../slm_wiki/SLM_OnDevice_Example_narrated.mp4">&#9654; Example</a></div></div>

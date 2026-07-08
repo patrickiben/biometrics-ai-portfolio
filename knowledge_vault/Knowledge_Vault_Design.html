@@ -5,62 +5,63 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Knowledge Vault for Study Operations — design note</title>
 <style>
-:root{--bg:#0B0E14;--panel:#141925;--panel2:#1b2230;--text:#E6EAF2;--muted:#8b95a8;--line:#27303f;
-  --accent:#F2C14E;--teal:#56C2C0;--blue:#7AA2F7;--violet:#9D7CD8;--green:#6FCF97;--rose:#E5677B;}
+:root{--bg:#06090f;--panel:#0c1018;--panel2:#131a26;--text:#e7eef9;--muted:#7e8ca6;--line:#27303f;
+  --accent:#e6b24c;--teal:#34e3d4;--blue:#5b8cff;--violet:#34e3d4;--green:#46d08a;--rose:#ff6a6a;}
 *{box-sizing:border-box}
-body{margin:0;background:radial-gradient(ellipse 90% 60% at 50% 0%,#121829 0%,#0B0E14 60%);
+body{margin:0;background:radial-gradient(ellipse 90% 60% at 50% 0%,#121829 0%,#06090f 60%);
   color:var(--text);font-family:-apple-system,"Segoe UI",Inter,Arial,sans-serif;line-height:1.6}
 .wrap{max-width:980px;margin:0 auto;padding:30px 22px 90px}
 .badge{display:inline-block;background:#6b46c1;color:#fff;font-size:11.5px;font-weight:700;letter-spacing:.04em;
   padding:5px 12px;border-radius:20px;margin-bottom:14px}
-h1{font-family:Georgia,serif;font-size:34px;margin:0 0 8px;line-height:1.12}
-.lede{font-size:17px;color:#cdd4e1;max-width:760px;margin:0 0 18px}
+h1{font-family:var(--sans);font-size:34px;margin:0 0 8px;line-height:1.12}
+.lede{font-size:17px;color:#c7d2e6;max-width:760px;margin:0 0 18px}
 .cta{display:flex;gap:11px;flex-wrap:wrap;margin:18px 0 6px}
 .cta a{display:inline-flex;align-items:center;gap:8px;text-decoration:none;font-weight:700;font-size:14px;
   padding:11px 18px;border-radius:10px}
-.cta a.prim{background:var(--accent);color:#26200a}
-.cta a.ghost{background:#10141e;color:var(--text);border:1px solid var(--line)}
+.cta a.prim{background:var(--accent);color:#1a1608}
+.cta a.ghost{background:#0b0f16;color:var(--text);border:1px solid var(--line)}
 .cta a:hover{opacity:.92}
-.shot{margin:22px 0 6px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0b0e14;
+.shot{margin:22px 0 6px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#06090f;
   box-shadow:0 20px 60px #00000055}
 .shot img{display:block;width:100%}
 .cap{font-size:12px;color:var(--muted);margin:8px 2px 0}
-h2{font-family:Georgia,serif;font-size:23px;margin:42px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
+h2{font-family:var(--sans);font-size:23px;margin:42px 0 6px;padding-top:10px;border-top:1px solid var(--line)}
 h2 .n{color:var(--accent);font-size:15px;margin-right:9px;font-family:-apple-system,Arial,sans-serif}
 .sub{color:var(--muted);font-size:14px;margin:0 0 16px}
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:16px 0}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 17px}
 .card .ic{font-size:20px}
 .card h3{font-size:15px;margin:8px 0 5px}
-.card p{font-size:13px;color:#c2cad8;margin:0}
+.card p{font-size:13px;color:#c7d2e6;margin:0}
 .card .badge2{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:1px 7px;margin-top:9px}
 .callout{border-radius:12px;padding:15px 18px;margin:18px 0;font-size:14.5px}
 .callout.rule{background:#2a1414;border:1px solid #5a2b2b;border-left:4px solid var(--rose)}
-.callout.rule b{color:#ffb4a8}
+.callout.rule b{color:#f0afa6}
 .callout.honest{background:#241c08;border:1px solid #5a4a1f;border-left:4px solid var(--accent)}
 .callout.honest b{color:var(--accent)}
 .callout.tip{background:#0e2424;border:1px solid #1d4a48;border-left:4px solid var(--teal)}
 table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
 th,td{border:1px solid var(--line);padding:10px 13px;text-align:left;vertical-align:top}
-th{background:#10141e;color:#cdd4e1;font-weight:600}
+th{background:#0b0f16;color:#c7d2e6;font-weight:600}
 td b{color:var(--text)} .rec{color:var(--green);font-weight:700}
 ul{padding-left:20px}li{margin:5px 0;font-size:14.5px}
 .steps{counter-reset:s;list-style:none;padding:0;margin:14px 0}
 .steps li{position:relative;padding:4px 0 16px 44px;margin:0}
 .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;
-  background:var(--accent);color:#26200a;border-radius:50%;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
+  background:var(--accent);color:#1a1608;border-radius:50%;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:14px}
 .steps li b{font-size:15px}
 pre{position:relative;background:#0c1019;border:1px solid var(--line);border-left:3px solid var(--teal);
-  border-radius:9px;padding:12px 14px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;color:#d6deea;margin:8px 0}
+  border-radius:9px;padding:12px 14px;overflow:auto;font-family:Consolas,monospace;font-size:12.5px;color:#c7d2e6;margin:8px 0}
 .legend-row{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
-.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#c2cad8}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#c7d2e6}
 .lg .sw{width:10px;height:10px;border-radius:50%}
 .footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12px}
-.footer b{color:#9aa3b6}
+.footer b{color:#7e8ca6}
 @media(max-width:720px){.cards{grid-template-columns:1fr}}
-</style>
+</style><style>/* === Mission Control override (bespoke) === */:root{--ink:#e7eef9;--text:#c7d2e6;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panel2:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--navy:#34e3d4;--indigo:#34e3d4;--green:#46d08a;--terra:#ff6a6a;--red:#ff6a6a;--blue:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif}html,body{background:#06090f!important;color:var(--text)!important}body{font-family:var(--sans)!important;background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.mcbar{position:relative;z-index:50;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14,#070a11);border-bottom:1px solid var(--line2);font-family:var(--mono)}.mcbar b{font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.mcbar b::before{content:"\25E2 ";color:var(--accent)}.mcbar .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}.mcbar a{color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.mcbar a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;text-transform:uppercase;letter-spacing:.12em;font-weight:700;border-bottom:0!important}h2::before{content:"\25B8 ";color:var(--accent)}h3,h4{font-family:var(--mono)!important;color:var(--ink)!important;text-transform:uppercase;letter-spacing:.06em}a{color:var(--accent)}a:hover{color:#7af0e5}code,kbd{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)}pre{background:#070b12!important;border:1px solid var(--line2)!important}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;text-transform:uppercase;letter-spacing:.05em;font-size:11px}td,th{border-color:var(--line)!important}.card,.cards>*,.box,.panel,.note,.rule,.qc,.qc-c,.masthead,.setup,.honest,.rec,.pr,.feed,.featvid{background:var(--panel)!important;border-color:var(--line2)!important;color:var(--text)}header,.masthead,header .top{background:linear-gradient(180deg,#0a1018,#0c1018)!important;border-color:var(--line2)!important}.badge,.badge2,.tag,.pill,.kick,.k{background:rgba(52,227,212,.08)!important;color:var(--accent)!important;border:1px solid rgba(52,227,212,.4)!important}.lede,.sub,.blurb,.cap,.d{color:var(--muted)!important}.footer,.foot{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono)}@media print{.mcbar{display:none!important}}</style>
 </head>
-<body>
+<body><div class="mcbar"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../Biostatistics.html">Biostatistics</a><a href="../START_HERE.html">Full library</a></div></div>
+
 <div class="wrap">
 
   <div class="badge">⚠ PROPOSED — a capability to evaluate, not current practice</div>
@@ -77,15 +78,15 @@ pre{position:relative;background:#0c1019;border:1px solid var(--line);border-lef
   </div>
   <p class="cap">The interactive graph of a synthetic study (CP‑101). Hub at the centre; colour = note type; clusters settle into named regions. Hover to focus a note and its links; click for the full note + backlinks.</p>
   <div class="legend-row">
-    <span class="lg"><span class="sw" style="background:#F2C14E"></span>Hub</span>
-    <span class="lg"><span class="sw" style="background:#7AA2F7"></span>Design</span>
-    <span class="lg"><span class="sw" style="background:#9D7CD8"></span>Statistics</span>
-    <span class="lg"><span class="sw" style="background:#56C2C0"></span>Data</span>
-    <span class="lg"><span class="sw" style="background:#E0A458"></span>Process</span>
-    <span class="lg"><span class="sw" style="background:#E5677B"></span>Safety</span>
-    <span class="lg"><span class="sw" style="background:#6FCF97"></span>Supply</span>
-    <span class="lg"><span class="sw" style="background:#E08FB8"></span>Program</span>
-    <span class="lg"><span class="sw" style="background:#8A93A6"></span>Reference</span>
+    <span class="lg"><span class="sw" style="background:#e6b24c"></span>Hub</span>
+    <span class="lg"><span class="sw" style="background:#5b8cff"></span>Design</span>
+    <span class="lg"><span class="sw" style="background:#34e3d4"></span>Statistics</span>
+    <span class="lg"><span class="sw" style="background:#34e3d4"></span>Data</span>
+    <span class="lg"><span class="sw" style="background:#e6b24c"></span>Process</span>
+    <span class="lg"><span class="sw" style="background:#ff6a6a"></span>Safety</span>
+    <span class="lg"><span class="sw" style="background:#46d08a"></span>Supply</span>
+    <span class="lg"><span class="sw" style="background:#5b8cff"></span>Program</span>
+    <span class="lg"><span class="sw" style="background:#7e8ca6"></span>Reference</span>
   </div>
 
   <h2><span class="n">01</span>What it actually is</h2>
@@ -99,9 +100,9 @@ pre{position:relative;background:#0c1019;border:1px solid var(--line);border-lef
   <h2><span class="n">02</span>One vault, three jobs</h2>
   <p class="sub">It earns its place by doing three things at once, all over the same files.</p>
   <div class="cards">
-    <div class="card"><h3>① A graph layer over the Study KB</h3><p>The auto‑ingest engine writes each entry as a <code>.md</code> note linked to a per‑study hub — open the folder and the graph is just <i>there</i>.</p><span class="badge2" style="background:#1d3a2a;color:#7fe0a8">extends what we built</span></div>
-    <div class="card"><h3>② A living team knowledge base</h3><p>SOPs, naming conventions, the glossary, lessons‑learned — editable, cross‑linked notes. The HTML wikis stay as the read‑only published face.</p><span class="badge2" style="background:#3a2a14;color:#e0b070">grows over time</span></div>
-    <div class="card"><h3>③ The corpus for the local model</h3><p>Point the frozen on‑prem SLM at the vault. Same retrieval pattern as the local‑SLM operating wiki — and it still <b>never sources a number</b>.</p><span class="badge2" style="background:#14243a;color:#8fb6e0">feeds the SLM</span></div>
+    <div class="card"><h3>① A graph layer over the Study KB</h3><p>The auto‑ingest engine writes each entry as a <code>.md</code> note linked to a per‑study hub — open the folder and the graph is just <i>there</i>.</p><span class="badge2" style="background:#1d3a2a;color:#7fe3b0">extends what we built</span></div>
+    <div class="card"><h3>② A living team knowledge base</h3><p>SOPs, naming conventions, the glossary, lessons‑learned — editable, cross‑linked notes. The HTML wikis stay as the read‑only published face.</p><span class="badge2" style="background:#3a2a14;color:#e6b24c">grows over time</span></div>
+    <div class="card"><h3>③ The corpus for the local model</h3><p>Point the frozen on‑prem SLM at the vault. Same retrieval pattern as the local‑SLM operating wiki — and it still <b>never sources a number</b>.</p><span class="badge2" style="background:#14243a;color:#5b8cff">feeds the SLM</span></div>
   </div>
 
   <h2><span class="n">03</span>How it wires into what we have</h2>
@@ -114,7 +115,7 @@ pre{position:relative;background:#0c1019;border:1px solid var(--line);border-lef
                                           ▼                                                          ▼
                               Obsidian / Foam / Logseq                                     Local frozen SLM
                               backlinks · search · graph                                   RAG over the vault</pre>
-  <p style="font-size:13.5px;color:#c2cad8">Plain Markdown + <b>git</b> gives versioning and a frozen history — which is exactly the sovereignty / reproducibility story the rest of the program already makes.</p>
+  <p style="font-size:13.5px;color:#c7d2e6">Plain Markdown + <b>git</b> gives versioning and a frozen history — which is exactly the sovereignty / reproducibility story the rest of the program already makes.</p>
 
   <div class="callout rule">
     <b>Same governance as the Study KB — non‑negotiable.</b> The vault is <b>operations only</b>: never PHI, participant‑level data, unblinded assignments, or sponsor‑restricted IP. Every note carries an "informational ops support — <b>not a source of record</b>" line. Reported and regulated numbers come from validated tools (Phoenix WinNonlin, Pinnacle 21, the validated pipeline) and a human signs them — <b>the vault never produces a number.</b> A graph holds the wrong thing as easily as a mailbox does, so the inbound‑rule + watermark governance carries over unchanged.
@@ -154,7 +155,7 @@ python3 kb_to_vault.py --demo    # production path: live Study KB entries → va
 <script>
 /* portable reproducibility kit: copy-buttons + Print/PDF (theme-agnostic) */
 (function(){
-  var css='.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 "Segoe UI",Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.85}.repro-copybtn:hover{opacity:1}.repro-copybtn.ok{background:#1f9d55}.repro-print{position:fixed;bottom:16px;right:16px;background:#F2C14E;color:#26200a;border:none;border-radius:22px;font:700 13px "Segoe UI",Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);z-index:60}@media print{.repro-copybtn,.repro-print{display:none!important}.cta,.shot{break-inside:avoid}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
+  var css='.repro-copybtn{position:absolute;top:6px;right:6px;background:#3a4566;color:#fff;border:1px solid rgba(255,255,255,.28);border-radius:6px;font:600 11px/1 "Segoe UI",Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.85}.repro-copybtn:hover{opacity:1}.repro-copybtn.ok{background:#1f9d55}.repro-print{position:fixed;bottom:16px;right:16px;background:#e6b24c;color:#1a1608;border:none;border-radius:22px;font:700 13px "Segoe UI",Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.4);z-index:60}@media print{.repro-copybtn,.repro-print{display:none!important}.cta,.shot{break-inside:avoid}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
   var st=document.createElement('style');st.textContent=css;document.head.appendChild(st);
   document.querySelectorAll('pre').forEach(function(pre){var t=pre.innerText.trim();if(!t)return;
     pre.style.position='relative';var b=document.createElement('button');b.className='repro-copybtn';b.type='button';b.textContent='Copy';
