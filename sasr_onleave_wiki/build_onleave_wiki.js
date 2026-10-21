@@ -3,6 +3,8 @@
 // builder generates: the package DARK theme, inline SVG diagrams, and content
 // updates (2026-06). Rebuilding from this script regenerates the OLD output and
 // DROPS all of that. The .html is the SOURCE OF TRUTH.
+// 2026-10: the coverage & continuity sections (Five scenarios, Job inventory & bus
+// factor, Interactive toolkit) were also added by hand to the .html; they are not here.
 // Rebuild is guarded: aborts unless you deliberately set REBUILD=1.
 // ============================================================================
 if (process.env.REBUILD !== '1') {
