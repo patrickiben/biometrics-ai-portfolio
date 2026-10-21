@@ -26,6 +26,14 @@ one‑page index). All data is **100% synthetic**; there is no PHI and no partic
 **Operational tooling (no AI required)**
 - **Deterministic SAS/R monitoring + on‑leave coverage** — scheduled, reproducible checks that detect,
   package, and page humans; zero PHI egress. → [`sas_r_automation/`](sas_r_automation/) · [`sasr_monitoring_wiki/`](sasr_monitoring_wiki/)
+- **Coverage & continuity toolkit** — the on‑leave playbook generalized to five scenarios (planned leave,
+  unplanned absence, role handoff / departure, onboarding a new owner, bus‑factor review), plus an
+  interactive single‑file page: enter or import the team's recurring jobs (owner, backups, schedule,
+  inputs, outputs, criticality, last run, runbook) and get a coverage matrix, uncovered and single‑owner
+  risks, a checklist per job, and a printable or downloadable handoff packet. Data stays in the browser
+  (localStorage + JSON/CSV export); no network requests; ships with a clearly fictional example.
+  `tm_inventory.sh` refreshes last‑run status from the monitors' heartbeat files.
+  → [`sasr_onleave_wiki/Continuity_Toolkit.html`](sasr_onleave_wiki/Continuity_Toolkit.html) · [playbook](sasr_onleave_wiki/On_Leave_Coverage_Playbook.html) · [CSV template](sasr_onleave_wiki/continuity_jobs_template.csv)
 - **Self‑updating trackers & knowledge bases** — Smartsheet‑from‑SAS/R, a no‑GUI Outlook→KB pipeline, and a
   navigable knowledge‑graph vault. → [`smartsheet_sasr/`](smartsheet_sasr/) · [`study_kb_nogui/`](study_kb_nogui/index.html) · [`knowledge_vault/`](knowledge_vault/)
 - **IRT / RTSM User Acceptance Testing** — UAT of the randomization & supply system from the biostatistics
