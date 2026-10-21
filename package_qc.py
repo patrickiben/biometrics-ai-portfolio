@@ -25,8 +25,11 @@ def add(cat, msg): issues.setdefault(cat, []).append(msg)
 html_files = [f for f in glob.glob(ROOT + "/**/*.html", recursive=True)
               if not any(s in f for s in SKIP_DIR)]
 
-# 1. broken internal links (skip JS template literals ${...}, external, anchors)
+# 1. broken internal links (skip JS template literals ${...}, external, anchors).
+#    Quarto partials (_*.html, e.g. _mc-topbar.html) are skipped: their links are relative to
+#    the page that includes them, and those rendered pages are checked here instead.
 for f in html_files:
+    if os.path.basename(f).startswith("_"): continue
     base = os.path.dirname(f); t = read(f)
     for m in re.finditer(r'(?:href|src)="([^"]+)"', t):
         u = m.group(1)
