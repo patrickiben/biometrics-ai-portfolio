@@ -878,8 +878,9 @@ function show(v) {
     b.setAttribute("aria-selected", on ? "true" : "false");
     b.tabIndex = on ? 0 : -1;
   });
-  if (location.hash !== "#" + v) history.replaceState(null, "", "#" + v);
   renderView(v);
+  /* Keep the tab in the URL. Sandboxed previews (srcdoc iframes) refuse replaceState; the tab still works. */
+  try { if (location.hash !== "#" + v) history.replaceState(null, "", "#" + v); } catch (e) { /* ignore */ }
 }
 function renderAll() {
   var risks = allRisks();
