@@ -22,6 +22,12 @@ one‑page index). All data is **100% synthetic**; there is no PHI and no partic
   runs demographics / PK‑NCA / BE‑ANOVA end‑to‑end. → [`sim_lifecycle/`](sim_lifecycle/index.html)
 - **Protocol→CSR deliverables pipeline** and a **TLF‑interpretation drafter** (a small‑model skeleton that
   never sources a number). → [`biostat_pipeline/`](biostat_pipeline/) · [`tlf_interpret/`](tlf_interpret/index.html)
+- **eCRF pipeline apps** (separate repo) — four independent Streamlit apps for clinical eCRF extracts: MedDRA-style
+  auto-coding, PII/PHI redaction, participant risk scoring, and anomaly and drift detection. Public demos run in a locked
+  hosted mode on synthetic data only, with a 244-check QC harness in CI.
+  → [overview](https://patrickiben.github.io/ecrf-pipeline-apps/) · [coding](https://ecrf-coding.streamlit.app/?demo=1) ·
+  [PHI](https://ecrf-phi.streamlit.app/?demo=1) · [risk](https://ecrf-risk.streamlit.app/?demo=1) ·
+  [anomaly](https://ecrf-anomaly.streamlit.app/?demo=1) · [source](https://github.com/patrickiben/ecrf-pipeline-apps)
 
 **Operational tooling (no AI required)**
 - **Deterministic SAS/R monitoring + on‑leave coverage** — scheduled, reproducible checks that detect,
