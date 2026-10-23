@@ -85,3 +85,15 @@ one‑page index). All data is **100% synthetic**; there is no PHI and no partic
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
+
+## Static hosting and package checks
+
+The repository is ready to serve directly from **GitHub Pages: `main` branch, `/ (root)`**.
+No framework or build step is required. `.nojekyll` preserves the packaged Quarto assets.
+After enabling Pages in repository settings, verify the expected address before sharing it:
+`https://patrickiben.github.io/biometrics-ai-portfolio/`.
+
+Run `python3 package_qc.py` from a **complete checkout** to check navigation, local file links,
+static directory landing pages, terminology, and documented library counts. GitHub Actions runs
+this check on pushes and pull requests. It does not certify the statistical methods or execute
+SAS/R analysis; the study-validation evidence is described in `validation_harness/`.

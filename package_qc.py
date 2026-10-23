@@ -9,6 +9,7 @@ Run:  python3 package_qc.py [package_root]     (default: this file's directory)
 Exit code 0 if clean, 1 if any issue found. Emits package_qc_report.md.
 """
 import os, re, glob, sys, json
+from urllib.parse import unquote
 
 ROOT = os.path.abspath(sys.argv[1]) if len(sys.argv) > 1 else os.path.dirname(os.path.abspath(__file__))
 NAV_PAGES = ["START_HERE.html", "index.html", "Operations.html", "Biostatistics.html", "Management.html"]
@@ -35,11 +36,14 @@ for f in html_files:
         u = m.group(1)
         if re.match(r'^(https?:|#|mailto:|tel:|data:|javascript:)', u): continue
         if "${" in u or "'+" in u or "+'" in u: continue          # JS-built href, not static
-        p = u.split('#')[0].split('?')[0]
+        p = unquote(u.split('#')[0].split('?')[0])
         if not p: continue
         tgt = os.path.normpath(os.path.join(ROOT, p.lstrip('/'))) if p.startswith('/') else os.path.normpath(os.path.join(base, p))
         if not os.path.exists(tgt):
             add("Broken links", f"{rel(f)}  ->  {u}")
+        elif os.path.isdir(tgt) and not any(os.path.isfile(os.path.join(tgt, name))
+                                           for name in ("index.html", "index.htm")):
+            add("Directory has no static landing page", f"{rel(f)}  ->  {u}")
 
 # 2. navigation coverage: every top-level deliverable dir must be reachable from the
 #    master index (START_HERE.html) AND from at least one hub/section page.
