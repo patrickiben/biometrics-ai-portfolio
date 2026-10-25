@@ -61,7 +61,8 @@ from GitHub Pages on bundled synthetic data, with uploads disabled; GitHub Pages
 which serve the page, see the visitor's IP address (about 30 MB on first visit):
 [coding QC](https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html) · [de-identification](https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html) ·
 [risk screening](https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html) · [central monitoring](https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html)
-([overview](https://patrickiben.github.io/ecrf-pipeline-apps/)). Not a validated or Part 11 system.
+([overview](https://patrickiben.github.io/ecrf-pipeline-apps/)). Result screenshots for the home page are in
+`assets/ecrf/`. Not a validated or Part 11 system.
 
 Source and evaluation: <https://github.com/patrickiben/ecrf-pipeline-apps>.
 
