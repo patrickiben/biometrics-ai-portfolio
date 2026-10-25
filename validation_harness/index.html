@@ -103,7 +103,7 @@
 
 <script id="ledger" type="application/json">
 {
- "generated": "2026-10-25 14:12 EDT",
+ "generated": "2026-10-25 18:49 UTC",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "green": 8,
  "manual": 1,
@@ -114,14 +114,14 @@
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "492 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "519 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
    "gate": "G2 PK and count convention scans",
    "guards": "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)",
    "status": "green",
-   "evidence": "static scans: the log-scale geometric-mean pattern appears in 14 files under r_tlf_pseudocode (programs, helpers and documentation alike; the scan needs only one, so it would pass even if no PK program used it); distinct-participant counting in 162 programs; drafter number-validation self-test present (5)",
+   "evidence": "static scans: the log-scale geometric-mean pattern appears in 14 files under r_tlf_pseudocode (programs, helpers and documentation alike; the scan needs only one, so it would pass even if no PK program used it); distinct-participant counting in 164 programs; drafter number-validation self-test present (5)",
    "sign_off": "pending"
   },
   {
@@ -135,7 +135,7 @@
    "gate": "G4 SAS/R twin structural parity",
    "guards": "the SAS and R twins line up program for program (structure only)",
    "status": "green",
-   "evidence": "217 SAS / 217 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse. Structural only: SAS is not executed (no license), so no outputs are compared, and the R twins were written to mirror the SAS",
+   "evidence": "221 SAS / 221 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse. Structural only: SAS is not executed (no license), so no outputs are compared, and the R twins were written to mirror the SAS",
    "sign_off": "pending"
   },
   {
@@ -163,7 +163,7 @@
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 55 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
+   "evidence": "package_qc.py: 0 issues across 60 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
   },
   {

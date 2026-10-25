@@ -16,7 +16,7 @@
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R": "6cc1ea345e1a14a50e969cecd16c165b7978dba17a3c7fe2613704857263333e",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-logic.R": "1376040d1d0cc7d76d2263f64be28e7c041cd59c2133188afdd2a9f11a97fc18",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-server.R": "ef6fa458db58c12ee188e3133d44ed6f506f4a60253feccf59ff59dd91eb4f4f",
-  "uat_irt/tests/test-logic.R": "390bfb89d9dafa76ac41a1ea7f92682922918d71dbddfcefe179f942155fab12",
+  "uat_irt/tests/test-logic.R": "910f3207302a681ffc6dad357c5d05b8f9b7595a5ddd72ec642819b750fb71d3",
   "validation_harness/teeth/run_teeth.sh": "dd29995c18b349a4dd843a5c997ac47f0cf2a26e768029356b8ef5ba06c76c78",
   "validation_harness/teeth/apply_defect.py": "45ae6c5c8041139f49cb9cb4d0d9189e9c3d8971bb8ee90c0eb34569bd671f97"
  },
