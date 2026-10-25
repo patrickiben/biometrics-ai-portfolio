@@ -1,0 +1,93 @@
+# Build and publish the whole GitHub Pages site: the static pages plus three R Shiny apps that run
+# in the visitor's browser with Shinylive (webR): TRIALMON, the UAT tracker and the lifecycle
+# console, at apps/<name>/. All three share one copy of the Shinylive and webR assets. Synthetic
+# data only. The build output is never committed.
+#
+# Publishing needs the repository's Pages source set to "GitHub Actions" (Settings > Pages). Until
+# then the build job still runs and checks everything, the deploy job is skipped with a notice, and
+# the branch build keeps serving the site as before.
+#
+# Action majors checked against their GitHub releases on 2026-10-25: actions/checkout v7,
+# actions/setup-python v6, r-lib/actions v2, actions/configure-pages v6,
+# actions/upload-pages-artifact v5, actions/deploy-pages v5.
+name: Pages (static site and Shinylive apps)
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pages: read          # to read the Pages source below
+    outputs:
+      pages_source: ${{ steps.source.outputs.build_type }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install pdftotext (the package check reads the text of published PDFs)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
+      - name: Package check on the source pages
+        # Runs before the build: the Shinylive output (webR assets, app.json bundles) is not
+        # part of the package the check describes.
+        run: python package_qc.py
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.0'
+          use-public-rspm: true
+      - name: Install shinylive (pinned) and the apps' packages
+        shell: Rscript {0}
+        run: |
+          install.packages("pak")
+          pak::pkg_install(c("shinylive@0.5.0", "shiny", "bslib", "DT", "ggplot2", "testthat"))
+      - name: App tests
+        run: |
+          Rscript uat_irt/tests/test-logic.R
+          Rscript uat_irt/tests/test-server.R
+          Rscript lifecycle_dashboard/tests/test-logic.R
+          Rscript lifecycle_dashboard/tests/test-server.R
+          Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R
+      - name: Build the site (static pages, then shinylive::export for each app)
+        # Copies the tracked files into _site/, exports each app into _site/apps/<name>/ with
+        # shinylive 0.5.0 (assets 0.10.12), gives each wrapper page a data: URI favicon, and
+        # stops if any app, the shared assets or a favicon link is missing.
+        run: Rscript .github/pages/build_site.R _site
+      - name: Read the Pages source
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          build_type=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq .build_type)
+          echo "build_type=${build_type}" >> "$GITHUB_OUTPUT"
+          if [ "${build_type}" != "workflow" ]; then
+            echo "::notice title=Not deployed::The Pages source is '${build_type}', not GitHub Actions. The site was built and checked; switch Settings > Pages > Source to GitHub Actions to publish it from this workflow."
+          fi
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.pages_source == 'workflow'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5

@@ -46,6 +46,7 @@ worked artifact yet).
 | [`sas_r_automation/`](sas_r_automation/SAS_R_Trial_Monitoring_Automation.html) | Deterministic SAS/R monitoring macro library and wiki | Not executed (no SAS license) |
 | [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html) | Tracker updates from SAS/R through the Smartsheet API | R companion run against a local mock API; SAS not executed |
 | [`lifecycle_dashboard/`](lifecycle_dashboard/quarto/lifecycle-guide.html) | Deliverable status report for a synthetic study portfolio, with a [field guide](lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html) | Unit tests pass locally; static snapshots |
+| `apps/` | Where the site serves three Shiny apps in the browser: TRIALMON, the UAT tracker and the lifecycle console. The Pages workflow (`.github/workflows/pages.yml`) builds them with Shinylive; the committed pages are placeholders, and the build output is not committed | Exported and checked in headless Chrome locally; Safari and Firefox not checked |
 | [`budget_reconciliation/`](budget_reconciliation/quarto/hours-guide.html) | Effort (hours) reconciliation example | Illustration on synthetic data |
 
 Research and teaching (six manuscripts and twelve educational editions) are on the
@@ -99,6 +100,16 @@ The Shiny apps run in local R, for example `shiny::runApp("uat_irt/shiny")` afte
 `install.packages(c("shiny", "bslib", "DT", "ggplot2"))`. The same pattern works for
 `lifecycle_dashboard/shiny`, `budget_reconciliation/shiny` and
 `sasr_monitoring_wiki/trialmon_shiny`.
+
+Three of them (TRIALMON, the UAT tracker and the lifecycle console) also run in the browser from
+the site, built with Shinylive (webR) by `.github/workflows/pages.yml`. To build the whole site
+locally, with shinylive 0.5.0 and the apps' packages installed (build outside the checkout, so
+`package_qc.py` and the harness do not scan the build):
+
+```sh
+Rscript .github/pages/build_site.R ../portfolio-site             # static pages plus the three apps
+python3 -m http.server 8000 --directory ../portfolio-site        # then open http://localhost:8000/apps/trialmon/
+```
 
 The SAS programs are written for SAS 9.4M8 or later (9.4M9, June 2025, is current) and have not been
 executed here.
