@@ -83,7 +83,8 @@
       <thead><tr><th scope="col">ID</th><th scope="col">Planted defect</th><th scope="col">Where</th><th scope="col">Predicted</th><th scope="col">Result</th><th scope="col">Caught by</th></tr></thead>
       <tbody id="teeth-rows"><tr><td colspan="6">Run <code>bash validation_harness/teeth/run_teeth.sh</code>.</td></tr></tbody>
     </table></div>
-    <p class="small">Registry: <a href="teeth/defects.csv">teeth/defects.csv</a> (file, exact text replaced, replacement, predicted catcher and rationale per defect), frozen by its SHA-256 in <a href="teeth/defects.sha256">teeth/defects.sha256</a> before the first run; the runner refuses an edited registry. Runner: <a href="teeth/run_teeth.sh">teeth/run_teeth.sh</a> with <a href="teeth/apply_defect.py">teeth/apply_defect.py</a>. Results: <code>teeth/results/summary.json</code> and the dated CSV beside it. G10 turns &ldquo;stale&rdquo; when the registry or any gate script changes after the run. Layers: G1 to G9 and the module tests (TRIALMON testthat files, the UAT logic test); &ldquo;driver error&rdquo; means <code>run_lifecycle.R</code> stopped with an error. The TRIALMON defects are caught only by its tests, which the harness itself does not run.</p>
+    <p><b>What the 2026-10-25 run shows.</b> G1 to G8 caught none of the seven numeric and counting defects (D05 to D11); only the independent recomputation (G9) did. D04 survived: G2 passes while the log-scale pattern appears in one PK program, not every one, and nothing runs the TLF libraries on data. D01 was stopped by the generator's own consistency assertion before G3 could see it. The TRIALMON defects (D12 to D14) were caught only by TRIALMON's tests, which <code>run_harness.sh</code> does not run. All 17 outcomes matched the predictions registered in advance; the predictions came from the same author reading the gate code, so the match is not an independent test.</p>
+    <p class="small">Registry: <a href="teeth/defects.csv">teeth/defects.csv</a> (file, exact text replaced, replacement, predicted catcher and rationale per defect), frozen by its SHA-256 in <a href="teeth/defects.sha256">teeth/defects.sha256</a> before the first run; the runner refuses an edited registry. Runner: <a href="teeth/run_teeth.sh">teeth/run_teeth.sh</a> with <a href="teeth/apply_defect.py">teeth/apply_defect.py</a>. Results: <code>teeth/results/summary.json</code> and the dated CSV beside it. G10 turns &ldquo;stale&rdquo; when the registry or any gate script changes after the run. Layers: G1 to G9 and the module tests (TRIALMON testthat files, the UAT logic test); &ldquo;driver error&rdquo; means <code>run_lifecycle.R</code> stopped with an error, and &ldquo;generator error&rdquo; that <code>simulate_study()</code> itself did.</p>
     <div class="principle"><b>Tools built:</b> QC-process engineering adapted from the teeth check and method-invariance grid in my consilience-engine software. It measures the harness itself and is not a statistical method. The Hy's Law grid in the TRIALMON console is a structured sensitivity analysis of SAP conventions. Synthetic data; SAS not executed.<br><br>
     <b>Prior art first.</b> Mutation testing (DeMillo, Lipton and Sayward, &ldquo;Hints on test data selection,&rdquo; <em>Computer</em> 11(4):34&ndash;41, 1978) and error seeding (Mills, IBM report, 1972) plant known faults to measure a test suite; the R package muttest (0.3.0, CRAN, July 2026) does this for R code. Zheng (JSM Proceedings 2019) models the errors that independent dual programming misses with a Poisson process, a model rather than an experiment. The grid follows multiverse analysis (Steegen et al., <em>Perspectives on Psychological Science</em> 11(5):702&ndash;712, 2016) and specification curves (Simonsohn, Simmons and Nelson, <em>Nature Human Behaviour</em>, 2020), in the spirit of ICH E9(R1) sensitivity analyses and FDA's July 2009 DILI guidance. <b>What is new here</b> is no new statistics: it is measuring which defects this clinical QC harness catches against a list registered before the run (a literature search for this build found no published example, which does not show there is none), and making each potential Hy's Law flag's dependence on SAP conventions explicit.<br><br>
     <b>Source of the method:</b> Iben P. Which data modality recognizes a gene set? A domain-agnostic consilience engine. In peer review at PeerJ (author draft exported 13 July 2026). Software: <a href="https://doi.org/10.5281/zenodo.21399794">doi:10.5281/zenodo.21399794</a>; code: <a href="https://github.com/patrickiben/consilience-engine">github.com/patrickiben/consilience-engine</a>.</div>
@@ -99,9 +100,9 @@
 
 <script id="ledger" type="application/json">
 {
- "generated": "2026-10-25 13:00 EDT",
+ "generated": "2026-10-25 13:15 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 7,
+ "green": 8,
  "manual": 1,
  "unsigned": 1,
  "total": 10,
@@ -172,15 +173,273 @@
   {
    "gate": "G10 Harness sensitivity",
    "guards": "the harness's own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)",
-   "status": "stale",
-   "evidence": "stale: no seeded-defect run recorded. registry of 17 defects frozen at sha256 6693bc70198f6a68",
+   "status": "green",
+   "evidence": "registry of 17 defects frozen at sha256 6693bc70198f6a68; last run 2026-10-25: CAUGHT 13, SURVIVED 1, EQUIVALENT 1, NOT APPLICABLE 2; survived (disclosed, not failures): D04 (exp(mean(x)) as the geometric mean in one R PK TLF program); the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
    "sign_off": "pending"
   }
  ]
 }
 </script>
 <script id="teeth-data" type="application/json">
-null
+{
+ "run_date": "2026-10-25",
+ "r_version": "R version 4.6.0 (2026-04-24)",
+ "registry": "validation_harness/teeth/defects.csv",
+ "registry_sha256": "6693bc70198f6a68c49ce9eee80f9dc053dec88ba07fa78f407703fd1cfa4e62",
+ "n_defects": 17,
+ "n_run": 17,
+ "partial": false,
+ "gate_scripts": {
+  "validation_harness/run_harness.sh": "1ce0f4ea047055678fb873aa252d79e2a5d3c7226e297a0686668336fdf95c76",
+  "validation_harness/checks/conformance.R": "2338845c397bba61e22ff8dc7457e5f0b2ad8d42c14a17467fb2a7979d42e35b",
+  "validation_harness/checks/independent_recompute.R": "e6d6f950d7009792544c51fda0600bda77cb4c3af6bc38502d74c50bd38e7dce",
+  "package_qc.py": "7220a0252da09492e354e0013c50782e6df4d5f09a5f5349bea441ca875819eb",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/helper-trialmon.R": "991042b6ad58fe7cf6fb1392397919add6ef34fdb977365b7371256903393dbc",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/test-boundaries.R": "73b91a31b4652749d096e69508c5f621002b1605bdff2d0a987ed077a3474f7a",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R": "5f74e6745f758c46c1be7de726fe3fc7f0f732b7c87451671b49cea6bf029f2e",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/test-logic.R": "1376040d1d0cc7d76d2263f64be28e7c041cd59c2133188afdd2a9f11a97fc18",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/test-server.R": "ef6fa458db58c12ee188e3133d44ed6f506f4a60253feccf59ff59dd91eb4f4f",
+  "uat_irt/tests/test-logic.R": "390bfb89d9dafa76ac41a1ea7f92682922918d71dbddfcefe179f942155fab12",
+  "validation_harness/teeth/run_teeth.sh": "a0a3a4e2328a29b77e683886e3be0c66bbf4251d570f05d79616cdc34ce4832d",
+  "validation_harness/teeth/apply_defect.py": "45ae6c5c8041139f49cb9cb4d0d9189e9c3d8971bb8ee90c0eb34569bd671f97"
+ },
+ "baseline": {
+  "gates": {
+   "G1": "green",
+   "G2": "green",
+   "G3": "green",
+   "G4": "green",
+   "G5": "manual",
+   "G6": "green",
+   "G7": "not_signed",
+   "G8": "green",
+   "G9": "green",
+   "G10": "stale"
+  },
+  "tests": {
+   "trialmon/test-boundaries.R": "PASS",
+   "trialmon/test-hyslaw-grid.R": "PASS",
+   "trialmon/test-logic.R": "PASS",
+   "trialmon/test-server.R": "PASS",
+   "uat_irt/test-logic.R": "PASS"
+  }
+ },
+ "counts": {
+  "CAUGHT": 13,
+  "SURVIVED": 1,
+  "EQUIVALENT": 1,
+  "NOT APPLICABLE": 2
+ },
+ "as_predicted": 17,
+ "results_csv": "validation_harness/teeth/results/teeth_2026-10-25.csv",
+ "rows": [
+  {
+   "id": "D00",
+   "defect": "Comment-only edit in the driver (no-op control)",
+   "defect_class": "control",
+   "file": "sim_lifecycle/run_lifecycle.R",
+   "predicted": "EQUIVALENT",
+   "class": "EQUIVALENT",
+   "layers": "",
+   "differs": "",
+   "note": "no output or printed result differs from the unmutated copy (diff)",
+   "status": "as predicted"
+  },
+  {
+   "id": "D01",
+   "defect": "TRT01A wrong for one participant (participant 001, sequence TR, set to Reference in sim_adsl)",
+   "defect_class": "key",
+   "file": "sim_lifecycle/simulate_adam.R",
+   "predicted": "CAUGHT: generator error; G1",
+   "class": "CAUGHT",
+   "layers": "generator error; G1",
+   "differs": "printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D02",
+   "defect": "PARAMCD AUCLST written as AUC-LST in sim_adpp",
+   "defect_class": "label",
+   "file": "sim_lifecycle/simulate_adam.R",
+   "predicted": "CAUGHT: driver error; G3; G9",
+   "class": "CAUGHT",
+   "layers": "driver error; G3; G9",
+   "differs": "adpp.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D03",
+   "defect": "One ADAE USUBJID not in ADSL (the first AE record gets CP-SIM-999-001 in sim_adae)",
+   "defect_class": "key",
+   "file": "sim_lifecycle/simulate_adam.R",
+   "predicted": "CAUGHT: G3; G9",
+   "class": "CAUGHT",
+   "layers": "G3; G9",
+   "differs": "adae.csv; results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D04",
+   "defect": "exp(mean(x)) as the geometric mean in one R PK TLF program",
+   "defect_class": "convention",
+   "file": "r_tlf_pseudocode/crossover/t_pk_param_summary.R",
+   "predicted": "SURVIVED",
+   "class": "SURVIVED",
+   "layers": "",
+   "differs": "",
+   "note": "no layer runs this program, so nothing can differ or fail",
+   "status": "as predicted"
+  },
+  {
+   "id": "D05",
+   "defect": "exp(mean(x)) in geo(), the driver's geometric mean",
+   "defect_class": "numeric",
+   "file": "sim_lifecycle/run_lifecycle.R",
+   "predicted": "CAUGHT: G9",
+   "class": "CAUGHT",
+   "layers": "G9",
+   "differs": "results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D06",
+   "defect": "AE overview counts records instead of participants (the related, severe and serious rows)",
+   "defect_class": "counting",
+   "file": "sim_lifecycle/run_lifecycle.R",
+   "predicted": "CAUGHT: G9",
+   "class": "CAUGHT",
+   "layers": "G9",
+   "differs": "results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D07",
+   "defect": "log10 instead of the natural log in be(), with the back-transform still exp()",
+   "defect_class": "numeric",
+   "file": "sim_lifecycle/run_lifecycle.R",
+   "predicted": "CAUGHT: G9",
+   "class": "CAUGHT",
+   "layers": "G9",
+   "differs": "results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D08",
+   "defect": "qt(0.975) instead of qt(0.95) in be(), a 95% CI printed as the 90% CI",
+   "defect_class": "numeric",
+   "file": "sim_lifecycle/run_lifecycle.R",
+   "predicted": "CAUGHT: G9",
+   "class": "CAUGHT",
+   "layers": "G9",
+   "differs": "results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D09",
+   "defect": "Period term dropped from the bioequivalence model in be()",
+   "defect_class": "model",
+   "file": "sim_lifecycle/run_lifecycle.R",
+   "predicted": "CAUGHT: G9",
+   "class": "CAUGHT",
+   "layers": "G9",
+   "differs": "results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D10",
+   "defect": "lambda_z fitted to the last two points instead of three in nca_one()",
+   "defect_class": "numeric",
+   "file": "sim_lifecycle/simulate_adam.R",
+   "predicted": "CAUGHT: G9",
+   "class": "CAUGHT",
+   "layers": "G9",
+   "differs": "adpp.csv; results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D11",
+   "defect": "BLQ concentrations imputed as LLOQ/2 into AUC in nca_one(), so AUClast runs to the last sample",
+   "defect_class": "numeric",
+   "file": "sim_lifecycle/simulate_adam.R",
+   "predicted": "CAUGHT: G9",
+   "class": "CAUGHT",
+   "layers": "G9",
+   "differs": "adpp.csv; results_summary.csv; printed driver output",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D12",
+   "defect": "Potential Hy's Law AND turned into OR in liver_one() (inside the window, or TBL > 2x ULN)",
+   "defect_class": "screening rule",
+   "file": "sasr_monitoring_wiki/trialmon_shiny/R/logic.R",
+   "predicted": "CAUGHT: trialmon/test-logic.R; trialmon/test-hyslaw-grid.R",
+   "class": "CAUGHT",
+   "layers": "trialmon/test-boundaries.R; trialmon/test-hyslaw-grid.R; trialmon/test-logic.R; trialmon/test-server.R",
+   "differs": "TRIALMON screening outputs",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D13",
+   "defect": "TBL threshold 2x ULN lowered to 1.5x in liver_one()",
+   "defect_class": "screening rule",
+   "file": "sasr_monitoring_wiki/trialmon_shiny/R/logic.R",
+   "predicted": "CAUGHT: trialmon/test-logic.R; trialmon/test-hyslaw-grid.R",
+   "class": "CAUGHT",
+   "layers": "trialmon/test-boundaries.R; trialmon/test-hyslaw-grid.R; trialmon/test-logic.R; trialmon/test-server.R",
+   "differs": "TRIALMON screening outputs",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D14",
+   "defect": "Grid window bound made exclusive (< for <=) in hys_grid_cell()",
+   "defect_class": "screening rule",
+   "file": "sasr_monitoring_wiki/trialmon_shiny/R/hyslaw_grid.R",
+   "predicted": "CAUGHT: trialmon/test-hyslaw-grid.R",
+   "class": "CAUGHT",
+   "layers": "trialmon/test-hyslaw-grid.R",
+   "differs": "TRIALMON screening outputs",
+   "note": "",
+   "status": "as predicted"
+  },
+  {
+   "id": "D15",
+   "defect": "5% predose exclusion skipped (ICH M13A)",
+   "defect_class": "not applicable",
+   "file": "n/a",
+   "predicted": "NOT APPLICABLE",
+   "class": "NOT APPLICABLE",
+   "layers": "",
+   "differs": "",
+   "note": "ADPC has 80 predose records, 0 above zero, so a 5% predose exclusion never fires; actual-time variables in ADPC: none (only nominal ATPTN)",
+   "status": "as predicted"
+  },
+  {
+   "id": "D16",
+   "defect": "AUC computed on nominal instead of actual sampling times",
+   "defect_class": "not applicable",
+   "file": "n/a",
+   "predicted": "NOT APPLICABLE",
+   "class": "NOT APPLICABLE",
+   "layers": "",
+   "differs": "",
+   "note": "ADPC has 80 predose records, 0 above zero, so a 5% predose exclusion never fires; actual-time variables in ADPC: none (only nominal ATPTN)",
+   "status": "as predicted"
+  }
+ ],
+ "note": "Counts by class for this hand-picked, pre-registered list; they estimate nothing beyond it (no detection rate, no interval). Survivors are disclosures, not failures."
+}
 </script>
 <script>
 (function(){

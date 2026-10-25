@@ -46,7 +46,7 @@ ledger view.
 - **Automatable:** table‑vs‑source numeric diff; a scan that every PK program uses the log‑scale geometric convention; a scan that counts use `n_distinct(USUBJID)` / `CLASS USUBJID`; confirmation that the narrative drafter's self‑test **rejects any number it did not receive from the pipeline**.
 - **Human judgment:** whether a difference sits within Monte‑Carlo noise (a 1–2 MCSE move is not a finding).
 - **Pass criterion:** zero LLM‑sourced numbers; the log‑scale geometric convention present in every PK mean program; counts distinct‑participant; the drafter's number‑validation self‑test is present.
-- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer.
+- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer. The scan passes while the log-scale pattern appears in at least one program, not in every PK program: the seeded-defect run (G10, defect D04) planted exp(mean(x)) in one PK program and G2 stayed green.
 
 ### G3: Data conformance & integrity gate (CDISC + no PHI)
 **Claim it defends:** *"The analysis data is CDISC‑conformant, referentially intact across domains, correctly termed, and carries no PHI/PII or unblinded content."*
@@ -124,8 +124,53 @@ ledger view.
 
 ## The seeded-defect run (G10)
 
-The registry (`teeth/defects.csv`, 17 defects, D00 to D16) was frozen by its SHA-256 in
-`teeth/defects.sha256` and committed before the first run. Results follow below once the run is done.
+The registry (`teeth/defects.csv`, 17 defects, D00 to D16) was frozen by its SHA-256
+(`6693bc70198f6a68...`, in `teeth/defects.sha256`) and committed before the first run. Each row
+gives the file, the exact text replaced, its replacement, the predicted catcher and the reasoning.
+Run on 2026-10-25 with R 4.6.0 (`bash validation_harness/teeth/run_teeth.sh`, about 15 minutes);
+the unmutated copy passed every layer. Results: `teeth/results/teeth_2026-10-25.csv` and
+`teeth/results/summary.json`.
+
+| ID | Planted defect | Where | Result | Caught by |
+|---|---|---|---|---|
+| D00 | Comment-only edit (no-op control) | `run_lifecycle.R` | EQUIVALENT | nothing; no output or printed result differs (diff) |
+| D01 | TRT01A wrong for one participant | `simulate_adam.R` `sim_adsl` | CAUGHT | the generator's own assertion, then G1 |
+| D02 | PARAMCD AUCLST written as AUC-LST | `sim_adpp` | CAUGHT | driver error, G3, G9 |
+| D03 | One ADAE USUBJID not in ADSL | `sim_adae` | CAUGHT | G3, G9 |
+| D04 | exp(mean(x)) as the geometric mean in one R PK program | `r_tlf_pseudocode/crossover/t_pk_param_summary.R` | **SURVIVED** | nothing |
+| D05 | exp(mean(x)) in `geo()` | `run_lifecycle.R` | CAUGHT | G9 only |
+| D06 | AE overview counts records | `run_lifecycle.R` | CAUGHT | G9 only |
+| D07 | log10 in `be()` | `run_lifecycle.R` | CAUGHT | G9 only |
+| D08 | qt(0.975): a 95% CI printed as the 90% CI | `run_lifecycle.R` | CAUGHT | G9 only |
+| D09 | Period term dropped from the BE model | `run_lifecycle.R` | CAUGHT | G9 only |
+| D10 | lambda_z from two points | `nca_one()` | CAUGHT | G9 only |
+| D11 | BLQ imputed as LLOQ/2 into AUC | `nca_one()` | CAUGHT | G9 only |
+| D12 | Potential Hy's Law AND turned into OR | TRIALMON `logic.R` | CAUGHT | TRIALMON tests only (all four files) |
+| D13 | TBL threshold 2x lowered to 1.5x ULN | TRIALMON `logic.R` | CAUGHT | TRIALMON tests only (all four files) |
+| D14 | Grid window bound made exclusive | TRIALMON `hyslaw_grid.R` | CAUGHT | `test-hyslaw-grid.R` only |
+| D15 | 5% predose exclusion skipped | n/a | NOT APPLICABLE | every predose concentration is 0 |
+| D16 | AUC on nominal times | n/a | NOT APPLICABLE | ADPC has no actual-time variable |
+
+Counts for this list: 13 caught, 1 survived, 1 equivalent, 2 not applicable. All 17 outcomes
+matched the registered predictions. The predictions were written by the person who wrote the
+gates, after reading their code (and, for D06 and D11, the committed data), so the match shows the
+gates behave as their author reads them; it is not an independent test.
+
+What the run shows:
+
+- **G1 to G8 caught none of the seven numeric and counting defects (D05 to D11).** Structural
+  scans and byte-for-byte regeneration cannot see a wrong formula once the outputs are
+  regenerated; only the independent recomputation (G9) caught them.
+- **D04 survived.** G2 passes while the log-scale pattern appears in at least one R program, not in
+  every PK program, and no layer runs the TLF libraries on data. This is a disclosure of what the
+  harness misses, not a failure of the run.
+- **D01 was caught earlier than the build spec predicted.** `simulate_study()` asserts that the
+  ADSL period-1 TRT01A equals the ADEX period-1 TRTA, so the generator stops before G3's
+  TRT01A-tracks-TRTSEQP check sees any data; that G3 check is not exercised by this list.
+- **The harness does not run the TRIALMON tests.** D12 to D14 were caught only by
+  `sasr_monitoring_wiki/trialmon_tests`; `run_harness.sh` alone would have reported green.
+- The counts describe this hand-picked list. They estimate nothing beyond it, so there is no
+  detection rate and no interval.
 
 ## What a machine can do vs what only the biostatistician can do
 
