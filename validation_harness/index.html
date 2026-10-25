@@ -53,6 +53,7 @@
   .res{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap}
   .res.CAUGHT{color:var(--green)} .res.SURVIVED{color:var(--red)} .res.EQUIVALENT{color:var(--teal)} .res.NA{color:var(--mut)}
   .small{font-size:12px;color:var(--mut)}
+  #teeth-meta code{word-break:break-all}
   footer{color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);margin-top:22px;padding-top:14px}
 </style></head>
 <body>
@@ -447,14 +448,14 @@
   function teeth(T){
     if(!T||!T.rows) return;
     var c=T.counts||{};
-    document.getElementById("teeth-meta").innerHTML="Run "+esc(T.run_date)+" &middot; "+esc(T.r_version)+" &middot; registry sha256 <code>"+esc((T.registry_sha256||"").slice(0,16))+"</code> &middot; "+esc(T.n_run)+" of "+esc(T.n_defects)+" defects &middot; "+esc(T.as_predicted)+" as predicted";
+    document.getElementById("teeth-meta").innerHTML="Run "+esc(T.run_date)+" &middot; "+esc(T.r_version)+" &middot; registry sha256 <code>"+esc(T.registry_sha256||"")+"</code> &middot; "+esc(T.n_run)+" of "+esc(T.n_defects)+" defects &middot; "+esc(T.as_predicted)+" as predicted"+(T.as_predicted_rule?" ("+esc(T.as_predicted_rule)+")":"");
     document.getElementById("teeth-counts").innerHTML=["CAUGHT","SURVIVED","EQUIVALENT","NOT APPLICABLE"].map(function(k){
       return '<div class="count"><b>'+esc(c[k]||0)+'</b>'+k.toLowerCase()+'</div>';}).join("");
     document.getElementById("teeth-rows").innerHTML=T.rows.map(function(r){
       var k=r["class"]==="NOT APPLICABLE"?"NA":r["class"];
       var by=r.layers?esc(r.layers):(r.note?'<span class="small">'+esc(r.note)+'</span>':"");
       return '<tr><td class="id">'+esc(r.id)+'</td><td>'+esc(r.defect)+'</td><td><code>'+esc(r.file)+'</code></td><td class="small">'+esc(r.predicted)+'</td>'+
-        '<td><span class="res '+k+'">'+esc(r["class"])+'</span><br><span class="small">'+esc(r.status)+'</span></td><td>'+by+'</td></tr>';}).join("");
+        '<td><span class="res '+k+'">'+esc(r["class"])+'</span><br><span class="small">'+esc(r.status)+(r.beyond_prediction?"; also caught by "+esc(r.beyond_prediction):"")+'</span></td><td>'+by+'</td></tr>';}).join("");
   }
   teeth(JSON.parse(document.getElementById("teeth-data").textContent));
   if(location.protocol.indexOf("http")===0){

@@ -16,9 +16,14 @@
 #        CAUGHT          a layer that passes on the unmutated copy fails (the layers are listed:
 #                        a gate, a test file, or the driver or generator stopping with an error)
 #        EQUIVALENT      nothing caught it, the defect sits in code the run executes, and no
-#                        output or printed result differs from the unmutated copy (by diff)
+#                        output or printed result differs from the unmutated copy (by diff).
+#                        The diff runs on the shipped data only, so EQUIVALENT means "no
+#                        effect on this data", not proof that the change has no effect
 #        SURVIVED        nothing caught it otherwise (outputs differ, or no layer runs the code)
 #        NOT APPLICABLE  the registry marks the defect inapplicable to this sandbox (file n/a)
+#   A defect counts "as predicted" when its class matches the prediction and every predicted
+#   catcher is among the layers that actually caught it (more layers than predicted still match;
+#   beyond_prediction lists them).
 # The counts describe this hand-picked list only; they are not a detection rate.
 #
 # Writes results/teeth_<date>.csv and results/summary.json (registry hash, gate-script hashes,
@@ -119,7 +124,7 @@ for (x in list(trialmon_worklist(tm), trialmon_worklist(tm, trialmon_settings(al
   mkdir -p "$LOGS/$T.out"; cp "$C"/sim_lifecycle/out/*.csv "$LOGS/$T.out/"
 }
 
-echo "== Seeded-defect run (G10): registry sha256 ${HAVE:0:16}, work folder $WORK =="
+echo "== Seeded-defect run (G10): registry sha256 $HAVE, work folder $WORK =="
 echo "-- unmutated copy"
 mkcopy "$WORK/BASE"; run_layers "$WORK/BASE" BASE; rm -rf "$WORK/BASE"
 cat "$LOGS/BASE.facts" | tr '\n' ' '; echo
@@ -219,7 +224,8 @@ for i in ids:
         if layers:
             cls, note = "CAUGHT", ""
         elif not differs and runs(r["file"]):
-            cls, note = "EQUIVALENT", "no output or printed result differs from the unmutated copy (diff)"
+            cls, note = "EQUIVALENT", ("no output or printed result differs from the unmutated copy on the shipped data "
+                                       "(diff); not proof that the change has no effect on other data")
         else:
             cls = "SURVIVED"
             note = ("no layer runs this program, so nothing can differ or fail" if not runs(r["file"])
@@ -227,9 +233,10 @@ for i in ids:
         res.update({"class": cls, "layers": "; ".join(layers), "differs": "; ".join(differs), "note": note})
     al = [x.strip() for x in res["layers"].split(";") if x.strip()]
     res["status"] = "as predicted" if res["class"] == pcls and all(p in al for p in players) else "differs from prediction"
+    res["beyond_prediction"] = "; ".join(x for x in al if x not in players)
     results.append(res)
 day = datetime.date.today().isoformat()
-cols = ["id", "defect", "defect_class", "file", "predicted", "class", "layers", "status", "differs", "note"]
+cols = ["id", "defect", "defect_class", "file", "predicted", "class", "layers", "status", "beyond_prediction", "differs", "note"]
 csv_name = f"teeth_{day}.csv"
 with open(os.path.join(out, csv_name), "w", encoding="utf-8", newline="") as fh:
     w = csv.DictWriter(fh, fieldnames=cols); w.writeheader(); w.writerows(results)
@@ -241,9 +248,10 @@ S = {"run_date": day, "r_version": E["_RVER"], "registry": "validation_harness/t
      "gate_scripts": {p: sha(p) for p in E["_GATES"].split()},
      "baseline": {"gates": base["gate"], "tests": base["test"]},
      "counts": counts, "as_predicted": sum(1 for x in results if x["status"] == "as predicted"),
+     "as_predicted_rule": "same class as predicted, and every predicted catcher among the layers that caught it (a defect caught by more layers than predicted still matches; beyond_prediction lists the extra layers)",
      "results_csv": f"validation_harness/teeth/results/{csv_name}" if not E["_ONLY"] else os.path.join(out, csv_name),
      "rows": results,
-     "note": "Counts by class for this hand-picked, pre-registered list; they estimate nothing beyond it (no detection rate, no interval). Survivors are disclosures, not failures."}
+     "note": "Counts by class for this hand-picked, pre-registered list; they estimate nothing beyond it (no detection rate, no interval). Survivors are disclosures, not failures. EQUIVALENT is decided by diff on the shipped data, so it is not proof that a change has no effect."}
 txt = json.dumps(S, indent=1, ensure_ascii=False)
 open(os.path.join(out, "summary.json"), "w", encoding="utf-8").write(txt + "\n")
 if not E["_ONLY"]:

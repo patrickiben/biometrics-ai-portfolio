@@ -36,7 +36,7 @@ NDIST=$(( $(grep -rl 'n_distinct(USUBJID)' $R 2>/dev/null | wc -l) + $(grep -rl 
 DRAFT=$(grep -rilE 'hallucinat|reject.*number|number.*not (in|from)|selftest|self-test' tlf_interpret 2>/dev/null | wc -l | tr -d ' ')
 G2=green; { [ "$GEO" -gt 0 ] && [ "$NDIST" -gt 0 ] && [ "$DRAFT" -gt 0 ]; } || G2=red
 add "G2 PK and count convention scans" "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)" "$G2" \
-    "static scans: geometric-on-log-scale in $GEO PK programs; distinct-participant counting in $NDIST programs; drafter number-validation self-test present ($DRAFT)"
+    "static scans: the log-scale geometric-mean pattern appears in $GEO files under $R (programs, helpers and documentation alike; the scan needs only one, so it would pass even if no PK program used it); distinct-participant counting in $NDIST programs; drafter number-validation self-test present ($DRAFT)"
 
 # ---- G3 Data conformance & integrity (CDISC + no PHI) ----------------------
 CONF=$(Rscript validation_harness/checks/conformance.R sim_lifecycle/out 2>/dev/null | grep G3_VERDICT | awk '{print $2}')
@@ -191,7 +191,7 @@ ev = []
 if reg:
     import csv
     n = len(list(csv.DictReader(open(f"{T}/defects.csv", encoding="utf-8", newline=""))))
-    ev.append(f"registry of {n} defects frozen at sha256 {reg[:16]}")
+    ev.append(f"registry of {n} defects frozen at sha256 {reg}")
 if S:
     c = S.get("counts", {})
     ev.append(f"last run {S.get('run_date')}: " + ", ".join(f"{k} {c.get(k, 0)}" for k in ("CAUGHT", "SURVIVED", "EQUIVALENT", "NOT APPLICABLE")))
