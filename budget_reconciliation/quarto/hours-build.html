@@ -2221,7 +2221,7 @@ vertical-align: -.125em;
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
 <main class="content" id="quarto-document-content">
-<div class="mc-top"><b>AI for Biometrics</b><div class="nav"><a href="../../Operations.html">Operations</a><a href="../../Biostatistics.html">Biostatistics</a><a href="../../START_HERE.html">Full library</a></div></div>
+<div class="mc-top"><b>Patrick Iben</b><div class="nav"><a href="../../index.html">Home</a><a href="../../index.html#lifecycle">Lifecycle</a><a href="../../index.html#start">Start here</a></div></div>
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
@@ -2253,8 +2253,8 @@ vertical-align: -.125em;
 <p>Edit a task’s EAC, change the ask, and the net-findable roll-up and the absorbable-vs-change-order verdict recompute live. Download the change-order draft when there is a shortfall, and the reconciled ledger to CSV for the <a href="../Hours_Budget_Reconciliation_Workbook.xlsx">Excel workbook</a>.</p>
 <p>The whole app is two files, shown here in full, nothing elided:</p>
 <ul>
-<li><strong>shiny/R/logic.R</strong> — the pure reconciliation math (no Shiny). The <a href="hours-guide.html">visual guide</a>, the <a href="hours-dashboard.html">dashboard</a>, and the unit tests call these same functions.</li>
-<li><strong>shiny/app.R</strong> — the UI and the reactive server.</li>
+<li><strong>shiny/R/logic.R</strong>: the pure reconciliation math (no Shiny). The <a href="hours-guide.html">visual guide</a>, the <a href="hours-dashboard.html">dashboard</a>, and the unit tests call these same functions.</li>
+<li><strong>shiny/app.R</strong>: the UI and the reactive server.</li>
 </ul>
 <p>The one idea to hold onto: the <strong>rules</strong> live in <code>logic.R</code>, the <strong>screen</strong> lives in <code>app.R</code>. You can change what “net findable” means without touching the app, and change how it looks without touching the rules.</p>
 </section>
@@ -2267,7 +2267,7 @@ vertical-align: -.125em;
 <p>Every line of the logic. <code>hours_load()</code> reads the ledger CSV and splits out the contingency reserve; <code>hours_metrics()</code> is the portfolio roll-up; <code>find_hours()</code> sources a new ask from under-run slack first, then contingency, and reports the residual; <code>change_order_text()</code> drafts the hours-only note. Nothing here depends on Shiny, so you can test it in a plain console.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># logic.R — pure reconciliation logic for the &quot;Find Hours&quot; tool.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># logic.R: pure reconciliation logic for the &quot;Find Hours&quot; tool.</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># HOURS / EFFORT ONLY. No dollars, rates, ROI, or headcount. Synthetic data.</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># These are plain functions with no Shiny dependency, so the Shiny app, the</span></span>
@@ -2352,7 +2352,7 @@ vertical-align: -.125em;
 <p>Every line of the UI and server. Read it top to bottom; the walk-through below points at the parts that matter.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ===========================================================================</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app.R — Hours Budget Reconciliation (&quot;Find Hours&quot;) Shiny app</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app.R: Hours Budget Reconciliation (&quot;Find Hours&quot;) Shiny app</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># A runnable, editable version of the find-hours worksheet. Edit the effort</span></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ledger, type an out-of-scope ask, and watch net-findable and the</span></span>
@@ -2375,11 +2375,11 @@ vertical-align: -.125em;
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>seed <span class="ot">&lt;-</span> <span class="fu">hours_load</span>()</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>ui <span class="ot">&lt;-</span> <span class="fu">page_sidebar</span>(</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Find Hours — Hours Budget Reconciliation&quot;</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="st">&quot;Find Hours: Hours Budget Reconciliation&quot;</span>,</span>
 <span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="at">theme =</span> <span class="fu">bs_theme</span>(<span class="at">version =</span> <span class="dv">5</span>, <span class="at">bootswatch =</span> <span class="st">&quot;darkly&quot;</span>, <span class="at">primary =</span> <span class="st">&quot;#5b8cff&quot;</span>),</span>
 <span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="at">sidebar =</span> <span class="fu">sidebar</span>(</span>
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">width =</span> <span class="dv">300</span>,</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;text-warning small fw-bold&quot;</span>, <span class="st">&quot;HOURS / EFFORT ONLY — no $, no headcount&quot;</span>),</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;text-warning small fw-bold&quot;</span>, <span class="st">&quot;HOURS / EFFORT ONLY, no $, no headcount&quot;</span>),</span>
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">numericInput</span>(<span class="st">&quot;need&quot;</span>, <span class="st">&quot;Out-of-scope ask (hours)&quot;</span>, <span class="at">value =</span> <span class="dv">45</span>, <span class="at">min =</span> <span class="dv">0</span>, <span class="at">step =</span> <span class="dv">5</span>),</span>
 <span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;d-flex flex-wrap gap-1 mb-2&quot;</span>,</span>
 <span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>        <span class="fu">actionButton</span>(<span class="st">&quot;q20&quot;</span>,  <span class="st">&quot;20h&quot;</span>,  <span class="at">class =</span> <span class="st">&quot;btn-sm btn-outline-secondary&quot;</span>),</span>
@@ -2407,7 +2407,7 @@ vertical-align: -.125em;
 <span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  ),</span>
 <span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout_columns</span>(</span>
 <span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_widths =</span> <span class="fu">c</span>(<span class="dv">7</span>, <span class="dv">5</span>),</span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Project effort ledger (hours) — editable&quot;</span>),</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Project effort ledger (hours): editable&quot;</span>),</span>
 <span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>         <span class="fu">DTOutput</span>(<span class="st">&quot;ledger&quot;</span>)),</span>
 <span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Find hours for the new ask&quot;</span>),</span>
 <span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>         <span class="fu">uiOutput</span>(<span class="st">&quot;verdict&quot;</span>))</span>
@@ -2419,13 +2419,13 @@ vertical-align: -.125em;
 <span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;The find-hours decision tree&quot;</span>),</span>
 <span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>         tags<span class="sc">$</span><span class="fu">ol</span>(<span class="at">class =</span> <span class="st">&quot;small&quot;</span>,</span>
 <span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Reallocate under-run slack.&quot;</span>),</span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; Move hours from tasks forecasting under plan (EAC &lt; planned) — already yours.&quot;</span>),</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; Move hours from tasks forecasting under plan (EAC &lt; planned): already yours.&quot;</span>),</span>
 <span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Draw the contingency buffer.&quot;</span>),</span>
 <span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; The management reserve exists for this; a decision to record, not a silent move.&quot;</span>),</span>
 <span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Defer / re-sequence lower-priority in-scope work,&quot;</span>),</span>
 <span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; with the PM&#39;s agreement on new dates.&quot;</span>),</span>
 <span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>           tags<span class="sc">$</span><span class="fu">li</span>(tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Escalate a change order&quot;</span>),</span>
-<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; for any residual shortfall — genuine added scope, not a silent over-run.&quot;</span>)))</span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>                   <span class="st">&quot; for any residual shortfall: genuine added scope, not a silent over-run.&quot;</span>)))</span>
 <span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a></span>
@@ -2497,7 +2497,7 @@ vertical-align: -.125em;
 <span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
 <span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>      box <span class="ot">&lt;-</span> tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;alert alert-danger&quot;</span>,</span>
 <span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a>        tags<span class="sc">$</span><span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;h5&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;Change order needed: %d h&quot;</span>, f<span class="sc">$</span>shortfall)),</span>
-<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sprintf</span>(<span class="st">&quot;Net headroom (%d h) covers %d h; the remaining %d h is genuine added scope. Defer lower-priority work or raise a change order — do not absorb it as a silent over-run.&quot;</span>,</span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a>        <span class="fu">sprintf</span>(<span class="st">&quot;Net headroom (%d h) covers %d h; the remaining %d h is genuine added scope. Defer lower-priority work or raise a change order: do not absorb it as a silent over-run.&quot;</span>,</span>
 <span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a>                m<span class="sc">$</span>findable, f<span class="sc">$</span>need <span class="sc">-</span> f<span class="sc">$</span>shortfall, f<span class="sc">$</span>shortfall))</span>
 <span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>    }</span>
 <span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tagList</span>(src, box)</span>

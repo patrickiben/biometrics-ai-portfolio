@@ -1,5 +1,5 @@
 # ===========================================================================
-# app.R — Hours Budget Reconciliation ("Find Hours") Shiny app
+# app.R: Hours Budget Reconciliation ("Find Hours") Shiny app
 #
 # A runnable, editable version of the find-hours worksheet. Edit the effort
 # ledger, type an out-of-scope ask, and watch net-findable and the
@@ -22,11 +22,11 @@ source("R/logic.R")
 seed <- hours_load()
 
 ui <- page_sidebar(
-  title = "Find Hours — Hours Budget Reconciliation",
+  title = "Find Hours: Hours Budget Reconciliation",
   theme = bs_theme(version = 5, bootswatch = "darkly", primary = "#5b8cff"),
   sidebar = sidebar(
     width = 300,
-    div(class = "text-warning small fw-bold", "HOURS / EFFORT ONLY — no $, no headcount"),
+    div(class = "text-warning small fw-bold", "HOURS / EFFORT ONLY, no $, no headcount"),
     numericInput("need", "Out-of-scope ask (hours)", value = 45, min = 0, step = 5),
     div(class = "d-flex flex-wrap gap-1 mb-2",
         actionButton("q20",  "20h",  class = "btn-sm btn-outline-secondary"),
@@ -54,7 +54,7 @@ ui <- page_sidebar(
   ),
   layout_columns(
     col_widths = c(7, 5),
-    card(card_header("Project effort ledger (hours) — editable"),
+    card(card_header("Project effort ledger (hours): editable"),
          DTOutput("ledger")),
     card(card_header("Find hours for the new ask"),
          uiOutput("verdict"))
@@ -66,13 +66,13 @@ ui <- page_sidebar(
     card(card_header("The find-hours decision tree"),
          tags$ol(class = "small",
            tags$li(tags$b("Reallocate under-run slack."),
-                   " Move hours from tasks forecasting under plan (EAC < planned) — already yours."),
+                   " Move hours from tasks forecasting under plan (EAC < planned): already yours."),
            tags$li(tags$b("Draw the contingency buffer."),
                    " The management reserve exists for this; a decision to record, not a silent move."),
            tags$li(tags$b("Defer / re-sequence lower-priority in-scope work,"),
                    " with the PM's agreement on new dates."),
            tags$li(tags$b("Escalate a change order"),
-                   " for any residual shortfall — genuine added scope, not a silent over-run.")))
+                   " for any residual shortfall: genuine added scope, not a silent over-run.")))
   )
 )
 
@@ -144,7 +144,7 @@ server <- function(input, output, session) {
     } else {
       box <- tags$div(class = "alert alert-danger",
         tags$div(class = "h5", sprintf("Change order needed: %d h", f$shortfall)),
-        sprintf("Net headroom (%d h) covers %d h; the remaining %d h is genuine added scope. Defer lower-priority work or raise a change order — do not absorb it as a silent over-run.",
+        sprintf("Net headroom (%d h) covers %d h; the remaining %d h is genuine added scope. Defer lower-priority work or raise a change order: do not absorb it as a silent over-run.",
                 m$findable, f$need - f$shortfall, f$shortfall))
     }
     tagList(src, box)

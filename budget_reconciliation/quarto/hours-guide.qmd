@@ -94,7 +94,7 @@ flowchart LR
 | **Change order** | Contract process: lead biostatistician + PM review, sponsor sign-off, SOW amended |
 
 ::: {.callout-important appearance="simple"}
-The tool does not connect to CTMS or timesheets. You **transcribe** current figures into the ledger, on purpose, so the reconciliation is attributable and stands on its own. Every number reported here comes from the validated ledger and the shared logic core, never from an assistant.
+The tool does not connect to CTMS or timesheets. You **transcribe** current figures into the ledger, on purpose, so the reconciliation is attributable and stands on its own. Every number here comes from the ledger file and the shared logic core, never from an assistant.
 :::
 
 ## The live roll-up, computed from the ledger {#live}

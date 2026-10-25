@@ -40,8 +40,8 @@ there is a shortfall, and the reconciled ledger to CSV for the [Excel workbook](
 
 The whole app is two files, shown here in full, nothing elided:
 
-- **shiny/R/logic.R** &mdash; the pure reconciliation math (no Shiny). The [visual guide](hours-guide.html), the [dashboard](hours-dashboard.html), and the unit tests call these same functions.
-- **shiny/app.R** &mdash; the UI and the reactive server.
+- **shiny/R/logic.R**: the pure reconciliation math (no Shiny). The [visual guide](hours-guide.html), the [dashboard](hours-dashboard.html), and the unit tests call these same functions.
+- **shiny/app.R**: the UI and the reactive server.
 
 The one idea to hold onto: the **rules** live in `logic.R`, the **screen** lives in `app.R`. You can change what "net findable" means without touching the app, and change how it looks without touching the rules.
 
