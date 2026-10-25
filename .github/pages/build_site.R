@@ -10,8 +10,8 @@
 # never committed and package_qc.py and the harness never scan it. Only the Pages workflow
 # (GITHUB_ACTIONS=true) builds into _site/ inside its own checkout on the runner.
 #
-# 1. Copies every file git tracks (or would track), except .git* and the apps/ placeholders,
-#    into <outdir>, so the site matches what the branch build serves today.
+# 1. Copies every file git tracks (or would track), except .git*, the apps/ placeholders and
+#    any earlier _site/ build, into <outdir>, so the site matches what the branch build serves today.
 # 2. Exports each app with shinylive::export(app_dir, <outdir>, subdir = "apps/<name>"). All
 #    three share one copy of the Shinylive and webR assets at <outdir>/shinylive/.
 # 3. Gives each app's wrapper page a title and a data: URI favicon (no /favicon.ico 404).
@@ -49,7 +49,7 @@ if (startsWith(paste0(normalizePath(out), "/"), paste0(root, "/")) &&
 # 1. static site ------------------------------------------------------------
 files <- system2("git", c("-c", "core.quotepath=off", "ls-files", "--cached", "--others", "--exclude-standard"),
                  stdout = TRUE)
-files <- files[!grepl("^(\\.git|apps/)", files) & file.exists(files) & !dir.exists(files)]
+files <- files[!grepl("^(\\.git|apps/|_site/)", files) & file.exists(files) & !dir.exists(files)]
 for (d in unique(dirname(files))) dir.create(file.path(out, d), recursive = TRUE, showWarnings = FALSE)
 ok <- file.copy(files, file.path(out, files), copy.date = TRUE)
 if (!all(ok)) fail("could not copy: ", paste(files[!ok], collapse = ", "))
