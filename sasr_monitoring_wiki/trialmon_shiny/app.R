@@ -4,8 +4,9 @@
 # One screen for a Safety Review Committee style review of a dose-escalation study:
 # a ranked worklist, the eDISH plot (click a point to open that participant), QTcF
 # categories, CTCAE lab shifts, adverse events by SOC and PT, the DLT tally against an
-# illustrative 3+3 rule, and a study tier of operational indicators with a what-if.
-# Every level rolls up worst-of, watch included. The console flags; the medical monitor and the
+# illustrative 3+3 rule, a study tier of operational indicators with a what-if, and a
+# convention grid that shows whether each potential Hy's Law flag holds under every
+# combination of three SAP conventions. Every level rolls up worst-of, watch included. The console flags; the medical monitor and the
 # committee decide, and it never makes a dose-escalation decision.
 #
 # Shinylive-ready: all data sit in data/, the packages are shiny, bslib, DT and ggplot2,
@@ -14,8 +15,11 @@
 # ===========================================================================
 suppressPackageStartupMessages({ library(shiny); library(bslib); library(DT); library(ggplot2) })
 source("R/logic.R")
-if (!file.exists("data/adsl.csv")) { source("R/gen_data.R"); gen_trialmon("data") }
+source("R/hyslaw_grid.R")
+if (!file.exists("data/adsl.csv") || !file.exists("data/labs_long.csv")) { source("R/gen_data.R"); gen_trialmon("data") }
 tm <- trialmon_load("data")
+HL <- hyslaw_load("data")                               # planted grid cases + narrative assertions
+GRID0 <- hyslaw_app_grid(tm, HL)
 STUDY0 <- study_signals(tm)
 KRI0 <- STUDY0$ID[STUDY0$LEVEL != "GREEN"][1]          # first firing indicator opens selected
 LEVELS <- c("GREEN", "AMBER", "RED")
@@ -47,7 +51,13 @@ SEV_CSS <- "
 .tm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:.5rem;margin:.5rem 0 .9rem}
 .tm-kpi{border:1px solid var(--bs-border-color);border-radius:.5rem;padding:.45rem .75rem;background:var(--bs-body-bg)}
 .tm-kpi .k{font-size:.8rem;color:var(--bs-secondary-color);line-height:1.2}
-.tm-kpi .v{font-size:1.35rem;font-weight:700;line-height:1.4}"
+.tm-kpi .v{font-size:1.35rem;font-weight:700;line-height:1.4}
+#grid_tbl{overflow-x:auto;flex:0 0 auto!important;height:auto!important}
+#grid_tbl td:nth-child(-n+2),#grid_tbl td:nth-child(16),#grid_tbl thead tr:last-child th{white-space:nowrap}
+#grid_tbl td:nth-child(17),#grid_tbl td:nth-child(18){min-width:12rem}
+#grid_tbl thead th[rowspan]{vertical-align:bottom}#grid_tbl th.tm-ref{min-width:8.5rem}
+table.dataTable td.tm-ref,table.dataTable th.tm-ref{border-left:3px solid #8a5300!important;font-style:italic}
+[data-bs-theme=dark] table.dataTable td.tm-ref,[data-bs-theme=dark] table.dataTable th.tm-ref{border-left-color:#f3c169!important}"
 
 sev_span <- function(s) span(class = paste0("sev sev-", s), s)
 kpi <- function(label, value) div(class = "tm-kpi", div(class = "k", label), div(class = "v", value))
@@ -102,6 +112,10 @@ ui <- page_sidebar(
         "Every such draw opens its own window. The axes widen so that no participant falls off. Click a point to open it."),
       plotOutput("traj", height = "260px"),
       DTOutput("liver_tbl")),
+    nav_panel("Convention grid",
+      p(class = "small", HYS_GRID_LABEL),
+      DTOutput("grid_tbl"),
+      uiOutput("grid_note")),
     nav_panel("QTcF",
       tableOutput("qtc_cat"),
       p(class = "foot", "Categorical analysis per ICH E14 and the E14/S7B Q&As: maximum post-baseline QTcF > 450, > 480 and ",
@@ -230,6 +244,46 @@ server <- function(input, output, session) {
                     `TBL > 2x on day` = h$tbl_day, `Potential Hy's Law` = ifelse(h$hys, "Yes", "No"),
                     Quadrant = h$quadrant, `First repeat (days)` = h$repeat_gap, check.names = FALSE)
     datatable(d, rownames = FALSE, options = list(dom = "t", scrollX = TRUE))
+  })
+
+  output$grid_tbl <- renderDT({
+    g <- GRID0; chk <- hyslaw_check_narrative(g, HL$flags)
+    asserted <- chk$ASSERTED[match(g$USUBJID, chk$USUBJID)]
+    agree <- chk$AGREE[match(g$USUBJID, chk$USUBJID)]
+    d <- data.frame(Participant = g$USUBJID, Source = g$SOURCE, g[HYS_GRID$code], `Peak vs peak` = g$REF,
+                    `Cells flagged` = sprintf("%d of 12", g$N_FLAGGED), Verdict = g$VERDICT,
+                    `Narrative states` = ifelse(is.na(asserted), "", asserted),
+                    `Agrees` = ifelse(is.na(agree), "", ifelse(agree, "yes", "NO")),
+                    `ALP at the AT draw (x ULN)` = round(g$ALP_AT3, 1), check.names = FALSE)
+    leaf <- c("AT + ALP", "AT", "ALT + ALP", "ALT")
+    head2 <- tags$table(class = "display", tags$thead(
+      tags$tr(tags$th(rowspan = 2, "Participant"), tags$th(rowspan = 2, "Source"),
+        lapply(c(14, 30, 60), function(w) tags$th(colspan = 4, class = "dt-center", sprintf("Window %d days", w))),
+        tags$th(rowspan = 2, class = "tm-ref", "Peak vs peak (screening display, not a grid cell)"),
+        lapply(c("Cells flagged", "Verdict", "Narrative states", "Agrees", "ALP at the AT draw (x ULN)"),
+               function(x) tags$th(rowspan = 2, x))),
+      tags$tr(lapply(rep(leaf, 3), tags$th))))
+    refcol <- which(names(d) == "Peak vs peak") - 1
+    dt <- datatable(d, container = head2, rownames = FALSE, selection = "none",
+              options = list(dom = "t", ordering = FALSE, pageLength = 50, autoWidth = FALSE,
+                             columnDefs = list(list(className = "tm-ref", targets = refcol),
+                                               list(className = "dt-center", targets = seq(2, refcol)))))
+    formatStyle(dt, c(HYS_GRID$code, "Peak vs peak"), fontWeight = styleEqual(1, "700"))
+  }, server = FALSE)                                    # ten rows: sent whole to the browser
+  output$grid_note <- renderUI({
+    s <- settings(); w <- s$hys_window
+    col <- if (w %in% c(14, 30, 60)) sprintf("the column \"Window %g days, %s\"", w,
+                                             if (s$alp_convention) "AT + ALP" else "AT")
+           else sprintf("no grid column (the grid uses 14, 30 and 60 days; the sidebar says %g)", w)
+    p(class = "foot mt-2", paste0(
+      "1 = flagged as potential Hy's Law in that cell. AT = ALT or AST; ALT = ALT only; + ALP = ALP < 2x ULN ",
+      "required at the aminotransferase draw. The sidebar's settings match ", col, ". ",
+      "Verdicts: Robust (12 of 12 cells); Convention-dependent (names each factor for which two cells that differ ",
+      "only in that factor disagree); Not flagged; Peak-only artifact (0 of 12, but in the upper-right eDISH ",
+      "quadrant on peak values). The peak-versus-peak column is the eDISH screen and is not part of the verdict. ",
+      "CP101-901 to -907 are planted known-answer cases from data/labs_long.csv: they are not among the 18 dosed ",
+      "participants and enter no other tab. The statuses the narratives imply are in data/narrative_flags.csv; ",
+      "the tests fail if any disagrees with the computed verdict."))
   })
 
   output$qtc_cat <- renderTable({

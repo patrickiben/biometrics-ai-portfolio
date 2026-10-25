@@ -1,0 +1,32 @@
+"SECTION","PARAMCD","GROUP","STAT","VALUE"
+"PK_GEO","CMAX","Reference","N",40
+"PK_GEO","CMAX","Reference","GEOMEAN",103.0847801
+"PK_GEO","CMAX","Reference","GEOCV_PCT",37.53934052
+"PK_GEO","CMAX","Test","N",40
+"PK_GEO","CMAX","Test","GEOMEAN",104.1719679
+"PK_GEO","CMAX","Test","GEOCV_PCT",39.09038577
+"PK_GEO","AUCLST","Reference","N",40
+"PK_GEO","AUCLST","Reference","GEOMEAN",1136.114959
+"PK_GEO","AUCLST","Reference","GEOCV_PCT",31.81710761
+"PK_GEO","AUCLST","Test","N",40
+"PK_GEO","AUCLST","Test","GEOMEAN",1144.189591
+"PK_GEO","AUCLST","Test","GEOCV_PCT",25.71756191
+"PK_GEO","AUCIFO","Reference","N",40
+"PK_GEO","AUCIFO","Reference","GEOMEAN",1177.663158
+"PK_GEO","AUCIFO","Reference","GEOCV_PCT",33.4005753
+"PK_GEO","AUCIFO","Test","N",40
+"PK_GEO","AUCIFO","Test","GEOMEAN",1180.888473
+"PK_GEO","AUCIFO","Test","GEOCV_PCT",26.87051495
+"BE","CMAX","Test vs Reference","GMR_PCT",101.054654
+"BE","CMAX","Test vs Reference","LCL90_PCT",98.64433152
+"BE","CMAX","Test vs Reference","UCL90_PCT",103.5238714
+"BE","CMAX","Test vs Reference","INTRA_CV_PCT",6.410101354
+"BE","AUCLST","Test vs Reference","GMR_PCT",100.7107232
+"BE","AUCLST","Test vs Reference","LCL90_PCT",95.96266348
+"BE","AUCLST","Test vs Reference","UCL90_PCT",105.6937083
+"BE","AUCLST","Test vs Reference","INTRA_CV_PCT",12.86288092
+"AE","","Safety population","N",40
+"AE","","Any TEAE","N_PARTICIPANTS",22
+"AE","","Related TEAE","N_PARTICIPANTS",16
+"AE","","Severe TEAE","N_PARTICIPANTS",2
+"AE","","SAE","N_PARTICIPANTS",0

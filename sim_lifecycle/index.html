@@ -35,12 +35,12 @@
       <li>A generator (<code>simulate_adam.R</code>) writes eight ADaM-shaped domains: <code>ADSL ADEX ADPC ADPP ADAE ADVS ADLB ADEG</code>.</li>
       <li>PK comes from a one-compartment oral model. NCA uses the linear trapezoidal rule for AUC to the last sample, a terminal slope fitted to the last three points, and AUC to infinity, CL/F and Vz/F from that slope.</li>
       <li>The design is a 2x2 bioequivalence crossover with per-period safety domains (N = 40, seed 2026).</li>
-      <li>The driver (<code>run_lifecycle.R</code>) prints demographics, geometric means and geometric CV% on the log scale, the bioequivalence analysis (a fixed-effects model on log values with participant, period and treatment; geometric mean ratio and 90% confidence interval), an adverse-event overview counted by participant, and vitals, lab and ECG summaries.</li>
+      <li>The driver (<code>run_lifecycle.R</code>) prints demographics, geometric means and geometric CV% on the log scale, the bioequivalence analysis (a fixed-effects model on log values with participant, period and treatment; geometric mean ratio and 90% confidence interval), an adverse-event overview counted by participant, and vitals, lab and ECG summaries. It also writes the printed PK, bioequivalence and adverse-event results at 10 significant digits (not rounded as in the printout) to <code>out/results_summary.csv</code>; the validation harness recomputes them independently from ADPC, ADSL and ADAE (gate G9).</li>
     </ul>
   </div>
 
   <h2>What was executed</h2>
-  <p>Excerpt of the output of <code>Rscript sim_lifecycle/run_lifecycle.R</code> from the repository root, R 4.6.0, run on 2026-10-25, after the AUC fix (AUC(0-t) now starts at the predose zero, so AUClast is 0.2% to 2.7% higher than in earlier versions). The run rewrote all eight <code>out/*.csv</code> files byte for byte identical to the committed copies.</p>
+  <p>Excerpt of the output of <code>Rscript sim_lifecycle/run_lifecycle.R</code> from the repository root, R 4.6.0, run on 2026-10-25, after the AUC fix (AUC(0-t) now starts at the predose zero, so AUClast is 0.2% to 2.7% higher than in earlier versions). The run rewrote all eight <code>out/*.csv</code> domain files byte for byte identical to the committed copies, plus the ninth file, <code>out/results_summary.csv</code>.</p>
 <pre class="log"><code>Archetype: BE | model: CROSSOVER | N=40 | site: Miami | healthy: TRUE
 
 [T] Demographics: age 43.8 (7.5) | 22 F / 18 M | weight 73.2 kg | BMI 26.0
@@ -96,8 +96,9 @@
     <li><a href="out/adsl.csv"><code>out/adsl.csv</code></a><span class="d">one record per participant</span></li>
     <li><a href="out/adpp.csv"><code>out/adpp.csv</code></a><span class="d">PK parameters from the NCA</span></li>
     <li><a href="out/adae.csv"><code>out/adae.csv</code></a><span class="d">adverse events</span></li>
+    <li><a href="out/results_summary.csv"><code>out/results_summary.csv</code></a><span class="d">the printed results at 10 significant digits (not rounded as in the printout)</span></li>
   </ul>
-  <p class="small">All eight generated domains are in <code>out/</code>.</p>
+  <p class="small">All eight generated domains are in <code>out/</code>, next to <code>results_summary.csv</code>.</p>
 </main>
 
 <footer class="site">

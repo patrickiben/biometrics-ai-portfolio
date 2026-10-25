@@ -23,15 +23,22 @@ cat(sprintf("\n[T] Demographics: age %.1f (%.1f) | %d F / %d M | weight %.1f kg 
  mean(a$AGE), sd(a$AGE), sum(a$SEX=="F"), sum(a$SEX=="M"), mean(a$WEIGHTBL), mean(a$BMIBL)))
 
 ## --- 3. PK NCA summary (ADPP): geometric, on the log scale ----------------
+## results: the printed results at 10 significant digits (not rounded as in the printout),
+## written to out/results_summary.csv in step 7 so the harness (G9) can recompute them independently
+results <- list()
+keep <- function(section, paramcd, group, stat, value) results[[length(results) + 1]] <<-
+ data.frame(SECTION=section, PARAMCD=paramcd, GROUP=group, STAT=stat, VALUE=as.numeric(value), stringsAsFactors=FALSE)
 geo <- function(param) {
  s <- adam$adpp[adam$adpp$PARAMCD==param, ]
  do.call(rbind, lapply(split(s$AVAL, s$TRTA), function(x){ x<-x[x>0]
- data.frame(n=length(x), geomean=round(exp(mean(log(x))),3),
- geocv=round(100*sqrt(exp(var(log(x)))-1),1)) })) }
+ data.frame(n=length(x), geomean=exp(mean(log(x))),
+ geocv=100*sqrt(exp(var(log(x)))-1)) })) }
 cat("\n[T] PK NCA: geometric mean (Geo CV%) by treatment:\n")
 for (p in c("CMAX","AUCLST","AUCIFO")) { g <- geo(p)
  cat(sprintf(" %-7s Test: %s (%.1f%%) | Reference: %s (%.1f%%)\n", p,
- g["Test","geomean"], g["Test","geocv"], g["Reference","geomean"], g["Reference","geocv"])) }
+ round(g["Test","geomean"],3), round(g["Test","geocv"],1), round(g["Reference","geomean"],3), round(g["Reference","geocv"],1)))
+ for (trt in rownames(g)) { keep("PK_GEO", p, trt, "N", g[trt,"n"]); keep("PK_GEO", p, trt, "GEOMEAN", g[trt,"geomean"])
+ keep("PK_GEO", p, trt, "GEOCV_PCT", g[trt,"geocv"]) } }
 
 ## --- 4. Bioequivalence (crossover ANOVA on log scale): GMR + 90% CI --------
 be <- function(param) {
@@ -40,13 +47,16 @@ be <- function(param) {
  fit <- lm(log(AVAL) ~ factor(USUBJID) + factor(APERIOD) + TRTA, data=s)
  co <- summary(fit)$coefficients; r <- grep("TRTATest", rownames(co))
  est <- co[r,1]; se <- co[r,2]; tc <- qt(0.95, fit$df.residual)
- data.frame(param=param, GMR=round(100*exp(est),1),
- lo=round(100*exp(est-tc*se),1), hi=round(100*exp(est+tc*se),1),
- intra_cv=round(100*sqrt(exp(summary(fit)$sigma^2)-1),1)) }
+ data.frame(param=param, GMR=100*exp(est),
+ lo=100*exp(est-tc*se), hi=100*exp(est+tc*se),
+ intra_cv=100*sqrt(exp(summary(fit)$sigma^2)-1)) }
 cat("\n[T] Bioequivalence (Test vs Reference): GMR and 90% CI:\n")
 for (p in c("CMAX","AUCLST")) { b <- be(p)
+ # the 80.00-125.00% decision uses the unrounded limits (ICH M13A)
  cat(sprintf(" %-7s GMR %.1f%% 90%% CI %.1f-%.1f%% intra-CV %.1f%% within 80-125%%: %s\n",
- p, b$GMR, b$lo, b$hi, b$intra_cv, ifelse(b$lo>=80 & b$hi<=125,"YES","no"))) }
+ p, round(b$GMR,1), round(b$lo,1), round(b$hi,1), round(b$intra_cv,1), ifelse(b$lo>=80 & b$hi<=125,"YES","no")))
+ keep("BE", p, "Test vs Reference", "GMR_PCT", b$GMR); keep("BE", p, "Test vs Reference", "LCL90_PCT", b$lo)
+ keep("BE", p, "Test vs Reference", "UCL90_PCT", b$hi); keep("BE", p, "Test vs Reference", "INTRA_CV_PCT", b$intra_cv) }
 
 ## --- 5. AE overview TLF (ADAE): distinct participants --------------------------
 ae <- adam$adae; N <- nrow(adam$adsl)
@@ -59,6 +69,8 @@ ae_result <- data.frame(
 ae_result$pct <- round(100*ae_result$n/N, 1)
 cat(sprintf("\n[T] AE overview (N=%d): any TEAE %d (%.1f%%), related %d, severe %d, SAE %d\n",
  N, ae_result$n[1], ae_result$pct[1], ae_result$n[2], ae_result$n[3], ae_result$n[4]))
+keep("AE", "", "Safety population", "N", N)
+for (i in 1:4) keep("AE", "", ae_result$category[i], "N_PARTICIPANTS", ae_result$n[i])
 
 ## --- 6. SLM interpretation (the tlf_interpret pipeline) --------------------
 source("tlf_interpret/R/slm_client.R")
@@ -105,5 +117,10 @@ for (nm in c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg"))
    # Linux libm, which broke the byte-for-byte regeneration check in CI.
    d[dbl] <- lapply(d[dbl], signif, digits = 12)
    write.csv(d, sprintf("sim_lifecycle/out/%s.csv", nm), row.names = FALSE) }
+## the printed results at 10 significant digits (not rounded as in the printout): a ninth file,
+## which G1 does not compare; the harness's independent recomputation (G9) checks it
+rs <- do.call(rbind, results); rs$VALUE <- signif(rs$VALUE, 10)
+write.csv(rs, "sim_lifecycle/out/results_summary.csv", row.names = FALSE)
 cat("\nSimulated ADaM written to sim_lifecycle/out/ (adsl,adex,adpc,adpp,adae,advs,adlb,adeg)\n")
+cat("Printed results written to sim_lifecycle/out/results_summary.csv\n")
 cat("================ END SIMULATED LIFE CYCLE ================\n")

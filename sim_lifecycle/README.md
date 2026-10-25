@@ -13,7 +13,9 @@ Page: [`index.html`](index.html).
 - `run_lifecycle.R` prints demographics, geometric means and geometric CV% on the log scale, the
   bioequivalence analysis (fixed-effects model on log values with participant, period and
   treatment; geometric mean ratio and 90% confidence interval), an adverse-event overview counted
-  by participant, and vitals, lab and ECG summaries. It then writes `out/*.csv`.
+  by participant, and vitals, lab and ECG summaries. It then writes `out/*.csv`: the eight domains
+  plus `out/results_summary.csv`, the printed PK, bioequivalence and adverse-event results at
+  10 significant digits (not rounded as in the printout). G1 compares only the eight domains; G9 recomputes the summary independently.
 - `priors.R` holds the design and domain priors as a hard-coded list.
 
 ## Run
@@ -23,8 +25,8 @@ Rscript sim_lifecycle/run_lifecycle.R
 ```
 
 Run from the repository root. Base R only (tested with R 4.6.0). The run regenerates the
-committed `out/*.csv` files byte for byte (checked 2026-10-24); the validation harness G1 gate
-checks the same thing.
+committed `out/*.csv` files byte for byte (checked 2026-10-25); the validation harness G1 gate
+checks the same thing for the eight domain files.
 
 ## What it is not
 

@@ -2,7 +2,7 @@
 
 *A reusable, field‑general procedure for being confident in a clinical‑biometrics deliverable
 (an analysis dataset, a table/listing/figure, a monitoring output) before it is used to inform a
-decision or ships to a sponsor. Eight named gates, explicit pass criteria, and a fixed evidence
+decision or ships to a sponsor. Ten named gates, explicit pass criteria, and a fixed evidence
 ledger. The organizing principle throughout: **automate detection and re‑execution; reserve the
 final decision for the qualified biostatistician.***
 
@@ -13,7 +13,9 @@ computational research: the same rigor apparatus, ported to a new domain. A deli
 The checks in [`run_harness.sh`](run_harness.sh) run against this repository's own SAS/R TLF
 pseudocode libraries and synthetic ADaM data and emit [`EVIDENCE_LEDGER.md`](EVIDENCE_LEDGER.md)
 (one row per gate). **What is actually checked:** most checks are structural (file inventories,
-pattern scans, counts); G1 re-runs the synthetic study; G5 is a manual record that the script does
+pattern scans, counts); G1 re-runs the synthetic study; G9 recomputes the sandbox's PK,
+bioequivalence and adverse-event results with separately written code; G10 reports which planted
+programming defects the other gates and the module tests catch; G5 is a manual record that the script does
 not compute; G6 checks that every QTc change figure uses one reference-line convention (0, 30 and
 60 ms, the ICH E14 categorical thresholds) and went green on 2026-10-25 after the two figure types that
 drew a +10 ms line were aligned; G7
@@ -26,7 +28,7 @@ ledger view.
 
 ---
 
-## The eight gates
+## The ten gates
 
 ### G1: Reproducibility & environment gate
 **Claim it defends:** *"Any qualified programmer can regenerate every dataset, table, listing, and figure from the code and the frozen inputs."*
@@ -35,7 +37,7 @@ ledger view.
 - **Automatable:** environment capture; clean‑clone re‑execution; output‑invariance across repeated runs; "every program parses / compiles."
 - **Human judgment:** define the numerical tolerance up front (bit‑identical is not guaranteed across SAS/R/BLAS builds); sign the run.
 - **Pass criterion:** a fresh clone reproduces the synthetic study **bit‑stable from its seed**; **every** program parses; no machine‑specific paths.
-- **As implemented here:** re-runs `simulate_study()` with seed 2026 and compares all eight committed output files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte, and parses every R program. It does not run the TLF libraries on data or execute SAS.
+- **As implemented here:** re-runs `simulate_study()` with seed 2026, writes doubles at 12 significant digits exactly as `run_lifecycle.R` does, and compares all eight committed output files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte, and parses every R program. It does not compare `results_summary.csv` (G9 checks it), run the TLF libraries on data or execute SAS.
 
 ### G2: Numeric‑provenance gate (numbers ↔ validated tool)
 **Claim it defends:** *"Every reported or regulated number came from a validated tool, never a language model, and summary/simulation numbers carry their uncertainty."*
@@ -44,7 +46,7 @@ ledger view.
 - **Automatable:** table‑vs‑source numeric diff; a scan that every PK program uses the log‑scale geometric convention; a scan that counts use `n_distinct(USUBJID)` / `CLASS USUBJID`; confirmation that the narrative drafter's self‑test **rejects any number it did not receive from the pipeline**.
 - **Human judgment:** whether a difference sits within Monte‑Carlo noise (a 1–2 MCSE move is not a finding).
 - **Pass criterion:** zero LLM‑sourced numbers; the log‑scale geometric convention present in every PK mean program; counts distinct‑participant; the drafter's number‑validation self‑test is present.
-- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer.
+- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer. The scan counts files, not programs: it passes while the log-scale pattern appears in any file under `r_tlf_pseudocode`, documentation included (14 files today: 11 R programs, the shared helpers in `00_setup_helpers.R`, `README.md` and `index.html`), so it would pass even if no R program used the log scale. The seeded-defect run (G10, defect D04) planted exp(mean(x)) in one PK program and G2 stayed green. Restricting G2 to the PK programs and requiring the pattern in each one would be a separate gate change; it is not made here.
 
 ### G3: Data conformance & integrity gate (CDISC + no PHI)
 **Claim it defends:** *"The analysis data is CDISC‑conformant, referentially intact across domains, correctly termed, and carries no PHI/PII or unblinded content."*
@@ -100,7 +102,100 @@ ledger view.
 - **Pass criterion:** `package_qc.py` reports zero issues.
 - **As implemented here:** runs `python3 package_qc.py`; external links are requested only with `--external`, so the gate does not depend on the network.
 
+### G9: Independent recomputation gate
+**Claim it defends:** *"The reported numbers can be re-derived from the analysis data by code written separately from the code that produced them."*
+
+- **Do:** recompute the NCA parameters from ADPC: AUC(0-t) by the linear trapezoid from t = 0 (the predose zero kept) to the last quantifiable concentration, BLQ as 0 (ICH M13A); Cmax and Tmax; lambda_z by log-linear least squares on the last three positive points; AUC(0-inf) = AUC(0-t) + Clast/lambda_z, t1/2, CL/F and Vz/F. Recompute the 2x2 bioequivalence result in closed form (d_i = log Y in period 1 minus log Y in period 2; log GMR = (mean d_TR - mean d_RT)/2; SE = 0.5 s_p sqrt(1/n_TR + 1/n_RT) with the pooled within-sequence SD and df = n - 2; 90% CI), and assert that it equals the participant + period + formulation OLS model fitted with `lm()`. Recompute the geometric means (exp(mean(log x))) and geometric CV% (100 sqrt(exp(s^2) - 1)) and the AE participant counts (distinct USUBJID in the safety population). Compare with ADPP and `sim_lifecycle/out/results_summary.csv` at relative tolerance 1e-6.
+- **Automatable:** all of it. Optional third engine: PKNCA 0.12.1 with `conc.blq = list(first = "keep", middle = "keep", last = "keep")`, `auc.method = "linear"` and the half-life fit given the same three points; skipped, and recorded as skipped, when PKNCA is not installed.
+- **Human judgment:** whether a difference is a defect or a documented convention (for example nominal against actual sampling times); the sign-off.
+- **Pass criterion:** every recomputed value within 1e-6 relative of the reported one; the closed form equals `lm()`; PKNCA, when it runs, agrees.
+- **As implemented here:** `checks/independent_recompute.R` never sources the sandbox code (`simulate_adam.R`, `run_lifecycle.R`). The same author wrote both, so this is a same-author re-derivation, not double programming by a second person. Building it found a real defect: `nca_one()` dropped the predose zero, so AUClast left out the 0 to first-sample trapezoid and was 0.24% to 2.69% low on all 80 profiles; that was fixed (commit a9a9929) before this gate went in. On the committed outputs, 80 profiles agree with a maximum relative difference of 4.4e-10 (the summary file holds 10 significant digits), and PKNCA 0.12.1 agrees with the base-R recomputation.
+
+### G10: Harness sensitivity gate (seeded defects)
+**Claim it defends:** *"We know which realistic programming defects this harness catches, and which it misses."*
+
+- **Do:** register a list of defects in advance (file, the exact text replaced, its replacement, the predicted catcher and the reasoning) and freeze it by its SHA-256. Plant each defect alone in a throwaway copy of the repository (never a branch); regenerate the outputs over the copy's committed outputs, so G1 cannot fire; run the other gates and the module tests; compare with an unmutated copy run the same way. Classify each defect CAUGHT (with the layers that failed), SURVIVED, EQUIVALENT (no output or printed result differs, shown by diff on the shipped data, so not proof that the change has no effect) or NOT APPLICABLE.
+- **Automatable:** all of it: `teeth/run_teeth.sh` with `teeth/apply_defect.py`; tests in `teeth/tests/test_teeth.sh`.
+- **Human judgment:** which defects belong on the list, and what to do about each survivor.
+- **Pass criterion:** green while the last run used the current frozen registry and the current gate scripts, and every registry entry still applies; otherwise "stale". Survivors are disclosures of what the harness misses, not failures.
+- **As implemented here:** see [the seeded-defect run](#the-seeded-defect-run-g10) below. The counts describe a hand-picked list, so they estimate nothing beyond it: no detection rate and no interval. QC-process engineering adapted from the teeth check and method-invariance grid in the author's consilience-engine software; it measures the harness and is not a statistical method.
+
 ---
+
+## The seeded-defect run (G10)
+
+The registry (`teeth/defects.csv`) gives, for each defect, the file, the exact text replaced, its
+replacement, the predicted catcher and the reasoning. It is frozen by its SHA-256 in
+`teeth/defects.sha256` and committed before each run; the runner refuses an edited registry.
+
+- **Registry v1** (17 defects, D00 to D16; sha256 `6693bc70198f6a68c49ce9eee80f9dc053dec88ba07fa78f407703fd1cfa4e62`) was frozen in commit 2c36aa2 before the
+  first run (commit 99adc6a). All 17 outcomes matched the predictions. That run's rows are kept in
+  `teeth/results/teeth_2026-10-25_registry-v1.csv`.
+- **A review probe then found a gap.** Changing the convention grid's lower window bound from `>=`
+  to `>`, so that total bilirubin drawn on the same day as the aminotransferase draw no longer
+  counts, failed no test and changed no output on the shipped data, so the runner filed it
+  EQUIVALENT. No planted case and no study participant has its only qualifying TBL on the
+  aminotransferase day. A same-day known-answer test was then added to `test-hyslaw-grid.R`.
+- **Registry v2** (18 defects, D00 to D17; sha256 `e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3`) was frozen in commit f0c75a2 before the
+  second run. It adds D17, that lower-bound change, and corrects one sentence of D04's rationale
+  (what G2 scans); no v1 prediction changed. D17's prediction was written after the test that
+  catches it, so its catch shows the gap is closed, not that the tests were well designed.
+
+The second run, on registry v2, was on 2026-10-25 with R 4.6.0
+(`bash validation_harness/teeth/run_teeth.sh`, about 13 minutes); the unmutated copy passed
+every layer. Results: `teeth/results/teeth_2026-10-25.csv` and `teeth/results/summary.json`.
+
+| ID | Planted defect | Where | Result | Caught by |
+|---|---|---|---|---|
+| D00 | Comment-only edit (no-op control) | `run_lifecycle.R` | EQUIVALENT | nothing; no output or printed result differs (diff) |
+| D01 | TRT01A wrong for one participant | `simulate_adam.R` `sim_adsl` | CAUGHT | the generator's own assertion, then G1 |
+| D02 | PARAMCD AUCLST written as AUC-LST | `sim_adpp` | CAUGHT | driver error, G3, G9 |
+| D03 | One ADAE USUBJID not in ADSL | `sim_adae` | CAUGHT | G3, G9 |
+| D04 | exp(mean(x)) as the geometric mean in one R PK program | `r_tlf_pseudocode/crossover/t_pk_param_summary.R` | **SURVIVED** | nothing |
+| D05 | exp(mean(x)) in `geo()` | `run_lifecycle.R` | CAUGHT | G9 only |
+| D06 | AE overview counts records | `run_lifecycle.R` | CAUGHT | G9 only |
+| D07 | log10 in `be()` | `run_lifecycle.R` | CAUGHT | G9 only |
+| D08 | qt(0.975): a 95% CI printed as the 90% CI | `run_lifecycle.R` | CAUGHT | G9 only |
+| D09 | Period term dropped from the BE model | `run_lifecycle.R` | CAUGHT | G9 only |
+| D10 | lambda_z from two points | `nca_one()` | CAUGHT | G9 only |
+| D11 | BLQ imputed as LLOQ/2 into AUC | `nca_one()` | CAUGHT | G9 only |
+| D12 | Potential Hy's Law AND turned into OR | TRIALMON `logic.R` | CAUGHT | TRIALMON tests only (all four files) |
+| D13 | TBL threshold 2x lowered to 1.5x ULN | TRIALMON `logic.R` | CAUGHT | TRIALMON tests only (all four files) |
+| D14 | Grid window upper bound made exclusive | TRIALMON `hyslaw_grid.R` | CAUGHT | `test-hyslaw-grid.R` only |
+| D15 | 5% predose exclusion skipped | n/a | NOT APPLICABLE | every predose concentration is 0 |
+| D16 | AUC on nominal times | n/a | NOT APPLICABLE | ADPC has no actual-time variable |
+| D17 | Grid window lower bound made strict (v2) | TRIALMON `hyslaw_grid.R` | CAUGHT | `test-hyslaw-grid.R` only; no shipped output changes |
+
+Counts for registry v2: 14 caught, 1 survived, 1 equivalent, 2 not applicable. All 18 outcomes
+matched the registered predictions, by this rule: a defect matches when its class is the
+predicted one and every predicted catcher is among the layers that caught it. More catchers than
+predicted still match. D12 and D13 were predicted to fail `test-logic.R` and `test-hyslaw-grid.R`;
+they also failed `test-boundaries.R` and `test-server.R` (the `beyond_prediction` column of the
+results lists such extra layers). The predictions were written by the person who wrote the gates,
+after reading their code (and, for D06 and D11, the committed data), so the match shows the gates
+behave as their author reads them; it is not an independent test.
+
+EQUIVALENT is decided by diff on the shipped data: the runner compares the outputs and printed
+results with those of the unmutated copy. A change that matters only for data the sandbox does
+not contain is filed EQUIVALENT, so the class is not proof that a change has no effect. That is
+how the v1 tests missed the lower-bound change that became D17.
+
+What the run shows:
+
+- **G1 to G8 caught none of the seven numeric and counting defects (D05 to D11).** Structural
+  scans and byte-for-byte regeneration cannot see a wrong formula once the outputs are
+  regenerated; only the independent recomputation (G9) caught them.
+- **D04 survived.** G2 counts files, not programs: it passes while the log-scale pattern appears
+  in any file under `r_tlf_pseudocode`, documentation included, so it would pass even if no R
+  program used the log scale; and no layer runs the TLF libraries on data. This is a disclosure of
+  what the harness misses, not a failure of the run.
+- **D01 was caught earlier than the build spec predicted.** `simulate_study()` asserts that the
+  ADSL period-1 TRT01A equals the ADEX period-1 TRTA, so the generator stops before G3's
+  TRT01A-tracks-TRTSEQP check sees any data; that G3 check is not exercised by this list.
+- **The harness does not run the TRIALMON tests.** D12 to D14 and D17 were caught only by
+  `sasr_monitoring_wiki/trialmon_tests`; `run_harness.sh` alone would have reported green.
+- The counts describe this hand-picked list. They estimate nothing beyond it, so there is no
+  detection rate and no interval.
 
 ## What a machine can do vs what only the biostatistician can do
 
