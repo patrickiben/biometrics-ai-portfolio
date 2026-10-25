@@ -44,6 +44,14 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 **Watch / explore / read / build, pick your mode.** This page *shows* the UAT (diagrams + a live dashboard computed from the data), the [**runnable R Shiny app**](uat-build.html) lets you *run* one, the [build-it walkthrough](uat-build.html) shows how the app is made, and the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) is what you file. Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
 :::
 
+::: {.callout-tip appearance="simple"}
+**Run the tracker in your browser.** [**Open the UAT tracker in your browser**](../../apps/uat_irt/). It is the same R Shiny app, running on R compiled to WebAssembly (Shinylive and webR) with no server: everything it needs loads from this site, and what you click stays in your browser. Synthetic data only.
+
+**Before you open it:** R starts inside your browser, so the tracker takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. If it does not load, the screenshot below and the [read-only snapshot](uat-dashboard.html) show the same screens.
+
+![The tracker as it opens, on synthetic data.](../screenshots/uat-tracker.png){fig-alt="The UAT tracker as it opens: 29 test scripts, 22 passed, 2 failed, 3 open defects, 97% of requirements traced, the go-live gate NOT ready, the test-script table, execution by test area and the defect log."}
+:::
+
 ## What a UAT is, in one picture
 
 You are confirming, in a test environment, that the vendor's randomization and drug-supply build does **exactly** what your specs say, before a single real participant is randomized.

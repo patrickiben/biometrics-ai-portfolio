@@ -29,4 +29,18 @@ df2 <- d$defects; df2$Status[df2$Severity %in% c("Critical", "Major")] <- "Close
 tr2 <- d$trace;   tr2$Covered <- "Y"
 stopifnot("fixing all criteria -> READY" = uat_gate(t2, df2, tr2)$go)
 
+# Shinylive readiness: the app folder carries its own copy of the seed CSVs (the export
+# bundles only the app folder), the copy matches templates/ byte for byte, and the app
+# builds its download in the browser instead of using a downloadHandler
+app_dir <- dirname(dirname(lp))
+csvs <- c("test_scripts.csv", "defect_log.csv", "traceability_matrix.csv")
+bundled <- file.path(app_dir, "templates", csvs)
+stopifnot(
+  "the app folder bundles the seed CSVs"   = all(file.exists(bundled)),
+  "the bundled CSVs match templates/"      = identical(unname(tools::md5sum(bundled)),
+                                                       unname(tools::md5sum(file.path(dir, csvs)))),
+  "no downloadHandler in the app"          = !any(grepl("downloadHandler|downloadButton",
+                                                        sub("#.*$", "", readLines(file.path(app_dir, "app.R")))))
+)
+
 cat("UAT logic: all tests passed\n")

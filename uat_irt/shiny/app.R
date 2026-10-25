@@ -9,14 +9,28 @@
 #
 # The gate + KPI logic lives in R/logic.R (shared with the Quarto docs + unit
 # tests); the seed data is ../templates/*.csv (edit it to reuse for a study).
+# The app folder carries a copy in templates/ so it also runs in the browser
+# under Shinylive, which exports only this folder; tests/test-logic.R fails if
+# the two copies differ. The CSV download is built in the browser (a Blob).
 # ===========================================================================
-library(shiny)
-library(bslib)
-library(DT)
-library(ggplot2)
+suppressPackageStartupMessages({
+  library(shiny)
+  library(bslib)
+  library(DT)
+  library(ggplot2)
+})
 source("R/logic.R")
 
-seed <- uat_load()
+seed <- uat_load()   # ../templates in local R; the bundled templates/ in the browser
+
+# a few lines of JavaScript: turn a CSV string sent from R into a file the browser saves
+DOWNLOAD_JS <- "
+Shiny.addCustomMessageHandler('uat-download', function(m) {
+  var url = URL.createObjectURL(new Blob([m.content], {type: m.type}));
+  var a = document.createElement('a');
+  a.href = url; a.download = m.filename; document.body.appendChild(a); a.click();
+  setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
+});"
 
 ui <- page_sidebar(
   title = "IRT / RTSM UAT Tracker",
@@ -28,9 +42,10 @@ ui <- page_sidebar(
     hr(),
     uiOutput("detail"),
     hr(),
-    downloadButton("dl_tests", "Download test results (CSV)", class = "btn-sm"),
+    actionButton("dl_tests", "Download test results (CSV)", icon = icon("download"), class = "btn-sm"),
     actionButton("reset", "Reset to seed", class = "btn-sm btn-outline-warning")
   ),
+  tags$head(tags$script(HTML(DOWNLOAD_JS))),
   layout_columns(
     col_widths = c(2, 2, 2, 3, 3),
     value_box("Test scripts", textOutput("v_total"), theme = "secondary"),
@@ -169,9 +184,18 @@ server <- function(input, output, session) {
             panel.grid.minor = element_blank())
   })
 
-  output$dl_tests <- downloadHandler(
-    filename = function() "uat_test_results.csv",
-    content = function(file) utils::write.csv(rv$tests, file, row.names = FALSE))
+  # client-side download: R builds the CSV text and the browser saves it, so the button also
+  # works under Shinylive (a downloadHandler request there can miss the service worker)
+  dl_payload <- reactiveVal(NULL)
+  observeEvent(input$dl_tests, {
+    con <- textConnection(NULL, "w", local = TRUE)
+    utils::write.csv(rv$tests, con, row.names = FALSE)
+    csv <- textConnectionValue(con); close(con)
+    p <- list(filename = "SYNTHETIC_uat_test_results.csv", type = "text/csv",
+              content = paste0(paste(csv, collapse = "\n"), "\n"))
+    dl_payload(p)
+    session$sendCustomMessage("uat-download", p)
+  })
 }
 
 shinyApp(ui, server)
