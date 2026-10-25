@@ -8,6 +8,7 @@ language:
 params:
   meddra_version: "29.1"
   ctcae_version: "6.0"
+  ae_ctcae_version: "6.0"
   hys_window_days: 30
   alp_convention: false
 format:
@@ -46,7 +47,8 @@ library(ggplot2)
 source("../trialmon_shiny/R/logic.R")
 source("_report-helpers.R")
 tm <- trialmon_load("../trialmon_shiny/data")
-S <- trialmon_settings(params$ctcae_version, params$hys_window_days, params$alp_convention, params$meddra_version)
+S <- trialmon_settings(params$ctcae_version, params$hys_window_days, params$alp_convention, params$meddra_version,
+                       params$ae_ctcae_version)
 h <- hys_screen(tm$adlb, S$hys_window, S$alp_convention)
 q <- qtc_screen(tm$adeg)
 ds <- dlt_state(tm)
@@ -54,9 +56,39 @@ cs <- cohort_summary(tm)
 roll <- trialmon_rollup(tm, S)
 dosed <- ds[ds$N > 0, ]
 ctcae_note <- sprintf("Lab grades: NCI CTCAE v%s.", S$ctcae)
-meddra_note <- sprintf("Adverse events coded with MedDRA v%s (primary SOC); grades as recorded by the investigator (NCI CTCAE v6.0).", S$meddra)
-alp_note <- if (S$alp_convention) "ALP < 2x ULN at the first aminotransferase elevation is also required (an SAP convention)." else
+ae_grade_note <- sprintf("AE grades as recorded by the investigator (NCI CTCAE v%s)", S$ae_ctcae)
+meddra_note <- sprintf("Adverse events coded with MedDRA v%s (primary SOC). %s; they are data and are not re-derived when the lab-grading version (v%s here) changes.",
+                       S$meddra, ae_grade_note, S$ctcae)
+alp_note <- if (S$alp_convention) "ALP < 2x ULN in the draw with that aminotransferase elevation is also required (an SAP convention)." else
   "ALP is shown but not used to exclude a case; the SAP option ALP < 2x ULN is off."
+E6R3 <- paste("ICH E6(R3) (Step 4 6 Jan 2025; EU effective 23 Jul 2025; FDA final guidance Sep 2025);",
+              "Annex 2 Step 4 3 Jun 2026 (CHMP 25 Jun 2026, EU effective 15 Jan 2027; FDA: draft guidance Dec 2024, not final)")
+
+# the findings the text cites, computed from the same objects as the tables
+and_list <- function(x) if (length(x) <= 1) paste(x, collapse = "") else
+  paste(paste(x[-length(x)], collapse = ", "), "and", x[length(x)])
+coh_name <- function(cc) sub("^C", "Cohort ", cc)
+who <- function(id) { s <- tm$adsl[match(id, tm$adsl$USUBJID), ]; sprintf("%s (%s, %g mg)", id, coh_name(s$COHORT), s$DOSEMG) }
+is_dlt <- function(id) tm$adsl$DLTFL[match(id, tm$adsl$USUBJID)] == "Y"
+pend <- tm$adsl[tm$adsl$DLTADJ == "Pending", ]
+hys_ids <- h$USUBJID[h$hys]
+conf_ids <- h$USUBJID[!h$hys & !is.na(h$at3x_day)]
+hys_doses <- unique(tm$adsl$DOSEMG[tm$adsl$USUBJID %in% hys_ids])
+pend_txt <- vapply(pend$USUBJID, function(id) {
+  x <- q[q$USUBJID == id, ]
+  if (nrow(x) && x$gt500) sprintf("%s had QTcF %d ms on Day %d (baseline %d ms). Under the synthetic protocol, QTcF above 500 ms is a candidate DLT; the event has not been adjudicated",
+                                  who(id), x$max_qtcf, x$max_day, x$base)
+  else sprintf("%s has a candidate DLT that has not been adjudicated: %s", who(id), pend$DLTDESC[pend$USUBJID == id])
+}, "")
+tag <- function(ids) ifelse(is_dlt(ids), paste(ids, "(an adjudicated DLT)"), ids)
+liver_txt <- c(
+  if (length(hys_ids)) sprintf("%s %s the potential Hy's Law screen", and_list(tag(hys_ids)),
+                               if (length(hys_ids) == 1) "meets" else "meet"),
+  if (length(conf_ids)) sprintf("%s had ALT or AST above 3x ULN that needed confirmation", and_list(tag(conf_ids))))
+if (!length(liver_txt)) liver_txt <- "No participant meets the potential Hy's Law screen or had ALT or AST above 3x ULN"
+next_dose <- tm$cohorts[grepl("^Planned", tm$cohorts$STATUS), ][1, ]
+top <- dosed[which.max(dosed$DOSEMG), ]
+pend_coh <- ds[ds$PENDING > 0 & ds$STATE != ds$STATE_IF_DLT, ]
 ```
 
 ::: {.callout-important appearance="simple"}
@@ -72,24 +104,26 @@ cat(html_table(data.frame(
   Item = c("Study", "Design", "Data cut", "Cohorts dosed", "Settings (SAP parameters)", "Status"),
   Detail = c("CP-101 (synthetic): first-in-human, multiple ascending dose, open label for illustration",
              "Once-daily oral dosing, Days 1 to 28 (the DLT window); follow-up to Day 43",
-             "After the last Cohort 4 participant completed the DLT window (Day 29)",
-             sprintf("%s; %d participants dosed. Cohort 5 (200 mg) is planned and not dosed.",
-                     paste(sprintf("%s %g mg (n=%d)", dosed$COHORT, dosed$DOSEMG, dosed$N), collapse = ", "), sum(dosed$N)),
-             sprintf("MedDRA v%s; NCI CTCAE v%s; potential Hy's Law window %g days; ALP < 2x ULN convention %s",
-                     S$meddra, S$ctcae, S$hys_window, if (S$alp_convention) "on" else "off"),
+             sprintf("After the last %s participant completed the DLT window (Day %d)", coh_name(top$COHORT),
+                     tm$cohorts$DLTWIN[tm$cohorts$COHORT == top$COHORT] + 1),
+             sprintf("%s; %d participants dosed.%s",
+                     paste(sprintf("%s %g mg (n=%d)", dosed$COHORT, dosed$DOSEMG, dosed$N), collapse = ", "), sum(dosed$N),
+                     if (is.na(next_dose$COHORT)) "" else sprintf(" %s (%g mg) is planned and not dosed.", coh_name(next_dose$COHORT), next_dose$DOSEMG)),
+             sprintf("MedDRA v%s; NCI CTCAE v%s for lab grades (AE grades as recorded, v%s); potential Hy's Law window %g days; ALP < 2x ULN convention %s",
+                     S$meddra, S$ctcae, S$ae_ctcae, S$hys_window, if (S$alp_convention) "on" else "off"),
              "Draft for committee review. Rendered from synthetic data; not a validated output."))))
 ```
 
 # Questions for the committee
 
-1. **Adjudicate a candidate DLT.** CP101-018 (Cohort 4, 120 mg) had QTcF 503 ms on Day 22 (baseline
-   462 ms). Under the synthetic protocol, QTcF above 500 ms is a candidate DLT; the event has not been
-   adjudicated (Sections [5](#qtcf) and [9](#dose-escalation-data-for-the-decision)).
-2. **Review the liver findings.** CP101-014 meets the potential Hy's Law screen and is a confirmed
-   DLT; CP101-009 and CP101-004 had aminotransferase elevations above 3x ULN that needed confirmation
-   (Section [4](#liver-tests)).
-3. **Decide the next step for dose escalation** from the options the protocol allows
-   (Section [9](#dose-escalation-data-for-the-decision)). No option is recommended here.
+```{r questions, results='asis'}
+qs <- c(
+  if (nrow(pend)) sprintf("**Adjudicate a candidate DLT.** %s (Sections [5](#qtcf) and [9](#dose-escalation-data-for-the-decision)).",
+                          paste(pend_txt, collapse = ". ")),
+  sprintf("**Review the liver findings.** %s (Section [4](#liver-tests)).", paste(liver_txt, collapse = "; ")),
+  "**Decide the next step for dose escalation** from the options the protocol allows (Section [9](#dose-escalation-data-for-the-decision)). No option is recommended here.")
+cat(paste0(seq_along(qs), ". ", qs, collapse = "\n"), "\n")
+```
 
 # Cohort summary
 
@@ -104,8 +138,8 @@ cat(html_table(data.frame(
           "Serious AE", "Related or possibly related TEAE")))
 ```
 
-[Participants counted once per column. TEAE: treatment-emergent adverse event. DLT-evaluable: completed
-the 28-day DLT window or had a DLT. Synthetic data.]{.tm-foot}
+[Participants counted once per column. TEAE: treatment-emergent adverse event. `r ae_grade_note`.
+DLT-evaluable: completed the 28-day DLT window or had a DLT. Synthetic data.]{.tm-foot}
 
 # Dose-limiting toxicities {#dlts}
 
@@ -125,7 +159,9 @@ cat(html_table(data.frame(
 
 **Definition used.** A participant is a *potential Hy's Law* case when ALT or AST is at least 3x ULN
 and total bilirubin (TBL) is above 2x ULN **on or after** the day of that aminotransferase elevation,
-within `r S$hys_window` days (the window is an SAP convention). `r alp_note` This follows FDA,
+within `r S$hys_window` days of it (the window is an SAP convention). Every draw with ALT or AST at least
+3x ULN opens its own window, so a second elevation weeks after the first is screened as well; the
+tables report the first draw that qualifies. `r alp_note` This follows FDA,
 *Drug-Induced Liver Injury: Premarketing Clinical Evaluation* (July 2009), which asks for TBL above
 2x ULN "without initial findings of cholestasis (elevated serum ALP)" and for other causes to be ruled
 out. The screen cannot rule out other causes; the medical monitor does. Separately, any ALT or AST
@@ -148,12 +184,12 @@ coh <- tm$adsl$COHORT[match(x$USUBJID, tm$adsl$USUBJID)]
 cat(html_table(data.frame(
   Participant = x$USUBJID, Cohort = coh,
   `Peak ALT / AST (x ULN)` = sprintf("%.1f / %.1f", x$peak_alt, x$peak_ast),
-  `First ALT or AST >= 3x (day)` = x$at3_day, `ALP then (x ULN)` = sprintf("%.1f", x$alp_at3),
+  `ALT or AST >= 3x (day)` = x$at3_day, `ALP then (x ULN)` = sprintf("%.1f", x$alp_at3),
   `R ratio (pattern)` = ifelse(is.na(x$r_at3), "", sprintf("%.1f (%s)", x$r_at3, x$pattern)),
   `Peak TBL (x ULN)` = sprintf("%.1f", x$peak_tbl), `TBL > 2x on or after it (day)` = x$tbl_day,
   `Potential Hy's Law` = ifelse(x$hys, "Yes", "No"), Quadrant = sub(":.*", "", x$quadrant),
   check.names = FALSE),
-  num = c("First ALT or AST >= 3x (day)", "ALP then (x ULN)", "Peak TBL (x ULN)", "TBL > 2x on or after it (day)"),
+  num = c("ALT or AST >= 3x (day)", "ALP then (x ULN)", "Peak TBL (x ULN)", "TBL > 2x on or after it (day)"),
   caption = "Participants with ALT or AST above 3x ULN, or in the upper-right quadrant"))
 y <- h[!is.na(h$at3x_day), ]
 cat(html_table(data.frame(
@@ -166,15 +202,22 @@ cat(html_table(data.frame(
   caption = "Confirmation of aminotransferase elevations above 3x ULN"))
 ```
 
-[R ratio = (ALT/ULN)/(ALP/ULN) at the first draw with ALT at least 3x ULN: 5 or more hepatocellular,
+[ALT or AST >= 3x (day): for a potential Hy's Law case, the draw that opens the qualifying window;
+otherwise the first such draw. ALP and the R ratio are read from that draw. R ratio = (ALT/ULN)/(ALP/ULN)
+(at the first draw with ALT at least 3x ULN if only AST reached 3x in that draw): 5 or more hepatocellular,
 between 2 and 5 mixed, 2 or less cholestatic. "Within 48 to 72 h" is judged on study days (the data
 carry days, not clock times), as 3 days or fewer. The FDA (2009) discontinuation considerations that
 these data can show are ALT or AST above 8x ULN, above 5x ULN for more than 2 weeks, and above 3x ULN with
 TBL above 2x ULN; INR and symptoms are not in these data.]{.tm-foot}
 
-```{r traj, fig.width=7.6, fig.height=3.4, fig.alt="Liver tests by study day for CP101-014, CP101-009 and CP101-004, as multiples of ULN."}
+```{r traj-ids}
+traj_ids <- head(x$USUBJID[x$hys | !is.na(x$at3x_day)], 4)
+```
+
+```{r traj, eval=length(traj_ids) > 0, fig.width=7.6, fig.height=3.4, fig.alt=paste0("Liver tests by study day for ", and_list(traj_ids), ", as multiples of ULN.")}
 #| renderings: [light, dark]
-tr <- do.call(rbind, lapply(c("CP101-014", "CP101-009", "CP101-004"), function(i) cbind(liver_trajectory(tm, i), USUBJID = i)))
+tr <- do.call(rbind, lapply(traj_ids, function(i) cbind(liver_trajectory(tm, i), USUBJID = i)))
+tr$USUBJID <- factor(tr$USUBJID, levels = traj_ids)
 both(function(look) trajectory_plot(tr, look, NULL) + facet_wrap(~USUBJID, nrow = 1))
 ```
 
@@ -199,9 +242,10 @@ cat(html_table(data.frame(Participant = z$USUBJID, Cohort = z$COHORT, `Baseline 
 [QTcF: Fridericia-corrected QT, triplicate mean. Categories per ICH E14 (May 2005), the E14 Q&A (R3)
 (December 2015) and the E14/S7B Q&As (February 2022): maximum post-baseline value above 450, 480 and
 500 ms, regardless of sex, and maximum increase from baseline above 30 and 60 ms. Categories are
-cumulative and a value equal to a threshold is not above it. Baseline: Day 1 predose. Two participants
-were already above 450 ms at baseline. A categorical summary is a screen; concentration-QTc modeling
-belongs in a prespecified analysis.]{.tm-foot}
+cumulative and a value equal to a threshold is not above it. Baseline: Day 1 predose; post-baseline
+values start at the Day 1 4 h post-dose ECG. Participants already above 450 ms at baseline:
+`r sum(q$base450)` of `r nrow(q)`. A categorical summary is a screen; concentration-QTc modeling belongs in
+a prespecified analysis.]{.tm-foot}
 
 # Laboratory shifts
 
@@ -275,6 +319,8 @@ cat(html_table(data.frame(
   num = c("Dose (mg)", "DLT-evaluable", "DLTs (confirmed + pending)", "Potential Hy's Law", "ALT or AST > 3x ULN",
           "QTcF > 500 ms or change > 60 ms", "Grade 3 or higher TEAE"),
   caption = "Key findings by dose"))
+cat(sprintf('<p class="tm-foot">Participants. Potential Hy\'s Law: window %g days, ALP option %s. Grade 3 or higher TEAE counts AE grades as recorded by the investigator (NCI CTCAE v%s).</p>\n',
+            S$hys_window, if (S$alp_convention) "on" else "off", S$ae_ctcae))
 cat(html_table(data.frame(Cohort = dosed$COHORT, `Dose (mg)` = dosed$DOSEMG,
   `Illustrative 3+3 rule reference` = dosed$text, check.names = FALSE), num = "Dose (mg)",
   caption = "What an illustrative 3+3 rule would say (a reference, not a recommendation)"))
@@ -282,22 +328,23 @@ cat(html_table(data.frame(Cohort = dosed$COHORT, `Dose (mg)` = dosed$DOSEMG,
 
 **Reading the rule reference.** Under a 3+3 rule, 0 of 3 or 1 of 6 participants with a DLT is
 escalation-eligible, 1 of 3 means the cohort expands to 6, and 2 or more mean the dose exceeds the
-maximum tolerated dose; a dose can be called the MTD only with 6 participants treated at it. For
-Cohort 4 the reference depends on the committee's adjudication of CP101-018. 3+3 appears here only as
-an illustration: model-assisted designs such as BOIN (FDA fit-for-purpose determination, December 2021,
-for the local BOIN design under a non-informative prior) are the current alternative, and this example
-implements neither as a decision tool. A rule reference never replaces the committee's review of the
-whole safety picture, including the potential Hy's Law case at 120 mg.
+maximum tolerated dose; a dose can be called the MTD only with 6 participants treated at it.
+`r if (nrow(pend_coh)) sprintf("For %s the reference depends on the committee's adjudication of %s.", and_list(coh_name(pend_coh$COHORT)), and_list(pend$USUBJID[pend$COHORT %in% pend_coh$COHORT])) else ""`
+3+3 appears here only as an illustration: model-assisted designs such as BOIN (FDA fit-for-purpose
+determination, December 2021, for the local BOIN design under a non-informative prior) are the current
+alternative, and this example implements neither as a decision tool. A rule reference never replaces the
+committee's review of the whole safety picture, including
+`r if (length(hys_ids)) sprintf("the potential Hy's Law %s at %s", if (length(hys_ids) == 1) "case" else "cases", and_list(paste(hys_doses, "mg"))) else "the liver findings in Section 4"`.
 
 **Options the synthetic protocol allows the committee to consider,** in protocol order: escalate to
-200 mg as planned; escalate to an intermediate dose; enroll further participants at 120 mg; stop
-escalation and select a lower dose; pause dosing pending further evaluation. They are listed, not
-ranked.
+`r if (is.na(next_dose$COHORT)) "the next planned dose" else paste(next_dose$DOSEMG, "mg")` as planned;
+escalate to an intermediate dose; enroll further participants at `r top$DOSEMG` mg; stop escalation and
+select a lower dose; pause dosing pending further evaluation. They are listed, not ranked.
 
 ::: {.tm-decision}
 **Committee record** (completed by the committee, not by this packet)
 
-DLT adjudication for CP101-018: ______________________________
+`r if (nrow(pend)) paste0("DLT adjudication for ", and_list(pend$USUBJID), ":") else "DLT adjudications:"` ______________________________
 
 Decision on dose escalation: ______________________________
 
@@ -309,15 +356,23 @@ Chair: ______________________ Date: ______________________
 # Methods and conventions
 
 - **Source.** The TRIALMON synthetic dataset (`adsl`, `adlb`, `adeg`, `adae`, `cohorts`, `study_kri`),
-  written by `R/gen_data.R` from one seed. Every table is computed at render time by
-  `R/logic.R`, the code behind the TRIALMON console and its tests; no number is typed in.
+  written by `R/gen_data.R` from one seed. Every table is computed at render time by `R/logic.R`, the
+  code behind the TRIALMON console and its tests, and the findings the text cites (participants, values,
+  days and counts) are computed from the same objects. The study design and the protocol's options are
+  fixed text from the synthetic protocol.
 - **Populations.** Safety population: all dosed participants. Baseline: the Day 1 predose value.
-  Post-baseline: after Day 1, including unscheduled draws.
+  Post-baseline: labs after Day 1; ECGs from the Day 1 4 h post-dose time point on; both include
+  unscheduled draws.
 - **Counting.** Participants are counted once per row of a table. Percentages use the dosed
   participants in the column.
-- **Dictionaries and grading.** MedDRA v`r S$meddra`; NCI CTCAE v`r S$ctcae` for laboratory grades.
-  Both are parameters of this document (`meddra_version`, `ctcae_version`), as are the Hy's Law window
-  (`hys_window_days`) and the ALP convention (`alp_convention`).
+- **Dictionaries and grading.** MedDRA v`r S$meddra`; NCI CTCAE v`r S$ctcae` for laboratory grades,
+  derived from the values; AE grades as recorded by the investigator under NCI CTCAE v`r S$ae_ctcae` (a
+  property of the data: changing the lab-grading version does not re-grade an AE). All three are
+  parameters of this document (`meddra_version`, `ctcae_version`, `ae_ctcae_version`), as are the Hy's
+  Law window (`hys_window_days`) and the ALP convention (`alp_convention`).
+- **Guidance cited.** FDA, *Drug-Induced Liver Injury: Premarketing Clinical Evaluation* (July 2009);
+  ICH E14 (May 2005), E14 Q&A (R3) (10 Dec 2015) and E14/S7B Q&As (Step 4 21 Feb 2022); NCI CTCAE
+  v`r S$ctcae`; `r E6R3`.
 - **What was executed.** Rendered with Quarto and `r R.version.string` on synthetic data; the rules are
   covered by testthat tests (rule boundaries, the shipped study and the Shiny server). No validated system
   or independent programmer produced or checked these numbers.
