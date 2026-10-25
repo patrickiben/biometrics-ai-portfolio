@@ -1,7 +1,8 @@
 # assets/theme/theme.R: shared look for the portfolio's Shiny apps (bslib >= 0.6, Bootstrap 5.3).
 # Generated from assets/theme/tokens.css by build_pages.py; edit the tokens, not this file.
 # Adopt: copy into the app folder (Shinylive apps cannot read files outside it), source("theme.R"),
-# then page_sidebar(theme = bp_theme(), bp_theme_head(), ...). No app uses it yet.
+# then page_sidebar(theme = bp_theme(), bp_theme_head(), ...). No Shiny app uses it yet; the Quarto
+# guides and snapshots source it for figure ink (bp_ggplot_theme, one rendering per theme).
 bp_tokens <- list(
   dark = c(bg = "#0b0f15", surface = "#111721", surface_2 = "#161e2a", line = "#222c3b", line_2 = "#2e3a4d", ink = "#e8eef6", text = "#c9d3e1", muted = "#98a5b8", accent = "#3ad7c8", accent_ink = "#8ff0e6", blue = "#7aa4ff", green = "#4fd394", amber = "#f0b450", red = "#ff7a7a"),
   light = c(bg = "#f4f6f9", surface = "#ffffff", surface_2 = "#eef2f6", line = "#d7dee7", line_2 = "#c3ccd8", ink = "#121a24", text = "#1f2a37", muted = "#4d5a69", accent = "#0b7268", accent_ink = "#075b53", blue = "#0757bf", green = "#1d6b3c", amber = "#8a5300", red = "#b42318"))

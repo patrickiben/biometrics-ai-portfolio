@@ -25,6 +25,7 @@ knitr:
 ```{r setup}
 library(ggplot2); library(knitr)
 source("../shiny/R/logic.R")
+source("../../assets/theme/theme.R")   # bp_tokens and bp_ggplot_theme: figure ink per site theme
 d  <- hours_load()
 m  <- hours_metrics(d$ledger, d$contingency)
 f45 <- find_hours(45, d$ledger, d$contingency)
@@ -52,21 +53,18 @@ cat('</div>')
 ::: {.g-col-12 .g-col-md-7}
 #### Planned vs forecast (EAC) by deliverable
 
-```{r plot, fig.width=7, fig.height=4.4}
+```{r plot, fig.width=7, fig.height=4.4, fig.alt="Planned and forecast (EAC) hours for each deliverable, as paired horizontal bars."}
+#| renderings: [light, dark]
 long <- rbind(
   data.frame(deliverable = d$ledger$deliverable, hours = d$ledger$planned, kind = "Planned"),
   data.frame(deliverable = d$ledger$deliverable, hours = d$ledger$eac,     kind = "Forecast EAC"))
 long$deliverable <- factor(long$deliverable, levels = rev(d$ledger$deliverable))
-ggplot(long, aes(hours, deliverable, fill = kind)) +
-  geom_col(width = 0.7, position = position_dodge(width = 0.75)) +
-  scale_fill_manual(values = c("Planned"="#5b8cff","Forecast EAC"="#e0a64c")) +
-  labs(x = "Hours", y = NULL, fill = NULL) +
-  theme_minimal(base_size = 11) +
-  theme(legend.position = "top", plot.background = element_rect(fill="#222630", colour=NA),
-        panel.background = element_rect(fill="#222630", colour=NA),
-        text = element_text(colour="#e9edf7"), axis.text = element_text(colour="#c5cee4"),
-        panel.grid = element_line(colour="#3a4157"),
-        legend.key = element_rect(fill="#222630", colour=NA))
+for (mode in c("light", "dark")) print(
+  ggplot(long, aes(hours, deliverable, fill = kind)) +
+    geom_col(width = 0.7, position = position_dodge(width = 0.75)) +
+    scale_fill_manual(values = c("Planned"="#5b8cff","Forecast EAC"="#e0a64c")) +
+    labs(x = "Hours", y = NULL, fill = NULL) +
+    bp_ggplot_theme(mode, base_size = 11) + theme(legend.position = "top"))
 ```
 :::
 

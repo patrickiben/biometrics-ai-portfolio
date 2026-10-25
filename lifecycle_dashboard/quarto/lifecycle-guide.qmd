@@ -29,6 +29,7 @@ knitr:
 ```{r setup}
 library(ggplot2); library(knitr)
 source("../shiny/R/logic.R")
+source("../../assets/theme/theme.R")   # bp_tokens and bp_ggplot_theme: figure ink per site theme
 d  <- lifecycle_load("../shiny/data")
 st <- score_portfolio(d)
 k  <- lifecycle_kpis(st, d)
@@ -46,7 +47,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 :::
 
 ::: {.callout-tip appearance="simple"}
-**Run the console in your browser.** [**Open the Study Lifecycle Monitor in your browser**](../../apps/lifecycle_dashboard/). It is the same R Shiny app, running on R compiled to WebAssembly (Shinylive and webR) with no server: everything it needs loads from this site, and what you click stays in your browser. Synthetic data only.
+**A Shinylive build of the console (not yet checked in a real browser).** [Open the Shinylive build](../../apps/lifecycle_dashboard/). It is the same R Shiny app, exported to run on R compiled to WebAssembly (Shinylive and webR) with no server: everything it needs loads from this site, and what you click stays in your browser. Synthetic data only. The export was checked in headless Chrome locally; no dated check in a visitor's browser is recorded yet, so the [Apps page](../../apps.html#r-browser) lists no Run in browser link for it.
 
 **Before you open it:** R starts inside your browser, so the console takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. If it does not load, the screenshot below and the [read-only snapshot](lifecycle-dashboard.html) show the same screens.
 
@@ -58,7 +59,6 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 Operational health of every study from protocol to CSR, on one screen: are milestones slipping, is the query backlog clearing before database lock, is TLF production keeping pace, is double-programming on track.
 
 ```{mermaid}
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
   accTitle: Study lifecycle phases
   accDescr: Startup, conduct, database lock and reporting in sequence, with their milestones: protocol, SAP and first participant first visit; last participant last visit; database lock; TLFs and the CSR.
@@ -74,7 +74,6 @@ flowchart LR
 No black box. Each study gets four operational sub-scores (0-100), blended into one:
 
 ```{mermaid}
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
   accTitle: Operational risk score
   accDescr: Timeline, data, TLF and resource scores combine into an overall score, 0.30 T plus 0.28 D plus 0.27 F plus 0.15 R, which maps to red, amber or green bands.
@@ -110,20 +109,18 @@ cat('</div>')
 
 ### Risk heatmap
 
-```{r heat, fig.width=8, fig.height=4}
+```{r heat, fig.width=8, fig.height=4, fig.alt="Risk heatmap: each study's timeline, data, TLF and resource sub-scores from 0 to 100, colored green to amber to red."}
+#| renderings: [light, dark]
 dims <- c("Timeline","Data","TLF","Resource")
 hl <- do.call(rbind, lapply(dims, function(dm) data.frame(id=st$id, dim=dm, value=st[[dm]])))
 hl$id <- factor(hl$id, levels=rev(st$id)); hl$dim <- factor(hl$dim, levels=dims)
-ggplot(hl, aes(dim, id, fill=value)) +
-  geom_tile(colour="#222630", linewidth=1.5) +
-  geom_text(aes(label=value), colour="#0b1020", fontface="bold", size=4) +
-  scale_fill_gradientn(colours=c("#43c47d","#e0a64c","#e8657a"), limits=c(0,100)) +
-  labs(x=NULL, y=NULL) +
-  theme_minimal(base_size=12) +
-  theme(legend.position="none", panel.grid=element_blank(),
-        plot.background=element_rect(fill="#222630", colour=NA),
-        panel.background=element_rect(fill="#222630", colour=NA),
-        text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"))
+for (mode in c("light", "dark")) print(
+  ggplot(hl, aes(dim, id, fill=value)) +
+    geom_tile(colour=bp_tokens[[mode]][["surface"]], linewidth=1.5) +
+    geom_text(aes(label=value), colour="#0b1020", fontface="bold", size=4) +
+    scale_fill_gradientn(colours=c("#43c47d","#e0a64c","#e8657a"), limits=c(0,100)) +
+    labs(x=NULL, y=NULL) +
+    bp_ggplot_theme(mode) + theme(legend.position="none", panel.grid=element_blank()))
 ```
 
 ### Ranked signals

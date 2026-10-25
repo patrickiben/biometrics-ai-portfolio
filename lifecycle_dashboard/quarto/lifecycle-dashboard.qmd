@@ -25,6 +25,7 @@ knitr:
 ```{r setup}
 library(ggplot2); library(knitr)
 source("../shiny/R/logic.R")
+source("../../assets/theme/theme.R")   # bp_tokens and bp_ggplot_theme: figure ink per site theme
 d  <- lifecycle_load("../shiny/data")
 st <- score_portfolio(d)
 k  <- lifecycle_kpis(st, d)
@@ -53,19 +54,18 @@ cat('</div>')
 ::: {.g-col-12 .g-col-md-7}
 #### Portfolio risk heatmap
 
-```{r heat, fig.width=7, fig.height=4.2}
+```{r heat, fig.width=7, fig.height=4.2, fig.alt="Risk heatmap: each study's timeline, data, TLF and resource sub-scores from 0 to 100, colored green to amber to red."}
+#| renderings: [light, dark]
 dims <- c("Timeline","Data","TLF","Resource")
 hl <- do.call(rbind, lapply(dims, function(dm) data.frame(id=st$id, dim=dm, value=st[[dm]])))
 hl$id <- factor(hl$id, levels=rev(st$id)); hl$dim <- factor(hl$dim, levels=dims)
-ggplot(hl, aes(dim, id, fill=value)) +
-  geom_tile(colour="#222630", linewidth=1.5) +
-  geom_text(aes(label=value), colour="#0b1020", fontface="bold", size=4) +
-  scale_fill_gradientn(colours=c("#43c47d","#e0a64c","#e8657a"), limits=c(0,100)) +
-  labs(x=NULL, y=NULL) + theme_minimal(base_size=12) +
-  theme(legend.position="none", panel.grid=element_blank(),
-        plot.background=element_rect(fill="#222630", colour=NA),
-        panel.background=element_rect(fill="#222630", colour=NA),
-        text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"))
+for (mode in c("light", "dark")) print(
+  ggplot(hl, aes(dim, id, fill=value)) +
+    geom_tile(colour=bp_tokens[[mode]][["surface"]], linewidth=1.5) +
+    geom_text(aes(label=value), colour="#0b1020", fontface="bold", size=4) +
+    scale_fill_gradientn(colours=c("#43c47d","#e0a64c","#e8657a"), limits=c(0,100)) +
+    labs(x=NULL, y=NULL) +
+    bp_ggplot_theme(mode) + theme(legend.position="none", panel.grid=element_blank()))
 ```
 :::
 
@@ -85,15 +85,13 @@ for (j in seq_len(min(8, nrow(sg)))) {
 
 #### Portfolio open-query trend (8 weeks)
 
-```{r trend, fig.width=10, fig.height=2.6}
+```{r trend, fig.width=10, fig.height=2.6, fig.alt="Open queries across the portfolio by week."}
+#| renderings: [light, dark]
 agg <- aggregate(open_queries ~ week, d$query_trend, sum)
-ggplot(agg, aes(week, open_queries)) +
-  geom_line(colour="#5b8cff", linewidth=1.2) + geom_point(colour="#5b8cff", size=2) +
-  labs(x="Week", y="Open queries (portfolio)") + theme_minimal(base_size=12) +
-  theme(plot.background=element_rect(fill="#222630", colour=NA),
-        panel.background=element_rect(fill="#222630", colour=NA),
-        text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"),
-        panel.grid=element_line(colour="#3a4157"))
+for (mode in c("light", "dark")) print(
+  ggplot(agg, aes(week, open_queries)) +
+    geom_line(colour="#5b8cff", linewidth=1.2) + geom_point(colour="#5b8cff", size=2) +
+    labs(x="Week", y="Open queries (portfolio)") + bp_ggplot_theme(mode))
 ```
 
 #### Studies, ranked by overall risk

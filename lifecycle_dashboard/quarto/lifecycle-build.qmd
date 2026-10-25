@@ -38,9 +38,9 @@ Pick a study, then move the what-if sliders (open queries, double-programmed %) 
 watch that study's row in the risk heatmap re-color. The scoring is transparent, so
 every number is defensible.
 
-It also runs in your browser with no install: [open the console in your browser](../../apps/lifecycle_dashboard/)
-(Shinylive and webR; R starts in the browser, the first visit downloads about 55 MB, and it works
-best in Chrome or Edge; Safari support may vary).
+It is also exported as a Shinylive build: [open the Shinylive build](../../apps/lifecycle_dashboard/)
+(not yet checked in a real browser; Shinylive and webR, so R starts in the browser, the first visit
+downloads about 55 MB, and it works best in Chrome or Edge; Safari support may vary).
 
 The whole console is three R files, shown here in full, nothing elided:
 
