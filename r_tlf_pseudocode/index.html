@@ -79,7 +79,7 @@
 
 <header class="hero">
   <div class="home"><a href="../index.html">&larr; Home</a></div>
-  <h1>R TLF Pseudocode Library <span class="badge">217 TLF SCRIPTS</span></h1>
+  <h1>R TLF Pseudocode Library <span class="badge">221 TLF SCRIPTS</span></h1>
   <p class="sub">ADaM-based R pseudocode for every Table, Listing, and Figure in an early-phase clinical-pharmacology study: a complete separate set per study design, written with <code>dplyr</code>, <code>tidyr</code>, <code>rtables</code>, <code>ggplot2</code>, <code>emmeans</code> and <code>lme4</code>.</p>
 </header>
 
@@ -165,7 +165,7 @@ Rscript t_demographics.R</code></pre>
 <p><code>t_lab_summary</code> &middot; <code>t_lab_shift</code> &middot; <code>t_lab_marked_abnormal</code> &middot; <code>f_lab_lft_scatter</code> &middot; <code>f_lab_change</code> &middot; <code>l_lab_abnormal</code></p>
 
 <h3>Safety: Vitals / ECG (ADVS, ADEG)</h3>
-<p><code>t_vitals_summary</code> &middot; <code>f_vitals_change</code> &middot; <code>l_vitals</code> &middot; <code>t_ecg_summary</code> &middot; <code>t_ecg_qtc_categorical</code> &middot; <code>f_qtc_change</code> &middot; <code>l_ecg</code></p>
+<p><code>t_vitals_summary</code> &middot; <code>f_vitals_change</code> &middot; <code>l_vitals</code> &middot; <code>t_ecg_summary</code> &middot; <code>t_ecg_qtc_categorical</code> &middot; <code>f_qtc_change</code> &middot; <code>l_ecg</code> &middot; <code>t_cqtc_hysteresis</code> &middot; <code>f_cqtc_hysteresis</code> (SAD, MAD)</p>
 
 <h3>PK (ADPC, ADPP)</h3>
 <p><code>t_pk_conc_summary</code> &middot; <code>l_pk_conc</code> &middot; <code>f_pk_conc_mean</code> (linear+semilog) &middot; <code>f_pk_conc_individual</code> &middot; <code>t_pk_param_summary</code> &middot; <code>l_pk_param</code> &middot; <code>f_pk_param_boxplot</code> &middot; design-specific <code>t_dose_proportionality</code> (SAD) &middot; <code>t_accumulation</code> (MAD) &middot; <code>t_be_anova</code> (crossover / single-seq)</p>
@@ -194,7 +194,7 @@ Rscript t_demographics.R</code></pre>
 <p>Treatment <code>TRT01A/TRT01AN</code> (parallel) &middot; <code>TRTA/TRTAN</code>+<code>APERIOD/APERIODC</code>+<code>TRTSEQP/TRTSEQPN</code> (crossover/seq); populations <code>SAFFL/PKFL/ITTFL</code>; analysis <code>PARAMCD/AVAL/CHG/PCHG/BASE/AVISIT/ATPTN/ANRIND/BNRIND/A1HI/A1LO/R2ULN</code>; AE <code>TRTEMFL/AESOC/AEDECOD/AESEVN/AREL/AESER/AESDTH/AEACN</code>; PK <code>ADPC AVAL=conc</code>, <code>ADPP PARAMCD=Cmax/Tmax/AUClast/AUCinf/CL/Vz/Rac</code>.</p>
 
 <h2>Status</h2>
-<p>Complete: <strong>217 TLF scripts</strong> across all five design folders + <code>00_setup_helpers.R</code>. Generated with AI assistance to mirror the SAS twin, then reviewed by an AI-agent panel (six reviewers by program family, then per-finding verification: 24 findings, <strong>14 confirmed P0/P1 issues fixed</strong>), then a deterministic sweep. Human sign-off is pending (see the <a href="../validation_harness/index.html">validation ledger</a>). <strong>All 218 scripts parse under <code>Rscript</code> (R 4.6.0); none has been run on data</strong>, so these checks are static: <code>design_vars()</code> matches every folder, geometric PK stats compute on the log scale, AE/safety counts are distinct participants, single-sequence participant-level tables key on <code>dv$seqvar</code>, period tables denominate from a period-bearing source, exposure uses ADaM <code>AVAL</code>/<code>TRTDURD</code>/<code>NDOSES</code> (no <code>*DTC</code> arithmetic), and the library is free of <code>eDISH</code>/<code>Hy's Law</code> terminology.</p>
+<p>Complete: <strong>221 TLF scripts</strong> across all five design folders + <code>00_setup_helpers.R</code>. Generated with AI assistance to mirror the SAS twin, then reviewed by an AI-agent panel (six reviewers by program family, then per-finding verification: 24 findings, <strong>14 confirmed P0/P1 issues fixed</strong>), then a deterministic sweep. Human sign-off is pending (see the <a href="../validation_harness/index.html">validation ledger</a>). <strong>All 222 scripts parse under <code>Rscript</code> (R 4.6.0); none has been run on data</strong>, so these checks are static: <code>design_vars()</code> matches every folder, geometric PK stats compute on the log scale, AE/safety counts are distinct participants, single-sequence participant-level tables key on <code>dv$seqvar</code>, period tables denominate from a period-bearing source, exposure uses ADaM <code>AVAL</code>/<code>TRTDURD</code>/<code>NDOSES</code> (no <code>*DTC</code> arithmetic), and the library is free of <code>eDISH</code>/<code>Hy's Law</code> terminology. Four C-QTc hysteresis scripts (<code>f_cqtc_hysteresis</code> and <code>t_cqtc_hysteresis</code> in <code>sad/</code> and <code>mad/</code>, October 2026) postdate that panel review; they implement the <a href="../cqtc_hysteresis/index.html">prespecified hysteresis check</a>.</p>
 
 <div class="note">Pseudocode for specification and double programming. Reported numbers come from validated, double-programmed programs per the study&rsquo;s SOPs; an LLM never sources a number.</div>
 
@@ -394,7 +394,7 @@ Rscript t_demographics.R</code></pre>
   <a href="single_sequence/l_ada.R"><code>l_ada.R</code></a>
 </div>
 
-<h3>sad/: Single Ascending Dose <span class="badge">43 SCRIPTS</span></h3>
+<h3>sad/: Single Ascending Dose <span class="badge">45 SCRIPTS</span></h3>
 <div class="files">
   <a href="sad/t_disposition.R"><code>t_disposition.R</code></a>
   <a href="sad/t_demographics.R"><code>t_demographics.R</code></a>
@@ -424,6 +424,8 @@ Rscript t_demographics.R</code></pre>
   <a href="sad/t_ecg_qtc_categorical.R"><code>t_ecg_qtc_categorical.R</code></a>
   <a href="sad/f_qtc_change.R"><code>f_qtc_change.R</code></a>
   <a href="sad/l_ecg.R"><code>l_ecg.R</code></a>
+  <a href="sad/t_cqtc_hysteresis.R"><code>t_cqtc_hysteresis.R</code></a>
+  <a href="sad/f_cqtc_hysteresis.R"><code>f_cqtc_hysteresis.R</code></a>
   <a href="sad/t_pk_conc_summary.R"><code>t_pk_conc_summary.R</code></a>
   <a href="sad/l_pk_conc.R"><code>l_pk_conc.R</code></a>
   <a href="sad/f_pk_conc_mean.R"><code>f_pk_conc_mean.R</code></a>
@@ -441,7 +443,7 @@ Rscript t_demographics.R</code></pre>
   <a href="sad/l_ada.R"><code>l_ada.R</code></a>
 </div>
 
-<h3>mad/: Multiple Ascending Dose <span class="badge">44 SCRIPTS</span></h3>
+<h3>mad/: Multiple Ascending Dose <span class="badge">46 SCRIPTS</span></h3>
 <div class="files">
   <a href="mad/t_disposition.R"><code>t_disposition.R</code></a>
   <a href="mad/t_demographics.R"><code>t_demographics.R</code></a>
@@ -471,6 +473,8 @@ Rscript t_demographics.R</code></pre>
   <a href="mad/t_ecg_qtc_categorical.R"><code>t_ecg_qtc_categorical.R</code></a>
   <a href="mad/f_qtc_change.R"><code>f_qtc_change.R</code></a>
   <a href="mad/l_ecg.R"><code>l_ecg.R</code></a>
+  <a href="mad/t_cqtc_hysteresis.R"><code>t_cqtc_hysteresis.R</code></a>
+  <a href="mad/f_cqtc_hysteresis.R"><code>f_cqtc_hysteresis.R</code></a>
   <a href="mad/t_pk_conc_summary.R"><code>t_pk_conc_summary.R</code></a>
   <a href="mad/l_pk_conc.R"><code>l_pk_conc.R</code></a>
   <a href="mad/f_pk_conc_mean.R"><code>f_pk_conc_mean.R</code></a>
@@ -490,7 +494,7 @@ Rscript t_demographics.R</code></pre>
 </div>
 
 <footer>
-  R TLF Pseudocode Library: 218 R scripts (217 TLF + <code>00_setup_helpers.R</code>) across parallel / crossover / single_sequence / sad / mad. Pseudocode for specification writing and double programming; parse-checked, not executed, not validated. Reported numbers come from validated systems, never from an LLM. Participant-level analysis throughout. <a href="../index.html">&larr; Home</a>
+  R TLF Pseudocode Library: 222 R scripts (221 TLF + <code>00_setup_helpers.R</code>) across parallel / crossover / single_sequence / sad / mad. Pseudocode for specification writing and double programming; parse-checked, not executed, not validated. Reported numbers come from validated systems, never from an LLM. Participant-level analysis throughout. <a href="../index.html">&larr; Home</a>
 </footer>
 
 </div>

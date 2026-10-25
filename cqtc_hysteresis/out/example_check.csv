@@ -1,0 +1,5 @@
+"dataset","n","n_pbo","model_for_f","Abar_ms","se_ms","df","ci95_low","ci95_high","p_one_sided","p_two_sided","test","boot_p_one_sided","tmax_gap_individual_h","tmax_gap_mean_profile_h","day_m1_Abar_ms","day_m1_p_two_sided"
+"Linear, no delay",32,8,"linear","-0.2513","1.2951","10.6043","-3.1148","2.6123","0.5751","0.8498","placebo-adjusted t","0.5490","-0.5000","2.0000","2.0594","0.1747"
+"Linear, ke0 = 0.7 per h",32,8,"linear","3.1682","1.1510","11.5573","0.6497","5.6867","0.0090","0.0181","placebo-adjusted t","0.0090","1.0000","0.0000","-0.6503","0.6881"
+"Emax, no delay: raw area",32,8,"linear","1.8483","1.1415","11.3224","-0.6555","4.3521","0.0665","0.1329","placebo-adjusted t","0.0710","0.0000","-0.5000","1.9187","0.1378"
+"Emax, no delay: Emax residual area",32,8,"emax","-0.5642","1.1618","12.0728","-3.0938","1.9655","0.6820","0.6360","placebo-adjusted t","0.6850","0.0000","-0.5000","1.9187","0.1378"

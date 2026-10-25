@@ -34,6 +34,7 @@ identical, re-pointed to the design's treatment/period variables.
 **Safety: Vitals / ECG** (ADVS, ADEG)
 - `t_vitals_summary` · `f_vitals_change` · `l_vitals`
 - `t_ecg_summary` · `t_ecg_qtc_categorical` · `f_qtc_change` · `l_ecg`
+- `t_cqtc_hysteresis` · `f_cqtc_hysteresis` (SAD, MAD): the prespecified C-QTc hysteresis check ([`cqtc_hysteresis/`](../cqtc_hysteresis/index.html))
 
 **PK** (ADPC, ADPP)
 - `t_pk_conc_summary` · `l_pk_conc` · `f_pk_conc_mean` (linear+semilog) · `f_pk_conc_individual`
@@ -58,7 +59,8 @@ Coding-dictionary versions are parameters of `%setup` (`meddraver=`, `whodrugver
 - PK: `ADPC` AVAL=conc, `NRRELTM`/`ATPTN`=nominal time; `ADPP` PARAMCD=Cmax/Tmax/AUClast/AUCinf/CL/Vz/t1/2/Rac
 
 ## Status
-Complete: **217 TLF programs** across all five design folders + `00_setup_macros.sas`.
+Complete: **221 TLF programs** across all five design folders + `00_setup_macros.sas`. The four C-QTc hysteresis
+programs (October 2026) postdate the panel review described next.
 Generated with AI assistance, then reviewed by an AI-agent panel in two passes (six reviewers by
 program family, then per-finding verification: 35 defects confirmed and fixed, 2 reviewer false
 positives rejected), then a deterministic sweep; human sign-off is pending. Static checks confirm
