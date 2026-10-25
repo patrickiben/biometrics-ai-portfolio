@@ -1,6 +1,6 @@
 # Monitoring Coverage Runbook: Study CP-101 (fictional)
 
-**Purpose.** Keep trial monitoring running and self-escalating while the lead biostatistician is on leave. This one page tells the covering colleague (the *support*) and the study lead exactly what arrives, what it means, and who does what. It is handed over before departure and committed to version control.
+**Purpose.** Keep trial monitoring running and self-escalating while the job's owner (here, the lead biostatistician) is away, whether for planned leave, an unplanned absence or a handoff. This one page tells the covering colleague (the *support*) and the study lead exactly what arrives, what it means, and who does what. It is handed over before the absence and committed to version control.
 
 > **The one honest rule.** Every email below reports that a **number crossed a pre-specified line**. That is a *prompt to look*, **not** a clinical interpretation. The covering biostatistician, the medical monitor, and the DSMB/SRC make every judgment. The system only **detects, pages, and packages**.
 
@@ -29,7 +29,7 @@
 | Role alias | `biostat-cover@…` | every RED also lands here, so it never depends on one inbox |
 | Medical monitor | *Dr. R. Okafor, +1-…* | called by support on any RED (safety adjudication) |
 | Project manager | *[PM]* | cc on AMBER/RED; owns operational actions |
-| Lead (on leave) | *[contact only for true emergencies]* | reachable per the agreed emergency protocol only |
+| Lead (away) | *[contact only for true emergencies]* | reachable per the agreed emergency protocol only |
 
 ## If you receive **no** email (the dead-man's switch)
 
