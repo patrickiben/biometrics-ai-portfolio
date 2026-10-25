@@ -40,7 +40,7 @@ structurally identical, re-pointed to the design's variables.
 
 **Safety: Vitals / ECG** (ADVS, ADEG): `t_vitals_summary` · `f_vitals_change` · `l_vitals` ·
 `t_ecg_summary` · `t_ecg_qtc_categorical` · `f_qtc_change` · `l_ecg` · `t_cqtc_hysteresis` · `f_cqtc_hysteresis` (SAD, MAD;
-the prespecified C-QTc hysteresis check)
+the prespecified C-QTc hysteresis check in [`cqtc_hysteresis/`](../cqtc_hysteresis/index.html))
 
 **PK** (ADPC, ADPP): `t_pk_conc_summary` · `l_pk_conc` · `f_pk_conc_mean` (linear+semilog) ·
 `f_pk_conc_individual` · `t_pk_param_summary` · `l_pk_param` · `f_pk_param_boxplot` ·

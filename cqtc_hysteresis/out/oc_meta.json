@@ -1,0 +1,11 @@
+{
+  "generated_by": "cqtc_hysteresis/R/run_oc.R",
+  "seed": 20261025,
+  "replicates": 1000,
+  "alpha": 0.05,
+  "sign_vectors_monte_carlo": 9999,
+  "exact_enumeration_max_n": 20,
+  "bootstrap_draws": 999,
+  "r_version": "R version 4.6.0 (2026-04-24)",
+  "data": "synthetic only; not trial data"
+}
