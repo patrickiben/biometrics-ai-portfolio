@@ -34,6 +34,16 @@ sel <- function(cfg = "base", disp = "mono", theta, ep = "AUC", arm = NULL, d = 
 }
 f_bias <- function(b, m) ifelse(is.na(b), "n/e", ifelse(abs(b) < 1e-4 & b != 0, sprintf("%.1e (%.1e)", b, m), sprintf("%.4f (%.4f)", b, m)))
 f_rate <- function(p, m) ifelse(is.na(p), "n/e", sprintf("%.3f (%.3f)", p, m))
+## a share with its MCSE, blank when the total it divides is within 2 MCSE of 0
+f_share <- function(s, m, tot, tot_m) ifelse(is.na(s) | is.na(tot) | abs(tot) < 2 * tot_m, "", sprintf("%.0f%% (%.0f%%)", 100 * s, 100 * m))
+pct <- function(s, m) sprintf("%.0f%% (MCSE %.0f%%)", 100 * s, 100 * m)
+pct_s <- function(s, m) sprintf("%.0f%% (%.0f%%)", 100 * s, 100 * m)
+## Qualitative claims in the page prose are checked against the numbers here; if a re-run changes
+## them, tables.R stops instead of writing prose the data no longer support.
+claim <- function(ok, what) if (!isTRUE(ok)) stop("page claim no longer supported by out/*.csv: ", what, call. = FALSE)
+## which part of the rule's bias is larger, judged at 2 MCSE
+part_word <- function(s, m) if (s - 0.5 > 2 * m) "selection is the larger part" else if (0.5 - s > 2 * m) "the retained residual is the larger part" else "the two parts are comparable"
+
 esc <- function(s) { s <- gsub("&(?!times;|plusmn;|minus;)", "&amp;", s, perl = TRUE); s <- gsub("<", "&lt;", s); gsub(">", "&gt;", s) }
 
 ## grid of formatted cells: rows = arms, columns = washouts
@@ -150,14 +160,16 @@ for (th in c(1.25, 0.80)) {
     `Total, A2 - A0` = f_bias(x$bias_total, x$bias_total_mcse),
     `Retained residual, A2 - A2s` = f_bias(x$bias_retained, x$bias_retained_mcse),
     `Selection, A2s - A0` = f_bias(x$bias_selection, x$bias_selection_mcse),
-    `Selection share` = ifelse(is.na(x$bias_total) | abs(x$bias_total) < 1e-4, "", sprintf("%.0f%%", 100 * x$bias_selection / x$bias_total)),
+    `Selection share` = f_share(x$selection_share, x$selection_share_mcse, x$bias_total, x$bias_total_mcse),
     `BE rate, A2 - A0` = f_rate(x$rate_total, x$rate_total_mcse),
     `BE rate, selection` = f_rate(x$rate_selection, x$rate_selection_mcse),
+    `Bias, A2 - A1` = f_bias(x$bias_vs_naive, x$bias_vs_naive_mcse),
+    `BE rate, A2 - A1` = f_rate(x$rate_vs_naive, x$rate_vs_naive_mcse),
     check.names = FALSE, stringsAsFactors = FALSE)
 }
 t5 <- do.call(rbind, t5); write_tab(t5, "t5_decomposition.csv")
-blocks$t5 <- html_table(t5, "T5. The M13A arm's bias split into retained residual (A2 - A2s) and selection (A2s - A0), paired within study, AUC(0-t). Bias terms use studies evaluable under the rule; BE-rate terms use all studies. Cells: estimate (MCSE). Selection share is left blank when the total is below 0.0001.",
-                        c("Washout", "Evaluable studies", "Total, A2 &minus; A0", "Retained residual, A2 &minus; A2s", "Selection, A2s &minus; A0", "Selection share", "BE rate, A2 &minus; A0", "BE rate, selection"))
+blocks$t5 <- html_table(t5, "T5. The M13A arm's bias split into retained residual (A2 - A2s) and selection (A2s - A0), and the rule against including everyone (A2 - A1), paired within study, AUC(0-t). Bias terms use studies evaluable under the rule; BE-rate terms use all studies. Cells: estimate (MCSE). Selection share: (A2s - A0) / (A2 - A0), with its delta-method MCSE; left blank when the total is within 2 MCSE of 0.",
+                        c("Washout", "Evaluable studies", "Total, A2 &minus; A0", "Retained residual, A2 &minus; A2s", "Selection, A2s &minus; A0", "Selection share", "BE rate, A2 &minus; A0", "BE rate, selection", "Bias, A2 &minus; A1", "BE rate, A2 &minus; A1"))
 
 ## ---- known-answer pass table -------------------------------------------------------------------
 blocks$checks <- html_table(data.frame(Test = kac$test, Check = kac$check, Criterion = kac$criterion,
@@ -170,7 +182,12 @@ blocks$checks <- gsub("<td>FAIL</td>", "<td class=\"bad\">FAIL</td>", blocks$che
 ## ---- generated findings and run facts -----------------------------------------------------------
 g <- function(th, arm, w, col, ep = "AUC", cfg = "base", disp = "mono") { x <- sel(cfg, disp, th, ep, arm); x[[col]][x$washout == w] }
 dW <- function(th, w) { x <- dec[dec$config == "base" & dec$disposition == "mono" & abs(dec$theta - th) < 1e-9 & dec$endpoint == "AUC" & dec$washout == w, ]; x }
-d5 <- dW(1.25, "5"); d6 <- dW(1.25, "6"); d8 <- dW(1.25, "8")
+d5 <- dW(1.25, "5"); d6 <- dW(1.25, "6"); d8 <- dW(1.25, "8"); d10 <- dW(1.25, "10")
+claim(part_word(d5$selection_share, d5$selection_share_mcse) == "selection is the larger part" &&
+      part_word(d6$selection_share, d6$selection_share_mcse) == "selection is the larger part", "selection is most of the rule's bias at 5 and 6 half-lives (GMR 1.25)")
+bm_a3 <- res[res$config == "base" & res$disposition == "mono" & res$endpoint %in% c("AUC", "CMAX") & res$arm %in% c("A3", "A3o"), ]
+a3_max <- max(bm_a3$max_abs_diff_a0[bm_a3$arm == "A3"], na.rm = TRUE); a3o_max <- max(bm_a3$max_abs_diff_a0[bm_a3$arm == "A3o"], na.rm = TRUE)
+claim(a3_max < 1e-8 && a3o_max < 1e-10 && all(bm_a3$be_disagree_a0 == 0), "subtraction matches the oracle in the base grid (monoexponential)")
 blocks$findings <- paste0("<ul>\n",
   sprintf("<li><strong>Naive analysis.</strong> At a true GMR of 1.25 the consumer risk of including everyone is %.3f (MCSE %.3f) at 2 mean half-lives, %.3f (%.3f) at 3, %.3f (%.3f) at 5 and %.3f (%.3f) at 10, against %.3f (%.3f) with no residual. The bias is toward 1, as the closed form predicts.</li>\n",
           g(1.25, "A1", "2", "be_rate"), g(1.25, "A1", "2", "be_rate_mcse"), g(1.25, "A1", "3", "be_rate"), g(1.25, "A1", "3", "be_rate_mcse"),
@@ -188,10 +205,13 @@ blocks$findings <- paste0("<ul>\n",
           g(1.25, "A2", "5", "be_rate"), g(1.25, "A2", "5", "be_rate_mcse"), g(0.95, "A2", "5", "be_rate"), g(0.95, "A2", "5", "be_rate_mcse"),
           100 * g(1.25, "A2", "6", "excl_frac"), g(1.25, "A2", "6", "be_rate"), g(1.25, "A2", "6", "be_rate_mcse"),
           g(1.25, "A1", "6", "be_rate"), g(1.25, "A1", "6", "be_rate_mcse")),
-  sprintf("<li><strong>Where the rule's bias comes from.</strong> At a true GMR of 1.25 the M13A arm's bias is %.4f (MCSE %.4f) at 5 half-lives; selection contributes %.4f (%.4f) and retained residual %.4f (%.4f). Selection is %.0f%% of the total at 5 half-lives, %.0f%% at 6 and %.0f%% at 8, where the retained residual dominates.</li>\n",
+  sprintf("<li><strong>Where the rule's bias comes from.</strong> At a true GMR of 1.25 the M13A arm's bias is %.4f (MCSE %.4f) at 5 half-lives; selection contributes %.4f (%.4f) and retained residual %.4f (%.4f). Selection is %s of the total at 5 half-lives and %s at 6; at 8 it is %s, where %s, and at 10 it is %s, where %s (delta-method MCSEs).</li>\n",
           d5$bias_total, d5$bias_total_mcse, d5$bias_selection, d5$bias_selection_mcse, d5$bias_retained, d5$bias_retained_mcse,
-          100 * d5$bias_selection / d5$bias_total, 100 * d6$bias_selection / d6$bias_total, 100 * d8$bias_selection / d8$bias_total),
-  sprintf("<li><strong>Subtraction (sensitivity analysis).</strong> With a monoexponential residual and no assay error, subtracting the extrapolated pre-dose concentration reproduces the oracle exactly, by construction. Under the biexponential disposition its consumer risk at 3 half-lives is %.3f (MCSE %.3f) against %.3f (%.3f) with no residual; with 8%% assay error and an LLOQ it is %.3f (%.3f) against %.3f (%.3f).</li>\n",
+          pct(d5$selection_share, d5$selection_share_mcse), pct_s(d6$selection_share, d6$selection_share_mcse),
+          pct_s(d8$selection_share, d8$selection_share_mcse), part_word(d8$selection_share, d8$selection_share_mcse),
+          pct_s(d10$selection_share, d10$selection_share_mcse), part_word(d10$selection_share, d10$selection_share_mcse)),
+  sprintf("<li><strong>Subtraction (sensitivity analysis).</strong> With a monoexponential residual and no assay error, subtracting the extrapolated pre-dose concentration matches the oracle almost exactly, because the model it extrapolates is the model that generated the data: over the base grid the largest per-study difference in log GMR-hat from the oracle is %s (&lambda;<sub>z</sub> is fitted to period-1 points that still carry a trace of absorption; %s with the true k), and every study reaches the oracle's BE decision. Under the biexponential disposition its consumer risk at 3 half-lives is %.3f (MCSE %.3f) against %.3f (%.3f) with no residual; with 8%% assay error and an LLOQ it is %.3f (%.3f) against %.3f (%.3f).</li>\n",
+          sprintf("%.1e", a3_max), sprintf("%.1e", a3o_max),
           g(1.25, "A3", "3", "be_rate", disp = "biexp"), g(1.25, "A3", "3", "be_rate_mcse", disp = "biexp"),
           g(1.25, "A0", "3", "be_rate", disp = "biexp"), g(1.25, "A0", "3", "be_rate_mcse", disp = "biexp"),
           g(1.25, "A3", "3", "be_rate", cfg = "assay"), g(1.25, "A3", "3", "be_rate_mcse", cfg = "assay"),
@@ -202,6 +222,55 @@ blocks$findings <- paste0("<ul>\n",
   sprintf("<li><strong>Endpoints.</strong> Without assay error, Cmax and the joint decision (AUC(0-t) and Cmax both within the limits) give the same picture as AUC(0-t): their BE rates differ from it by at most %.4f and %.4f in the base configuration with the monoexponential disposition, and by at most %.3f anywhere without assay error, because within-participant variation then largely scales each profile as a whole. With 8%% assay error each sample has its own error and the endpoints separate: the joint rate is up to %.3f lower than the AUC(0-t) rate (%s arm, %s mean half-lives, true GMR %.2f, %s disposition).</li>\n",
           max_cmax, max_joint, na_gap, ja_gap, jw$arm, jw$washout, jw$theta, c(mono = "monoexponential", biexp = "biexponential")[[jw$disposition]]),
   "</ul>")
+## ---- "What this shows" bullets that carry numbers (paired within study, base, mono, AUC(0-t)) ----
+## added(): how much the rule adds to the size of the naive bias, (A2 - A1) signed by the
+## direction of the naive bias; negative means the rule removes part of it.
+nv_sign <- function(th) sign(g(th, "A1", "5", "bias"))
+added <- function(th, w) { x <- dW(th, w); c(est = nv_sign(th) * x$bias_vs_naive, mcse = x$bias_vs_naive_mcse) }
+z <- function(v) v[["est"]] / v[["mcse"]]
+a5 <- lapply(c(hi = 1.25, lo = 0.80), added, w = "5"); a6 <- lapply(c(hi = 1.25, lo = 0.80), added, w = "6")
+a8 <- lapply(c(hi = 1.25, lo = 0.80), added, w = "8"); a10 <- lapply(c(hi = 1.25, lo = 0.80), added, w = "10")
+e5 <- lapply(c(hi = 1.25, lo = 0.80), dW, w = "5"); e6 <- lapply(c(hi = 1.25, lo = 0.80), dW, w = "6"); e8 <- dW(0.80, "8")
+claim(all(vapply(a5, z, 0) < -2) && all(vapply(e5, function(x) x$rate_vs_naive / x$rate_vs_naive_mcse, 0) < -2) &&
+      all(vapply(e5, function(x) abs(x$bias_total / x$bias_total_mcse), 0) > 2), "at 5 half-lives the rule removes part, not all, of the naive bias and lowers consumer risk")
+claim(all(abs(vapply(a6, z, 0)) < 2) && all(abs(vapply(e6, function(x) x$rate_vs_naive / x$rate_vs_naive_mcse, 0)) < 2) &&
+      all(vapply(e6, function(x) x$rate_total, 0) > 0), "at 6 half-lives no detectable gain over the naive analysis; consumer risk above the oracle's")
+claim(z(a8$lo) > 2 && z(a10$lo) > 2 && abs(z(a8$hi)) < 2 && abs(z(a10$hi)) < 2, "at 8 and 10 half-lives the rule's bias exceeds the naive bias at GMR 0.80 only")
+f4 <- function(v) sprintf("%+.4f (%.4f)", v[["est"]], v[["mcse"]])
+a4 <- function(v, lab = "") sprintf("%.4f (%s%.4f)", abs(v[["est"]]), lab, v[["mcse"]])
+a3r <- function(e, m, lab = "") sprintf("%.3f (%s%.3f)", abs(e), lab, m)
+f3 <- function(e, m) sprintf("%+.3f (%.3f)", e, m)
+blocks$shows_rule <- paste0(
+  sprintf("<li>At 5 mean half-lives the rule removes part of the naive bias, not all of it. Paired with including everyone in the same studies, it reduces the size of the bias by %s at a true GMR of 1.25 and %s at 0.80, and lowers consumer risk by %s and %s; its consumer risk is %.3f (MCSE %.3f) and %.3f (%.3f), against %.3f and %.3f for the oracle.</li>\n",
+          a4(a5$hi, "MCSE "), a4(a5$lo), a3r(e5$hi$rate_vs_naive, e5$hi$rate_vs_naive_mcse), a3r(e5$lo$rate_vs_naive, e5$lo$rate_vs_naive_mcse),
+          g(1.25, "A2", "5", "be_rate"), g(1.25, "A2", "5", "be_rate_mcse"), g(0.80, "A2", "5", "be_rate"), g(0.80, "A2", "5", "be_rate_mcse"),
+          g(1.25, "A0", "5", "be_rate"), g(0.80, "A0", "5", "be_rate")),
+  sprintf("<li>At 6 half-lives the rule drops %.0f%% of participants with no detectable gain over including everyone: the paired changes in the size of the bias are %s and %s, and in consumer risk %s and %s (true GMR 1.25 and 0.80). Paired with the oracle in the same studies, its consumer risk is higher by %s and %s.</li>\n",
+          100 * g(1.25, "A2", "6", "excl_frac"), f4(a6$hi), f4(a6$lo), f3(e6$hi$rate_vs_naive, e6$hi$rate_vs_naive_mcse), f3(e6$lo$rate_vs_naive, e6$lo$rate_vs_naive_mcse),
+          a3r(e6$hi$rate_total, e6$hi$rate_total_mcse, "MCSE "), a3r(e6$lo$rate_total, e6$lo$rate_total_mcse)),
+  sprintf("<li>At 8 and 10 half-lives, where the rule drops %.0f%% and %.1f%% of participants, its selection makes its bias slightly larger than the naive analysis's at a true GMR of 0.80: by %s and %s, with consumer risk %.4f (MCSE %.4f) against the naive %.4f (%.4f) at 8 half-lives, a paired difference of %s. At 1.25 the same differences, %s and %s, are not distinguishable from 0.</li>",
+          100 * g(0.80, "A2", "8", "excl_frac"), 100 * g(0.80, "A2", "10", "excl_frac"), a4(a8$lo, "MCSE "), a4(a10$lo),
+          g(0.80, "A2", "8", "be_rate"), g(0.80, "A2", "8", "be_rate_mcse"), g(0.80, "A1", "8", "be_rate"), g(0.80, "A1", "8", "be_rate_mcse"),
+          f3(e8$rate_vs_naive, e8$rate_vs_naive_mcse), f4(a8$hi), f4(a10$hi)))
+sh <- lapply(list(c(1.25, 5), c(1.25, 6), c(0.80, 5), c(0.80, 6)), function(v) dW(v[1], as.character(v[2])))
+claim(all(vapply(sh, function(x) part_word(x$selection_share, x$selection_share_mcse) == "selection is the larger part", TRUE)) &&
+      g(1.25, "A2", "5", "excl_frac_tr") > g(1.25, "A2", "5", "excl_frac_rt") && g(0.80, "A2", "5", "excl_frac_rt") > g(0.80, "A2", "5", "excl_frac_tr"),
+      "selection is the larger part at 5 and 6 half-lives at both GMRs, and the rule excludes more from the lower-exposure period-2 sequence")
+blocks$shows_sel <- sprintf("<li>Most of the bias left after the rule at 5 to 6 half-lives comes from the selection the rule makes, not from residual left in the retained participants: selection is %s and %s of it at 5 and 6 half-lives at a true GMR of 1.25, and %s and %s at 0.80. The rule conditions on the outcome: its denominator is the period's own Cmax, so it excludes more participants from the sequence whose period-2 product gives lower exposure (at 5 half-lives, %.0f%% of TR and %.0f%% of RT at a true GMR of 1.25, and %.0f%% and %.0f%% at 0.80).</li>",
+  pct(sh[[1]]$selection_share, sh[[1]]$selection_share_mcse), pct_s(sh[[2]]$selection_share, sh[[2]]$selection_share_mcse),
+  pct_s(sh[[3]]$selection_share, sh[[3]]$selection_share_mcse), pct_s(sh[[4]]$selection_share, sh[[4]]$selection_share_mcse),
+  100 * g(1.25, "A2", "5", "excl_frac_tr"), 100 * g(1.25, "A2", "5", "excl_frac_rt"), 100 * g(0.80, "A2", "5", "excl_frac_tr"), 100 * g(0.80, "A2", "5", "excl_frac_rt"))
+## the pilot subtracted with the true k, which is arm A3o here
+pb <- function(arm, col) g(1.25, arm, "3", col, disp = "biexp")
+claim(abs(pb("A3o", "be_rate") - 0.069) > 3 * pb("A3o", "be_rate_mcse"), "the pilot's 0.069 does not reproduce for A3o")
+blocks$pilot <- sprintf("<li>One expected pattern from the pilot did not reproduce. The pilot subtracted with the true k, as arm A3o does here. With the biexponential phase at 3 half-lives, A3o's consumer risk is %.4f (MCSE %.4f) against the oracle's %.4f (%.4f), a paired difference of %+.4f (%.4f), and A3, with &lambda;<sub>z</sub> estimated from period 1, gives %.4f (%.4f); the pilot reported 0.069 (INFO rows in the checks).</li>",
+  pb("A3o", "be_rate"), pb("A3o", "be_rate_mcse"), pb("A0", "be_rate"), pb("A0", "be_rate_mcse"), pb("A3o", "be_rate_diff_a0"), pb("A3o", "be_rate_diff_a0_mcse"),
+  pb("A3", "be_rate"), pb("A3", "be_rate_mcse"))
+## figure alt text is hand-written; these are the statements it makes
+f1r <- res[res$config == "base" & res$endpoint == "AUC" & res$arm == "A2" & res$theta %in% c(0.80, 1.25) & res$washout %in% c("5", "6", "8", "10"), ]
+claim(all(f1r$be_rate >= 0.045 & f1r$be_rate <= 0.07), "F1 alt text: the rule's consumer risk is between about 0.05 and 0.07 from 5 half-lives on")
+for (th in c(1.25, 0.80)) claim(part_word(dW(th, "10")$selection_share, dW(th, "10")$selection_share_mcse) == "the retained residual is the larger part", "F3 alt text: by 10 half-lives the retained residual is the larger part")
+
 blocks$runinfo <- sprintf("Committed run: %s replicates per cell (MCSE %s at a rate of 0.05 and at most %s, at a rate of 0.5), %s cells, seed %s, %s; the grid took %s s on %s %s (%s).",
   iv("replicates per cell"), iv("MCSE of a rate of 0.05"), iv("largest MCSE of a rate (at 0.5)"), iv("cells"), iv("seed"),
   esc(iv("R version")), iv("grid run time (s)"), iv("cores"), if (iv("cores") == "1") "core" else "cores", iv("run date"))
@@ -315,6 +384,7 @@ fig("f3_decomposition", 1500, 780, function(p) {
 page <- file.path(mod, "index.html")
 h <- paste(readLines(page, encoding = "UTF-8"), collapse = "\n")
 for (nm in names(blocks)) {
+  if (length(blocks[[nm]]) != 1 || !nzchar(blocks[[nm]])) stop("generated block ", nm, " is empty (a column missing from out/*.csv?)")
   pat <- sprintf("(?s)(<!--oc:%s-->)(.*?)(<!--/oc:%s-->)", nm, nm)
   if (!grepl(pat, h, perl = TRUE)) stop("index.html has no block ", nm)
   h <- sub(pat, paste0("\\1\n", gsub("\\\\", "\\\\\\\\", blocks[[nm]]), "\n\\3"), h, perl = TRUE)

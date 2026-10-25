@@ -25,7 +25,7 @@ participants reused across washouts, arms and configurations within a cell.
 
 ```sh
 Rscript sim_lifecycle/carryover_oc/R/run_oc.R            # grid (about 10 s on 4 cores) and ADaM demonstration
-Rscript sim_lifecycle/carryover_oc/tests/test_carryover.R  # T1 to T10; writes out/known_answer_checks.csv
+Rscript sim_lifecycle/carryover_oc/tests/test_carryover.R  # T1 to T12; writes out/known_answer_checks.csv
 Rscript sim_lifecycle/carryover_oc/R/tables.R              # T1 to T5, F1 to F3 and the page's numbers
 ```
 
@@ -41,9 +41,9 @@ The PKNCA cross-check in T2 runs only when PKNCA is installed.
 | `R/analyze.R` | 2x2 estimator, the six arms, MCSEs, decomposition, random-number streams |
 | `R/run_oc.R` | the full grid and the single-study ADaM demonstration |
 | `R/tables.R` | tables, figures (light and dark PNG) and the generated blocks of `index.html` |
-| `tests/test_carryover.R` | known-answer checks T1 to T10 and controls |
-| `out/oc_results.csv` | every configuration, true GMR, disposition, washout, arm and endpoint |
-| `out/oc_bias_decomposition.csv` | selection and retained residual, paired within study |
+| `tests/test_carryover.R` | known-answer checks T1 to T12 and controls (T8 and T11 check the 5% rule and the wiring of every arm; T12 the MCSE formulas) |
+| `out/oc_results.csv` | every configuration, true GMR, disposition, washout, arm and endpoint, with MCSEs and paired differences from the oracle |
+| `out/oc_bias_decomposition.csv` | selection and retained residual, the selection share (delta-method MCSE) and the rule against including everyone, paired within study |
 | `out/known_answer_checks.csv` | the pass table on the page |
 | `out/adam_demo/` | ADPC and ADPP from `simulate_study(..., washout_h = 48)`; the other domains equal `sim_lifecycle/out` |
 
