@@ -37,6 +37,19 @@ test_that("CP101-902 is flagged only with the 60-day window; CP101-907 hits the 
   expect_equal(g$N_FLAGGED, 4)
 })
 
+test_that("the window's lower bound: TBL on the day of the aminotransferase draw counts, the day before does not", {
+  # ALT 4x and TBL 2.5x on the same draw (Day 15), the classic concurrent presentation: every cell flags
+  same <- hyslaw_grid(make_liver(c(15), alt = 4, tbl = 2.5))
+  expect_equal(same$N_FLAGGED, 12)
+  expect_equal(same$VERDICT, "Robust")
+  expect_equal(same$REF, 1)
+  expect_true(hys_screen(make_liver(c(15), alt = 4, tbl = 2.5))$hys)       # the console rule agrees
+  # TBL 2.5x one day before the ALT 4x draw: not on or after the elevation, so no cell flags
+  before <- hyslaw_grid(make_liver(c(14, 15), alt = c(1, 4), tbl = c(2.5, 1)))
+  expect_equal(before$N_FLAGGED, 0)
+  expect_equal(before$VERDICT, "Peak-only artifact")
+})
+
 test_that("the ALP rule and the aminotransferase definition each move only their own cells", {
   expect_equal(c(cell("CP101-903", 30, p = "ALP < 2x ULN"), cell("CP101-903", 30)), c(0L, 1L))
   expect_equal(c(cell("CP101-904", 30, a = "ALT only"), cell("CP101-904", 30)), c(0L, 1L))
@@ -58,7 +71,13 @@ test_that("the study's cases read as the teaching notes say", {
 })
 
 test_that("each ALT-or-AST cell equals the console's screening rule at that window and ALP setting", {
-  for (src in list(TM$adlb, HL$labs_long)) {
+  # the study, the planted cases, and boundary panels at both ends of the window: TBL on the
+  # aminotransferase day, the day before, exactly 30 days after and 31 days after
+  edges <- rbind(make_liver(c(15), alt = 4, tbl = 2.5, id = "T-SAME"),
+                 make_liver(c(14, 15), alt = c(1, 4), tbl = c(2.5, 1), id = "T-BEFORE"),
+                 make_liver(c(10, 40), alt = c(3.3, 1), tbl = c(1, 2.2), id = "T-AT30"),
+                 make_liver(c(10, 41), alt = c(3.3, 1), tbl = c(1, 2.2), id = "T-AT31"))
+  for (src in list(TM$adlb, HL$labs_long, edges)) {
     g <- hyslaw_grid(src)
     for (w in c(14, 30, 60)) for (p in c(FALSE, TRUE)) {
       h <- hys_screen(src, window = w, alp_convention = p)
