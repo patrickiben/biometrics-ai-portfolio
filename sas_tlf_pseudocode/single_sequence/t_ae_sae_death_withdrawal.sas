@@ -56,7 +56,7 @@ proc transpose data=_rep out=_wide; by secord section level term; id APERIOD; va
 %tfltitle(num=14.3.1.5, type=Table,
    text=%str(Serious Adverse Events, Deaths, and AEs Leading to Withdrawal by SOC and Preferred Term, by Period),
    pop=Safety Population,
-   foot=%str(Treatment-emergent only. SAE per AESER; death per AESDTH; withdrawal = study drug withdrawn (AEACN). A participant is counted once at each level per period. Period 1 = reference; later period(s) = test condition. % = participants / N exposed in the period. MedDRA v27.0.));
+   foot=%str(Treatment-emergent only. SAE per AESER; death per AESDTH; withdrawal = study drug withdrawn (AEACN). A participant is counted once at each level per period. Period 1 = reference; later period(s) = test condition. % = participants / N exposed in the period. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns secord section level term ("By Period" /* P1=Reference, P2=Test... */);
   define secord  / order noprint;

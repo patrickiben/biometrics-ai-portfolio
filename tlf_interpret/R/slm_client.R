@@ -4,7 +4,7 @@
 # Backend: reticulate -> llama-cpp-python -> a local GGUF model (default
 # MedGemma 1.5 4B; any Gemma 3 / Qwen3 GGUF works). IN-PROCESS from R: no Ollama,
 # no daemon, no system service, no
-# network, no admin rights. Sized for a 32 GB RAM / 4 GB VRAM work laptop:
+# network, no admin rights. Sized for a laptop with 32 GB RAM / 4 GB VRAM:
 # CPU-first on RAM with a small partial GPU offload (n_gpu_layers).
 #
 # The model NEVER sources a number; it drafts prose from facts it is handed

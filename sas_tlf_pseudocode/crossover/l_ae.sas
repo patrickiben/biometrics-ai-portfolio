@@ -37,7 +37,7 @@ proc sort data=ae; by seq subjid APERIOD ASTDT AEDECOD; run;
 
 %tfltitle(num=16.2.7.1, type=Listing, text=Listing of Adverse Events,
           pop=Safety Population,
-          foot=%str(Crossover: Seq = randomized treatment sequence (TRTSEQP); Period = analysis period (APERIODC); Treatment = analysis treatment at onset (TRTA). TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per analysis. MedDRA v27.0.));
+          foot=%str(Crossover: Seq = randomized treatment sequence (TRTSEQP); Period = analysis period (APERIODC); Treatment = analysis treatment at onset (TRTA). TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per analysis. &MEDDRAVER..));
 proc report data=ae nowd split='*';
   columns seq subjid perc trt ('Adverse Event' AESOC AEDECOD)
           ('Onset*(Day)' relday) durn sev ('Serious' ser) ('TEAE' te)

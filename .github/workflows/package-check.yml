@@ -10,5 +10,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+      - name: Install pdftotext (the check reads the text of published PDFs)
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
       - name: Check packaged files, navigation, links and documented counts
         run: python package_qc.py

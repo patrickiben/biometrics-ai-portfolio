@@ -89,7 +89,7 @@ ttl <- tfl_titles(
                "treatment-emergent AE (TRTEMFL=Y). A participant is counted once per",
                "category; categories are not mutually exclusive. Related = AREL in",
                "{RELATED, POSSIBLE, PROBABLE, DEFINITE}. % = participants in category /",
-               "N in dose level. MedDRA v27.0."))
+               "N in dose level. {meddra}."))
 
 ## --- rtables layout (SAD: split columns by dose level, ascending) ----------
 # lyt <- basic_table(title = ttl$titles, main_footer = ttl$footnotes) %>%

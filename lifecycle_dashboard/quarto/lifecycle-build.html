@@ -2222,7 +2222,7 @@ vertical-align: -.125em;
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
 <main class="content" id="quarto-document-content">
-<div class="mc-top"><b>AI for Biometrics</b><div class="nav"><a href="../../Operations.html">Operations</a><a href="../../Biostatistics.html">Biostatistics</a><a href="../../START_HERE.html">Full library</a></div></div>
+<div class="mc-top"><b>Patrick Iben</b><div class="nav"><a href="../../index.html">Home</a><a href="../../index.html#lifecycle">Lifecycle</a><a href="../../index.html#start">Start here</a></div></div>
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
@@ -2249,12 +2249,12 @@ vertical-align: -.125em;
 <p>The interactive tool is a real R Shiny app. From the package root:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;shiny&quot;</span>, <span class="st">&quot;bslib&quot;</span>, <span class="st">&quot;DT&quot;</span>, <span class="st">&quot;ggplot2&quot;</span>))   <span class="co"># once</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;lifecycle_dashboard/shiny&quot;</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Pick a study, then move the what-if sliders (open queries, double-programmed %) and watch that study’s row in the risk heatmap re-colour. The scoring is transparent, so every number is defensible.</p>
+<p>Pick a study, then move the what-if sliders (open queries, double-programmed %) and watch that study’s row in the risk heatmap re-color. The scoring is transparent, so every number is defensible.</p>
 <p>The whole console is three R files, shown here in full, nothing elided:</p>
 <ul>
-<li><strong>shiny/R/logic.R</strong> — the pure scoring and signal logic (no Shiny). The <a href="lifecycle-guide.html">visual guide</a>, the <a href="lifecycle-dashboard.html">dashboard</a>, and the unit tests call these same functions.</li>
-<li><strong>shiny/R/gen_data.R</strong> — the deterministic synthetic portfolio, the four CSVs the app reads.</li>
-<li><strong>shiny/app.R</strong> — the UI and the reactive server.</li>
+<li><strong>shiny/R/logic.R</strong>: the pure scoring and signal logic (no Shiny). The <a href="lifecycle-guide.html">visual guide</a>, the <a href="lifecycle-dashboard.html">dashboard</a>, and the unit tests call these same functions.</li>
+<li><strong>shiny/R/gen_data.R</strong>: the deterministic synthetic portfolio, the four CSVs the app reads.</li>
+<li><strong>shiny/app.R</strong>: the UI and the reactive server.</li>
 </ul>
 <p>The one idea to hold onto: the <strong>rules</strong> live in logic.R, the <strong>screen</strong> lives in app.R. You can change what “risk” means without touching the app, and change how it looks without touching the rules.</p>
 </section>
@@ -2646,7 +2646,7 @@ vertical-align: -.125em;
 </section>
 <section id="how-the-reactivity-works-part-by-part" class="level2">
 <h2 class="anchored" data-anchor-id="how-the-reactivity-works-part-by-part">How the reactivity works, part by part</h2>
-<p>Follow the data, not the layout. Here is the chain that makes a slider re-colour the heatmap.</p>
+<p>Follow the data, not the layout. Here is the chain that makes a slider re-color the heatmap.</p>
 <p><strong>The editable state lives in one place.</strong> <code>rv &lt;- reactiveValues(studies = seed$studies)</code> holds the one frame the user can change. Every output reads from a reactive built on <code>rv</code>, so when <code>rv$studies</code> changes, everything that depends on it recomputes. That is the entire trick.</p>
 <p><strong>The what-if writes back to that state.</strong> The observer on <code>list(input$openq, input$dblprog)</code> finds the selected study’s row with <code>which(rv$studies$id == input$study)</code> and writes the slider values into <code>rv$studies$open_queries[i]</code> and <code>rv$studies$dbl_prog_pct[i]</code>. A second observer on <code>input$study</code> keeps the sliders in sync when you switch studies, and <code>input$reset</code> restores <code>seed$studies</code>.</p>
 <p><strong>The rules are reactive expressions.</strong> The <code>data_now</code> reactive reassembles the portfolio (studies from <code>rv$studies</code>, plus the seed milestones, deliverables, and query trend), <code>st &lt;- reactive(score_portfolio(data_now()))</code> re-scores it, and <code>kpi &lt;- reactive(lifecycle_kpis(st(), data_now()))</code> rolls it up. These re-run automatically whenever <code>rv$studies</code> changes. You never call the scorer by hand.</p>

@@ -14,7 +14,7 @@ k  <- trialmon_kpis(tm)
 stopifnot(
   "22 participants"              = nrow(p) == 22,
   "CP101-014 is a Hy's position" = isTRUE(p$hys[p$id == "CP101-014"]),
-  "CP101-009 is the AND-gate near-miss (ALT>3, TBili<2, NOT Hy's)" =
+  "CP101-009 is the AND-gate near-miss (ALT>=3, TBili<2, NOT Hy's)" =
       p$alt[p$id=="CP101-009"] > 3 && p$tbl[p$id=="CP101-009"] < 2 && !p$hys[p$id=="CP101-009"],
   "CP101-018 QTcF RED"           = p$qsev[p$id == "CP101-018"] == "RED",
   "CP101-006 QTcF AMBER"         = p$qsev[p$id == "CP101-006"] == "AMBER",
@@ -22,6 +22,24 @@ stopifnot(
   "worklist ranked red-first"    = nrow(wl) == 0 || wl$sev[1] == "RED",
   "C4 cohort shows a DLT"        = dlt_state(tm)$dlt[dlt_state(tm)$cohort == "C4"] == 1,
   "two SAEs"                     = k$sae == 2
+)
+
+# boundaries: R = 2 is cholestatic, R = 5 hepatocellular; ALT exactly 3x ULN with TBili > 2x fires
+stopifnot(
+  "R = 2.0 is cholestatic"        = r_pattern(2) == "cholestatic",
+  "R = 2.1 is mixed"              = r_pattern(2.1) == "mixed",
+  "R = 5.0 is hepatocellular"     = r_pattern(5) == "hepatocellular",
+  "ALT = 3.0x with TBili 2.5x fires" = isTRUE(score_participants(
+      transform(tm$participants, alt = ifelse(id=="CP101-001", 3, alt),
+                tbl = ifelse(id=="CP101-001", 2.5, tbl)))$hys[tm$participants$id=="CP101-001"])
+)
+
+# 3+3: one DLT is read against its denominator
+ds <- dlt_state(tm)
+one_in_three <- tm; one_in_three$participants$dltfl[one_in_three$participants$id == "CP101-001"] <- "Y"
+stopifnot(
+  "C4 at 1/6 is escalation-eligible, not AMBER" = ds$sev[ds$cohort == "C4"] == "GREEN",
+  "1 DLT of 3 evaluable is AMBER (expand to 6)" = dlt_state(one_in_three)$sev[dlt_state(one_in_three)$cohort == "C1"] == "AMBER"
 )
 
 # the eDISH AND-gate: ALT high alone must NOT fire Hy's without bili

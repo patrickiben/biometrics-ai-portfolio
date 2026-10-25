@@ -38,7 +38,7 @@ ae <- adam$adae %>% filter(SAFFL == "Y") %>%
 ttl <- tfl_titles(num = "16.2.7.1", type = "Listing", text = "Listing of Adverse Events",
    pop = "Safety Population",
    foot = paste0("Crossover: Sequence (TRTSEQP) and Period (APERIODC) shown so each AE maps to the treatment in effect at onset. ",
-                 "TEAE = treatment-emergent. SAE = serious. Rel = relationship per investigator/analysis. MedDRA v27.0."))
+                 "TEAE = treatment-emergent. SAE = serious. Rel = relationship per investigator/analysis. {meddra}."))
 
 ## render: one block per sequence (page break), columns as ordered above
 ## listings::create_listing(ae, ...) or gt::gt(ae %>% select(-seqn,-pern,-ASTDT))

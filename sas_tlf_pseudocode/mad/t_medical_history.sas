@@ -57,7 +57,7 @@ proc transpose data=_rep out=_wide; by socn ptn level term; id &TRTNVAR; var val
 
 %tfltitle(num=14.1.7, type=Table, text=Medical History,
           pop=Safety Population,
-          foot=%str(Column = assigned dose level (TRT01A); placebo pooled, columns ordered by ascending dose. A participant is counted once at each level. MedDRA v27.0. Percentages based on Safety Population N per dose level.));
+          foot=%str(Column = assigned dose level (TRT01A); placebo pooled, columns ordered by ascending dose. A participant is counted once at each level. &MEDDRAVER.. Percentages based on Safety Population N per dose level.));
 proc report data=_wide nowd split='|';
   columns socn ptn level term ("Dose Level" /* dose cols + Total */);
   define socn  / order descending noprint;

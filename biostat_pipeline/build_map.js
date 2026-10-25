@@ -1,14 +1,17 @@
 // One-page visual pipeline map: Early-Phase Clin-Pharm Biostatistics, Protocol -> CSR. Single landscape page.
+// Run: node build_map.js (needs pptxgenjs), then soffice --headless --convert-to pdf EarlyPhase_Biostat_Pipeline_Map.pptx
 const pptxgen = require("pptxgenjs");
+const N = require("./_register.json").length;
 const pres = new pptxgen();
 pres.layout = "LAYOUT_WIDE";
-pres.title = "Early-Phase Clin-Pharm Biostatistics Pipeline — Protocol to CSR";
+pres.title = "Early-Phase Clin-Pharm Biostatistics Pipeline: Protocol to CSR";
+pres.author = "Patrick Iben";
 const INK = "1A1E33", MUTED = "5A607E", PANEL = "F4F5FB", LINEC = "E0E3F1", HF = "Georgia", BF = "Calibri";
 const W = 13.3, M = 0.45;
 const s = pres.addSlide(); s.background = { color: "FFFFFF" };
 
 s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: M, y: 0.3, w: 0.16, h: 0.42, fill: { color: "4338CA" }, rectRadius: 0.04 });
-s.addText("EARLY-PHASE CLINICAL PHARMACOLOGY · BIOSTATISTICS DELIVERABLES PIPELINE · 136 DELIVERABLES", { x: M + 0.32, y: 0.28, w: 12.5, h: 0.3, margin: 0, fontFace: BF, fontSize: 10, bold: true, charSpacing: 1, color: MUTED });
+s.addText(`EARLY-PHASE CLINICAL PHARMACOLOGY · BIOSTATISTICS DELIVERABLES PIPELINE · ${N} DELIVERABLES · REFERENCE MAP`, { x: M + 0.32, y: 0.28, w: 12.5, h: 0.3, margin: 0, fontFace: BF, fontSize: 10, bold: true, charSpacing: 1, color: MUTED });
 s.addText("Protocol review  →  CSR draft", { x: M + 0.32, y: 0.52, w: 12, h: 0.5, margin: 0, fontFace: HF, fontSize: 26, bold: true, color: INK });
 
 const stages = [
@@ -35,15 +38,15 @@ const ty = py + ch + 0.18;
 s.addShape(pres.shapes.RECTANGLE, { x: M, y: ty, w: W - 2 * M, h: 0.42, fill: { color: "E5EEF8" }, line: { color: "CBDDF0", width: 1 } });
 s.addText([{ text: "CDISC data-standards track:  ", options: { bold: true, color: "1E4C82" } }, { text: "SDTM → ADaM → Define-XML + cSDRG / ADRG + conformance   (runs through Stages 3–5)", options: { color: INK } }], { x: M + 0.25, y: ty, w: W - 2 * M - 0.5, h: 0.42, margin: 0, fontFace: BF, fontSize: 10.5, valign: "middle" });
 s.addShape(pres.shapes.RECTANGLE, { x: M, y: ty + 0.5, w: W - 2 * M, h: 0.42, fill: { color: "ECECFB" }, line: { color: "D6D6F5", width: 1 } });
-s.addText([{ text: "Hybrid-AI governance track:  ", options: { bold: true, color: "312C8A" } }, { text: "data-classification routing · model-freeze records · engine-of-record register · zero-egress attestation   (all stages)", options: { color: INK } }], { x: M + 0.25, y: ty + 0.5, w: W - 2 * M - 0.5, h: 0.42, margin: 0, fontFace: BF, fontSize: 10.5, valign: "middle" });
+s.addText([{ text: "Quality track:  ", options: { bold: true, color: "312C8A" } }, { text: "independent double programming · engine-of-record register (software and version) · audit trail (21 CFR Part 11) · named sign-off   (all stages)", options: { color: INK } }], { x: M + 0.25, y: ty + 0.5, w: W - 2 * M - 0.5, h: 0.42, margin: 0, fontFace: BF, fontSize: 10.5, valign: "middle" });
 
-// AI tier legend + hard rules
+// how reported numbers are controlled
 const ly = ty + 1.05;
-const legend = [["🟢 GREEN · 48", "drafts, scaffolds, docs (de-identified)", "0F9D6E"], ["🟡 AMBER · 54", "dataset / TLF code — AI as one side of double-programming", "C2891C"], ["🔴 RED · 34", "validated engine produces the number — LLM out of the path", "B5564B"]];
+const legend = [["Double programming", "every submission-grade output: an independent second program and a logged reconciliation", "0E7C86"], ["Validated engines", "reported numbers from validated SAS/R programs; NCA from Phoenix WinNonlin or PKNCA", "2F6DB5"], ["Named sign-off", "a qualified statistician reviews and signs each deliverable", "4338CA"]];
 const lw = (W - 2 * M - 2 * 0.25) / 3;
 legend.forEach((g, i) => { const x = M + i * (lw + 0.25); s.addShape(pres.shapes.RECTANGLE, { x, y: ly, w: lw, h: 0.6, fill: { color: PANEL }, line: { color: LINEC, width: 1 } }); s.addShape(pres.shapes.RECTANGLE, { x, y: ly, w: 0.09, h: 0.6, fill: { color: g[2] } }); s.addText([{ text: g[0] + "  ", options: { bold: true, color: INK, fontSize: 11 } }, { text: g[1], options: { color: MUTED, fontSize: 9.5 } }], { x: x + 0.22, y: ly, w: lw - 0.35, h: 0.6, margin: 0, fontFace: BF, valign: "middle", lineSpacingMultiple: 0.95 }); });
 
-s.addText([{ text: "3 hard rules:  ", options: { bold: true, color: "312C8A" } }, { text: "PHI / unblinded never leaves (local frozen model) · every reported number from a validated engine, never an LLM · de-identification unlocks the cloud path (Claude API + BAA, never a consumer seat).", options: { color: INK } }], { x: M, y: ly + 0.7, w: W - 2 * M, h: 0.35, margin: 0, fontFace: BF, fontSize: 10, valign: "middle" });
-s.addText("136 deliverables across 5 stages · full register with every field = the .xlsx · stage-by-stage detail = the Word/PDF reference · standards current mid-2026 (CDISC SDTMIG v3.4 / ADaMIG v1.3 / Define-XML v2.1; ICH E3·E6(R3)·E9(R1)·M11; 21 CFR Part 11).", { x: M, y: 7.12, w: W - 2 * M, h: 0.3, margin: 0, fontFace: BF, fontSize: 8, italic: true, color: "9197B5" });
+s.addText([{ text: "Reference map, not a track record:  ", options: { bold: true, color: "312C8A" } }, { text: "how each deliverable would be produced and checked. A proposal for AI-assisted drafting under controls is an appendix to the reference document.", options: { color: INK } }], { x: M, y: ly + 0.7, w: W - 2 * M, h: 0.35, margin: 0, fontFace: BF, fontSize: 10, valign: "middle" });
+s.addText(`${N} deliverables across 5 stages · full register with every field = the .xlsx · stage-by-stage detail = the Word/PDF reference · standards as of October 2026 (CDISC SDTMIG v3.4 / ADaMIG v1.3 / Define-XML v2.1; ICH E3·E6(R3)·E9(R1)·M11; 21 CFR Part 11).`, { x: M, y: 7.12, w: W - 2 * M, h: 0.3, margin: 0, fontFace: BF, fontSize: 8, italic: true, color: "9197B5" });
 
-pres.writeFile({ fileName: "/Users/patrickiben/Optimized_CCR_Slides/biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pptx" }).then(f => console.log("WROTE", f)).catch(e => { console.error(e); process.exit(1); });
+pres.writeFile({ fileName: require("path").join(__dirname, "EarlyPhase_Biostat_Pipeline_Map.pptx") }).then(f => console.log("WROTE", f)).catch(e => { console.error(e); process.exit(1); });

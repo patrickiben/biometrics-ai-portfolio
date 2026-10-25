@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><link rel="icon" href="data:,"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>TLF Interpretation Drafter</title>
 <style>
   :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--r:12px}
@@ -21,6 +21,9 @@
   table.t th,table.t td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
   table.t th{color:var(--mut);font-weight:600;background:#0e1422}
   table.t tr:hover td{background:#0e1626}
+  /* phone width: long inline code wraps, and a wide table scrolls inside its own box */
+  code{overflow-wrap:anywhere}
+  @media(max-width:720px){table.t{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}li,p,td{overflow-wrap:anywhere}}
   .note,.warn{border-radius:9px;padding:11px 14px;margin:12px 0;font-size:13.6px}
   .note{background:#0e2230;border:1px solid #235049;border-left:3px solid var(--teal)}
   .note::before{content:"NOTE";display:block;font-size:10.5px;letter-spacing:.06em;color:var(--teal);font-weight:700;margin-bottom:3px}
@@ -66,7 +69,7 @@
     table.t th{background:#eef0f3 !important} table.t th,table.t td{border-color:#dde !important}
     .wnum{background:#caa24a !important;color:#241500 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .ways,#skb,#try>p,#try>h2+p,.skb-reset,.copybtn,.tools,footer,.checklist li::before,.checklist li::after{display:none !important}
-    #try>h2::after{content:" (interactive — omitted in print)";font-size:12px;color:#777;font-weight:400}
+    #try>h2::after{content:" (interactive: omitted in print)";font-size:12px;color:#777;font-weight:400}
     .shot,.wstep,.glance .g,table.t,.note,.warn{break-inside:avoid}
     .badge{color:#333 !important;background:#eee !important;border-color:#ccc !important}
     h2{break-after:avoid}
@@ -75,13 +78,13 @@
 </style></head><body><div class="wrap">
 
 <header class="hero">
-  <div class="home"><a href="../START_HERE.html">&larr; Program home</a></div>
-  <h1>TLF Interpretation Drafter <span class="badge">QUARTO + ON-PREM SLM</span></h1>
-  <p class="sub">A Quarto + on-prem small-language-model pipeline that <strong>drafts</strong> the narrative text accompanying each Table/Listing/Figure &mdash; the model never sources a number; every draft is number-validated and human-gated.</p>
+  <div class="home"><a href="../index.html">&larr; Home</a></div>
+  <h1>TLF Interpretation Drafter <span class="badge">QUARTO + LOCAL SLM (STUB RUN ONLY)</span></h1>
+  <p class="sub">A Quarto + on-prem small-language-model pipeline that <strong>drafts</strong> the narrative text accompanying each Table/Listing/Figure: the model never sources a number; every draft is number-validated and human-gated.</p>
 </header>
 
 <div class="warn">
-  <strong>Honest status &mdash; design + runnable skeleton, not validated software.</strong> This is a drafting aid behind hard guardrails. It does not replace the biostatistician and it produces <strong>no reported number</strong>. Every reported figure comes only from the validated TLF result dataset (traceable to Phoenix WinNonlin / Pinnacle 21 / EDC per SOP) &mdash; never from an LLM. Treat all model output as draft text for human authoring, under ops governance.
+  <strong>Honest status: design + runnable skeleton, not validated software.</strong> This is a drafting aid behind hard guardrails. It does not replace the biostatistician and it produces <strong>no reported number</strong>. Every reported figure comes only from the validated TLF result dataset (traceable to validated, double-programmed programs per the study&rsquo;s SOPs; Pinnacle 21 checks conformance only), never from an LLM. Treat all model output as draft text for human authoring, under the study&rsquo;s governance. <strong>What has been run:</strong> only the stub path. <code>selftest.R</code> passes without a model (checked 2026-10-24 on R 4.6.0: the faithful draft is accepted, the hallucinated one rejected). No run with a real language model and no evaluation of draft quality has been recorded. The model choices below are a mid-2026 snapshot and have not been re-evaluated since.
 </div>
 
 <div class="ways">
@@ -95,8 +98,8 @@
 </div>
 
 <h2 id="start">Before you start</h2>
-<div class="note"><strong>You'll need:</strong> <strong>R</strong> (4.x) with the <code>reticulate</code> and <code>digest</code> packages &nbsp;·&nbsp; a <strong>user Python venv</strong> (no admin) with <code>llama-cpp-python</code> installed &nbsp;·&nbsp; one <strong>GGUF model file on disk</strong> (default <code>~/models/medgemma-1.5-4b-it-Q4_K_M.gguf</code>; any Gemma&nbsp;3 / Qwen3 GGUF works) &nbsp;·&nbsp; <strong>Quarto</strong> only if you render the <code>.qmd</code> report. Target hardware: a <strong>32&nbsp;GB RAM / 4&nbsp;GB VRAM</strong> work laptop. <span class="mini">The <code>selftest.R</code> below needs <em>none</em> of the model pieces &mdash; the validators are pure R, and the client has a deterministic STUB fallback, so the skeleton runs offline with no model installed (clearly marked STUB).</span></div>
-<div class="warn"><strong>No GGUF ships with this.</strong> Google publishes MedGemma as safetensors only &mdash; there is <strong>no official GGUF</strong>. Convert/quantize it yourself with recent <code>llama.cpp</code>, or use a trusted community quant (e.g. <code>unsloth</code>/<code>bartowski</code>) &mdash; <strong>verify the publisher and record the SHA</strong>. Pin the file by path + SHA so the frozen weights reproduce. This is <strong>not Ollama</strong>: the model runs <strong>in-process from R</strong> via <code>reticulate</code> &rarr; <code>llama-cpp-python</code> &mdash; no daemon, no port, no admin.</div>
+<div class="note"><strong>You'll need:</strong> <strong>R</strong> (4.x) with the <code>reticulate</code> and <code>digest</code> packages &nbsp;·&nbsp; a <strong>user Python venv</strong> (no admin) with <code>llama-cpp-python</code> installed &nbsp;·&nbsp; one <strong>GGUF model file on disk</strong> (default <code>~/models/medgemma-1.5-4b-it-Q4_K_M.gguf</code>; any Gemma&nbsp;3 / Qwen3 GGUF works) &nbsp;·&nbsp; <strong>Quarto</strong> only if you render the <code>.qmd</code> report. Target hardware: a laptop with <strong>32&nbsp;GB RAM / 4&nbsp;GB VRAM</strong>. <span class="mini">The <code>selftest.R</code> below needs <em>none</em> of the model pieces: the validators are pure R, and the client has a deterministic STUB fallback, so the skeleton runs offline with no model installed (clearly marked STUB).</span></div>
+<div class="warn"><strong>No GGUF ships with this.</strong> Google publishes MedGemma as safetensors only: there is <strong>no official GGUF</strong>. Convert/quantize it yourself with recent <code>llama.cpp</code>, or use a trusted community quant (e.g. <code>unsloth</code>/<code>bartowski</code>): <strong>verify the publisher and record the SHA</strong>. Pin the file by path + SHA so the frozen weights reproduce. The default backend is <strong>not Ollama</strong> (an optional Ollama backend also exists in <code>R/slm_client.R</code>): the model runs <strong>in-process from R</strong> via <code>reticulate</code> &rarr; <code>llama-cpp-python</code>, no daemon, no port, no admin.</div>
 
 <h2 id="run">Quick-start &amp; how to run</h2>
 <p>Tick each step as you finish it (full detail for the model pieces is in <a href="#runtime">Runtime &amp; hardware</a> and <a href="README.md">the README</a>):</p>
@@ -104,9 +107,9 @@
   <li><span>Install R packages: <code>install.packages(c("reticulate","digest"))</code></span></li>
   <li><span>Create a user Python venv and <code>pip install llama-cpp-python</code> (no admin, no daemon)</span></li>
   <li><span>Put a GGUF model on disk and point <code>tlf.slm.model_path</code> / <code>TLF_SLM_GGUF</code> at it</span></li>
-  <li><span>Run the guardrail self-test &mdash; <code>Rscript selftest.R</code> (no model needed) &rarr; expect <code>SELFTEST PASS</code></span></li>
-  <li><span>(optional) Render a TLF: <code>quarto render interpret_tlf.qmd</code> &mdash; drafts come out marked <em>DRAFT &mdash; review required</em></span></li>
-  <li><span>Biostatistician reviews / edits / signs off &mdash; the mandatory human gate before anything is APPROVED</span></li>
+  <li><span>Run the guardrail self-test: <code>Rscript selftest.R</code> (no model needed) &rarr; expect <code>SELFTEST PASS</code></span></li>
+  <li><span>(optional) Render a TLF: <code>quarto render interpret_tlf.qmd</code>, drafts come out marked <em>DRAFT, review required</em></span></li>
+  <li><span>Biostatistician reviews / edits / signs off: the mandatory human gate before anything is APPROVED</span></li>
 </ul>
 <div class="tools">
   <button type="button" onclick="window.print()">🖨 Print / save as PDF</button>
@@ -124,10 +127,10 @@ quarto render interpret_tlf.qmd</code></pre>
 
 <h2 id="what">What it does</h2>
 <p>A pipeline that <strong>drafts the narrative interpretation</strong> that accompanies each Table/Listing/Figure (e.g. the AE-overview paragraph, the PK-parameter summary text), using an <strong>on-prem small language model (SLM)</strong>, rendered with <strong>Quarto</strong>, and wired to the deterministic TLF outputs from <code>../r_tlf_pseudocode/</code> (or <code>../sas_tlf_pseudocode/</code>).</p>
-<p>This is a DESIGN + runnable skeleton, not a validated system. It is a drafting aid behind hard guardrails &mdash; it does not replace the biostatistician and it does not produce any reported number.</p>
+<p>This is a DESIGN + runnable skeleton, not a validated system. It is a drafting aid behind hard guardrails: it does not replace the biostatistician and it does not produce any reported number.</p>
 
 <h2>The one hard invariant</h2>
-<p><strong>The SLM never sources a number.</strong> Every reported number comes from the validated TLF result dataset (which itself traces to Phoenix WinNonlin / Pinnacle 21 / EDC per SOP). The model only writes the <em>prose</em> around numbers it is <em>handed</em>, and that prose is then checked so that <strong>every number in the draft must already exist in the deterministic facts</strong> &mdash; otherwise it is rejected as a hallucination. The rendered table/figure in the report is the validated output, not anything the model produced.</p>
+<p><strong>The SLM never sources a number.</strong> Every reported number comes from the validated TLF result dataset (which itself traces to validated, double-programmed programs per the study&rsquo;s SOPs). The model only writes the <em>prose</em> around numbers it is <em>handed</em>, and that prose is then checked so that <strong>every number in the draft must already exist in the deterministic facts</strong>, otherwise it is rejected as a hallucination. The rendered table/figure in the report is the validated output, not anything the model produced.</p>
 
 <h3>Pipeline</h3>
 <div class="flow">
@@ -152,20 +155,20 @@ quarto render interpret_tlf.qmd</code></pre>
   <span class="box">APPROVED &rarr; CSR narrative + audit record</span>
 </div>
 
-<div class="note">The constrained prompt to the SLM is pinned (fixed seed, temp 0, pinned model + digest): &ldquo;use ONLY these facts; introduce no new numbers.&rdquo; The validators are three deterministic R checks: (1) numeric-consistency &mdash; every number in the draft must be in the facts, else REJECT; (2) forbidden-claim &mdash; flag causal/efficacy/&ldquo;safe&rdquo;/&ldquo;well tolerated&rdquo; language for review; (3) template conformance &mdash; length, required slots. The audit record captures model id + digest, seed, prompt hash, facts hash, draft, approver, final text, timestamp.</div>
+<div class="note">The constrained prompt to the SLM is pinned (fixed seed, temp 0, pinned model + digest): &ldquo;use ONLY these facts; introduce no new numbers.&rdquo; The validators are three deterministic R checks: (1) numeric-consistency; every number in the draft must be in the facts, else REJECT; (2) forbidden-claim; flag causal/efficacy/&ldquo;safe&rdquo;/&ldquo;well tolerated&rdquo; language for review; (3) template conformance; length, required slots. The audit record captures model id + digest, seed, prompt hash, facts hash, draft, approver, final text, timestamp.</div>
 
 <h2>Why each piece</h2>
 <ul>
   <li><strong>Numbers stay deterministic.</strong> The fact extractor is plain R operating on the <em>aggregate</em> TLF result (n's, %'s, geometric means already computed by the validated program). No participant-level data and no PHI ever reach the model. The model cannot compute, only restate.</li>
-  <li><strong>Local SLM, on-prem, NO daemon, NO admin (<code>reticulate</code> &rarr; <code>llama-cpp-python</code>, GGUF).</strong> Runs the model <em>in-process from R</em> via a user-space Python wheel &mdash; no Ollama, no system service, no network, no admin rights (the things that get blocked on locked-down work laptops). Sovereignty + no data egress + a <em>frozen</em> GGUF file (pinned by name + SHA) so the same facts reproduce the same draft.</li>
+  <li><strong>Local SLM, on-prem, NO daemon, NO admin (<code>reticulate</code> &rarr; <code>llama-cpp-python</code>, GGUF).</strong> Runs the model <em>in-process from R</em> via a user-space Python wheel, no Ollama, no system service, no network, no admin rights (the things often blocked on managed laptops). Sovereignty + no data egress + a <em>frozen</em> GGUF file (pinned by name + SHA) so the same facts reproduce the same draft.</li>
   <li><strong>Deterministic decoding.</strong> <code>temperature = 0</code>, fixed <code>seed</code> &rarr; reproducible drafts; logged in the audit record alongside the model digest and a hash of the prompt and facts.</li>
-  <li><strong>Validators are not the model.</strong> The numeric-consistency check (regex-extract every number from the draft; each must match a facts value within tolerance) is the core safety control &mdash; it makes a hallucinated statistic <em>structurally impossible to pass silently</em>. The claim guard flags efficacy/causal/&ldquo;well tolerated&rdquo;-style language for mandatory human judgement.</li>
-  <li><strong>Human gate is mandatory.</strong> Nothing is <code>APPROVED</code> without biostatistician sign-off. The Quarto doc renders drafts as <code>DRAFT &mdash; biostatistician review required</code> and shows exactly which facts the draft was grounded on, so review is fast and auditable.</li>
+  <li><strong>Validators are not the model.</strong> The numeric-consistency check (regex-extract every number from the draft; each must match a facts value within tolerance) catches invented or altered numbers: every digit in the draft must equal some fact value. It does not check which quantity a number is attached to, or numbers written as words: with N&nbsp;=&nbsp;40 and 16 related TEAEs, &ldquo;Of the 40 participants, 16 had a serious adverse event&rdquo; passes. The human gate is the control. The claim guard flags efficacy/causal/&ldquo;well tolerated&rdquo;-style language for mandatory human judgment.</li>
+  <li><strong>Human gate is mandatory.</strong> Nothing is <code>APPROVED</code> without biostatistician sign-off. The Quarto doc renders drafts as <code>DRAFT: biostatistician review required</code> and shows exactly which facts the draft was grounded on, so review is fast and auditable.</li>
   <li><strong>Quarto</strong> is the orchestration + rendering + freeze layer: one parameterized <code>.qmd</code> per TLF (or a master doc looping the TLF list), <code>freeze: true</code> + <code>renv</code> lockfile for reproducible reports.</li>
 </ul>
 
-<h2>Architecture &mdash; the runtime is NOT Ollama</h2>
-<div class="note">The README's ASCII architecture diagram historically carried a stale &ldquo;Ollama&rdquo; label. The backend is <strong>not</strong> Ollama. The SLM runs <strong>in-process from R</strong> via <code>reticulate</code> calling a user-space <code>llama-cpp-python</code> wheel against a frozen GGUF file &mdash; no daemon, no port, no admin. The corrected runtime label is shown below.</div>
+<h2>Architecture: the runtime is NOT Ollama</h2>
+<div class="note">The README's ASCII architecture diagram historically carried a stale &ldquo;Ollama&rdquo; label. The default backend is <strong>not</strong> Ollama (an optional Ollama backend exists). The SLM runs <strong>in-process from R</strong> via <code>reticulate</code> calling a user-space <code>llama-cpp-python</code> wheel against a frozen GGUF file, no daemon, no port, no admin. The corrected runtime label is shown below.</div>
 <div class="flow">
   <span class="box">R session</span>
   <span class="arr">&rarr;</span>
@@ -175,40 +178,40 @@ quarto render interpret_tlf.qmd</code></pre>
 </div>
 
 <h2 id="runtime">Runtime &amp; hardware (32 GB RAM / 4 GB VRAM target)</h2>
-<p>The default is a <strong>dense 4B medical model that fits in the 4 GB VRAM</strong> at Q4 &mdash; a change from the earlier 26B-A4B MoE, which had to run CPU-first from the 32 GB RAM. Either works; pick by how much VRAM you have and how much capacity you want.</p>
+<p>The default is a <strong>dense 4B medical model that fits in the 4 GB VRAM</strong> at Q4: a change from the earlier 26B-A4B MoE, which had to run CPU-first from the 32 GB RAM. Either works; pick by how much VRAM you have and how much capacity you want.</p>
 <table class="t">
   <thead><tr><th>Model</th><th>GGUF (size)</th><th>Params</th><th>Fit on 32 GB / 4 GB</th><th>Note</th></tr></thead>
   <tbody>
-    <tr><td><strong>MedGemma 1.5 4B-IT</strong> (<code>google/medgemma-1.5-4b-it</code>)</td><td>Q4_K_M &asymp; <strong>2.6 GB</strong></td><td>4B dense (Gemma 3 base)</td><td><strong>fits 4 GB VRAM</strong> (full offload) <em>or</em> RAM</td><td><strong>recommended default</strong> &mdash; medical-domain fine-tune; multimodal but used <strong>text-only</strong>; <strong>no official GGUF &rarr; convert/quant yourself</strong>; Gemma/HAI-DEF license</td></tr>
-    <tr><td>Gemma 4 26B-A4B-it QAT (Unsloth UD-Q4_K_XL)</td><td>14.2 GB</td><td>25.2B (3.8B active, MoE)</td><td>RAM + ~12&ndash;15 GB headroom; CPU-first or MoE-offload</td><td>heavier alternative &mdash; more capable, slower on this laptop; <strong>Apache-2.0</strong>; QAT keeps Q4 quality high</td></tr>
+    <tr><td><strong>MedGemma 1.5 4B-IT</strong> (<code>google/medgemma-1.5-4b-it</code>)</td><td>Q4_K_M &asymp; <strong>2.6 GB</strong></td><td>4B dense (Gemma 3 base)</td><td><strong>fits 4 GB VRAM</strong> (full offload) <em>or</em> RAM</td><td><strong>recommended default</strong>: medical-domain fine-tune; multimodal but used <strong>text-only</strong>; <strong>no official GGUF &rarr; convert/quant yourself</strong>; Gemma/HAI-DEF license</td></tr>
+    <tr><td>Gemma 4 26B-A4B-it QAT (Unsloth UD-Q4_K_XL)</td><td>14.2 GB</td><td>25.2B (3.8B active, MoE)</td><td>RAM + ~12&ndash;15 GB headroom; CPU-first or MoE-offload</td><td>heavier alternative: more capable, slower on this laptop; <strong>Apache-2.0</strong>; QAT keeps Q4 quality high</td></tr>
     <tr><td>Gemma 3 1B</td><td>Q4 &asymp; 0.8 GB</td><td>1B dense</td><td>fully in 4 GB VRAM</td><td>ultra-light; weakest, tight slot-filling only</td></tr>
   </tbody>
 </table>
 
-<h3>Getting a MedGemma GGUF (Google ships safetensors only &mdash; there is no official GGUF)</h3>
+<h3>Getting a MedGemma GGUF (Google ships safetensors only: there is no official GGUF)</h3>
 <ul>
   <li><em>convert it yourself</em> (recent llama.cpp):
 <pre><code>python convert_hf_to_gguf.py google/medgemma-1.5-4b-it --outfile medgemma-1.5-4b-it-f16.gguf
 ./llama-quantize medgemma-1.5-4b-it-f16.gguf ~/models/medgemma-1.5-4b-it-Q4_K_M.gguf Q4_K_M</code></pre>
     <strong>or</strong></li>
-  <li><em>use a trusted community quant</em> (e.g. an <code>unsloth</code>/<code>bartowski</code> GGUF, when available) &mdash; verify the publisher and record the SHA.</li>
+  <li><em>use a trusted community quant</em> (e.g. an <code>unsloth</code>/<code>bartowski</code> GGUF, when available): verify the publisher and record the SHA.</li>
   <li>We load the <strong>text</strong> model only (no <code>mmproj</code>/vision projector); the facts&rarr;prose task needs no image input.</li>
-  <li>A medical model volunteers clinical conclusions more readily &mdash; the claim-guard (below) is essential, not optional.</li>
+  <li>A medical model volunteers clinical conclusions more readily: the claim-guard (below) is essential, not optional.</li>
 </ul>
 
 <h3>Running it on 4 GB VRAM (the 4B now fits, unlike the MoE)</h3>
 <ul>
-  <li><em>simplest:</em> <code>n_gpu_layers = 0</code> (pure CPU/RAM), <code>n_ctx = 4096</code> &mdash; always works.</li>
+  <li><em>simplest:</em> <code>n_gpu_layers = 0</code> (pure CPU/RAM), <code>n_ctx = 4096</code>; always works.</li>
   <li><em>fast (now viable for a 4B):</em> <code>TLF_SLM_GPU_LAYERS=999</code> puts the whole ~2.6 GB model on the GPU; drop toward <code>~28</code> if you hit a VRAM OOM (the KV cache + compute buffer also need room).</li>
-  <li><em>for the 26B-A4B alternative instead:</em> keep experts on CPU, offload the backbone &mdash; <code>options(tlf.slm.tensor_overrides = ".ffn_.*_exps.=CPU", tlf.slm.gpu_layers = 999)</code> (recent <code>llama-cpp-python</code>; = llama.cpp <code>--override-tensor ".ffn_.*_exps.=CPU" -ngl 999</code>).</li>
+  <li><em>for the 26B-A4B alternative instead:</em> keep experts on CPU, offload the backbone; <code>options(tlf.slm.tensor_overrides = ".ffn_.*_exps.=CPU", tlf.slm.gpu_layers = 999)</code> (recent <code>llama-cpp-python</code>; = llama.cpp <code>--override-tensor ".ffn_.*_exps.=CPU" -ngl 999</code>).</li>
 </ul>
-<p>Expect tens of tok/s with the 4B on the GPU (or ~5&ndash;15 tok/s CPU-only) &rarr; ~seconds per draft; fine for review-gated batch drafting. Keep <code>n_ctx</code> small (4096) &mdash; the facts+prompt+draft is &lt;1K tokens, so a large context just wastes RAM, and on a busy work laptop (Outlook/Teams/browser open) close heavy apps to avoid swap.</p>
-<p>Install once in a user venv: <code>pip install llama-cpp-python</code>; drop the <code>.gguf</code> on disk; point <code>tlf.slm.model_path</code> at it. No admin, no daemon, no network. If even <code>reticulate</code> is blocked, the same wheel exposes a local OpenAI-compatible server (<code>python -m llama_cpp.server</code>) on <code>localhost</code> &mdash; but in-process reticulate is preferred (no port, no process to manage).</p>
+<p>Expect tens of tok/s with the 4B on the GPU (or ~5&ndash;15 tok/s CPU-only) &rarr; ~seconds per draft; fine for review-gated batch drafting. Keep <code>n_ctx</code> small (4096): the facts+prompt+draft is &lt;1K tokens, so a large context just wastes RAM, and on a busy laptop (mail, chat and a browser open) close heavy apps to avoid swap.</p>
+<p>Install once in a user venv: <code>pip install llama-cpp-python</code>; drop the <code>.gguf</code> on disk; point <code>tlf.slm.model_path</code> at it. No admin, no daemon, no network. If even <code>reticulate</code> is blocked, the same wheel exposes a local OpenAI-compatible server (<code>python -m llama_cpp.server</code>) on <code>localhost</code>, but in-process reticulate is preferred (no port, no process to manage).</p>
 
 <h2>Honest limits</h2>
 <ul>
-  <li>Small local models are <em>weak writers</em>; this is <strong>draft-assist + validate</strong>, never autonomous authoring. The guardrails (number-validation + human gate), not the model's competence, are what make it safe.</li>
-  <li>The numeric validator catches <em>fabricated/altered numbers</em>; it does not certify the <em>clinical correctness</em> of the interpretation &mdash; that is the reviewer's job (the claim guard only surfaces risky phrasings). Two specific boundaries the reviewer must cover: (a) it checks each number <em>exists</em> in the facts, not that it is <em>attached to the right quantity</em> &mdash; a model could pair a valid number with the wrong noun (&ldquo;1 death&rdquo; when the <code>1</code> was actually the SAE count); (b) spelled-out numbers (&ldquo;twenty-four&rdquo;) bypass the digit regex &mdash; the prompt requires digits, but the human gate is the backstop.</li>
+  <li>Small local models are <em>weak writers</em>; this is <strong>draft-assist + validate</strong>, never autonomous authoring. The controls are the guardrails (number-validation + human gate), not the model's competence.</li>
+  <li>The numeric validator catches <em>fabricated/altered numbers</em>; it does not certify the <em>clinical correctness</em> of the interpretation, that is the reviewer's job (the claim guard only surfaces risky phrasings). Two specific boundaries the reviewer must cover: (a) it checks each number <em>exists</em> in the facts, not that it is <em>attached to the right quantity</em>; a model could pair a valid number with the wrong noun (&ldquo;1 death&rdquo; when the <code>1</code> was actually the SAE count); (b) spelled-out numbers (&ldquo;twenty-four&rdquo;) bypass the digit regex; the prompt requires digits, but the human gate is the backstop.</li>
   <li>It does not, and must not, generate any regulated/reported number. Tables/figures shown are the validated outputs.</li>
   <li>Not validated software; treat outputs as draft text for human authoring, under ops governance.</li>
 </ul>
@@ -218,7 +221,7 @@ quarto render interpret_tlf.qmd</code></pre>
 
 <h2 id="code">Browse the code</h2>
 
-<h3>R/ &mdash; pipeline scripts</h3>
+<h3>R/: pipeline scripts</h3>
 <div class="files">
   <a href="R/slm_client.R"><code>R/slm_client.R</code><span class="d">on-prem SLM client: reticulate &rarr; llama-cpp-python (GGUF, in-process); temp 0; fixed seed; audit; STUB fallback</span></a>
   <a href="R/extract_facts.R"><code>R/extract_facts.R</code><span class="d">deterministic per-TLF fact extractors (AE overview, PK parameters, ...)</span></a>
@@ -239,14 +242,14 @@ quarto render interpret_tlf.qmd</code></pre>
 </div>
 
 <h2 id="trouble">Troubleshooting</h2>
-<p>Real failure modes from <code>R/slm_client.R</code> and <code>README.md</code> &mdash; symptom &rarr; why &rarr; fix.</p>
+<p>Real failure modes from <code>R/slm_client.R</code> and <code>README.md</code>: symptom &rarr; why &rarr; fix.</p>
 <table class="t">
   <thead><tr><th style="width:30%">Symptom</th><th style="width:34%">Why</th><th>Fix</th></tr></thead>
   <tbody>
     <tr>
       <td>Drafts come out as <code>[STUB DRAFT - no local SLM installed]</code></td>
       <td>No model loaded, so the client fell back to the deterministic STUB. <code>slm_model()</code> returns <code>NULL</code> when <code>reticulate</code> is missing, <code>llama_cpp</code> isn't importable in the active Python, <em>or</em> the GGUF file isn't found.</td>
-      <td>Confirm all three: <code>install.packages("reticulate")</code>; in the venv <code>pip install llama-cpp-python</code> (and point reticulate at that venv); set <code>TLF_SLM_GGUF</code> to an existing <code>.gguf</code>. Expected &mdash; the selftest deliberately runs in STUB mode.</td>
+      <td>Confirm all three: <code>install.packages("reticulate")</code>; in the venv <code>pip install llama-cpp-python</code> (and point reticulate at that venv); set <code>TLF_SLM_GGUF</code> to an existing <code>.gguf</code>. Expected: the selftest deliberately runs in STUB mode.</td>
     </tr>
     <tr>
       <td><code>Rscript selftest.R</code> &rarr; <code>cannot open file 'R/validate_interpretation.R'</code></td>
@@ -260,7 +263,7 @@ quarto render interpret_tlf.qmd</code></pre>
     </tr>
     <tr>
       <td>Downloaded a MedGemma repo but there's no <code>.gguf</code> in it</td>
-      <td>Google ships MedGemma as <strong>safetensors only</strong> &mdash; there is no official GGUF.</td>
+      <td>Google ships MedGemma as <strong>safetensors only</strong>: there is no official GGUF.</td>
       <td>Convert it (<code>convert_hf_to_gguf.py</code> &rarr; <code>llama-quantize … Q4_K_M</code>) or use a trusted community quant; verify the publisher and record the SHA. Then point <code>tlf.slm.model_path</code> at the result.</td>
     </tr>
     <tr>
@@ -276,7 +279,7 @@ quarto render interpret_tlf.qmd</code></pre>
     <tr>
       <td>A draft passed the numeric check but states a wrong clinical claim (e.g. a number paired with the wrong quantity)</td>
       <td>By design: the validator checks each number <em>exists</em> in the facts, not that it's attached to the right noun; it does not certify clinical correctness.</td>
-      <td>This is exactly what the <strong>mandatory human gate</strong> covers &mdash; the biostatistician reviews and signs off. The claim guard only surfaces risky phrasings (efficacy / causal / &ldquo;well tolerated&rdquo;); never treat a passing draft as a reported result.</td>
+      <td>This is exactly what the <strong>mandatory human gate</strong> covers: the biostatistician reviews and signs off. The claim guard only surfaces risky phrasings (efficacy / causal / &ldquo;well tolerated&rdquo;); never treat a passing draft as a reported result.</td>
     </tr>
     <tr>
       <td>Quarto report won't re-render after editing R code</td>
@@ -287,7 +290,7 @@ quarto render interpret_tlf.qmd</code></pre>
 </table>
 
 <footer>
-  TLF Interpretation Drafter &mdash; Quarto + on-prem SLM (default: MedGemma 1.5 4B). Design + runnable skeleton, not validated software. The SLM never sources a number; every draft is number-validated and human-gated. Backend is <code>reticulate</code> &rarr; <code>llama-cpp-python</code> (GGUF, in-process) &mdash; <strong>not Ollama</strong>.
+  TLF Interpretation Drafter: Quarto + on-prem SLM (default: MedGemma 1.5 4B). Design + runnable skeleton, not validated software. The SLM never sources a number; every draft is number-validated and human-gated. Backend is <code>reticulate</code> &rarr; <code>llama-cpp-python</code> (GGUF, in-process), <strong>not Ollama</strong>.
 </footer>
 
 </div>

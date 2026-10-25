@@ -73,7 +73,7 @@ ttl <- tfl_titles(
   pop  = "Safety Population",
   foot = paste("A participant is counted once at their MAXIMUM severity within each",
                "SOC and Preferred Term. Severity per investigator (Mild/Moderate/Severe).",
-               "% = participants / N in arm. MedDRA v27.0."))
+               "% = participants / N in arm. {meddra}."))
 
 ## rtables: split_cols_by(TRT01A) then nested split_cols_by(severity);
 ## split_rows_by(AESOC) with PT analyzed within (indent level 2).

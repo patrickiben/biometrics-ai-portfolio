@@ -1,5 +1,5 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>TRIALMON — Interactive Monitoring Dashboard (SYNTHETIC)</title>
+<title>TRIALMON: Interactive Monitoring Dashboard (SYNTHETIC)</title>
 <style>
 :root{
   /* St. Petersburg-console DARK theme */
@@ -150,7 +150,7 @@ circle.subj:hover{stroke:#0f1722;stroke-width:2.4}
 .foot{font-size:11.5px;color:var(--muted);padding:0 4% 40px;line-height:1.6}.foot .fr{border-top:1px solid var(--line);margin-top:6px;padding-top:14px;max-width:1100px}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
 @media(max-width:1080px){.kpis{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:780px){.grid{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}header h1{font-size:18px}}
+@media(max-width:780px){.grid{grid-template-columns:minmax(0,1fr)}.card{min-width:0}.card table{display:block;overflow-x:auto}.kpis{grid-template-columns:repeat(2,1fr)}header h1{font-size:18px}}
 /* ===================== DARK CONSOLE OVERRIDES ===================== */
 header{background:linear-gradient(120deg,#0a1626 0%,#102740 55%,#16365a 100%);border-bottom:1px solid #20364f}
 .ribbon{background:rgba(226,101,90,.07);border-color:var(--red-bd)}
@@ -189,9 +189,10 @@ table.mx tbody tr:hover{background:var(--surface-2)}
 .smc .t .mini,.sevtag{color:#fff}
 </style></head>
 <body>
-<header><div class="row"><div class="mark">T</div><h1>TRIALMON — Interactive Monitoring Dashboard</h1><span class="sy">SYNTHETIC</span></div>
-<span class="tag">The deterministic backbone, made visible · the validated monitoring view · longitudinal (per-visit) detail</span></header>
-<div class="ribbon"><span class="ic">&#9888;</span><div><b>The deterministic checks are the validated backbone</b> — pre-specified thresholds; a flag is a <i>screening prompt</i>, the medical monitor / SRC / covering biostatistician decide; reported numbers (incidence tables, the ICH&nbsp;E14 table, central reads, MTD, final disposition) come only from validated tools (Phoenix WinNonlin / Pinnacle&nbsp;21), never this dashboard. Data is <b>synthetic and illustrative</b> — no real participants, no PHI, no treatment unblinding. Thresholds/SLAs/windows shown are illustrative; the live version reads protocol/SAP limits.</div></div>
+<header><div class="row"><div class="mark">T</div><h1>TRIALMON: Interactive Monitoring Dashboard</h1><span class="sy">SYNTHETIC</span></div>
+<span class="tag">The deterministic backbone, made visible · a synthetic teaching view · longitudinal (per-visit) detail</span></header>
+<div class="ribbon"><span class="ic">&#9888;</span><div><b>Known issue, being fixed.</b> Participant CP101-009 (ALT 4.2x and AST 3.6x ULN, total bilirubin 1.6x ULN) shows GREEN here. FDA&rsquo;s DILI guidance (2009) calls for repeat ALT, AST, ALP and total bilirubin within 48 to 72 hours of an aminotransferase above 3x ULN, so this case should be flagged for review. The next revision corrects the rule; read this page for layout, not for the clinical rules. <a href="../index.html">Back to the home page</a>.</div></div>
+<div class="ribbon"><span class="ic">&#9888;</span><div><b>The deterministic checks are the screening backbone</b>: pre-specified thresholds; a flag is a <i>screening prompt</i>, the medical monitor / SRC / covering biostatistician decide; reported numbers (incidence tables, the ICH&nbsp;E14 table, central reads, MTD, final disposition) come from validated, double-programmed programs (Pinnacle&nbsp;21 checks conformance only), never this dashboard. Data is <b>synthetic and illustrative</b>, no real participants, no PHI, no treatment unblinding. Thresholds/SLAs/windows shown are illustrative; the live version reads protocol/SAP limits.</div></div>
 <div class="statusband" id="statusband"></div>
 <div class="kpis" id="kpis"></div>
 <nav class="subnav" id="subnav" aria-label="Sections"></nav>
@@ -201,10 +202,10 @@ table.mx tbody tr:hover{background:var(--surface-2)}
 <div id="modal"><div class="mbox" id="mbox"></div></div>
 <script>
 /* =========================================================================
-   TRIALMON deterministic monitoring dashboard — SYNTHETIC, self-contained.
+   TRIALMON deterministic monitoring dashboard: SYNTHETIC, self-contained.
    Longitudinal per-visit model. Backward-compatible: every per-visit series'
    worst on-treatment value == the original summary value (same SEED), so the
-   eDISH/QTcF/AE panels never contradict. SCREENING flags only — humans decide.
+   eDISH/QTcF/AE panels never contradict. SCREENING flags only: humans decide.
    ========================================================================= */
 const SEED=20260611;function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
 let rnd=mulberry32(SEED);function rn(m,s){let u=0,v=0;while(!u)u=rnd();while(!v)v=rnd();return m+s*Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}
@@ -227,18 +228,18 @@ for(const [c,dose,k] of COH){for(let j=0;j<k;j++){n++;const id='CP101-'+String(n
 const byId=o=>S.find(s=>s.id===o);
 /* ---------- PLANTED SIGNALS (preserve exactly) ---------- */
 Object.assign(byId('CP101-014'),{alt:5.6,ast:4.9,tbl:3.1,alp:1.4,dltfl:'Y',dlteval:'Y',note:'Hy’s-Law screening position (RED): ALT 5.6× & TBili 3.1×. R-ratio 4.0 = MIXED pattern (not hepatocellular). Also an adjudicated DLT.'});
-Object.assign(byId('CP101-009'),{alt:4.2,ast:3.6,tbl:1.6,alp:1.2,note:'ALT 4.2× but TBili 1.6× (<2×) → NOT a Hy’s-Law position — the AND-gate. Sits lower-right (Temple’s-Corollary region: ALT without bili). GREEN every visit.'});
-Object.assign(byId('CP101-018'),{qt:503,dqt:41,qbase:462,note:'QTcF 503 ms (>500) — RED tier at an on-treatment visit (as-collected, pending ECG QC). Baseline 462 was already in the watch band (not a drug effect).'});
-Object.assign(byId('CP101-006'),{qt:486,dqt:33,qbase:453,note:'QTcF 486 ms (>480) — AMBER tier (as-collected). Baseline 453 already watch-band.'});
+Object.assign(byId('CP101-009'),{alt:4.2,ast:3.6,tbl:1.6,alp:1.2,note:'ALT 4.2× but TBili 1.6× (<2×) → NOT a Hy’s-Law position: the AND-gate. Sits lower-right (Temple’s-Corollary region: ALT without bili). GREEN every visit.'});
+Object.assign(byId('CP101-018'),{qt:503,dqt:41,qbase:462,note:'QTcF 503 ms (>500): RED tier at an on-treatment visit (as-collected, pending ECG QC). Baseline 462 was already in the watch band (not a drug effect).'});
+Object.assign(byId('CP101-006'),{qt:486,dqt:33,qbase:453,note:'QTcF 486 ms (>480): AMBER tier (as-collected). Baseline 453 already watch-band.'});
 byId('CP101-013').dltfl='Y';byId('CP101-013').dlteval='Y';byId('CP101-013').note='Adjudicated DLT (with 014 → 2/6 in C4).';
 byId('CP101-010').dltfl='Y';byId('CP101-010').dlteval='Y';byId('CP101-010').note='Adjudicated DLT (1/6 in C3).';
-Object.assign(byId('CP101-011'),{alt:2.6,ast:2.4,tbl:1.7,alp:1.3,qt:474,dqt:26,hgb:11.1,neut:1.9,creat:1.28,mv:true,note:'Every univariate value sits BELOW its own action threshold at every visit (QTcF 474 is watch, not AMBER; ALT 2.6× is below 3×; Hgb/ANC sub-Gr2) — GREEN/watch on every deterministic check though several organs drift together. No single univariate rule is crossed, so the backbone correctly does NOT fire; whether such coordinated sub-threshold drift is worth a closer human look is a clinical judgement for the reviewer, not an automated flag.'});
+Object.assign(byId('CP101-011'),{alt:2.6,ast:2.4,tbl:1.7,alp:1.3,qt:474,dqt:26,hgb:11.1,neut:1.9,creat:1.28,mv:true,note:'Every univariate value sits BELOW its own action threshold at every visit (QTcF 474 is watch, not AMBER; ALT 2.6× is below 3×; Hgb/ANC sub-Gr2): GREEN/watch on every deterministic check though several organs drift together. No single univariate rule is crossed, so the backbone correctly does NOT fire; whether such coordinated sub-threshold drift is worth a closer human look is a clinical judgment for the reviewer, not an automated flag.'});
 Object.assign(byId('CP101-012'),{alt:2.3,ast:2.1,tbl:1.4,qt:468,dqt:22,mv:true,ambig:true,note:'Mild co-drift, every value sub-threshold (QTcF 468 = watch). GREEN/watch on every deterministic check.'});
-Object.assign(byId('CP101-003'),{misvisit:true,decoy:'missed-visit',note:'A missed visit (C2D1) — an operational data-completeness gap, NOT a clinical signal. A missed visit can mean missed safety labs → route to a human; it never means the participant is fine.'});
-Object.assign(byId('CP101-020'),{decoy:'dose-change',note:'A protocol-driven dose adjustment shifted several labs at once at one visit — operational, not clinical; all values stay sub-threshold. GREEN on every clinical check.'});
+Object.assign(byId('CP101-003'),{misvisit:true,decoy:'missed-visit',note:'A missed visit (C2D1): an operational data-completeness gap, NOT a clinical signal. A missed visit can mean missed safety labs → route to a human; it never means the participant is fine.'});
+Object.assign(byId('CP101-020'),{decoy:'dose-change',note:'A protocol-driven dose adjustment shifted several labs at once at one visit: operational, not clinical; all values stay sub-threshold. GREEN on every clinical check.'});
 /* ---------- deterministic derivations (summary; mirror %tm_chk_*) ---------- */
 S.forEach(s=>{
-  s.red_hys=((s.alt>3)||(s.ast>3))&&(s.tbl>2);
+  s.red_hys=((s.alt>=3)||(s.ast>=3))&&(s.tbl>2);
   s.rratio=s.alt/s.alp; s.pattern=s.rratio>=5?'hepatocellular':s.rratio<=2?'cholestatic':'mixed';
   s.rUnstable=(s.alt<1.2||s.alp<1.2);
   s.qsev=(s.qt>500||s.dqt>60)?'RED':(s.qt>480||s.dqt>30)?'AMBER':(s.qt>450?'watch':'GREEN');
@@ -272,7 +273,7 @@ S.forEach(s=>{
   const A=buildSeries(s,altB,s.alt,pv,riser),B=buildSeries(s,astB,s.ast,pv,riser),
         T=buildSeries(s,tblB,s.tbl,tblPV,riser),P=buildSeries(s,alpB,s.alp,pv,false),G=buildSeries(s,ggtB,s.ggt,pv,false);
   s.lftv=s.visits.map((vv,i)=>vv.present?{alt:rr(A[i],2),ast:rr(B[i],2),tbl:rr(T[i],2),alp:rr(P[i],2),ggt:rr(G[i],2),
-     rratio:rr(A[i]/P[i],1),red_hys:((A[i]>3)||(B[i]>3))&&(T[i]>2)}:null);
+     rratio:rr(A[i]/P[i],1),red_hys:((A[i]>=3)||(B[i]>=3))&&(T[i]>2)}:null);
 });
 /* cardiac ECG series */
 S.forEach(s=>{
@@ -314,11 +315,11 @@ S.forEach(s=>{
 /* ---------- AE events (controlled vocab; rollups preserve nae/sae/g3) ---------- */
 const AEDICT=[['Investigations','ALT increased'],['Investigations','AST increased'],['Investigations','Blood bilirubin increased'],['Investigations','Electrocardiogram QT prolonged'],['Investigations','Neutrophil count decreased'],['Investigations','Platelet count decreased'],
 ['Hepatobiliary disorders','Hyperbilirubinaemia'],['Gastrointestinal disorders','Nausea'],['Gastrointestinal disorders','Vomiting'],['Gastrointestinal disorders','Diarrhoea'],['Nervous system disorders','Headache'],['Nervous system disorders','Dizziness'],['General disorders','Fatigue'],['General disorders','Pyrexia'],['Skin disorders','Rash'],['Musculoskeletal disorders','Arthralgia'],['Blood/lymphatic disorders','Anaemia'],['Metabolism disorders','Decreased appetite']];
-const REL=['Not related','Unlikely','Possible','Probable','Related'],SERCRIT=['—','Hospitalisation','Other medically important'];
+const REL=['Not related','Unlikely','Possible','Probable','Related'],SERCRIT=['n/a','Hospitalization','Other medically important'];
 S.forEach(s=>{ const evs=[]; const k=Math.max(0,s.nae); const tox=s.dose/200;
-  for(let e=0;e<k;e++){ const pick=AEDICT[Math.floor(rnd()*AEDICT.length)]; let gr=clamp(Math.round(0.85+rnd()*0.95+tox*0.8),1,3); /* mostly Gr1–2; Gr3 a minority — planted constellations carry the high grades */
+  for(let e=0;e<k;e++){ const pick=AEDICT[Math.floor(rnd()*AEDICT.length)]; let gr=clamp(Math.round(0.85+rnd()*0.95+tox*0.8),1,3); /* mostly Gr1–2; Gr3 a minority: planted constellations carry the high grades */
     const onset=Math.max(1,Math.round(rn(14,12))); const dur=Math.round(clamp(rn(7,6),1,40));
-    evs.push({soc:pick[0],pt:pick[1],grade:gr,onset,resolution:onset+dur,teae:onset>=1,serious:false,serCrit:'—',rel:REL[Math.min(REL.length-1,Math.floor(rnd()*REL.length))],expected:rnd()<.75}); }
+    evs.push({soc:pick[0],pt:pick[1],grade:gr,onset,resolution:onset+dur,teae:onset>=1,serious:false,serCrit:'n/a',rel:REL[Math.min(REL.length-1,Math.floor(rnd()*REL.length))],expected:rnd()<.75}); }
   // honor existing rollup flags
   if(s.g3&&!evs.some(x=>x.grade>=3)&&evs[0])evs[0].grade=3;
   if(s.sae&&!evs.some(x=>x.serious)&&evs[0]){evs[0].serious=true;evs[0].serCrit=SERCRIT[1+Math.floor(rnd()*2)];}
@@ -327,34 +328,34 @@ S.forEach(s=>{ const evs=[]; const k=Math.max(0,s.nae); const tox=s.dose/200;
 // planted AE constellations
 function setAE(id,arr){const s=byId(id);if(s)s.ae=arr;}
 setAE('CP101-014',[{soc:'Investigations',pt:'ALT increased',grade:3,onset:18,resolution:null,teae:true,serious:true,serCrit:'Other medically important',rel:'Related',expected:false},
- {soc:'Investigations',pt:'AST increased',grade:3,onset:18,resolution:null,teae:true,serious:false,serCrit:'—',rel:'Related',expected:false},
+ {soc:'Investigations',pt:'AST increased',grade:3,onset:18,resolution:null,teae:true,serious:false,serCrit:'n/a',rel:'Related',expected:false},
  {soc:'Hepatobiliary disorders',pt:'Hyperbilirubinaemia',grade:3,onset:22,resolution:null,teae:true,serious:true,serCrit:'Other medically important',rel:'Related',expected:false},
- {soc:'General disorders',pt:'Fatigue',grade:2,onset:16,resolution:30,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
-setAE('CP101-013',[{soc:'Investigations',pt:'Neutrophil count decreased',grade:4,onset:15,resolution:24,teae:true,serious:true,serCrit:'Hospitalisation',rel:'Related',expected:true},
- {soc:'General disorders',pt:'Pyrexia',grade:2,onset:16,resolution:19,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
-setAE('CP101-010',[{soc:'Investigations',pt:'Platelet count decreased',grade:3,onset:12,resolution:26,teae:true,serious:false,serCrit:'—',rel:'Probable',expected:true},
- {soc:'Gastrointestinal disorders',pt:'Nausea',grade:1,onset:9,resolution:12,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
-setAE('CP101-018',[{soc:'Investigations',pt:'Electrocardiogram QT prolonged',grade:3,onset:29,resolution:38,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:false},
- {soc:'Nervous system disorders',pt:'Dizziness',grade:2,onset:28,resolution:35,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
-setAE('CP101-006',[{soc:'Investigations',pt:'Electrocardiogram QT prolonged',grade:2,onset:22,resolution:36,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:false}]);
-setAE('CP101-009',[{soc:'Investigations',pt:'ALT increased',grade:2,onset:15,resolution:34,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]); /* the eDISH near-miss: real ALT bump, NOT serious — stays silent in the worklist */
-setAE('CP101-011',[{soc:'Gastrointestinal disorders',pt:'Nausea',grade:1,onset:8,resolution:14,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true},
- {soc:'General disorders',pt:'Fatigue',grade:2,onset:15,resolution:40,teae:true,serious:false,serCrit:'—',rel:'Possible',expected:true}]);
+ {soc:'General disorders',pt:'Fatigue',grade:2,onset:16,resolution:30,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:true}]);
+setAE('CP101-013',[{soc:'Investigations',pt:'Neutrophil count decreased',grade:4,onset:15,resolution:24,teae:true,serious:true,serCrit:'Hospitalization',rel:'Related',expected:true},
+ {soc:'General disorders',pt:'Pyrexia',grade:2,onset:16,resolution:19,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:true}]);
+setAE('CP101-010',[{soc:'Investigations',pt:'Platelet count decreased',grade:3,onset:12,resolution:26,teae:true,serious:false,serCrit:'n/a',rel:'Probable',expected:true},
+ {soc:'Gastrointestinal disorders',pt:'Nausea',grade:1,onset:9,resolution:12,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:true}]);
+setAE('CP101-018',[{soc:'Investigations',pt:'Electrocardiogram QT prolonged',grade:3,onset:29,resolution:38,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:false},
+ {soc:'Nervous system disorders',pt:'Dizziness',grade:2,onset:28,resolution:35,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:true}]);
+setAE('CP101-006',[{soc:'Investigations',pt:'Electrocardiogram QT prolonged',grade:2,onset:22,resolution:36,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:false}]);
+setAE('CP101-009',[{soc:'Investigations',pt:'ALT increased',grade:2,onset:15,resolution:34,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:true}]); /* the eDISH near-miss: real ALT bump, NOT serious; stays silent in the worklist */
+setAE('CP101-011',[{soc:'Gastrointestinal disorders',pt:'Nausea',grade:1,onset:8,resolution:14,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:true},
+ {soc:'General disorders',pt:'Fatigue',grade:2,onset:15,resolution:40,teae:true,serious:false,serCrit:'n/a',rel:'Possible',expected:true}]);
 // re-derive rollups so existing panels stay exact
 S.forEach(s=>{ s.nae=s.ae.filter(a=>a.teae).length; s.sae=s.ae.some(a=>a.serious)?1:0; s.g3=s.ae.some(a=>a.grade>=3)?1:0; });
 /* ---------- disposition + feeds + deviations (controlled vocab) ---------- */
 const DISP={done:'Completed',ong:'Ongoing',dc:'Discontinued'};
-S.forEach((s,idx)=>{ s.enrollDay=-(60-idx*2)+Math.round(rn(0,3)); s.dispStatus='ong'; s.dispReason='—';
+S.forEach((s,idx)=>{ s.enrollDay=-(60-idx*2)+Math.round(rn(0,3)); s.dispStatus='ong'; s.dispReason='n/a';
   if(s.coh==='C1'||s.coh==='C2'){s.dispStatus='done';s.dispReason='Completed per protocol';}
 });
 byId('CP101-014').dispStatus='dc';byId('CP101-014').dispReason='Adverse event';
 byId('CP101-013').dispStatus='dc';byId('CP101-013').dispReason='Adverse event';
-const SCREENFAIL=[{id:'CP101-S01',reason:'Eligibility — lab out of range'},{id:'CP101-S02',reason:'Withdrew consent'}];
+const SCREENFAIL=[{id:'CP101-S01',reason:'Eligibility: lab out of range'},{id:'CP101-S02',reason:'Withdrew consent'}];
 const FEEDS=[['adam.adlb',3,'fresh',6],['adam.adeg',7,'fresh',12],['adam.adae',11,'fresh',24],['safe.sae',5,'fresh',6],['ixrs.rand',38,'stale',24]];
 const DEVI=[{id:'CP101-020',type:'Dosing / IP',sev:'Minor',detail:'Dose adjustment not per schedule window'},
  {id:'CP101-003',type:'Visit / procedure',sev:'Minor',detail:'Missed scheduled visit (C2D1)'},
  {id:'CP101-009',type:'Lab / sample',sev:'Minor',detail:'Repeat LFT drawn out of window'},
- {id:'CP101-S01',type:'Eligibility',sev:'Major',detail:'Enrolled then found ineligible — entry criterion'}];
+ {id:'CP101-S01',type:'Eligibility',sev:'Major',detail:'Enrolled then found ineligible: entry criterion'}];
 /* ---------- analyte metadata: ONE source of truth for CTCAE-style screening bands ---------- */
 const GCOL=['gc0','gc1','gcW','gcA','gcR']; // not used for grade; grade→class below
 const gradeClass=g=>g<=0?'gc0':g===1?'gc1':g===2?'gcA':'gcR';
@@ -371,7 +372,7 @@ function gradeBand(v,m){ if(v==null||!m)return 0; let g=0;
   else { for(let i=0;i<m.cuts.length;i++) if(v< m.cuts[i]) g=i+1; }
   return Math.min(g,m.max); }
 /* ---------- per-visit + worst-on-study derivations ---------- */
-function visClin(s,i){ // worst screening severity at visit i (hepatic AND-gate, cardiac E14 tier) — clinical only
+function visClin(s,i){ // worst screening severity at visit i (hepatic AND-gate, cardiac E14 tier): clinical only
   if(!s.visits[i].present) return 'gap';
   const L=s.lftv[i],E=s.ecgv[i]; let sev='GREEN';
   const rank={GREEN:0,watch:1,AMBER:2,RED:3};
@@ -380,28 +381,28 @@ function visClin(s,i){ // worst screening severity at visit i (hepatic AND-gate,
   return sev;
 }
 S.forEach(s=>{ s.worstByVisit=s.visits.map((vv,i)=>vv.present?visClin(s,i):'gap'); });
-const cohAgg=COH.map(([c,dose,k])=>{const ss=S.filter(s=>s.coh===c);const nd=ss.filter(s=>s.dltfl==='Y').length;const neval=ss.filter(s=>s.dlteval==='Y'||s.dltfl==='Y').length||ss.length;
-  return {c,dose,plannedN:k,n:ss.length,nd,neval,dltsev:nd>=2?'RED':nd===1?'AMBER':'GREEN',nsae:ss.filter(s=>s.sae).length,ng3:ss.filter(s=>s.g3).length,nae:ss.reduce((a,s)=>a+s.nae,0),aesev:ss.some(s=>s.sae||s.g3)?'AMBER':'GREEN'};});
+const cohAgg=COH.map(([c,dose,k])=>{const ss=S.filter(s=>s.coh===c);const nd=ss.filter(s=>s.dltfl==='Y').length;const neval=ss.filter(s=>s.dltfl==='Y'||s.dlteval==='Y'||(s.visits||[]).some((v,i)=>v&&v.present&&VDAY[i]>=DLT_WINDOW_DAY)).length; /* evaluable = DLT, or completed the 28-day window */
+  return {c,dose,plannedN:k,n:ss.length,nd,neval,dltsev:nd>=2?'RED':(nd===1&&neval<6)?'AMBER':'GREEN',nsae:ss.filter(s=>s.sae).length,ng3:ss.filter(s=>s.g3).length,nae:ss.reduce((a,s)=>a+s.nae,0),aesev:ss.some(s=>s.sae||s.g3)?'AMBER':'GREEN'};});
 const sevRank={GREEN:0,watch:0,baselineWatch:0,AMBER:1,RED:2,ERROR:3,gap:0};
 function worst(...a){return a.reduce((w,x)=>sevRank[x]>sevRank[w]?x:w,'GREEN')}
 const anyStale=FEEDS.some(f=>f[2]!=='fresh');
 const STATUS=worst(S.some(s=>s.red_hys)?'RED':'GREEN', S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN', cohAgg.some(c=>c.dltsev==='RED')?'RED':cohAgg.some(c=>c.dltsev==='AMBER')?'AMBER':'GREEN', anyStale?'RED':'GREEN');
-/* ---------- attention worklist: every open AMBER/RED screening flag (watch excluded — not an action tier) ---------- */
+/* ---------- attention worklist: every open AMBER/RED screening flag (watch excluded, not an action tier) ---------- */
 const WL=[];
-S.forEach(s=>{ if(s.red_hys)WL.push({id:s.id,sev:'RED',check:'eDISH / Hy’s-Law screen',val:`ALT ${s.alt.toFixed(1)}× & TBili ${s.tbl.toFixed(1)}× (R ${s.rratio.toFixed(1)} ${s.pattern})`,rule:'(ALT or AST >3×) AND TBili >2×'});
+S.forEach(s=>{ if(s.red_hys)WL.push({id:s.id,sev:'RED',check:'eDISH / Hy’s-Law screen',val:`ALT ${s.alt.toFixed(1)}× & TBili ${s.tbl.toFixed(1)}× (R ${s.rratio.toFixed(1)} ${s.pattern})`,rule:'(ALT or AST ≥3×) AND TBili >2×'});
   if(s.qsev==='RED')WL.push({id:s.id,sev:'RED',check:'QTcF (ICH E14 screen)',val:`${s.qt} ms · Δ${s.dqt.toFixed(0)}`,rule:'QTcF >500 or Δ>60 ms'});
   else if(s.qsev==='AMBER')WL.push({id:s.id,sev:'AMBER',check:'QTcF (ICH E14 screen)',val:`${s.qt} ms · Δ${s.dqt.toFixed(0)}`,rule:'QTcF >480 or Δ>30 ms'});
   if(s.sae)WL.push({id:s.id,sev:'RED',check:'Serious AE recorded',val:s.ae.filter(a=>a.serious).map(a=>a.pt).join(', '),rule:'investigator-recorded seriousness'});
 });
-cohAgg.forEach(c=>{ if(c.dltsev==='RED')WL.push({id:c.c+' cohort',sev:'RED',check:'Adjudicated DLT count vs 3+3',val:`${c.nd}/${c.neval} evaluable`,rule:'≥2 DLT in cohort → rule satisfied'});
-  else if(c.dltsev==='AMBER')WL.push({id:c.c+' cohort',sev:'AMBER',check:'Adjudicated DLT count vs 3+3',val:`${c.nd}/${c.neval} evaluable`,rule:'1 DLT in cohort'}); });
+cohAgg.forEach(c=>{ if(c.dltsev==='RED')WL.push({id:c.c+' cohort',sev:'RED',check:'Adjudicated DLT count vs 3+3',val:`${c.nd}/${c.neval} evaluable`,rule:'≥2 DLT in cohort: MTD exceeded at this dose'});
+  else if(c.dltsev==='AMBER')WL.push({id:c.c+' cohort',sev:'AMBER',check:'Adjudicated DLT count vs 3+3',val:`${c.nd}/${c.neval} evaluable`,rule:'1 DLT, fewer than 6 evaluable: expand to 6'}); });
 if(anyStale)WL.push({id:'data pipeline',sev:'RED',check:'Stale feed (green-on-stale → RED)',val:FEEDS.filter(f=>f[2]!=='fresh').map(f=>`${f[0]} ${f[1]}h`).join(', '),rule:'a GREEN built on stale data is escalated to RED'});
 const wlRank={RED:0,AMBER:1};WL.sort((a,b)=>wlRank[a.sev]-wlRank[b.sev]);
-/* 3+3 escalation state (trigger/pending framing — the dashboard NEVER decides) */
+/* 3+3 escalation state (trigger/pending framing: the dashboard NEVER decides) */
 function dltState(c){ const open=c.c==='C4'||c.c==='C5'; // last cohorts still in window (illustrative)
-  if(c.nd>=2) return {label:'MTD-exceeded TRIGGER — SRC decision pending',cls:'RED'};
-  if(c.nd===1) return {label:'1 DLT — expansion/▲ rule check, SRC decides',cls:'AMBER'};
-  return {label:open?'DLT window open — accruing':'0/'+c.neval+' — escalation-eligible, SRC decides',cls:'GREEN'}; }
+  if(c.nd>=2) return {label:'MTD-exceeded TRIGGER: SRC decision pending',cls:'RED'};
+  if(c.nd===1) return c.neval>=6?{label:'1/'+c.neval+': escalation-eligible, SRC decides',cls:'GREEN'}:{label:'1/'+c.neval+': expand the cohort to 6, SRC decides',cls:'AMBER'};
+  return {label:open?'DLT window open: accruing':'0/'+c.neval+': escalation-eligible, SRC decides',cls:'GREEN'}; }
 
 /* ============================ HELPERS ============================ */
 const $=id=>document.getElementById(id);
@@ -421,13 +422,13 @@ function sparkline(series,o){ o=o||{}; const w=o.w||168,h=o.h||44,pl=4,pr=4,pt=6
   if(o.baselineIdx!=null&&series[o.baselineIdx]!=null)g+=`<circle cx="${X(o.baselineIdx)}" cy="${Y(series[o.baselineIdx])}" r="2.4" fill="none" stroke="#8aa" stroke-width="1.4"/>`;
   return `<svg viewBox="0 0 ${w} ${h}">${g}</svg>`;
 }
-const govLine='<div class="gov">Screening flags on synthetic data — a prompt for a human, not a determination or reportable number. Reported numbers come from validated tools (Phoenix WinNonlin / Pinnacle 21).</div>';
+const govLine='<div class="gov">Screening flags on synthetic data: a prompt for a human, not a determination or reportable number. Reported numbers come from validated, double-programmed programs.</div>';
 
 /* ============================ RENDER: header ============================ */
 $('statusband').innerHTML=`<div class="statuscard"><span class="pill ${STATUS}">${STATUS}</span><div><div class="lbl">Study status</div><div class="val">worst-of-all checks</div></div></div>`+
   `<span class="meta">Study <b>CP-101</b> (synthetic) · run <b>2026-06-11 06:00</b> · <b>${S.length}</b> participants · <b>${VIS.length}</b> visits · longitudinal</span>`+
   `<div class="chips"><span class="chip beat">&#9829; heartbeat 06:00</span>`+FEEDS.map(f=>`<span class="chip ${f[2]}" title="SLA ${f[3]}h">${f[0]} · ${f[1]}h ${f[2]==='fresh'?'':f[2]==='stale'?'STALE':'MISSING'}</span>`).join('')+`</div>`+
-  `<div class="freshnote"><span>&#9888;</span><span><b>Freshness:</b> one feed is STALE — a green built on stale data is the most dangerous state, so study status is escalated to RED.</span></div>`;
+  `<div class="freshnote"><span>&#9888;</span><span><b>Freshness:</b> one feed is STALE; a green built on stale data is the most dangerous state, so study status is escalated to RED.</span></div>`;
 
 /* KPI tiles */
 const nRED=WL.filter(w=>w.sev==='RED').length,nAMB=WL.filter(w=>w.sev==='AMBER').length,nSAE=S.filter(s=>s.sae).length,nDLT=S.filter(s=>s.dltfl==='Y').length;
@@ -448,37 +449,37 @@ const SECTIONS=[];
 function reg(id,label,badge,fn){SECTIONS.push({id,label,badge,fn});}
 
 /* ---------- OVERVIEW ---------- */
-function ovWorklist(){ const rows=WL.length?WL.map(w=>`<div class="wlrow ${w.sev}" ${byId(w.id)?`data-id="${w.id}"`:''}><span class="who">${w.id}</span><span class="what"><b>${w.check}</b> — ${w.val} <span style="color:#64758c">· rule: ${w.rule}</span></span><span class="sevtag ${w.sev}">${w.sev}</span></div>`).join(''):'<div class="wlempty">No open AMBER/RED screening flags. (Watch-tier QTcF and the multivariate-only / operational participants are intentionally NOT here — that silence is the point: the backbone fires only on a crossed action threshold.)</div>';
-  return `<div class="card wide"><div class="ch"><h3>Attention worklist — open screening flags</h3><span class="sevtag RED">${WL.filter(w=>w.sev==='RED').length} RED</span><span class="sevtag AMBER">${WL.filter(w=>w.sev==='AMBER').length} AMBER</span></div><p class="cap">Every current AMBER/RED screening flag across all checks, highest-severity first. Click a participant row to open its evidence packet. This is a triage queue — not a reportable safety list; <b>watch</b>-tier is not an action tier and is excluded.</p><div class="wl">${rows}</div>${govLine}</div>`; }
+function ovWorklist(){ const rows=WL.length?WL.map(w=>`<div class="wlrow ${w.sev}" ${byId(w.id)?`data-id="${w.id}"`:''}><span class="who">${w.id}</span><span class="what"><b>${w.check}</b>: ${w.val} <span style="color:#64758c">· rule: ${w.rule}</span></span><span class="sevtag ${w.sev}">${w.sev}</span></div>`).join(''):'<div class="wlempty">No open AMBER/RED screening flags. (Watch-tier QTcF and the multivariate-only / operational participants are intentionally NOT here, that silence is the point: the backbone fires only on a crossed action threshold.)</div>';
+  return `<div class="card wide"><div class="ch"><h3>Attention worklist: open screening flags</h3><span class="sevtag RED">${WL.filter(w=>w.sev==='RED').length} RED</span><span class="sevtag AMBER">${WL.filter(w=>w.sev==='AMBER').length} AMBER</span></div><p class="cap">Every current AMBER/RED screening flag across all checks, highest-severity first. Click a participant row to open its evidence packet. This is a triage queue, not a reportable safety list; <b>watch</b>-tier is not an action tier and is excluded.</p><div class="wl">${rows}</div>${govLine}</div>`; }
 function ovFreshness(){ const run='2026-06-11 06:00'; const rows=FEEDS.map(f=>{const ageOK=f[1]<=f[3];const cls=f[2]==='fresh'?'GREEN':f[2]==='stale'?'AMBER':'RED';
    const ticks=Array.from({length:10},(_,i)=>{const stale=f[2]!=='fresh'&&i>=8;return `<span style="display:inline-block;width:7px;height:13px;border-radius:2px;margin:0 1px;background:${stale?'#e7e0d0':'#'+(i<8?'9cc6ab':'cdd6e1')}"></span>`;}).join('');
    return `<tr><td><b>${f[0]}</b></td><td>${f[1]} h</td><td>${f[3]} h</td><td>${ticks}</td><td><span class="sevtag ${cls==='GREEN'?'GREEN':cls==='AMBER'?'AMBER':'RED'}">${f[2]==='fresh'?'FRESH':f[2]==='stale'?'STALE → RED':'MISSING'}</span></td></tr>`;}).join('');
-  return `<div class="card"><div class="ch"><h3>Data freshness &amp; load SLA</h3><span class="sevtag RED">escalated</span></div><p class="cap">Per-feed age vs SLA + load-tick history (run ${run}). <b>This is pipeline freshness</b> (load recency), distinct from data-content QC (Pinnacle 21). The core rule: any panel that would render GREEN on a <b>stale</b> feed is forced to RED — a green built on stale data is the most dangerous state.</p><table class="mx"><tr><th>Feed</th><th>Age</th><th>SLA</th><th>Load history</th><th>State</th></tr>${rows}</table></div>`; }
+  return `<div class="card"><div class="ch"><h3>Data freshness &amp; load SLA</h3><span class="sevtag RED">escalated</span></div><p class="cap">Per-feed age vs SLA + load-tick history (run ${run}). <b>This is pipeline freshness</b> (load recency), distinct from data-content QC (Pinnacle 21). The core rule: any panel that would render GREEN on a <b>stale</b> feed is forced to RED; a green built on stale data is the most dangerous state.</p><table class="mx"><tr><th>Feed</th><th>Age</th><th>SLA</th><th>Load history</th><th>State</th></tr>${rows}</table></div>`; }
 function ovHeatmap(){ let head='<tr><th class="rh">Participant</th>'+VIS.map(v=>`<th>${v}</th>`).join('')+'</tr>';
-  const rows=S.map(s=>{ const cells=s.worstByVisit.map((sev,i)=>{ if(!s.visits[i].present)return `<td class="gap" title="missed/absent visit — operational">·</td>`;
+  const rows=S.map(s=>{ const cells=s.worstByVisit.map((sev,i)=>{ if(!s.visits[i].present)return `<td class="gap" title="missed/absent visit: operational">·</td>`;
      const cls=sev==='RED'?'gcR':sev==='AMBER'?'gcA':sev==='watch'?'gcW':sev==='baselineWatch'?'gcW':'gc0'; const bl=i<=1?' bl':'';
      const lab=sev==='RED'?'R':sev==='AMBER'?'A':sev==='watch'?'w':sev==='baselineWatch'?'b':'';
      return `<td class="${cls}${bl}" data-id="${s.id}" title="${s.id} ${VIS[i]}: ${sev}${sev==='baselineWatch'?' (baseline, not drug effect)':''}">${lab}</td>`; }).join('');
    return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
-  return `<div class="card wide"><div class="ch"><h3>Study heatmap — worst screening flag by participant × visit</h3></div><p class="cap">Each cell = worst deterministic clinical screening severity at that visit (hepatic AND-gate + QTcF E14 tier). <b>R</b> RED · <b>A</b> AMBER · <b>w</b> watch · <b>b</b> baseline-watch (ringed; not a drug effect) · hatched = missed/absent visit (operational, never read as “fine”). The when-did-it-start view. Click a cell/participant. ${''}</p><div class="heatwrap"><table class="heat">${head}${rows}</table></div>${govLine}</div>`; }
+  return `<div class="card wide"><div class="ch"><h3>Study heatmap: worst screening flag by participant × visit</h3></div><p class="cap">Each cell = worst deterministic clinical screening severity at that visit (hepatic AND-gate + QTcF E14 tier). <b>R</b> RED · <b>A</b> AMBER · <b>w</b> watch · <b>b</b> baseline-watch (ringed; not a drug effect) · hatched = missed/absent visit (operational, never read as “fine”). The when-did-it-start view. Click a cell/participant. ${''}</p><div class="heatwrap"><table class="heat">${head}${rows}</table></div>${govLine}</div>`; }
 /* ---------- ranking bars + scenario simulator (St-Pete console elements) ---------- */
 function ovRanking(){ const rows=cohAgg.map(c=>({c:c.c,dose:c.dose,nd:c.nd,nsae:c.nsae,ng3:c.ng3,nae:c.nae,sev:c.dltsev,score:c.nd*3+c.nsae*2+c.ng3+c.nae*0.1})).sort((a,b)=>b.score-a.score);
   const max=Math.max(...rows.map(r=>r.score),1);
   const bars=rows.map(r=>{const w=Math.max(4,Math.round(r.score/max*100));const col=r.sev==='RED'?'var(--red)':r.sev==='AMBER'?'var(--amber)':'var(--brand)';
    return `<div style="margin:8px 0"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span><b>${r.c}</b> &middot; ${r.dose} mg</span><span style="color:var(--muted)">${r.nd} DLT &middot; ${r.nsae} SAE &middot; ${r.nae} TEAE</span></div><div style="height:14px;background:#0f1a2c;border-radius:5px;overflow:hidden"><div style="height:100%;width:${w}%;background:${col};border-radius:5px"></div></div></div>`;}).join('');
-  return `<div class="card"><div class="ch"><h3>Cohort signal ranking</h3></div><p class="cap">Cohorts ordered by a composite of adjudicated-DLT, serious-AE and Gr&ge;3 counts &mdash; a <b>look-here-first ordering</b> for SRC review, never an escalation decision. Weights are illustrative.</p>${bars}</div>`; }
-function scenResult(k){ const base={status:STATUS,pages:WL.filter(w=>w.sev==='RED').length,note:'The current seeded state &mdash; one stale feed plus the eDISH and DLT REDs already drive study status to RED.'};
-  const D={ feed:['RED',1,'A second feed goes missing overnight &mdash; the freshness gate forces RED and the watchdog confirms the job ran on incomplete data. A green built on stale data is the most dangerous state, so it pages the backup.'],
+  return `<div class="card"><div class="ch"><h3>Cohort signal ranking</h3></div><p class="cap">Cohorts ordered by a composite of adjudicated-DLT, serious-AE and Gr&ge;3 counts: a <b>look-here-first ordering</b> for SRC review, never an escalation decision. Weights are illustrative.</p>${bars}</div>`; }
+function scenResult(k){ const base={status:STATUS,pages:WL.filter(w=>w.sev==='RED').length,note:'The current seeded state: one stale feed plus the eDISH and DLT REDs already drive study status to RED.'};
+  const D={ feed:['RED',1,'A second feed goes missing overnight: the freshness gate forces RED and the watchdog confirms the job ran on incomplete data. A green built on stale data is the most dangerous state, so it pages the backup.'],
    dlt:['RED',1,'C5 reaches a 2nd adjudicated DLT &rarr; the 3+3 rule is satisfied (an MTD-exceeded TRIGGER). The dashboard surfaces it; the SRC makes the escalation call, never the automation.'],
-   qt:['RED',1,'A new QTcF at or above 500 ms &rarr; a tier-2 RED on the ICH&nbsp;E14 screen, paged with an evidence packet. As-collected and pending ECG QC &mdash; a screening prompt, not a diagnosis.'] };
+   qt:['RED',1,'A new QTcF at or above 500 ms &rarr; a tier-2 RED on the ICH&nbsp;E14 screen, paged with an evidence packet. As-collected and pending ECG QC: a screening prompt, not a diagnosis.'] };
   if(k==='base'||!D[k])return base; return {status:D[k][0],pages:base.pages+D[k][1],note:D[k][2]}; }
 function scenOutHTML(r){ return `<div style="display:flex;align-items:center;gap:11px;margin-bottom:8px"><span class="pill ${r.status}">${r.status}</span><span style="font-size:13px"><b>${r.pages}</b> RED &rarr; tier-2 page${r.pages===1?'':'s'}</span></div><p class="cap" style="margin:0">${r.note}</p>`; }
-function ovScenario(){ const opts=[['base','Baseline — today, as-seeded'],['feed','+ Overnight feed fails (a 2nd missing feed)'],['dlt','+ A 2nd adjudicated DLT lands in C5'],['qt','+ A new QTcF 505 ms appears']];
+function ovScenario(){ const opts=[['base','Baseline: today, as-seeded'],['feed','+ Overnight feed fails (a 2nd missing feed)'],['dlt','+ A 2nd adjudicated DLT lands in C5'],['qt','+ A new QTcF 505 ms appears']];
   return `<div class="card"><div class="ch"><h3>Scenario simulator</h3><span class="sevtag plain">WHAT-IF</span></div>
-   <p class="cap">Pick a hypothetical overnight event and see how the deterministic roll-up and paging respond. <b>This does not change the live monitor state above</b> &mdash; it illustrates the routing logic, never a new determination.</p>
+   <p class="cap">Pick a hypothetical overnight event and see how the deterministic roll-up and paging respond. <b>This does not change the live monitor state above</b>: it illustrates the routing logic, never a new determination.</p>
    <select id="scenSel" aria-label="Scenario" style="font-family:var(--fs);font-size:13px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#0f1a2c;color:var(--ink);width:100%;margin-bottom:11px">${opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('')}</select>
    <div id="scenOut">${scenOutHTML(scenResult('base'))}</div></div>`; }
-reg('ov','Overview',()=>STATUS,()=>`<div class="grid">${ovWorklist()}<div class="card"><div class="ch"><h3>KPI roll-up note</h3></div><p class="cap">The tiles above are a pure roll-up of the same screening flags shown in every panel (via <code>worst()</code>) — they can never disagree with the detail below. RED/AMBER/feeds tiles jump to the relevant section.</p><ul style="font-size:12.5px;color:#3a4757;margin:6px 0 0;padding-left:18px"><li><b>${nRED}</b> open RED, <b>${nAMB}</b> AMBER screening flags.</li><li><b>${nDLT}</b> adjudicated DLT flag(s); <b>${nSAE}</b> participant(s) with a serious AE.</li><li>Study status <b>${STATUS}</b> — driven here by the stale feed + the eDISH/DLT REDs.</li></ul></div>${ovScenario()}${ovRanking()}${ovFreshness()}${ovHeatmap()}</div>`);
+reg('ov','Overview',()=>STATUS,()=>`<div class="grid">${ovWorklist()}<div class="card"><div class="ch"><h3>KPI roll-up note</h3></div><p class="cap">The tiles above are a pure roll-up of the same screening flags shown in every panel (via <code>worst()</code>): they can never disagree with the detail below. RED/AMBER/feeds tiles jump to the relevant section.</p><ul style="font-size:12.5px;color:#3a4757;margin:6px 0 0;padding-left:18px"><li><b>${nRED}</b> open RED, <b>${nAMB}</b> AMBER screening flags.</li><li><b>${nDLT}</b> adjudicated DLT flag(s); <b>${nSAE}</b> participant(s) with a serious AE.</li><li>Study status <b>${STATUS}</b>: driven here by the stale feed + the eDISH/DLT REDs.</li></ul></div>${ovScenario()}${ovRanking()}${ovFreshness()}${ovHeatmap()}</div>`);
 
 /* ---------- HEPATIC ---------- */
 function edish(){const W=820,H=388,pl=58,pb=46;const xs=v=>pl+(Math.log10(clamp(v,.2,12))-Math.log10(.2))/(Math.log10(12)-Math.log10(.2))*(W-pl-14);const ys=v=>H-pb-(clamp(v,.2,6)-.2)/(6-.2)*(H-pb-16);let g='';
@@ -495,23 +496,23 @@ function edish(){const W=820,H=388,pl=58,pb=46;const xs=v=>pl+(Math.log10(clamp(
     g+=`<circle class="subj" data-id="${s.id}" cx="${x}" cy="${y}" r="${r}" fill="${cohC[s.coh]}" stroke="${s.red_hys?'#9a3d34':'#fff'}" stroke-width="${s.red_hys?2.5:1.2}"/>`;});
   g+=`<text x="${(W+pl)/2}" y="${H-9}" font-size="11" text-anchor="middle" fill="#8a9bb0">peak ALT (×ULN, log)</text><text x="16" y="${(H-pb)/2}" font-size="11" text-anchor="middle" fill="#8a9bb0" transform="rotate(-90 16 ${(H-pb)/2})">peak T.Bili (×ULN)</text>`;
   return `<svg viewBox="0 0 ${W} ${H}" class="tall">${g}</svg>`;}
-function hepTraj(){ const order=[...S].sort((a,b)=>b.alt-a.alt); return `<div class="sm">`+order.map(s=>{const m=s.red_hys?'#c4544a':s.alt>3?'#c2871a':(s.lftv.some(L=>L&&L.alt>3)?'#c2871a':'#9fb0c0');
+function hepTraj(){ const order=[...S].sort((a,b)=>b.alt-a.alt); return `<div class="sm">`+order.map(s=>{const m=s.red_hys?'#c4544a':s.alt>=3?'#c2871a':(s.lftv.some(L=>L&&L.alt>=3)?'#c2871a':'#9fb0c0');
    const sk=sparkline(s.lftv.map(L=>L?L.alt:null),{w:150,h:40,bands:[{v:3,c:'#c4544a'},{v:1,c:'#3a4d66'}],lo:0,hi:Math.max(6,s.alt*1.05),meta:META.alt,baselineIdx:0});
    const tk=sparkline(s.lftv.map(L=>L?L.tbl:null),{w:150,h:26,bands:[{v:2,c:'#c08'}],lo:0,hi:Math.max(3.2,s.tbl*1.05),c:'#8a6cae',meta:META.tbl});
-   return `<div class="smc subj" data-id="${s.id}"><div class="t">${s.id}<span class="mini" style="background:${m}">ALT ${s.alt.toFixed(1)}×</span></div>${sk}<div style="font-size:9px;color:#64758c;margin:-2px 0 1px">TBili ×ULN (gate at 2×)</div>${tk}</div>`; }).join('')+`</div><p class="cap" style="margin-top:8px">Per-visit ALT (top, ref lines 1× & 3×) and TBili (below, ref 2×) for every participant, sorted by peak ALT. Converts the static eDISH dot into a time course — rising vs plateaued vs already-falling. Dots colour by CTCAE-style band. <b>014</b> rises with TBili lagging; <b>009</b> rises in ALT but TBili never reaches 2× (GREEN every visit); <b>011</b> drifts but stays sub-threshold. As-collected, single-draw, unconfirmed.</p>`; }
+   return `<div class="smc subj" data-id="${s.id}"><div class="t">${s.id}<span class="mini" style="background:${m}">ALT ${s.alt.toFixed(1)}×</span></div>${sk}<div style="font-size:9px;color:#64758c;margin:-2px 0 1px">TBili ×ULN (gate at 2×)</div>${tk}</div>`; }).join('')+`</div><p class="cap" style="margin-top:8px">Per-visit ALT (top, ref lines 1× & 3×) and TBili (below, ref 2×) for every participant, sorted by peak ALT. Converts the static eDISH dot into a time course: rising vs plateaued vs already-falling. Dots color by CTCAE-style band. <b>014</b> rises with TBili lagging; <b>009</b> rises in ALT but TBili never reaches 2× (GREEN every visit); <b>011</b> drifts but stays sub-threshold. As-collected, single-draw, unconfirmed.</p>`; }
 function rratioStrip(){ const watch=S.filter(s=>s.lftv.some(L=>L&&(L.alt>2||L.red_hys))).sort((a,b)=>b.alt-a.alt);
   const rows=watch.map(s=>{const cells=s.lftv.map((L,i)=>{ if(!L)return `<td class="gap">·</td>`; const R=L.rratio; const unstable=(L.alt<1.2||L.alp<1.2);
     const cls=unstable?'gcOps':R>=5?'gc1':R<=2?'gcW':'gcA'; const lab=unstable?'?':R>=5?'H':R<=2?'C':'M';
     return `<td class="${cls}" title="${s.id} ${VIS[i]}: R=${R.toFixed(1)} ${unstable?'(unstable, near ULN)':R>=5?'hepatocellular':R<=2?'cholestatic':'mixed'}">${lab}</td>`; }).join('');
     return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
-  return `<div class="heatwrap"><table class="heat"><tr><th class="rh">Participant</th>${VIS.map(v=>`<th>${v}</th>`).join('')}</tr>${rows}</table></div><p class="cap" style="margin-top:8px"><b>H</b> hepatocellular (R≥5) · <b>M</b> mixed (2&lt;R&lt;5) · <b>C</b> cholestatic (R≤2) · <b>?</b> unstable (ALT or ALP near ULN). R=(ALT/ULN)/(ALP/ULN). A biochemical descriptor that steers the causality work-up (e.g. mixed/cholestatic → chase biliary) — <b>not</b> a diagnosis. <b>014’s R≈4.0 = mixed</b> (not hepatocellular) and is <b>not</b> reassuring relative to its AND-gate RED.</p>`; }
+  return `<div class="heatwrap"><table class="heat"><tr><th class="rh">Participant</th>${VIS.map(v=>`<th>${v}</th>`).join('')}</tr>${rows}</table></div><p class="cap" style="margin-top:8px"><b>H</b> hepatocellular (R≥5) · <b>M</b> mixed (2&lt;R&lt;5) · <b>C</b> cholestatic (R≤2) · <b>?</b> unstable (ALT or ALP near ULN). R=(ALT/ULN)/(ALP/ULN). A biochemical descriptor that steers the causality work-up (e.g. mixed/cholestatic → chase biliary), <b>not</b> a diagnosis. <b>014’s R≈4.0 = mixed</b> (not hepatocellular) and is <b>not</b> reassuring relative to its AND-gate RED.</p>`; }
 function hepTable(){ const an=['alt','ast','tbl','alp']; const arrow=t=>t==='up'?'<span style="color:#c4544a">▲</span>':t==='down'?'<span style="color:#1f8a5b">▼</span>':'<span style="color:#8a9bb0">▬</span>';
    const rows=[...S].sort((a,b)=>b.alt-a.alt).slice(0,14).map(s=>{
    return `<tr class="click subj" data-id="${s.id}"><td><b>${s.id}</b></td><td>${s.coh}</td>`+an.map(k=>{const ser=s.lftv.map(L=>L?L[k]:null),vals=ser.filter(v=>v!=null),base=ser[0],peak=Math.max(...vals),pv=ser.indexOf(peak),lastIdx=ser.map((v,i)=>v!=null?i:-1).filter(i=>i>=0).pop();const trend=ser[lastIdx]>=peak*0.92?'up':(ser[lastIdx]<base+(peak-base)*0.5?'down':'flat');const band=gradeBand(peak,META[k]);
      return `<td><b style="color:${band>=3?'#c4544a':band===2?'#c2871a':'#16202b'}">${peak.toFixed(1)}×</b> <span style="color:#64758c">/${base.toFixed(1)}</span> ${arrow(trend)} <span style="color:#64758c">${VIS[pv]}</span></td>`;}).join('')+`</tr>`; }).join('');
-  return `<table class="mx"><tr><th>Participant</th><th>Coh</th>${an.map(k=>`<th>${k.toUpperCase()} peak/base · trend · t-peak</th>`).join('')}</tr>${rows}</table><p class="cap" style="margin-top:8px">Peak ×ULN / baseline, time-to-peak, and an as-collected <b>trend</b> glyph (▲ up / ▬ flat / ▼ down). The trend is a heuristic label on synthetic single-draw values — <b>not</b> a de-challenge / re-challenge assessment, which the medical monitor performs with confounders, timing and confirmatory labs.</p>`; }
+  return `<table class="mx"><tr><th>Participant</th><th>Coh</th>${an.map(k=>`<th>${k.toUpperCase()} peak/base · trend · t-peak</th>`).join('')}</tr>${rows}</table><p class="cap" style="margin-top:8px">Peak ×ULN / baseline, time-to-peak, and an as-collected <b>trend</b> glyph (▲ up / ▬ flat / ▼ down). The trend is a heuristic label on synthetic single-draw values, <b>not</b> a de-challenge / re-challenge assessment, which the medical monitor performs with confounders, timing and confirmatory labs.</p>`; }
 reg('hep','Hepatic',()=>S.some(s=>s.red_hys)?'RED':'GREEN',()=>`<div class="grid">
-   <div class="card wide"><div class="ch"><h3>eDISH scatter — the Hy’s-Law screen, with per-visit trails</h3><span class="sevtag ${S.some(s=>s.red_hys)?'RED':'GREEN'}">${S.some(s=>s.red_hys)?'RED':'GREEN'}</span></div><p class="cap">Peak ALT vs peak TBili (×ULN); faint polylines are each participant’s <b>history</b> of as-collected positions ending in the current dot (where they HAVE been — it does <b>not</b> predict future movement). RED = (ALT or AST >3×) AND TBili >2×. A position in the quadrant is a <b>screening prompt</b> pending confirmatory repeat + cholestasis/alternative-cause exclusion — never a Hy’s-Law determination. Hover/click a point.</p>${edish()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>eDISH scatter: the Hy’s-Law screen, with per-visit trails</h3><span class="sevtag ${S.some(s=>s.red_hys)?'RED':'GREEN'}">${S.some(s=>s.red_hys)?'RED':'GREEN'}</span></div><p class="cap">Peak ALT vs peak TBili (×ULN); faint polylines are each participant’s <b>history</b> of as-collected positions ending in the current dot (where they HAVE been: it does <b>not</b> predict future movement). RED = (ALT or AST ≥3×) AND TBili >2×. A position in the quadrant is a <b>screening prompt</b> pending confirmatory repeat + cholestasis/alternative-cause exclusion, never a Hy’s-Law determination. Hover/click a point.</p>${edish()}${govLine}</div>
    <div class="card wide"><div class="ch"><h3>Per-visit LFT trajectories</h3></div>${hepTraj()}</div>
    <div class="card wide"><div class="ch"><h3>R-ratio pattern over time</h3></div>${rratioStrip()}</div>
    <div class="card wide"><div class="ch"><h3>Hepatic peak / baseline / trend</h3></div>${hepTable()}${govLine}</div>
@@ -533,9 +534,9 @@ function e14census(){ const tiers=[['QTcF >450 ms','qtcf',450],['QTcF >480 ms','
   const head='<tr><th>Category (screening)</th>'+COH.map(c=>`<th>${c[0]}<br><span style="font-weight:400;color:#64758c">${c[1]}mg</span></th>`).join('')+'<th>All</th></tr>';
   const rows=tiers.map(([lab,fld,thr])=>{ let tot=0; const cells=COH.map(([c])=>{const ss=S.filter(s=>s.coh===c);const cnt=ss.filter(s=>s.ecgv.some((E,i)=>E&&!E.baselineWatch&&E[fld]>thr)).length;tot+=cnt;const cls=cnt?(thr>=500||thr>=60?'gcR':thr>=480?'gcA':'gcW'):'';return `<td style="text-align:center;${cnt?'font-weight:700':''}" class="${cnt?cls:''}">${cnt||'·'}</td>`;}).join('');
     return `<tr><td><b>${lab}</b></td>${cells}<td style="text-align:center;font-weight:700">${tot}</td></tr>`; }).join('');
-  return `<div style="display:inline-block;background:#16293f;color:#fff;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 9px;border-radius:6px;margin-bottom:8px">SCREENING CENSUS — NOT THE ICH E14 TABLE</div><table class="mx">${head}${rows}</table><p class="cap" style="margin-top:8px">A screening tally of how many participants ever crossed each pre-specified category at an <b>on-treatment</b> visit (baseline-watch excluded), by dose. Pending central-ECG QC + replicate confirmation. The validated ICH&nbsp;E14 categorical table + concentration-QTc are produced by the validated analysis (Phoenix WinNonlin / SAS) and adjudicated by the cardiologist — <b>not</b> this dashboard.</p>`; }
+  return `<div style="display:inline-block;background:#16293f;color:#fff;font-size:10px;font-weight:800;letter-spacing:.5px;padding:3px 9px;border-radius:6px;margin-bottom:8px">SCREENING CENSUS, NOT THE ICH E14 TABLE</div><table class="mx">${head}${rows}</table><p class="cap" style="margin-top:8px">A screening tally of how many participants ever crossed each pre-specified category at an <b>on-treatment</b> visit (baseline-watch excluded), by dose. Pending central-ECG QC + replicate confirmation. The validated ICH&nbsp;E14 categorical table and the concentration-QTc analysis (a prespecified linear mixed-effects model in validated SAS/R) are produced by the validated analysis and reviewed by the cardiologist, <b>not</b> this dashboard.</p>`; }
 reg('card','Cardiac',()=>S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN',()=>`<div class="grid">
-   <div class="card wide"><div class="ch"><h3>QTcF trajectory (per-visit, cohort median band)</h3><span class="sevtag ${S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN'}">${S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN'}</span></div><p class="cap">QTcF (Fridericia — the pre-specified correction) per visit; dark line = cohort median. Separates a transient single-visit spike from a sustained on-treatment rise. <b>018</b> crosses 500 at an on-treatment visit; <b>006</b> plateaus ~486; dashed-ring points are <b>baseline-watch</b> (already &gt;450 at baseline — not a drug effect). As-collected, pending ECG QC / replicate confirmation — screening flags, not E14 determinations.</p>${qtcfSpaghetti()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>QTcF trajectory (per-visit, cohort median band)</h3><span class="sevtag ${S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN'}">${S.some(s=>s.qsev==='RED')?'RED':S.some(s=>s.qsev==='AMBER')?'AMBER':'GREEN'}</span></div><p class="cap">QTcF (Fridericia: the pre-specified correction) per visit; dark line = cohort median. Separates a transient single-visit spike from a sustained on-treatment rise. <b>018</b> crosses 500 at an on-treatment visit; <b>006</b> plateaus ~486; dashed-ring points are <b>baseline-watch</b> (already &gt;450 at baseline, not a drug effect). As-collected, pending ECG QC / replicate confirmation: screening flags, not E14 determinations.</p>${qtcfSpaghetti()}${govLine}</div>
    <div class="card wide"><div class="ch"><h3>ICH E14 categorical outlier census (screening)</h3></div>${e14census()}${govLine}</div>
  </div>`);
 
@@ -547,24 +548,24 @@ function worstBand(s,key){ const m=META[key]; let wg=0,wv=null,wvi=null,base=nul
   return {g:wg,v:wv,vi:wvi,base}; }
 function labShift(){ const head='<tr><th class="rh">Participant</th>'+SHIFT_AN.map(a=>`<th>${a[1]}</th>`).join('')+'</tr>';
   const rows=S.map(s=>{ const cells=SHIFT_AN.map(([k,lab])=>{ const wb=worstBand(s,k); const cls=wb.g>=3?'gcR':wb.g===2?'gcA':wb.g===1?'gc1':'gc0';
-     return `<td class="${cls}" data-id="${s.id}" title="${s.id} ${lab}: worst band Gr${wb.g}${wb.v!=null?' ('+wb.v+' '+META[k].unit+' at '+VIS[wb.vi]+', base '+wb.base+')':''}${k==='hgb'&&wb.g>=3?' — value band capped at Gr3; clinical Gr4 needs monitor assessment':''}">${wb.g||'·'}</td>`; }).join('');
+     return `<td class="${cls}" data-id="${s.id}" title="${s.id} ${lab}: worst band Gr${wb.g}${wb.v!=null?' ('+wb.v+' '+META[k].unit+' at '+VIS[wb.vi]+', base '+wb.base+')':''}${k==='hgb'&&wb.g>=3?': value band capped at Gr3; clinical Gr4 needs monitor assessment':''}">${wb.g||'·'}</td>`; }).join('');
      return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
-  return `<div class="heatwrap"><table class="heat">${head}${rows}</table></div><div class="legend" style="margin-top:8px"><i><s class="gc0"></s>within range</i><i><s class="gc1"></s>Gr1</i><i><s class="gcA"></s>Gr2</i><i><s class="gcR"></s>Gr3+</i></div><p class="cap">Worst CTCAE-style <b>band</b> reached on any visit, baseline→worst. A screening band applied deterministically to a single synthetic value — <b>NOT an adjudicated CTCAE AE grade and not a reportable number</b>. The monitor confirms, deduplicates against the AE panel (an independent source), and rules out artifact (hemolysis, timing, prior values). Hgb value-band capped at Gr3.</p>`; }
+  return `<div class="heatwrap"><table class="heat">${head}${rows}</table></div><div class="legend" style="margin-top:8px"><i><s class="gc0"></s>within range</i><i><s class="gc1"></s>Gr1</i><i><s class="gcA"></s>Gr2</i><i><s class="gcR"></s>Gr3+</i></div><p class="cap">Worst CTCAE-style <b>band</b> reached on any visit, baseline→worst. A screening band applied deterministically to a single synthetic value, <b>NOT an adjudicated CTCAE AE grade and not a reportable number</b>. The monitor confirms, deduplicates against the AE panel (an independent source), and rules out artifact (hemolysis, timing, prior values). Hgb value-band capped at Gr3.</p>`; }
 function hemeTraj(){ const order=[...S].sort((a,b)=>Math.min(...a.labv.filter(L=>L).map(L=>L.hgb))-Math.min(...b.labv.filter(L=>L).map(L=>L.hgb)));
   return `<div class="sm">`+order.map(s=>{ const hgbN=Math.min(...s.labv.filter(L=>L).map(L=>L.hgb)),ancN=Math.min(...s.labv.filter(L=>L).map(L=>L.anc));const band=gradeBand(hgbN,META.hgb);const mc=band>=3?'#c4544a':band===2?'#c2871a':band===1?'#5f8aa8':'#9fb0c0';
    const hk=sparkline(s.labv.map(L=>L?L.hgb:null),{w:150,h:38,bands:[{v:12,c:'#5f8aa8'},{v:10,c:'#c2871a'},{v:8,c:'#c4544a'}],lo:7.5,hi:15.5,meta:META.hgb,c:'#9a5a9a',baselineIdx:0});
    const ak=sparkline(s.labv.map(L=>L?L.anc:null),{w:150,h:26,bands:[{v:1.5,c:'#c2871a'},{v:1.0,c:'#c4544a'}],lo:0,hi:6,meta:META.anc,c:'#3f7fc4'});
-   return `<div class="smc subj" data-id="${s.id}"><div class="t">${s.id}<span class="mini" style="background:${mc}">Hgb ${hgbN.toFixed(1)}</span></div>${hk}<div style="font-size:9px;color:#64758c;margin:-2px 0 1px">ANC 10⁹/L (Gr2 1.5 · Gr3 1.0)</div>${ak}</div>`; }).join('')+`</div><p class="cap" style="margin-top:8px">Hgb (top; bands 12/10/8 g/dL) and ANC (below; 1.5/1.0) per visit, sorted by Hgb nadir. Cytopenias are the classic dose-escalation toxicity — the <i>shape</i> (dip-and-recover vs progressive decline) is what a static worst-value misses and what feeds the DLT conversation. Screening bands, not adjudicated grades.</p>`; }
+   return `<div class="smc subj" data-id="${s.id}"><div class="t">${s.id}<span class="mini" style="background:${mc}">Hgb ${hgbN.toFixed(1)}</span></div>${hk}<div style="font-size:9px;color:#64758c;margin:-2px 0 1px">ANC 10⁹/L (Gr2 1.5 · Gr3 1.0)</div>${ak}</div>`; }).join('')+`</div><p class="cap" style="margin-top:8px">Hgb (top; bands 12/10/8 g/dL) and ANC (below; 1.5/1.0) per visit, sorted by Hgb nadir. Cytopenias are the classic dose-escalation toxicity: the <i>shape</i> (dip-and-recover vs progressive decline) is what a static worst-value misses and what feeds the DLT conversation. Screening bands, not adjudicated grades.</p>`; }
 function renalPanel(){ const rows=[...S].map(s=>{ const ser=s.labv.map(L=>L?L.creat:null).filter(v=>v!=null),base=ser[0],peak=Math.max(...ser),fold=peak/base; const egfr=Math.min(...s.labv.filter(L=>L).map(L=>L.egfr)); const band=gradeBand(peak,META.creat);
    return {s,base,peak,fold,egfr,band}; }).sort((a,b)=>b.fold-a.fold).slice(0,12).map(o=>`<tr class="click subj" data-id="${o.s.id}"><td><b>${o.s.id}</b></td><td>${o.s.coh}</td><td>${o.base.toFixed(2)}</td><td><b style="color:${o.band>=2?'#c2871a':'#16202b'}">${o.peak.toFixed(2)}</b> mg/dL</td><td>${o.fold.toFixed(2)}×</td><td>${o.egfr} <span style="color:#64758c">est.</span></td></tr>`).join('');
   return `<table class="mx"><tr><th>Participant</th><th>Coh</th><th>Base</th><th>Peak creat</th><th>Fold ↑ vs own base</th><th>eGFR nadir</th></tr>${rows}</table><p class="cap" style="margin-top:8px">Creatinine fold-rise over the participant’s <b>own</b> baseline catches early AKI that an absolute “in-range” value hides; pairs with eDISH for the full organ-clearance picture. eGFR is a <b>CKD-EPI 2021 race-free ESTIMATE</b>, never a measured/reported renal value. Screening only.</p>`; }
 function vitalsPanel(){ const flags=[]; S.forEach(s=>s.vitalv.forEach((V,i)=>{ if(V&&V.pcs)flags.push({s,i,V}); }));
-  const rows=flags.length?flags.map(f=>`<tr class="click subj" data-id="${f.s.id}"><td><b>${f.s.id}</b></td><td>${VIS[f.i]}</td><td>${f.V.sbp}/${f.V.dbp}</td><td>${f.V.hr}</td><td>${f.V.orthostatic>=20?'<b style="color:#c2871a">↓'+f.V.orthostatic+' mmHg</b>':f.V.orthostatic+' mmHg'}</td><td>${f.V.temp}°C</td><td><span class="sevtag ops">PCS — context</span></td></tr>`).join(''):'<tr><td colspan="7" style="color:#64758c">No vital-sign PCS flags.</td></tr>';
-  return `<table class="mx"><tr><th>Participant</th><th>Visit</th><th>BP</th><th>HR</th><th>Orthostatic Δ</th><th>Temp</th><th>Flag</th></tr>${rows}</table><p class="cap" style="margin-top:8px">Potentially-clinically-significant (PCS) vital-sign / orthostatic flags (SBP &lt;90/&gt;160, DBP&gt;100, HR&lt;45/&gt;120, orthostatic SBP drop ≥20 mmHg — illustrative cutoffs). These are reviewed as <b>context, not a severity tier</b>, and on this synthetic set are transient/benign — they do not escalate study status. Vitals are routinely under-reviewed yet where early hemodynamic/infusion effects first show.</p>`; }
+  const rows=flags.length?flags.map(f=>`<tr class="click subj" data-id="${f.s.id}"><td><b>${f.s.id}</b></td><td>${VIS[f.i]}</td><td>${f.V.sbp}/${f.V.dbp}</td><td>${f.V.hr}</td><td>${f.V.orthostatic>=20?'<b style="color:#c2871a">↓'+f.V.orthostatic+' mmHg</b>':f.V.orthostatic+' mmHg'}</td><td>${f.V.temp}°C</td><td><span class="sevtag ops">PCS: context</span></td></tr>`).join(''):'<tr><td colspan="7" style="color:#64758c">No vital-sign PCS flags.</td></tr>';
+  return `<table class="mx"><tr><th>Participant</th><th>Visit</th><th>BP</th><th>HR</th><th>Orthostatic Δ</th><th>Temp</th><th>Flag</th></tr>${rows}</table><p class="cap" style="margin-top:8px">Potentially-clinically-significant (PCS) vital-sign / orthostatic flags (SBP &lt;90/&gt;160, DBP&gt;100, HR&lt;45/&gt;120, orthostatic SBP drop ≥20 mmHg: illustrative cutoffs). These are reviewed as <b>context, not a severity tier</b>, and on this synthetic set are transient/benign: they do not escalate study status. Vitals are routinely under-reviewed yet where early hemodynamic/infusion effects first show.</p>`; }
 reg('labs','Labs & Vitals',()=>S.some(s=>SHIFT_AN.some(a=>worstBand(s,a[0]).g>=3))?'AMBER':'GREEN',()=>`<div class="grid">
-   <div class="card wide"><div class="ch"><h3>Lab shift grid — baseline → worst band</h3></div>${labShift()}${govLine}</div>
-   <div class="card wide"><div class="ch"><h3>Hematology trajectories — Hgb &amp; ANC</h3></div>${hemeTraj()}</div>
-   <div class="card"><div class="ch"><h3>Renal — creatinine fold-rise + eGFR</h3></div>${renalPanel()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>Lab shift grid: baseline → worst band</h3></div>${labShift()}${govLine}</div>
+   <div class="card wide"><div class="ch"><h3>Hematology trajectories: Hgb &amp; ANC</h3></div>${hemeTraj()}</div>
+   <div class="card"><div class="ch"><h3>Renal: creatinine fold-rise + eGFR</h3></div>${renalPanel()}${govLine}</div>
    <div class="card"><div class="ch"><h3>Vital signs &amp; orthostatic PCS</h3><span class="sevtag ops">operational context</span></div>${vitalsPanel()}</div>
  </div>`);
 
@@ -575,10 +576,10 @@ function aeMatrix(){ const SOCS=[...new Set(S.flatMap(s=>s.ae.map(a=>a.soc)))].s
     S.forEach(s=>{ const g=s.ae.filter(a=>a.soc===soc).reduce((m,a)=>Math.max(m,a.grade),0); if(g>0){buckets[g]++;nsubj++;} });
     const cells=[1,2,3,4,5].map(g=>{const c=buckets[g];const cls=c?(g>=3?'gcR':g===2?'gcA':'gc1'):'';return `<td style="text-align:center" class="${cls}">${c||'·'}</td>`;}).join('');
     return `<tr><td><b>${soc}</b></td>${cells}<td style="text-align:center;font-weight:700">${nsubj}</td></tr>`; }).join('');
-  return `<table class="mx">${head}${rows}</table><p class="cap" style="margin-top:8px">Participant-incidence by SOC and <b>worst CTCAE grade</b> per participant (a participant counts once per SOC, at their worst grade). Grade-5 is zero in this teaching set. <b>Severity (grade) and seriousness (regulatory) are separate</b> — see the seriousness column in the swimlane; a Gr3 event is not automatically serious. Hepatobiliary/Investigations Gr3+ ties back to 014’s eDISH RED. Counts are screening tallies, not the validated incidence table.</p>`; }
+  return `<table class="mx">${head}${rows}</table><p class="cap" style="margin-top:8px">Participant-incidence by SOC and <b>worst CTCAE grade</b> per participant (a participant counts once per SOC, at their worst grade). Grade-5 is zero in this teaching set. <b>Severity (grade) and seriousness (regulatory) are separate</b>: see the seriousness column in the swimlane; a Gr3 event is not automatically serious. Hepatobiliary/Investigations Gr3+ ties back to 014’s eDISH RED. Counts are screening tallies, not the validated incidence table.</p>`; }
 function dltLadder(){ const rows=cohAgg.map(c=>{ const st=dltState(c); let dots='';for(let i=0;i<c.neval;i++)dots+=`<span style="display:inline-block;width:14px;height:14px;border-radius:50%;margin:0 1.5px;background:${i<c.nd?'#c4544a':'#e4e9f0'};border:1px solid ${i<c.nd?'#9a3d34':'#3a4d66'};vertical-align:middle"></span>`;
     return `<tr><td><b>${c.c}</b></td><td>${c.dose} mg</td><td>${c.plannedN} <span style="color:#64758c">designed</span></td><td>${c.neval} evaluable</td><td>${dots} <b>${c.nd}/${c.neval}</b></td><td><span class="sevtag ${st.cls}">${st.label}</span></td></tr>`; }).join('');
-  return `<table class="mx"><tr><th>Cohort</th><th>Dose</th><th>Planned N</th><th>Evaluable</th><th>Adjudicated DLT (28-day window)</th><th>3+3 state</th></tr>${rows}</table><p class="cap" style="margin-top:8px">The dashboard computes which 3+3 branch the current evaluable count satisfies and shows a <b>trigger / decision-pending</b> label — it does <b>not</b> escalate, expand, de-escalate, or declare MTD; the SRC / medical monitor does. DLTs are SRC-<b>adjudicated</b> flags the dashboard displays (it never adjudicates). Planned N is read from the design (C3 was designed N=6 — never “expanded” from 3). Window = ${DLT_WINDOW_DAY} days (illustrative).</p>`; }
+  return `<table class="mx"><tr><th>Cohort</th><th>Dose</th><th>Planned N</th><th>Evaluable</th><th>Adjudicated DLT (28-day window)</th><th>3+3 state</th></tr>${rows}</table><p class="cap" style="margin-top:8px">The dashboard computes which 3+3 branch the current evaluable count satisfies and shows a <b>trigger / decision-pending</b> label: it does <b>not</b> escalate, expand, de-escalate, or declare MTD; the SRC / medical monitor does. DLTs are SRC-<b>adjudicated</b> flags the dashboard displays (it never adjudicates). Planned N is read from the design (C3 was designed N=6, never “expanded” from 3). Window = ${DLT_WINDOW_DAY} days (illustrative).</p>`; }
 function aeSwim(){ const subs=S.filter(s=>s.ae.length).sort((a,b)=>a.dose-b.dose||a.id.localeCompare(b.id));
   const W=820,rowH=20,padL=86,padT=24,maxDay=56,plotW=W-padL-16; const H=padT+subs.length*rowH+22; const xd=d=>padL+clamp(d,0,maxDay)/maxDay*plotW; let g='';
   [0,7,14,21,28,42,56].forEach(d=>{g+=`<line x1="${xd(d)}" y1="${padT-4}" x2="${xd(d)}" y2="${H-18}" stroke="#eef1f6"/><text x="${xd(d)}" y="${H-6}" font-size="8.5" fill="#64758c" text-anchor="middle">d${d}</text>`;});
@@ -588,7 +589,7 @@ function aeSwim(){ const subs=S.filter(s=>s.ae.length).sort((a,b)=>a.dose-b.dose
       g+=`<rect x="${x1}" y="${y-4}" width="${Math.max(3,x2-x1)}" height="8" rx="3" fill="${c}" opacity="${a.teae?0.95:0.4}"/>`;
       if(a.serious)g+=`<circle cx="${x1}" cy="${y}" r="3.4" fill="none" stroke="#7a2030" stroke-width="1.6"/>`;
       if(a.resolution==null)g+=`<path d="M${x2} ${y} l5 -3 v6 z" fill="${c}"/>`; }); });
-  return `<svg viewBox="0 0 ${W} ${H}">${g}</svg><div class="legend" style="margin-top:6px"><i><s style="background:#9fb0c0"></s>Gr1</i><i><s style="background:#c2871a"></s>Gr2</i><i><s style="background:#c4544a"></s>Gr3</i><i><s style="background:#9a3d34"></s>Gr4</i><i><b style="border:1.6px solid #7a2030;background:none"></b>serious</i><i>solid=TEAE · faded=pre-dose · ▸ ongoing</i></div><p class="cap">AE onset→resolution vs study day — Phase 1 safety is about <b>timing relative to dose</b>; clustering inside the ${DLT_WINDOW_DAY}-day DLT window is how monitors reason about drug-relatedness. Onset/relationship/seriousness are investigator-recorded and displayed, not derived (only the TEAE flag is derived). Synthetic; controlled-vocabulary terms, no case narratives.</p>`; }
+  return `<svg viewBox="0 0 ${W} ${H}">${g}</svg><div class="legend" style="margin-top:6px"><i><s style="background:#9fb0c0"></s>Gr1</i><i><s style="background:#c2871a"></s>Gr2</i><i><s style="background:#c4544a"></s>Gr3</i><i><s style="background:#9a3d34"></s>Gr4</i><i><b style="border:1.6px solid #7a2030;background:none"></b>serious</i><i>solid=TEAE · faded=pre-dose · ▸ ongoing</i></div><p class="cap">AE onset→resolution vs study day: Phase 1 safety is about <b>timing relative to dose</b>; clustering inside the ${DLT_WINDOW_DAY}-day DLT window is how monitors reason about drug-relatedness. Onset/relationship/seriousness are investigator-recorded and displayed, not derived (only the TEAE flag is derived). Synthetic; controlled-vocabulary terms, no case narratives.</p>`; }
 reg('ae','AE & DLT',()=>S.some(s=>s.sae)?'RED':cohAgg.some(c=>c.dltsev!=='GREEN')?'AMBER':'GREEN',()=>`<div class="grid">
    <div class="card wide"><div class="ch"><h3>3+3 dose-escalation state ladder</h3><span class="sevtag ${cohAgg.some(c=>c.dltsev==='RED')?'RED':'AMBER'}">trigger / pending</span></div>${dltLadder()}${govLine}</div>
    <div class="card wide"><div class="ch"><h3>AE incidence by SOC × CTCAE grade (worst-grade, participant-incidence)</h3></div>${aeMatrix()}${govLine}</div>
@@ -600,18 +601,18 @@ function dispFunnel(){ const screened=S.length+SCREENFAIL.length,enrolled=S.leng
   const bar=(lab,n,tot,c)=>{const w=Math.round(n/screened*100);return `<div style="margin:7px 0"><div style="display:flex;justify-content:space-between;font-size:12px"><span><b>${lab}</b></span><span>${n}${tot?` / ${tot}`:''}</span></div><div style="height:16px;background:#eef2f7;border-radius:5px;overflow:hidden"><div style="height:100%;width:${w}%;background:${c};border-radius:5px"></div></div></div>`;};
   const reasons={};S.filter(s=>s.dispStatus==='dc').forEach(s=>reasons[s.dispReason]=(reasons[s.dispReason]||0)+1);
   return bar('Screened',screened,0,'#7aa5c9')+bar('Enrolled',enrolled,screened,'#2C5F8A')+bar('Ongoing',ongoing,enrolled,'#5b8fbf')+bar('Completed',done,enrolled,'#1f8a5b')+bar('Discontinued',dc,enrolled,'#c4544a')
-   +`<p class="cap" style="margin-top:8px"><b>Screen failures:</b> ${SCREENFAIL.map(f=>f.id+' ('+f.reason+')').join(', ')}. <b>Discontinuation reasons (as recorded):</b> ${Object.entries(reasons).map(([k,v])=>k+' ×'+v).join(', ')||'—'}. Reasons are investigator-recorded vocabulary, <b>never adjudicated</b> by the dashboard; final disposition comes from the validated pipeline.</p>`; }
+   +`<p class="cap" style="margin-top:8px"><b>Screen failures:</b> ${SCREENFAIL.map(f=>f.id+' ('+f.reason+')').join(', ')}. <b>Discontinuation reasons (as recorded):</b> ${Object.entries(reasons).map(([k,v])=>k+' ×'+v).join(', ')||'n/a'}. Reasons are investigator-recorded vocabulary, <b>never adjudicated</b> by the dashboard; final disposition comes from the validated pipeline.</p>`; }
 function visitCompliance(){ const head='<tr><th class="rh">Participant</th>'+VIS.map(v=>`<th>${v}</th>`).join('')+'</tr>';
-  const rows=S.map(s=>{ const cells=s.visits.map((vv,i)=>{ if(!vv.present)return `<td class="gcR" data-id="${s.id}" title="${s.id} ${vv.name}: MISSED — missed visit may mean missed safety labs → route to a human">M</td>`;
+  const rows=S.map(s=>{ const cells=s.visits.map((vv,i)=>{ if(!vv.present)return `<td class="gcR" data-id="${s.id}" title="${s.id} ${vv.name}: MISSED; missed visit may mean missed safety labs → route to a human">M</td>`;
      if(vv.status==='oow')return `<td class="gcA" data-id="${s.id}" title="${s.id} ${vv.name}: out of window (target d${vv.target}, actual d${vv.actual})">⌖</td>`;
      return `<td class="gc0" data-id="${s.id}" title="${s.id} ${vv.name}: day ${vv.actual} (in window)">✓</td>`; }).join('');
    return `<tr><th class="rh"><span class="subj" data-id="${s.id}" style="cursor:pointer">${s.id}</span></th>${cells}</tr>`; }).join('');
-  return `<div class="heatwrap"><table class="heat">${head}${rows}</table></div><div class="legend" style="margin-top:8px"><i><s class="gc0"></s>in window</i><i><s class="gcA"></s>out of window ⌖</i><i><s class="gcR"></s>missed M</i></div><p class="cap">Visit timing vs protocol window — catches out-of-window PK/ECG draws that threaten NCA validity <b>before</b> they corrupt the dataset. <b>003’s missed C2D1</b> shows here. A missed visit can mean missed safety labs → route to a human; it never means the participant is fine. Windows are illustrative.</p>`; }
+  return `<div class="heatwrap"><table class="heat">${head}${rows}</table></div><div class="legend" style="margin-top:8px"><i><s class="gc0"></s>in window</i><i><s class="gcA"></s>out of window ⌖</i><i><s class="gcR"></s>missed M</i></div><p class="cap">Visit timing vs protocol window: catches out-of-window PK/ECG draws that threaten NCA validity <b>before</b> they corrupt the dataset. <b>003’s missed C2D1</b> shows here. A missed visit can mean missed safety labs → route to a human; it never means the participant is fine. Windows are illustrative.</p>`; }
 function kriDeviations(){ const nDev=DEVI.length,nMajor=DEVI.filter(d=>d.sev==='Major').length,nMiss=S.reduce((a,s)=>a+s.visits.filter(v=>v.status==='missed').length,0),nOOW=S.reduce((a,s)=>a+s.visits.filter(v=>v.status==='oow').length,0),sf=Math.round(SCREENFAIL.length/(S.length+SCREENFAIL.length)*100);
-  const tiles=[['Screen-fail rate',sf+'%','illustrative KRI'],['Protocol deviations',nDev,nMajor+' major'],['Missed visits',nMiss,'route to human'],['Out-of-window',nOOW,'PK/ECG validity'],['Open queries','—','from EDC/CTMS'],['AE reporting lag','—','from safety DB']];
+  const tiles=[['Screen-fail rate',sf+'%','illustrative KRI'],['Protocol deviations',nDev,nMajor+' major'],['Missed visits',nMiss,'route to human'],['Out-of-window',nOOW,'PK/ECG validity'],['Open queries','n/a','from EDC/CTMS'],['AE reporting lag','n/a','from safety DB']];
   const tg=tiles.map(t=>`<div class="kpi" style="cursor:default"><div class="n" style="font-size:20px">${t[1]}</div><div class="k">${t[0]}</div><div class="s" style="color:#64758c">${t[2]}</div></div>`).join('');
   const dev=DEVI.map(d=>`<tr ${byId(d.id)?'class="click subj" data-id="'+d.id+'"':''}><td><b>${d.id}</b></td><td>${d.type}</td><td><span class="sevtag ${d.sev==='Major'?'AMBER':'plain'}">${d.sev}</span></td><td>${d.detail}</td></tr>`).join('');
-  return `<div class="kpis" style="grid-template-columns:repeat(6,1fr);padding:0 0 12px">${tg}</div><table class="mx"><tr><th>Participant</th><th>Type</th><th>Severity</th><th>Detail (as recorded)</th></tr>${dev}</table><p class="cap" style="margin-top:8px">A one-glance RBQM / central-monitoring strip (ICH E6) + the deviation trail (020’s dose change, 003’s missed visit appear here). KRI banding is a <b>“look here” prompt</b>; deviation severity is shown <b>as recorded</b>, never computed. Strictly operational — no PHI, no reportable safety numbers. Query/lag tiles are placeholders fed by EDC/CTMS in the live version.</p>`; }
+  return `<div class="kpis" style="grid-template-columns:repeat(6,1fr);padding:0 0 12px">${tg}</div><table class="mx"><tr><th>Participant</th><th>Type</th><th>Severity</th><th>Detail (as recorded)</th></tr>${dev}</table><p class="cap" style="margin-top:8px">A one-glance RBQM / central-monitoring strip (ICH E6) + the deviation trail (020’s dose change, 003’s missed visit appear here). KRI banding is a <b>“look here” prompt</b>; deviation severity is shown <b>as recorded</b>, never computed. Strictly operational, no PHI, no reportable safety numbers. Query/lag tiles are placeholders fed by EDC/CTMS in the live version.</p>`; }
 reg('disp','Disposition',()=>'GREEN',()=>`<div class="grid">
    <div class="card"><div class="ch"><h3>Enrollment &amp; disposition</h3></div>${dispFunnel()}</div>
    <div class="card"><div class="ch"><h3>RBQM KRIs &amp; protocol deviations</h3></div>${kriDeviations()}</div>
@@ -632,12 +633,12 @@ function renderRosterRows(){ let list=S.filter(s=>{ if(rosterFilt.coh&&s.coh!==r
 function rosterTable(){ const th=(k,l)=>`<th class="sortable" data-sort="${k}">${l}${rosterSort.k===k?(rosterSort.dir>0?' ▲':' ▼'):''}</th>`;
   return `<div class="filterbar"><input id="rq" type="search" placeholder="Search participant id…" value="${rosterFilt.q}"><select id="rcoh"><option value="">All cohorts</option>${COH.map(c=>`<option value="${c[0]}" ${rosterFilt.coh===c[0]?'selected':''}>${c[0]} · ${c[1]}mg</option>`).join('')}</select><select id="rflag"><option value="">All flag states</option><option value="red" ${rosterFilt.flag==='red'?'selected':''}>Has RED</option><option value="amber" ${rosterFilt.flag==='amber'?'selected':''}>Has AMBER</option><option value="clear" ${rosterFilt.flag==='clear'?'selected':''}>Clear / watch only</option></select><span style="font-size:11.5px;color:#64758c">click a row → evidence packet</span></div>
    <table class="mx" id="rostertbl"><thead><tr>${th('id','Participant')}${th('coh','Cohort')}<th>Sex/Age</th>${th('alt','Peak ALT')}${th('tbl','Peak TBili')}${th('qt','Max QTcF')}${th('nae','TEAE')}${th('flag','Screening flags')}</tr></thead><tbody id="rosterbody">${renderRosterRows()}</tbody></table>`; }
-reg('subj','Participants',()=>STATUS,()=>`<div class="grid"><div class="card wide"><div class="ch"><h3>Participant roster — sort, filter, search</h3></div><p class="cap">All ${S.length} participants with key screening values + per-domain flag chips. This is where you confirm the near-misses are correctly <b>not</b> flagged: <b>009</b> (high ALT, TBili &lt;2× → no eDISH flag) and <b>011/012</b> (QTcF in the <b>watch</b> band, every value sub-threshold). Click a row for the evidence packet.</p>${rosterTable()}${govLine}</div></div>`);
+reg('subj','Participants',()=>STATUS,()=>`<div class="grid"><div class="card wide"><div class="ch"><h3>Participant roster: sort, filter, search</h3></div><p class="cap">All ${S.length} participants with key screening values + per-domain flag chips. This is where you confirm the near-misses are correctly <b>not</b> flagged: <b>009</b> (high ALT, TBili &lt;2× → no eDISH flag) and <b>011/012</b> (QTcF in the <b>watch</b> band, every value sub-threshold). Click a row for the evidence packet.</p>${rosterTable()}${govLine}</div></div>`);
 
 /* ===== EXPLORATORY: trial-structure analytics via PERSISTENCE HOMOLOGY (H0) =====
-   SEPARATE from the validated backbone. Computed in-browser on the SAME synthetic cohort:
+   SEPARATE from the deterministic backbone. Computed in-browser on the SAME synthetic cohort:
    single-linkage H0 (Vietoris-Rips) on standardized safety features + a PCA embedding + a site network.
-   Exploratory structure only — never a flag, a determination, or a number; never escalates status. */
+   Exploratory structure only, never a flag, a determination, or a number; never escalates status. */
 const PHFEAT=['alt','ast','tbl','alp','qt','dqt','hgb','neut','creat','nae'];
 const CLP=['#4a90d9','#35b37b','#d6a01f','#c98bd6','#6fa3c9','#e2655a','#8392a4','#5fd0a0'];
 function phMatrix(){ const X=S.map(s=>PHFEAT.map(f=>+s[f]));
@@ -686,7 +687,7 @@ function phBetti(){ const W=400,H=210,pl=40,pr=16,pt=18,pb=34,n=S.length,sorted=
   g+=`<text x="${(W+pl)/2}" y="${H-6}" font-size="10" fill="#8a9bb0" text-anchor="middle">Rips radius ε</text><text x="12" y="${H/2}" font-size="10" fill="#8a9bb0" text-anchor="middle" transform="rotate(-90 12 ${H/2})">components β₀</text>`;
   return `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`; }
 function phBarcode(){ const W=400,rowH=10,sorted=[...PHH0.deaths].sort((a,b)=>b-a),maxD=sorted[0]||1,pl=8,pr=26,H=14+sorted.length*rowH+rowH+8;
-  let g=`<text x="${pl}" y="10" font-size="9.5" fill="#8a9bb0">H₀ bars — longest = most-separated participants</text>`;
+  let g=`<text x="${pl}" y="10" font-size="9.5" fill="#8a9bb0">H₀ bars: longest = most-separated participants</text>`;
   sorted.forEach((d,i)=>{const y=16+i*rowH,w=(d/maxD)*(W-pl-pr);g+=`<rect x="${pl}" y="${y}" width="${w.toFixed(1)}" height="${rowH-3}" rx="2" fill="${i<2?'#e2655a':i<5?'#d6a01f':'#4a90d9'}"/>`;});
   const yi=16+sorted.length*rowH+2; g+=`<rect x="${pl}" y="${yi}" width="${W-pl-pr}" height="${rowH-3}" rx="2" fill="#35b37b"/><text x="${W-pr+3}" y="${yi+rowH-4}" font-size="10" fill="#8a9bb0">∞</text>`;
   return `<svg viewBox="0 0 ${W} ${H}">${g}</svg>`; }
@@ -704,14 +705,14 @@ function phNetwork(){ const W=780,H=360,pl=70,pr=70,pt=34,pb=34;
   return {svg:`<svg viewBox="0 0 ${W} ${H}">${g}</svg>`,comps}; }
 function phHTML(){ const net=phNetwork();
   return `<div class="card wide" style="border-left:4px solid #c98bd6">
-    <div class="ch"><h3>Exploratory — trial-structure analytics (persistence homology)</h3><span class="sevtag plain" style="background:#3a2a55;color:#d9bff0">EXPLORATORY</span></div>
-    <div class="gov" style="background:#1c1530;border-color:#3d2a55;color:#cdb3e6"><b>Not part of the validated safety backbone.</b> Unsupervised structural analysis (H₀ persistent homology on standardized features) for hypothesis generation only — it never produces a flag, a determination, or a number, and nothing here escalates study status. Results are sensitive to feature choice and scaling. (Higher-dimensional persistence in the live version is precomputed offline with ripser/GUDHI; the exact H₀ filtration shown here is computed in-browser.)</div>
-    <p class="cap">Each participant is a point in a standardized 10-feature safety space (ALT, AST, TBili, ALP, QTcF, ΔQTcF, Hgb, ANC, creatinine, TEAE count). The Vietoris&ndash;Rips H₀ filtration (single-linkage) summarizes how participants cluster as the connection radius grows; <b>long-lived components are participants that stay separate longest &mdash; topological outliers.</b> The deterministic-flag participants are ringed &mdash; note they surface as outliers here too: an independent structural cross-check, not a second opinion that decides anything.</p>
+    <div class="ch"><h3>Exploratory: trial-structure analytics (persistence homology)</h3><span class="sevtag plain" style="background:#3a2a55;color:#d9bff0">EXPLORATORY</span></div>
+    <div class="gov" style="background:#1c1530;border-color:#3d2a55;color:#cdb3e6"><b>Not part of the deterministic safety backbone.</b> Unsupervised structural analysis (H₀ persistent homology on standardized features) for hypothesis generation only: it never produces a flag, a determination, or a number, and nothing here escalates study status. Results are sensitive to feature choice and scaling. (Higher-dimensional persistence in the live version is precomputed offline with ripser/GUDHI; the exact H₀ filtration shown here is computed in-browser.)</div>
+    <p class="cap">Each participant is a point in a standardized 10-feature safety space (ALT, AST, TBili, ALP, QTcF, ΔQTcF, Hgb, ANC, creatinine, TEAE count). The Vietoris&ndash;Rips H₀ filtration (single-linkage) summarizes how participants cluster as the connection radius grows; <b>long-lived components are participants that stay separate longest: topological outliers.</b> The deterministic-flag participants are ringed: note they surface as outliers here too: an independent structural cross-check, not a second opinion that decides anything.</p>
     <div class="grid">
-      <div class="card"><div class="ch"><h3 style="font-size:13px">PCA embedding &mdash; coloured by H₀ cluster</h3></div>${phScatter()}<p class="cap">2-D PCA projection; colour = cluster at ε*. A red ring = participant carries a deterministic screening flag (eDISH / QTcF / SAE). Click a point for its evidence packet.</p></div>
+      <div class="card"><div class="ch"><h3 style="font-size:13px">PCA embedding: colored by H₀ cluster</h3></div>${phScatter()}<p class="cap">2-D PCA projection; color = cluster at ε*. A red ring = participant carries a deterministic screening flag (eDISH / QTcF / SAE). Click a point for its evidence packet.</p></div>
       <div class="card"><div class="ch"><h3 style="font-size:13px">β₀ curve + H₀ barcode</h3></div>${phBetti()}<p class="cap" style="margin:4px 0 8px">Components remaining as the radius ε grows; the plateau at ε* defines <b>${PHCL.k}</b> natural subpopulation${PHCL.k>1?'s':''}.</p>${phBarcode()}</div>
     </div>
-    <div class="card wide" style="margin-top:16px"><div class="ch"><h3 style="font-size:13px">Site network &mdash; connectivity in safety-feature space (${net.comps} component${net.comps>1?'s':''})</h3></div>${net.svg}<p class="cap">Synthetic sites positioned by their participants' mean position in feature space; an edge joins similar sites. Node size = participants enrolled; a red ring = the site has a participant carrying a deterministic flag. H₀ of this graph = <b>${net.comps}</b> connected component${net.comps>1?'s':''} &mdash; how fragmented enrollment is in safety-feature space. Structural / operational context only, never a safety signal.</p></div>
+    <div class="card wide" style="margin-top:16px"><div class="ch"><h3 style="font-size:13px">Site network: connectivity in safety-feature space (${net.comps} component${net.comps>1?'s':''})</h3></div>${net.svg}<p class="cap">Synthetic sites positioned by their participants' mean position in feature space; an edge joins similar sites. Node size = participants enrolled; a red ring = the site has a participant carrying a deterministic flag. H₀ of this graph = <b>${net.comps}</b> connected component${net.comps>1?'s':''}: how fragmented enrollment is in safety-feature space. Structural / operational context only, never a safety signal.</p></div>
     ${govLine}</div>`; }
 reg('ph','Exploratory ▸ structure',()=>'',phHTML);
 
@@ -728,7 +729,7 @@ buildNav();renderSections();
 const tip=$('tip');
 function tipHTML(s){const dot=c=>`<span class="d" style="background:${c}"></span>`;const sc={RED:'#c4544a',AMBER:'#c2871a',GREEN:'#27996a',watch:'#5f8aa8'};
   return `<div class="t-id">${s.id}</div><div class="t-sub">${s.coh} · ${s.dose} mg · ${s.sex} · ${s.age}y</div>`+
-   `<div class="t-row">${dot(s.red_hys?sc.RED:sc.GREEN)}ALT ${s.alt.toFixed(1)}× · TBili ${s.tbl.toFixed(1)}×${s.red_hys?' — Hy’s-Law screen':''}</div>`+
+   `<div class="t-row">${dot(s.red_hys?sc.RED:sc.GREEN)}ALT ${s.alt.toFixed(1)}× · TBili ${s.tbl.toFixed(1)}×${s.red_hys?': Hy’s-Law screen':''}</div>`+
    `<div class="t-row">${dot(sc[s.qsev]||sc.GREEN)}QTcF ${s.qt} ms · Δ${s.dqt.toFixed(0)}${s.qsev==='watch'?' (watch)':''}</div>`+
    (s.dltfl==='Y'?`<div class="t-row">${dot(sc.AMBER)}adjudicated DLT</div>`:'')+`<div class="t-hint">click for the evidence packet</div>`;}
 function moveTip(e){tip.style.left=Math.min(e.clientX+14,window.innerWidth-tip.offsetWidth-8)+'px';tip.style.top=Math.min(e.clientY+16,window.innerHeight-tip.offsetHeight-8)+'px';}
@@ -754,11 +755,11 @@ function openSubj(id){const s=byId(id);if(!s)return;
     spk('ANC 10⁹/L',s.labv.map(L=>L?L.anc:null),{w:172,h:46,bands:[{v:1.5,c:'#c2871a'},{v:1.0,c:'#c4544a'}],lo:0,hi:6,meta:META.anc,c:'#3f7fc4',baselineIdx:0,last:''})+
     spk('Creatinine',s.labv.map(L=>L?L.creat:null),{w:172,h:46,bands:[{v:1.1,c:'#c2871a'}],lo:0.5,hi:Math.max(1.6,s.creat+0.2),meta:META.creat,c:'#1f8a5b',baselineIdx:0,last:''})+`</div>`;
   $('mbox').innerHTML=`<div class="hd"><h2>${s.id} <span class="sy" style="background:#e7c34d">SYNTHETIC</span> ${s.decoy?'<span class="sevtag ops">OPERATIONAL</span>':''}</h2><span class="x" tabindex="0" role="button" aria-label="Close" onclick="closeModal()">&times;</span></div>
-   <p class="cap" style="margin:4px 0 0">${s.coh} · ${s.dose} mg · ${s.sex} · ${s.age}y · enrolled day ${s.enrollDay} · ${DISP[s.dispStatus]}${s.dispReason!=='—'?' ('+s.dispReason+')':''}</p>
-   <h3>Deterministic evidence (the validated backbone)</h3>${det}
+   <p class="cap" style="margin:4px 0 0">${s.coh} · ${s.dose} mg · ${s.sex} · ${s.age}y · enrolled day ${s.enrollDay} · ${DISP[s.dispStatus]}${s.dispReason!=='n/a'?' ('+s.dispReason+')':''}</p>
+   <h3>Deterministic evidence (the screening backbone)</h3>${det}
    <h3>Per-visit trajectories (as-collected, single-draw)</h3>${sparks}
    ${s.note?`<p class="lead" style="margin-top:12px"><b>Provenance:</b> ${s.note}</p>`:''}
-   <p class="cap" style="margin-top:12px">Screening flags on synthetic data — not reported values; vitals/heme shown for context, not a tier. Reported numbers come from validated tools (Phoenix WinNonlin / Pinnacle 21).</p>`;
+   <p class="cap" style="margin-top:12px">Screening flags on synthetic data, not reported values; vitals/heme shown for context, not a tier. Reported numbers come from validated, double-programmed programs.</p>`;
   $('modal').classList.add('show');tip.classList.remove('show');}
 function closeModal(){$('modal').classList.remove('show');}
 
@@ -774,5 +775,5 @@ document.addEventListener('input',e=>{ if(e.target.id==='rq'){rosterFilt.q=e.tar
   if(e.target.id==='rcoh'){rosterFilt.coh=e.target.value;$('rosterbody').innerHTML=renderRosterRows();}
   if(e.target.id==='rflag'){rosterFilt.flag=e.target.value;$('rosterbody').innerHTML=renderRosterRows();} });
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-$('foot').innerHTML='<div class="fr">TRIALMON interactive dashboard · SYNTHETIC longitudinal ops data, seeded (SEED 20260611) for a reproducible picture — not a claim any signal is real or robust · every per-visit series’ worst on-treatment value equals the original summary so prior panels stay exact · the deterministic checks are the validated backbone (detect / package / page; humans decide) · severity (CTCAE band) and seriousness (regulatory) are kept separate; the dashboard derives only the TEAE flag and the 3+3 trigger, never escalation/MTD/SUSAR · reported numbers come only from validated tools (Phoenix WinNonlin / Pinnacle 21). Part of the SAS/R Monitoring &amp; On-Leave Coverage package. &nbsp;<a href="TRIALMON_Dashboard_Wiki.html" style="color:#2563a8;font-weight:700;text-decoration:none">&#128214; Open the Field Guide</a> &mdash; how to read every section, panel, threshold &amp; rule.</div>';
+$('foot').innerHTML='<div class="fr">TRIALMON interactive dashboard · SYNTHETIC longitudinal ops data, seeded (SEED 20260611) for a reproducible picture, not a claim any signal is real or robust · every per-visit series’ worst on-treatment value equals the original summary so prior panels stay exact · the deterministic checks are the screening backbone (detect / package / page; humans decide) · severity (CTCAE band) and seriousness (regulatory) are kept separate; the dashboard derives only the TEAE flag and the 3+3 trigger, never escalation/MTD/SUSAR · reported numbers come from validated, double-programmed programs. Part of the SAS/R Monitoring &amp; On-Leave Coverage package. &nbsp;<a href="TRIALMON_Dashboard_Wiki.html" style="color:#2563a8;font-weight:700;text-decoration:none">&#128214; Open the Field Guide</a>: how to read every section, panel, threshold &amp; rule.</div>';
 </script></body></html>

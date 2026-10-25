@@ -49,7 +49,7 @@ proc sort data=ae; by trt subjid ASTDT AEDECOD; run;
 %tfltitle(num=16.2.7.2, type=Listing,
           text=%str(Listing of Serious Adverse Events and Deaths),
           pop=Safety Population,
-          foot=%str(Includes events with AESER='Y' and/or a fatal outcome. Rel = analysis relationship to study drug. MedDRA v27.0.));
+          foot=%str(Includes events with AESER='Y' and/or a fatal outcome. Rel = analysis relationship to study drug. &MEDDRAVER..));
 proc report data=ae nowd split='*';
   columns trt subjid ('Adverse Event' AESOC AEDECOD)
           ('Onset*(Day)' relday) sev ('TEAE' te)

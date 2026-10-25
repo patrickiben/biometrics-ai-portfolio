@@ -3,63 +3,206 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI for Biometrics — Program Home</title>
+<title>Patrick Iben | Biostatistician</title>
+<meta name="description" content="Patrick Iben, independent biostatistician: seven years of clinical trial work, shown through worked examples and tools on synthetic data across the clinical trial lifecycle.">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<div class="top">
-  <b>AI for Biometrics</b>
-  <div class="nav">
-    <a href="Operations.html">Operations</a>
-    <a href="Biostatistics.html">Biostatistics</a>
-    <a href="START_HERE.html">Full library</a>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="index.html">Patrick Iben</a>
+    <nav aria-label="On this page">
+      <a href="#lifecycle">Lifecycle</a>
+      <a href="#start">Start here</a>
+      <a href="#how">How I work</a>
+      <a href="#contact">Contact</a>
+    </nav>
   </div>
-</div>
-<div class="wrap">
-  <header class="hero">
-    <div class="eyebrow" style="color:var(--gold)">Program Home · single entry point</div>
-    <h1>Bringing routine biostatistics programming in-house with AI</h1>
-    <p class="sub">One question, answered across every artifact here: can we bring routine biostatistics programming
-       in-house and do it faster, more consistently, and more defensibly &mdash; with AI we control? The recommendation
-       is a <b>hybrid</b> stack (Claude for capability + an on-prem model for sovereignty and reproducibility),
-       with humans and validated tools always in the loop.</p>
-    <div class="qprow">
-      <a class="qp go" href="New_Hire_Start_Here.html">
-        <div class="qe">&#128075; New biostatistician?</div>
-        <div class="qt">Start here &rarr;</div>
-        <div class="qd">How our team works, the rules you follow, what's real today vs proposed, and the order to learn it. The job &mdash; not the business case.</div>
-      </a>
+</header>
+
+<main id="main" class="wrap">
+
+  <section class="hero" aria-labelledby="title">
+    <p class="kicker">Independent biostatistician</p>
+    <h1 id="title">Patrick Iben</h1>
+    <p class="lede">Independent biostatistician: seven years of clinical trial work (Emmes, Syneos Health), including lead biostatistician on early-phase clinical pharmacology studies, shown here through worked examples and tools on synthetic data across the clinical trial lifecycle.</p>
+    <ul class="facts">
+      <li><strong>Seven years in clinical biostatistics:</strong> Associate Biostatistician at Emmes (2019 to 2021) and Biostatistician II at Syneos Health (2021 to 2026), serving as lead biostatistician from December 2022.</li>
+      <li><strong>Designs:</strong> first-in-human, SAD/MAD, crossover, bioequivalence and bioavailability studies, plus federally sponsored Phase 1 and Phase 3 opioid-use-disorder trials.</li>
+      <li><strong>Led:</strong> protocol statistical sections, randomization schedules, analysis plans and mock tables, listings and figures, PK/PD analyses, DSMB reports and final statistical reports.</li>
+    </ul>
+  </section>
+
+  <section id="lifecycle" aria-labelledby="lifecycle-h">
+    <h2 id="lifecycle-h">Across the trial lifecycle</h2>
+    <p>Each stage pairs what the resume supports with what this site can show today. Labels are deliberately narrow:</p>
+    <ul class="legend">
+      <li><span class="lab led">Led</span>owned, wrote or led the work in a job</li>
+      <li><span class="lab sup">Supported</span>reviewed, contributed, or created or reviewed</li>
+      <li><span class="lab tools">Tools built</span>shown only by independent work (code on this site or public drafts), not by job experience</li>
+      <li><span class="lab gap">Gap</span>no job experience or no worked artifact yet</li>
+    </ul>
+
+    <table class="stages">
+      <caption>Lifecycle snapshot, October 2026</caption>
+      <thead>
+        <tr><th scope="col">Stage</th><th scope="col">Experience (from the resume)</th><th scope="col">Label</th><th scope="col">On this site</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Design</th>
+          <td class="ev" data-label="Experience">Owned protocol statistical sections and randomization schedules for first-in-human, SAD/MAD, crossover and bioequivalence studies (Syneos Health); wrote protocol sections (Emmes); advised on design and sample size (CU Anschutz).</td>
+          <td class="lb" data-label="Label"><span class="lab led">Led</span><span class="lab gap">Gap: no worked design artifact yet</span></td>
+          <td data-label="On this site">Research on cluster randomized trial design under spatial interference (<em>Statistics in Medicine</em>, submitted), via the <a href="https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md">research map</a>. Related: an <a href="uat_irt/quarto/uat-guide.html">IRT/RTSM acceptance-test library</a> for randomization logic.</td>
+        </tr>
+        <tr>
+          <th scope="row">SAP and mock shells</th>
+          <td class="ev" data-label="Experience">Owned analysis plans and mock tables, listings and figures (Syneos Health); wrote analysis-plan sections (Emmes).</td>
+          <td class="lb" data-label="Label"><span class="lab led">Led</span><span class="lab tools">Tools built</span></td>
+          <td data-label="On this site">TLF template libraries for five early-phase designs, in <a href="sas_tlf_pseudocode/index.html">SAS</a> and <a href="r_tlf_pseudocode/index.html">R</a> (pseudocode).</td>
+        </tr>
+        <tr>
+          <th scope="row">Data standards</th>
+          <td class="ev" data-label="Experience">Created or reviewed CDISC analysis specifications; reviewed annotated CRFs and database designs against analysis requirements (Syneos Health).</td>
+          <td class="lb" data-label="Label"><span class="lab sup">Supported</span><span class="lab gap">Gap: define.xml, ADRG, SDTM mapping</span></td>
+          <td data-label="On this site">The <a href="sim_lifecycle/index.html">sandbox</a> writes eight ADaM-shaped domains that pass home-grown structural checks (not Pinnacle 21 or CDISC CORE).</td>
+        </tr>
+        <tr>
+          <th scope="row">Programming and TLFs</th>
+          <td class="ev" data-label="Experience">Built SAS and R tools (Emmes); reviewed outputs (Syneos Health).</td>
+          <td class="lb" data-label="Label"><span class="lab sup">Supported</span><span class="lab tools">Tools built</span></td>
+          <td data-label="On this site">SAS and R TLF libraries; base-R summary tables in the sandbox.</td>
+        </tr>
+        <tr>
+          <th scope="row">QC and validation</th>
+          <td class="ev" data-label="Experience">Reviewed outputs (Syneos Health).</td>
+          <td class="lb" data-label="Label"><span class="lab sup">Supported</span><span class="lab tools">Tools built</span></td>
+          <td data-label="On this site">A <a href="validation_harness/index.html">QC harness</a> that separates structural checks from executed ones; the eCRF apps' test suite runs in CI.</td>
+        </tr>
+        <tr>
+          <th scope="row">Monitoring and interim review</th>
+          <td class="ev" data-label="Experience">Wrote DSMB reports for federally sponsored trials (Emmes); reviewed interim study data (Syneos Health).</td>
+          <td class="lb" data-label="Label"><span class="lab led">Led: DSMB reports</span><span class="lab sup">Supported: interim review</span><span class="lab gap">Gap: DMC charters, group-sequential interim design</span></td>
+          <td data-label="On this site">eCRF assist apps for participant risk screening and central statistical monitoring that run in the browser (below). A safety-review console is being revised and is not featured yet.</td>
+        </tr>
+        <tr>
+          <th scope="row">PK and clinical pharmacology</th>
+          <td class="ev" data-label="Experience">Lead biostatistician on first-in-human, SAD/MAD, crossover, bioequivalence and bioavailability studies; performed PK/PD analyses (Syneos Health).</td>
+          <td class="lb" data-label="Label"><span class="lab led">Led</span><span class="lab tools">Tools built: runs</span></td>
+          <td data-label="On this site">An executable <a href="sim_lifecycle/index.html">sandbox</a>: one-compartment PK, NCA and a 2x2 bioequivalence analysis with a 90% confidence interval.</td>
+        </tr>
+        <tr>
+          <th scope="row">Reporting and CSR</th>
+          <td class="ev" data-label="Experience">Wrote final statistical reports (Emmes); contributed to clinical study reports (Syneos Health).</td>
+          <td class="lb" data-label="Label"><span class="lab led">Led: final statistical reports</span><span class="lab sup">Supported: CSRs</span><span class="lab gap">Gap: submission packages</span></td>
+          <td data-label="On this site">A <a href="tlf_interpret/index.html">number-grounding check</a> for drafted TLF text: its self-test runs; the language-model step is a stub.</td>
+        </tr>
+        <tr>
+          <th scope="row">Real-world data</th>
+          <td class="ev" data-label="Experience">Harmonized multi-clinic EHR data and supported external research partners (Emmes); harmonized hospital databases with millions of records (CU Anschutz).</td>
+          <td class="lb" data-label="Label"><span class="lab sup">Supported</span><span class="lab gap">Gap: no artifact here</span></td>
+          <td data-label="On this site">See the <a href="https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md">research map</a>.</td>
+        </tr>
+        <tr>
+          <th scope="row">Operations and delivery</th>
+          <td class="ev" data-label="Experience">Built dynamic study-progress reporting (Emmes).</td>
+          <td class="lb" data-label="Label"><span class="lab led">Led: study-progress reporting</span><span class="lab tools">Tools built</span></td>
+          <td data-label="On this site">A <a href="sasr_onleave_wiki/Continuity_Toolkit.html">continuity and handoff toolkit</a> that runs in the browser.</td>
+        </tr>
+        <tr>
+          <th scope="row">AI and automation</th>
+          <td class="ev" data-label="Experience">Built AI-evaluation tools with deterministic numeric and phrase checks (independent research engineering).</td>
+          <td class="lb" data-label="Label"><span class="lab tools">Tools built: synthetic data only</span></td>
+          <td data-label="On this site">Four eCRF assist apps whose evaluation reports measured failure rates (below).</td>
+        </tr>
+        <tr>
+          <th scope="row">Teaching</th>
+          <td class="ev" data-label="Experience">Taught graduate biostatistics review sessions and held office hours (CU Anschutz); wrote twelve educational editions that pair with the research manuscripts.</td>
+          <td class="lb" data-label="Label"><span class="lab led">Led: graduate review sessions</span><span class="lab tools">Tools built: educational editions</span></td>
+          <td data-label="On this site">Education companions, via the <a href="https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md">research map</a>.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="not-covered"><strong>Not covered here:</strong> define.xml and ADRG authoring, submission packages, DMC charters and group-sequential interim design.</p>
+  </section>
+
+  <section id="start" aria-labelledby="start-h">
+    <h2 id="start-h">Start here</h2>
+    <p>Five pieces that show the work as it stands today, each with its status stated.</p>
+    <div class="cards">
+
+      <article class="card">
+        <h3>PK, NCA and bioequivalence sandbox</h3>
+        <p class="meta"><span class="lab led">PK and clinical pharmacology</span><span class="lab tools">Runs in base R</span></p>
+        <p>One synthetic 2x2 crossover (N = 40, seed 2026): eight ADaM-shaped domains, a one-compartment oral PK model, NCA, and the bioequivalence geometric mean ratio with its 90% confidence interval.</p>
+        <p class="small">Re-running the script regenerates the committed output files byte for byte (checked with R 4.6.0).</p>
+        <ul class="go"><li><a href="sim_lifecycle/index.html">Open the sandbox</a></li></ul>
+      </article>
+
+      <article class="card">
+        <h3>SAS and R TLF template libraries</h3>
+        <p class="meta"><span class="lab led">SAP and mock shells</span><span class="lab tools">Pseudocode</span></p>
+        <p>217 programs per language across parallel, crossover, single-sequence, SAD and MAD designs: disposition, safety, PK, the BE mixed model, dose proportionality and accumulation.</p>
+        <p class="small">SAS not executed (no license). The R scripts parse under R 4.6.0 but have not yet been run on data.</p>
+        <ul class="go"><li><a href="sas_tlf_pseudocode/index.html">SAS library</a></li><li><a href="r_tlf_pseudocode/index.html">R library</a></li></ul>
+      </article>
+
+      <article class="card">
+        <h3>eCRF assist apps</h3>
+        <p class="meta"><span class="lab tools">AI and automation</span><span class="lab tools">Synthetic data</span></p>
+        <p>Four Python apps: coding QC assist, de-identification review assist, participant risk screening (rule-based default thresholds) and central statistical monitoring. The evaluation reports its own failures: on held-out synthetic text, the de-identification stand-in left 108 of 308 identifiers readable (the full model path: 91 of 308).</p>
+        <div class="shots">
+          <figure><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html"><img src="assets/ecrf/meddra_results.png" width="1440" height="960" loading="lazy" alt="Coding QC assist: synthetic adverse-event verbatims with ranked candidate dictionary terms"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html">Coding QC</a></figcaption></figure>
+          <figure><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html"><img src="assets/ecrf/phi_results.png" width="1440" height="960" loading="lazy" alt="De-identification review assist: flagged names, phone numbers and ZIP codes in synthetic adverse-event text"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html">De-identification</a></figcaption></figure>
+          <figure><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html"><img src="assets/ecrf/risk_results.png" width="1440" height="960" loading="lazy" alt="Participant risk screening: per-participant scores and contributing factors from rule-based default thresholds, synthetic data"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html">Risk screening</a></figcaption></figure>
+          <figure><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html"><img src="assets/ecrf/anomaly_results.png" width="1440" height="960" loading="lazy" alt="Central statistical monitoring: per-participant numeric outliers and per-lab drift tables, synthetic data"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html">Central monitoring</a></figcaption></figure>
+        </div>
+        <p class="small">Open an app to run it in your browser on bundled synthetic data (uploads are disabled in the public demo). The page is downloaded from GitHub Pages and jsDelivr, which see your IP address; the first visit downloads about 30 MB and Python starts in a few seconds. Not a validated or Part 11 system.</p>
+        <ul class="go"><li><a href="https://patrickiben.github.io/ecrf-pipeline-apps/">Overview</a></li><li><a href="https://github.com/patrickiben/ecrf-pipeline-apps">Source and evaluation</a></li></ul>
+      </article>
+
+      <article class="card">
+        <h3>Continuity and handoff toolkit</h3>
+        <p class="meta"><span class="lab led">Operations and delivery</span><span class="lab tools">Runs in the browser</span></p>
+        <p>Turns a list of recurring statistical jobs into a coverage matrix, single-owner risks, per-job checklists and a printable handoff packet.</p>
+        <p class="small">The page makes no network requests and ships with a clearly fictional example.</p>
+        <ul class="go"><li><a href="sasr_onleave_wiki/Continuity_Toolkit.html">Open the toolkit</a></li></ul>
+      </article>
+
+      <article class="card">
+        <h3>Research and teaching</h3>
+        <p class="meta"><span class="lab tools">Independent research</span><span class="lab tools">Teaching editions</span></p>
+        <p>Six manuscripts with public drafts, including cluster randomized trial design under spatial interference (<em>Statistics in Medicine</em>, submitted), and twelve educational editions with worked examples.</p>
+        <ul class="go"><li><a href="https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md">Research map</a></li></ul>
+      </article>
+
     </div>
-  </header>
+  </section>
 
-  <h2>Choose your view</h2>
-  <div class="sections">
-    <a class="sec ops" href="Operations.html">
-      <div class="k">For trial operations</div>
-      <h3>Operations</h3>
-      <p>The ship-today, no-PHI operational layer: self-updating Smartsheet trackers and knowledge bases, deterministic SAS/R monitoring and on-leave coverage, the participant-safety and risk dashboards, and the hybrid/on-device trial-ops wikis.</p>
-      <div class="go">Enter Operations &rarr;</div>
-    </a>
-    <a class="sec bio" href="Biostatistics.html">
-      <div class="k">For the biostatistician</div>
-      <h3>Biostatistics</h3>
-      <p>The hands-on build: the SAS + R TLF pseudocode libraries, the TLF-interpretation drafter, the Protocol&rarr;CSR deliverables pipeline, the end-to-end study-lifecycle sandbox, and the training course.</p>
-      <div class="go">Enter Biostatistics &rarr;</div>
-    </a>
+  <section id="how" aria-labelledby="how-h">
+    <h2 id="how-h">How I work</h2>
+    <div class="how">
+      <p>Validated systems own reported numbers, a named statistician signs every deliverable, and this site uses synthetic data only.</p>
+      <p class="small">AI tools may draft or check text; they never produce a reported number. Pages say what was executed and what was not.</p>
+    </div>
+  </section>
+
+</main>
+
+<footer id="contact" class="site">
+  <div class="wrap">
+    <h2>Contact</h2>
+    <ul class="contact">
+      <li><span class="k">Email</span>patrickiben@gmail.com</li>
+      <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>
+      <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>
+      <li><span class="k">Location</span>St. Petersburg, FL / Remote US</li>
+    </ul>
+    <p class="fine">Every dataset on this site is synthetic. Nothing here is real trial data, and no output here is a validated or regulatory deliverable. Last updated October 2026.</p>
   </div>
-
-  <div class="firstbox" style="margin-top:20px">Prefer one long page? <a href="START_HERE.html"><b>Browse the full library &rarr;</b></a> &mdash; every artifact, organized by theme, on a single index.</div>
-
-  <div style="font-size:12.5px;color:#94a1c0;margin:14px 0 0"><b style="color:#e0a64c">Heads&#8209;up:</b> most of this package is a <b>proposal</b> pending management approval &mdash; <b>not current practice.</b> Today's production runs through validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, EDC) + our in&#8209;house team; the AI tools here are accelerators / skeletons, not validated systems.</div>
-
-  <footer>
-    <b>Guardrails (apply throughout):</b> operations-only &mdash; no PHI, no participant-level data; reported/regulated
-    numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21, EDC/CTMS), never an LLM; every draft is
-    human-signed; the programming team is an in-house capability. Value framed as capacity, cycle-time,
-    quality, and sovereignty &mdash; not budget or headcount. Most artifacts are AI-built templates and proofs-of-capability
-    that jump-start validated builds, not validated production systems.
-  </footer>
-</div>
-<script src="site.js" defer></script>
+</footer>
 </body>
 </html>

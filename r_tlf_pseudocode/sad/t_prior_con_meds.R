@@ -96,7 +96,7 @@ tab <- bind_rows(prior, conmed) %>%
 ttl <- tfl_titles(num = "14.1.6", type = "Table",
    text = "Prior and Concomitant Medications by Drug Class and Dose Cohort",
    pop  = "Safety Population",
-   foot = "SAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Participants counted once per class / medication (distinct USUBJID). Percentages based on Safety Population N per cohort. WHODrug Global Bxx coding; ATC class = CMCLAS.")
+   foot = "SAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Participants counted once per class / medication (distinct USUBJID). Percentages based on Safety Population N per cohort. {whodrug} coding; ATC class = CMCLAS.")
 
 lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
   split_rows_by("section", page_by = TRUE) %>%

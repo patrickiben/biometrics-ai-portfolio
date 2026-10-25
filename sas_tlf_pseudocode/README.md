@@ -1,11 +1,11 @@
-# Early-Phase Clinical Pharmacology — SAS TLF Pseudocode Library
+# Early-Phase Clinical Pharmacology: SAS TLF Pseudocode Library
 
 ADaM-based SAS **pseudocode** for every Table, Listing, and Figure (TLF) in an early-phase
-clin-pharm study, with a **complete separate set per study design**. Illustrative structure
-for spec/double-programming — not validated production code. Reported numbers come from
-validated ADaM + double-programmed code per SOP; nothing here originates a number.
+clin-pharm study, with a **complete separate set per study design**. **SAS code not executed (no license):** none of these programs has been run in SAS. Illustrative
+structure for specification and double programming, not validated production code; nothing here
+originates a number. In a study, reported numbers come from validated, double-programmed SAS/R TLF programs on ADaM; NCA from Phoenix WinNonlin (version per ADRG, currently 8.8) or PKNCA; CDISC conformance is checked with Pinnacle 21 (FDA engine 2304.3), which produces no reported numbers.
 
-## Designs (one folder each — full set per design)
+## Designs (one folder each: full set per design)
 | Folder | Design | Key analysis differences |
 |---|---|---|
 | `parallel/` | Parallel-group | Between-group; treatment = `TRT01A`/`TRT01AN` |
@@ -16,7 +16,7 @@ validated ADaM + double-programmed code per SOP; nothing here originates a numbe
 
 Design is also wired in code via `%designvars(design=...)` in `00_setup_macros.sas`, so each
 design folder's programs differ only where the **statistics** genuinely differ (PK comparison,
-by-period/by-sequence safety, dose escalation) — Tables/Listings of safety are structurally
+by-period/by-sequence safety, dose escalation): Tables/Listings of safety are structurally
 identical, re-pointed to the design's treatment/period variables.
 
 ## TLF inventory (each = one program per design)
@@ -24,14 +24,14 @@ identical, re-pointed to the design's treatment/period variables.
 - `t_disposition` · `t_demographics` · `t_baseline_characteristics` · `t_exposure`
 - `t_protocol_deviations` · `t_prior_con_meds` · `t_medical_history` · `l_disposition`
 
-**Safety — AE** (ADAE)
+**Safety: AE** (ADAE)
 - `t_ae_overview` · `t_ae_by_soc_pt` · `t_ae_by_severity` · `t_ae_by_relationship`
 - `t_ae_sae_death_withdrawal` · `l_ae` · `l_sae_death`
 
-**Safety — Labs** (ADLB)
+**Safety: Labs** (ADLB)
 - `t_lab_summary` · `t_lab_shift` · `t_lab_marked_abnormal` · `f_lab_lft_scatter` · `f_lab_change` · `l_lab_abnormal`
 
-**Safety — Vitals / ECG** (ADVS, ADEG)
+**Safety: Vitals / ECG** (ADVS, ADEG)
 - `t_vitals_summary` · `f_vitals_change` · `l_vitals`
 - `t_ecg_summary` · `t_ecg_qtc_categorical` · `f_qtc_change` · `l_ecg`
 
@@ -40,12 +40,15 @@ identical, re-pointed to the design's treatment/period variables.
 - `t_pk_param_summary` · `l_pk_param` · `f_pk_param_boxplot`
 - design-specific: `t_dose_proportionality` (SAD) · `t_accumulation` (MAD) · `t_be_anova` (crossover/single-seq)
 
-**PD / Biomarkers** (ADPD) — `t_pd_summary` · `f_pd_change` · `f_pkpd_overlay` · `l_pd`
-**Immunogenicity** (ADIS) — `t_ada_summary` · `t_ada_impact_pk` · `l_ada`
+**PD / Biomarkers** (ADPD): `t_pd_summary` · `f_pd_change` · `f_pkpd_overlay` · `l_pd`
+**Immunogenicity** (ADIS): `t_ada_summary` · `t_ada_impact_pk` · `l_ada`
 
 ## Naming convention
 `t_` table · `l_` listing · `f_` figure. One program → one output. Each program `%include`s
 `00_setup_macros.sas`, calls `%setup` then `%designvars(design=<folder>)`, then the TLF body.
+Coding-dictionary versions are parameters of `%setup` (`meddraver=`, `whodrugver=`; defaults
+`MedDRA v29.1` and `WHODrug Global B3, Sep 2026`) and reach the footnotes as `&MEDDRAVER` and
+`&WHODRUGVER`; set them to the versions the SAP names.
 
 ## ADaM variables relied on (no re-derivation here)
 - Treatment: `TRT01A/TRT01AN` (parallel), `TRTA/TRTAN`+`APERIOD/APERIODC`+`TRTSEQP` (crossover/seq)
@@ -56,11 +59,12 @@ identical, re-pointed to the design's treatment/period variables.
 
 ## Status
 Complete: **217 TLF programs** across all five design folders + `00_setup_macros.sas`.
-Built by fan-out generation, then a two-pass adversarial QC (6 family reviewers → per-finding
-verification: 35 confirmed defects fixed, 2 reviewer false-positives rejected), then a
-deterministic sweep. All programs scaffold correctly (`%include`/`%setup`/`%designvars`),
+Generated with AI assistance, then reviewed by an AI-agent panel in two passes (six reviewers by
+program family, then per-finding verification: 35 defects confirmed and fixed, 2 reviewer false
+positives rejected), then a deterministic sweep; human sign-off is pending. Static checks confirm
+that all programs scaffold correctly (`%include`/`%setup`/`%designvars`),
 `%designvars` matches each folder, geometric PK stats are computed on the log scale (never
 `exp(arithmetic mean)`), AE counts are distinct participants, single-sequence participant-level tables
 key on `&SEQVAR`/`&SEQVARN` while period tables denominate from a period-bearing source, and the
-library is free of `eDISH`/`Hy's Law` terminology. Pseudocode for spec/double-programming — not
-validated production code; reported numbers still come from validated tools per SOP.
+library is free of `eDISH`/`Hy's Law` terminology. SAS code not executed (no license); written for
+SAS 9.4M8 or later (9.4M9, June 2025, is current). Not validated production code.

@@ -60,7 +60,7 @@ rep <- bind_rows(any_mh, soc, socpt) %>%
 ttl <- tfl_titles(num = "14.1.7", type = "Table",
    text = "Medical History by System Organ Class and Preferred Term",
    pop  = "Safety Population",
-   foot = paste("A participant is counted once at each level. MedDRA v27.0.",
+   foot = paste("A participant is counted once at each level. {meddra}.",
                 "Pre-treatment medical/surgical history. Percentages based on",
                 "Safety Population N per fixed sequence."))
 

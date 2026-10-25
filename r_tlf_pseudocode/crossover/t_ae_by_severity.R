@@ -84,7 +84,7 @@ ttl <- tfl_titles(num = "14.3.1.3", type = "Table",
    text = "Treatment-Emergent Adverse Events by Maximum Severity, System Organ Class and Preferred Term",
    pop  = "Safety Population",
    foot = paste0("A participant is counted once per SOC/PT at their maximum severity for the treatment. ",
-                 "Columns = treatment (TRTA) x severity. % = participants / N exposed (ADEX). Severity: 1=Mild, 2=Moderate, 3=Severe. MedDRA v27.0."))
+                 "Columns = treatment (TRTA) x severity. % = participants / N exposed (ADEX). Severity: 1=Mild, 2=Moderate, 3=Severe. {meddra}."))
 
 ## rtables: nested column split treatment -> severity, row split SOC -> PT
 print(rep)

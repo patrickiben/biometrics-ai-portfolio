@@ -1,7 +1,7 @@
 /*====================================================================================
   monitor_driver.sas  -  the daily unattended monitoring job (Study CP-101).
   Schedule in batch under a SERVICE account (not a personal login):
-     Windows : schtasks /create /tn "CP101_monitor" /tr "run_monitor.bat" /sc DAILY /st 06:00 /ru SVC-BIOSTAT
+     Windows : schtasks /create /tn "CP101_monitor" /tr "run_monitor.bat" /sc DAILY /st 06:00 /ru svc_trialmon
      Linux   : 0 6 * * 1-5  /opt/jobs/run_monitor.sh    # sas -sysin monitor_driver.sas -batch
   run_monitor.bat: sas.exe -sysin monitor_driver.sas -log "logs\cp101_%date%.log" -nosplash -batch -noterminal
   Flow: INGEST -> FRESHNESS GATE -> GUARD -> checks -> roll-up -> DIGEST, + a tier-2
@@ -63,7 +63,7 @@ run;
 %if &_did %then %let _n=%sysfunc(attrn(&_did,nlobs)); %let _rc=%sysfunc(close(&_did));
 %tm_heartbeat(records=&_n, watcher_to=&CFG_BACKUP);
 
-/* Friday: weekly status pack + a numeric manager one-pager ------------------------- */
+/* Friday: weekly status pack + a numeric study-lead one-pager ---------------------- */
 %if %sysfunc(weekday(%sysfunc(today())))=6 %then %do;
   %tm_digest(title=CP-101 Weekly Status, sections=_tm_enroll _tm_ae _tm_dlt _tm_qry _tm_vis, to=&CFG_SUPPORT &CFG_MGR, dest=pdf);
 %end;

@@ -58,7 +58,7 @@ ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
    pop  = "Safety Population",
    foot = paste("SAD: each column = single ascending dose level (TRT01A), ordered",
                 "low to high; placebo may be pooled across cohorts. A participant is",
-                "counted once at each level. MedDRA v27.0. % = participants with the",
+                "counted once at each level. {meddra}. % = participants with the",
                 "event / N in dose level."))
 
 ## rtables/gt rendering; split_cols_by(dv$trtvar) (ascending dose);

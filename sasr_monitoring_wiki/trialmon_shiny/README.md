@@ -29,13 +29,18 @@ shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 The screening rules (illustrative thresholds):
 
 ```
-eDISH / Hy's-Law : (ALT or AST > 3x ULN) AND TBili > 2x ULN            -> RED
+eDISH / Hy's-Law : (ALT or AST >= 3x ULN) AND TBili > 2x ULN           -> RED
+                   R = (ALT/ULN)/(ALP/ULN): >= 5 hepatocellular, 2 < R < 5 mixed, <= 2 cholestatic
 QTcF (ICH E14)   : QTcF > 500 ms or dQTcF > 60 ms -> RED ; > 480/> 30  -> AMBER
-3+3 DLT          : >= 2 adjudicated DLT in an evaluable cohort -> RED ; 1 -> AMBER
+3+3 DLT          : >= 2 adjudicated DLT in a cohort -> RED (MTD exceeded);
+                   1 DLT with fewer than 6 evaluable -> AMBER (expand to 6);
+                   1 of 6 -> GREEN (escalation-eligible; the SRC decides)
 ```
 
 The **AND-gate** is the point: CP101-009 has ALT 4.2x but TBili 1.6x, so it is *not*
-a Hy's-Law position and correctly stays green - a high transaminase alone does not fire.
+a Hy's-Law position and stays green: a high transaminase alone does not fire the Hy's-Law gate.
+Known issue: there is no separate flag for ALT or AST above 3x ULN, which FDA's DILI guidance (2009)
+says needs repeat liver tests within 48 to 72 hours; the next revision adds it.
 
 ## Make it your own
 

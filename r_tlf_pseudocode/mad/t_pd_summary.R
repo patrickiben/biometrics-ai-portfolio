@@ -19,7 +19,7 @@
 #             dose-response of a steady-state PD metric (e.g. Day N peak/trough
 #             %inhibition) is shown via a log-log power model. Descriptive,
 #             hypothesis-generating only; reported numbers come from the validated
-#             PK/PD tool per SOP.
+#             PK/PD tool per the study's SOPs.
 ################################################################################
 source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
@@ -106,7 +106,7 @@ ss_slope <- trough %>%
 ## metric (e.g. last-day peak / trough %inhibition). Drop placebo (log(0) dose)
 ## and non-positive metric; mirror the dose-proportionality power model on active
 ## arms only. Descriptive support; the reported PD/dose model comes from the
-## validated PK/PD tool per SOP.
+## validated PK/PD tool per the study's SOPs.
 ss_day <- suppressWarnings(max(pd$ADY[pd[[dv$trtnvar]] > 0], na.rm = TRUE))
 metric_subj <- pd %>%
   filter(!is.na(AVAL), .data[[dv$trtnvar]] > 0) %>%

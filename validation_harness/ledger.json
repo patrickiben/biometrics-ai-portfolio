@@ -1,63 +1,65 @@
 {
- "generated": "2026-07-07 10:19 EDT",
+ "generated": "2026-10-24 23:49 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 8,
+ "green": 5,
+ "manual": 1,
+ "unsigned": 1,
  "total": 8,
  "gates": [
   {
    "gate": "G1 Reproducibility & environment",
-   "guards": "every number is regenerable from code + frozen inputs",
+   "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "453 R programs parse (0 fail); synthetic study re-runs bit-STABLE from seed 2026 (base R)",
+   "evidence": "469 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
-   "gate": "G2 Numeric-provenance",
-   "guards": "no reported number is produced by an LLM",
+   "gate": "G2 PK and count convention scans",
+   "guards": "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)",
    "status": "green",
-   "evidence": "geometric-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; drafter number-validation self-test present (5)",
+   "evidence": "static scans: geometric-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; drafter number-validation self-test present (5)",
    "sign_off": "pending"
   },
   {
-   "gate": "G3 Data conformance & integrity",
-   "guards": "the analysis data is CDISC-conformant, intact, and PHI-free",
+   "gate": "G3 Data structure & integrity",
+   "guards": "the analysis data passes the custom structural checks (not Pinnacle 21 or CDISC CORE), is intact, and PHI-free",
    "status": "green",
-   "evidence": "ADaM conformance PASS (checks/conformance.R); 0 trial-sense 'subject' in programs; 0 PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)",
+   "evidence": "custom structural checks PASS (checks/conformance.R; not Pinnacle 21 or CDISC CORE); 0 trial-sense 'subject' in programs; 0 PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)",
    "sign_off": "pending"
   },
   {
-   "gate": "G4 Double-programming parity (SAS<->R)",
-   "guards": "the two independent implementations agree",
+   "gate": "G4 SAS/R twin structural parity",
+   "guards": "the SAS and R twins line up program for program (structure only)",
    "status": "green",
-   "evidence": "217 SAS / 217 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse",
+   "evidence": "217 SAS / 217 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse. Structural only: SAS is not executed (no license), so no outputs are compared, and the R twins were written to mirror the SAS",
    "sign_off": "pending"
   },
   {
    "gate": "G5 Adversarial QC panel",
    "guards": "no skeptical reader can break the deliverable",
-   "status": "green",
-   "evidence": "multi-lens fix->adversarial-verify panel applied; 51 P0/P1 parity findings resolved; 6 previously-pending twin-pairs independently re-verified (5 confirmed, 1 sad/t_lab_marked_abnormal denominator gap found + fixed); no open items",
+   "status": "manual",
+   "evidence": "manual record, not computed here: an AI-agent review panel reported 51 P0/P1 parity findings resolved; 6 previously-pending twin pairs re-verified by the panel (5 confirmed, 1 sad/t_lab_marked_abnormal denominator gap found and fixed). Human review of these findings is not yet recorded",
    "sign_off": "pending"
   },
   {
-   "gate": "G6 Regulatory & reporting standard",
-   "guards": "CDISC/ICH/Part-11 structure is met",
-   "status": "green",
-   "evidence": "0 TLF-number collisions; 0 out-of-scope eDISH/Hy's terms in programs; ICH E14 QTc reference lines in 5 QTc figures",
+   "gate": "G6 Reporting conventions",
+   "guards": "TLF numbering, scope and ICH E14 conventions hold (pattern checks, not a regulatory review)",
+   "status": "red",
+   "evidence": "0 TLF-number collisions; 0 out-of-scope eDISH/Hy's terms in programs; ICH E14 categorical thresholds (>450/480/500 ms, change >30/60 ms) in 10/10 QTc tables; QTc change figures: 4/10 draw the +10 ms mean-effect line and 6/10 draw 30/60 ms lines (one convention must apply to all)",
    "sign_off": "pending"
   },
   {
-   "gate": "G7 AI-use governance & accountability",
-   "guards": "AI is disclosed and bounded; a human signs",
-   "status": "green",
-   "evidence": "0 experimental/non-standard method labels in analysis programs; 0 PHI hits; frozen-model + human-gate discipline documented in 24 wiki pages",
+   "gate": "G7 AI-governance documentation present",
+   "guards": "the drafter's AI-use limits (frozen model, human gate) are written down and no PHI turns up (file scans); accountability needs a named statistician's signature, not yet given",
+   "status": "not signed",
+   "evidence": "0 experimental/non-standard method labels in analysis programs; 0 PHI hits; frozen-model + human-gate discipline documented in 7 tlf_interpret files. Not signed: the scans pass, but no one has signed for AI use",
    "sign_off": "pending"
   },
   {
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 39 HTML pages (broken links, deliverables missing from the nav, orphaned pages, terminology drift, count drift)",
+   "evidence": "package_qc.py: 0 issues across 41 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
   }
  ]

@@ -49,7 +49,7 @@ proc sort data=sae; by subjid APERIOD ASTDT AEDECOD; run;
 %tfltitle(num=16.2.7.3, type=Listing,
           text=Listing of Serious Adverse Events and Deaths by Period,
           pop=Safety Population,
-          foot=%str(Includes events with AESER=Y or AESDTH=Y. Period 1 = reference; later period(s) = test condition. Seriousness Criteria = AESDTH/AESLIFE/AESHOSP/AESDISAB/AESCONG/AESMIE. Death Date from DTHDT (ADSL); blank for non-fatal SAEs. Rel = relationship to study drug per investigator/analysis. MedDRA v27.0.));
+          foot=%str(Includes events with AESER=Y or AESDTH=Y. Period 1 = reference; later period(s) = test condition. Seriousness Criteria = AESDTH/AESLIFE/AESHOSP/AESDISAB/AESCONG/AESMIE. Death Date from DTHDT (ADSL); blank for non-fatal SAEs. Rel = relationship to study drug per investigator/analysis. &MEDDRAVER..));
 proc report data=sae nowd split='*';
   columns subjid perc trt ('Adverse Event' AESOC AEDECOD)
           ('Study Day' stdy endy) sev ('Seriousness Criteria' crit)

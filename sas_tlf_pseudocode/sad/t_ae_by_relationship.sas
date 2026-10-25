@@ -62,7 +62,7 @@ proc transpose data=_rep out=_wide; by socn ptn level term; id &TRTNVAR; var val
 %tfltitle(num=14.3.1.3, type=Table,
    text=%str(Treatment-Emergent Adverse Events Related to Study Drug by System Organ Class and Preferred Term and Dose Level),
    pop=Safety Population,
-   foot=%str(Related = AREL in (Related/Possible/Probable/Definite). A participant is counted once at each level. Columns = ascending dose levels (placebo pooled). % = participants / N in dose column. MedDRA v27.0.));
+   foot=%str(Related = AREL in (Related/Possible/Probable/Definite). A participant is counted once at each level. Columns = ascending dose levels (placebo pooled). % = participants / N in dose column. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns socn ptn level term ("Dose Level" /* ascending dose cols + Total */);
   define socn  / order descending noprint;

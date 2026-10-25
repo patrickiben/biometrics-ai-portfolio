@@ -74,7 +74,7 @@ proc transpose data=_rep out=_wide; by ord catlbl; id trtn; var value; run;
 %tfltitle(num=14.3.1, type=Table,
    text=%str(Overview of Treatment-Emergent Adverse Events by Dose Level),
    pop=Safety Population,
-   foot=%str(TEAE = treatment-emergent AE (TRTEMFL='Y'). A participant is counted once in each category. Columns = ascending dose levels (placebo pooled). % = participants with the event / N in dose column. MedDRA v27.0.));
+   foot=%str(TEAE = treatment-emergent AE (TRTEMFL='Y'). A participant is counted once in each category. Columns = ascending dose levels (placebo pooled). % = participants with the event / N in dose column. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns ord catlbl ("Dose Level" /* ascending dose cols + Total */);
   define ord    / order noprint;

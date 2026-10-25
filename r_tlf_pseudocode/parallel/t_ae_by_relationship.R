@@ -61,7 +61,7 @@ ttl <- tfl_titles(
   pop  = "Safety Population",
   foot = paste("Treatment-related = AREL in {RELATED, POSSIBLE, PROBABLE, DEFINITE}",
                "(case-insensitive). A participant is counted once at each level.",
-               "% = participants / N in arm. MedDRA v27.0."))
+               "% = participants / N in arm. {meddra}."))
 
 ## rtables/gt: SOC bold (level 1), PT indented (level 2)
 print(rep)

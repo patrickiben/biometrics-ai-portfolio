@@ -56,7 +56,7 @@ ttl <- tfl_titles(num = "16.2.7.2", type = "Listing",
    text = "Listing of Serious Adverse Events and Deaths",
    pop  = "Safety Population",
    foot = paste0("Includes any AE with AESER='Y' or AESDTH='Y'. Crossover: Sequence (TRTSEQP) and Period (APERIODC) shown to map ",
-                 "each event to the treatment in effect at onset. Related = AREL in {Related, Possible, Probable, Definite}. MedDRA v27.0."))
+                 "each event to the treatment in effect at onset. Related = AREL in {Related, Possible, Probable, Definite}. {meddra}."))
 
 ## render: one block per sequence (page break), columns as ordered above
 ## listings::create_listing(sae, ...) or gt::gt(sae %>% select(-seqn,-pern,-ASTDT))

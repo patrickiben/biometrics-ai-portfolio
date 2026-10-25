@@ -26,7 +26,7 @@ pc <- adam$adpc %>%
 ## nominal time relative to that day's dose (so a 24h tau profile reads cleanly).
 by <- c(dv$trtvar, "PARAM", "AVISIT", "ADY", "ATPTN", "ATPT")
 
-## --- BLQ accounting (reported separately; per SOP first/middle/last rule) ---
+## --- BLQ accounting (reported separately; per the study's SOPs first/middle/last rule) ---
 blq_n <- pc %>% group_by(across(all_of(by))) %>%
   summarise(n_total = n_distinct(USUBJID),
             n_blq   = sum(blq), .groups = "drop")

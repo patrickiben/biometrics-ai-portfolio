@@ -41,7 +41,7 @@ ttl <- tfl_titles(num = "16.2.11.2", type = "Listing",
    pop  = "Pharmacokinetic Parameter Population",
    foot = paste("NC = not calculated; NE = non-estimable; values from validated software (Phoenix WinNonlin).",
                 "Units per analysis dataset. Participants grouped by treatment (dose level).",
-                "AUCinf shown only when %AUCextrap acceptable per SOP."))
+                "AUCinf shown only when %AUCextrap acceptable per the study's SOPs."))
 
 ## render: blocks by treatment (page break), columns = parameters above
 ## listings::create_listing(...) or gt::gt(wide)

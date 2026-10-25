@@ -51,7 +51,7 @@ proc transpose data=_rep out=_wide; by socn ptn level term; id &TRTNVAR; var val
 %tfltitle(num=14.3.1.1, type=Table,
    text=%str(Treatment-Emergent Adverse Events by System Organ Class and Preferred Term),
    pop=Safety Population,
-   foot=%str(A participant is counted once at each level. MedDRA v27.0. % = participants with the event / N in arm.));
+   foot=%str(A participant is counted once at each level. &MEDDRAVER.. % = participants with the event / N in arm.));
 proc report data=_wide nowd split='|';
   columns socn ptn level term ("Treatment Arm" /* arm cols + Total */);
   define socn  / order descending noprint;

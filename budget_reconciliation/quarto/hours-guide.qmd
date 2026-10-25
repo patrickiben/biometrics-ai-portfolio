@@ -49,7 +49,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 
 When a new out-of-scope ask lands, you do not immediately ask for more. First you find the hours you already have: honest under-run slack across the tasks that are tracking under plan, plus the management reserve. Only the residual becomes a change order.
 
-$$\textbf{Net findable} \;=\; \big(\textstyle\sum \text{Planned} \;+\; \text{Contingency}\big) \;-\; \textstyle\sum \text{EAC}$$
+**Net findable** = (&sum; Planned + Contingency) &minus; &sum; EAC
 
 Under-run slack is the part of your planned effort you are forecast **not** to spend (planned minus estimate-at-completion, floored at zero). Contingency is the management reserve. Add them and you have the effort you can redirect before touching the contract.
 
@@ -94,7 +94,7 @@ flowchart LR
 | **Change order** | Contract process: lead biostatistician + PM review, sponsor sign-off, SOW amended |
 
 ::: {.callout-important appearance="simple"}
-The tool does not connect to CTMS or timesheets. You **transcribe** current figures into the ledger, on purpose, so the reconciliation is attributable and stands on its own. Every number reported here comes from the validated ledger and the shared logic core, never from an assistant.
+The tool does not connect to CTMS or timesheets. You **transcribe** current figures into the ledger, on purpose, so the reconciliation is attributable and stands on its own. Every number here comes from the ledger file and the shared logic core, never from an assistant.
 :::
 
 ## The live roll-up, computed from the ledger {#live}

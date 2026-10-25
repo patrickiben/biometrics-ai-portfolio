@@ -55,7 +55,7 @@ ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
    text = "Treatment-Emergent Adverse Events by System Organ Class and Preferred Term, by Dose Level",
    pop  = "Safety Population",
    foot = paste("MAD: parallel ascending-dose cohorts, repeated dosing; columns = dose",
-                "level (ascending). A participant is counted once at each level. MedDRA v27.0.",
+                "level (ascending). A participant is counted once at each level. {meddra}.",
                 "% = participants with the event / N at dose."))
 
 ## rtables/gt rendering; split_cols_by(dose) ascending; SOC bold (level 1),

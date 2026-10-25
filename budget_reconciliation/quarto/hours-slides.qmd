@@ -8,6 +8,7 @@ format:
     slide-number: true
     smaller: true
     transition: fade
+    html-math-method: plain
     fig-width: 9
     fig-height: 4.2
 mermaid-format: svg
@@ -33,7 +34,7 @@ f90 <- find_hours(90, d$ledger, d$contingency)
 
 When a new out-of-scope ask lands, **find the hours you already have** before asking for more.
 
-$$\textbf{Net findable} = \big(\textstyle\sum\text{Planned} + \text{Contingency}\big) - \textstyle\sum\text{EAC}$$
+**Net findable** = (&sum; Planned + Contingency) &minus; &sum; EAC
 
 - **Under-run slack**: planned effort you are forecast not to spend (planned − EAC, floored at 0)
 - **Contingency**: the management reserve

@@ -70,7 +70,7 @@ ttl <- tfl_titles(num = "14.3.1.4", type = "Table",
    text = "Treatment-Related Treatment-Emergent Adverse Events by System Organ Class and Preferred Term",
    pop  = "Safety Population",
    foot = paste0("Related = AREL in {Related, Possible, Probable, Definite} (case-insensitive). ",
-                 "A participant is counted once at each level. Columns = treatment (TRTA). % = participants / N exposed (ADEX). MedDRA v27.0."))
+                 "A participant is counted once at each level. Columns = treatment (TRTA). % = participants / N exposed (ADEX). {meddra}."))
 
 ## rtables/gt rendering; SOC bold (level 1), PT indented (level 2)
 print(rep)

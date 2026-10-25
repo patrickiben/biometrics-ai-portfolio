@@ -61,7 +61,7 @@ ttl <- tfl_titles(
                "Seriousness Criteria = concatenated Y flags",
                "(AESDTH/AESLIFE/AESHOSP/AESDISAB/AESCONG/AESMIE).",
                "Death Date from ADSL DTHDT. TEAE = treatment-emergent (TRTEMFL=Y).",
-               "Relationship per investigator/analysis. MedDRA v27.0."))
+               "Relationship per investigator/analysis. {meddra}."))
 
 ## render: one block per treatment (page break); drop sort-key date column.
 ## listings::create_listing(sae, ...) or gt::gt(sae %>% select(-ASTDT))

@@ -71,7 +71,7 @@ ttl <- tfl_titles(
   foot = paste("TEAE = treatment-emergent AE (TRTEMFL=Y). A participant is counted",
                "once per category; categories are not mutually exclusive.",
                "Related = AREL in {RELATED, POSSIBLE, PROBABLE, DEFINITE}.",
-               "% = participants in category / N in arm. MedDRA v27.0."))
+               "% = participants in category / N in arm. {meddra}."))
 
 ## --- rtables layout (parallel: split columns by treatment) -----------------
 # lyt <- basic_table(title = ttl$titles, main_footer = ttl$footnotes) %>%

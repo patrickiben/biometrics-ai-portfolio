@@ -45,7 +45,7 @@ rep <- bind_rows(any_te, soc, socpt) %>%
 ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
    text = "Treatment-Emergent Adverse Events by System Organ Class and Preferred Term",
    pop  = "Safety Population",
-   foot = "A participant is counted once at each level. MedDRA v27.0. % = participants with the event / N in arm.")
+   foot = "A participant is counted once at each level. {meddra}. % = participants with the event / N in arm.")
 
 ## rtables/gt rendering; SOC bold (level 1), PT indented (level 2)
 print(rep)

@@ -68,7 +68,7 @@ proc transpose data=_rep out=_wide; by socn ptn level term; id APERIOD; var valu
 %tfltitle(num=14.3.1.2, type=Table,
    text=%str(Treatment-Emergent Adverse Events by System Organ Class and Preferred Term, by Period),
    pop=Safety Population,
-   foot=%str(A participant is counted once at each level per period. MedDRA v27.0. Period 1 = reference; subsequent period(s) = test condition. % = participants with the event / N exposed in the period.));
+   foot=%str(A participant is counted once at each level per period. &MEDDRAVER.. Period 1 = reference; subsequent period(s) = test condition. % = participants with the event / N exposed in the period.));
 proc report data=_wide nowd split='|';
   columns socn ptn level term ("By Period" /* period cols: P1=Reference, P2=Test... */);
   define socn  / order descending noprint;

@@ -67,7 +67,7 @@ ttl <- tfl_titles(num = "14.3.1.5", type = "Table",
    pop  = "Safety Population",
    foot = paste("DDI: Period 1 = victim alone (reference); Period 2 = victim + perpetrator (test).",
                 "Participant counted once per block per period; SOC*PT detail counts participants once per SOC/PT. SAE per AESER; death per AESDTH; withdrawal per AEACN.",
-                "% = participants / participants dosed in that period (ADEX). MedDRA v27.0."))
+                "% = participants / participants dosed in that period (ADEX). {meddra}."))
 
 ## rtables / gt: three stacked blocks (SAE, Death, Withdrawal), PT indented
 print(rep)

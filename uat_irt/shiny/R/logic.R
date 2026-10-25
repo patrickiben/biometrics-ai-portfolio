@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# logic.R — pure UAT evaluation logic for the IRT/RTSM tracker.
+# logic.R: pure UAT evaluation logic for the IRT/RTSM tracker.
 # Operations-only, synthetic, no PHI. "participant" not "subject".
 #
 # Plain functions shared by the Shiny app, the Quarto documents, and the unit

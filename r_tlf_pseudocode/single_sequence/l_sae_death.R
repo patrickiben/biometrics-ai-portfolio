@@ -64,7 +64,7 @@ ttl <- tfl_titles(num = "16.2.7.3", type = "Listing",
                 "perpetrator (test). Includes any AE with AESER='Y' or AESDTH='Y'.",
                 "Seriousness Criteria = AESDTH/AESLIFE/AESHOSP/AESDISAB/AESCONG/",
                 "AESMIE. Death Date from DTHDT (ADSL). Rel = relationship to study",
-                "drug per investigator/analysis. MedDRA v27.0."))
+                "drug per investigator/analysis. {meddra}."))
 
 ## render: one block per participant; columns as ordered above
 ## listings::create_listing(sae, ...) or gt::gt(sae %>% select(-APERIODN, -ASTDT))

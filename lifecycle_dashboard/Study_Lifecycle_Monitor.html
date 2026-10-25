@@ -91,7 +91,7 @@
   .kv div{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
   .kv b{display:block;color:var(--mut);font-weight:600;font-size:11px} .kv span{font-size:15px}
   footer{color:var(--mut);font-size:11.5px;margin-top:20px;border-top:1px solid var(--line);padding-top:12px}
-  @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}}
+  @media(max-width:980px){.kpis{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:minmax(0,1fr)}.grid3{grid-template-columns:minmax(0,1fr)}.card{min-width:0}#tbl{display:block;overflow-x:auto}}
 </style>
 </head>
 <body>
@@ -222,7 +222,7 @@ function genStudy(i){
     if (prog>0.9 && j<5) s='done';
     return {k:k,d:fmt(d),s:s};
   });
-  // deliverables (echoes the 136-item Protocol->CSR register, scaled)
+  // deliverables (echoes the 132-item Protocol->CSR register, scaled)
   var phs={Startup:[14,prog],Conduct:[26,prog],Analysis:[34,prog],Reporting:[20,prog]};
   var deliv={};
   Object.keys(phs).forEach(function(p,idx){

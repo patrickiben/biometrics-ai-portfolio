@@ -83,7 +83,7 @@ ttl <- tfl_titles(num = "14.3.1.3", type = "Table",
    pop  = "Safety Population",
    foot = paste("DDI: Period 1 = victim alone (reference); Period 2 = victim + perpetrator (test).",
                 "Severity = NCI-CTCAE grade collapsed to Mild/Moderate/Severe; participant counted once per PT at maximum severity within the period.",
-                "% = participants / participants dosed in that period (ADEX). MedDRA v27.0."))
+                "% = participants / participants dosed in that period (ADEX). {meddra}."))
 
 ## rtables / gt: spanning PERIOD header over (Mild, Moderate, Severe) sub-columns
 print(rep)

@@ -78,7 +78,7 @@ proc transpose data=_repn out=_wide(drop=_name_); by ord term; id trtn; var valu
 %tfltitle(num=14.3.1.1, type=Table,
    text=%str(Overview of Treatment-Emergent Adverse Events),
    pop=Safety Population,
-   foot=%str(TEAE attributed to the analysis treatment (TRTA) at onset. A participant is counted once per category per treatment; within-participant crossover -> a participant may appear under more than one treatment. %% = participants / treatment-exposed N. MedDRA v27.0.));
+   foot=%str(TEAE attributed to the analysis treatment (TRTA) at onset. A participant is counted once per category per treatment; within-participant crossover -> a participant may appear under more than one treatment. %% = participants / treatment-exposed N. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns ord term ("Analysis Treatment| (N exposed)" /* TRTAN cols + Total */);
   define ord  / order noprint;

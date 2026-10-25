@@ -2221,7 +2221,7 @@ vertical-align: -.125em;
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
 <main class="content" id="quarto-document-content">
-<div class="mc-top"><b>AI for Biometrics</b><div class="nav"><a href="../../Operations.html">Operations</a><a href="../../Biostatistics.html">Biostatistics</a><a href="../../START_HERE.html">Full library</a></div></div>
+<div class="mc-top"><b>Patrick Iben</b><div class="nav"><a href="../../index.html">Home</a><a href="../../index.html#lifecycle">Lifecycle</a><a href="../../index.html#start">Start here</a></div></div>
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
@@ -2251,8 +2251,8 @@ vertical-align: -.125em;
 <p>Select a test and mark it Pass/Fail, close a defect, and the KPIs and the go-live sign-off gate recompute live. Download your results to CSV from the sidebar to drop into the <a href="../UAT_IRT_RTSM_Workbook.xlsx">Excel workbook</a> and the eTMF.</p>
 <p>The whole app is two files, shown here in full, nothing elided:</p>
 <ul>
-<li><strong>shiny/R/logic.R</strong> — the pure gate and KPI logic (no Shiny). The <a href="uat-guide.html">visual guide</a>, the <a href="uat-dashboard.html">dashboard</a>, and the unit tests call these same functions.</li>
-<li><strong>shiny/app.R</strong> — the UI and the reactive server.</li>
+<li><strong>shiny/R/logic.R</strong>: the pure gate and KPI logic (no Shiny). The <a href="uat-guide.html">visual guide</a>, the <a href="uat-dashboard.html">dashboard</a>, and the unit tests call these same functions.</li>
+<li><strong>shiny/app.R</strong>: the UI and the reactive server.</li>
 </ul>
 <p>The one idea to hold onto: the <strong>rules</strong> live in <code>logic.R</code>, the <strong>screen</strong> lives in <code>app.R</code>. You can change what the gate means without touching the app, and change how it looks without touching the rules.</p>
 </section>
@@ -2265,7 +2265,7 @@ vertical-align: -.125em;
 <p>Every line of the logic. <code>uat_load()</code> reads the three CSVs; <code>uat_gate()</code> is the conjunctive go-live rule; <code>uat_summary()</code> is the KPI row; <code>uat_area_counts()</code> shapes the by-area bar. Nothing here depends on Shiny, so you can test it in a plain console.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---------------------------------------------------------------------------</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># logic.R — pure UAT evaluation logic for the IRT/RTSM tracker.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co"># logic.R: pure UAT evaluation logic for the IRT/RTSM tracker.</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Operations-only, synthetic, no PHI. &quot;participant&quot; not &quot;subject&quot;.</span></span>
 <span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Plain functions shared by the Shiny app, the Quarto documents, and the unit</span></span>
@@ -2325,7 +2325,7 @@ vertical-align: -.125em;
 <p>Every line of the UI and server. Read it top to bottom; the walk-through below points at the parts that matter.</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ===========================================================================</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app.R — IRT / RTSM UAT Execution &amp; Sign-off Tracker (Shiny)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># app.R: IRT / RTSM UAT Execution &amp; Sign-off Tracker (Shiny)</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
 <span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># A runnable, editable version of the UAT tracker. Select a test and mark it</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Pass/Fail/Blocked, close a defect, and watch the KPIs and the go-live sign-off</span></span>
@@ -2367,7 +2367,7 @@ vertical-align: -.125em;
 <span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>  ),</span>
 <span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout_columns</span>(</span>
 <span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_widths =</span> <span class="fu">c</span>(<span class="dv">8</span>, <span class="dv">4</span>),</span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Test scripts — click a row to select&quot;</span>),</span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Test scripts: click a row to select&quot;</span>),</span>
 <span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>         <span class="fu">DTOutput</span>(<span class="st">&quot;tests&quot;</span>)),</span>
 <span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Go-live sign-off gate&quot;</span>),</span>
 <span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>         <span class="fu">uiOutput</span>(<span class="st">&quot;gate&quot;</span>))</span>
@@ -2375,7 +2375,7 @@ vertical-align: -.125em;
 <span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">layout_columns</span>(</span>
 <span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>    <span class="at">col_widths =</span> <span class="fu">c</span>(<span class="dv">7</span>, <span class="dv">5</span>),</span>
 <span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Execution by test area&quot;</span>), <span class="fu">plotOutput</span>(<span class="st">&quot;plot&quot;</span>, <span class="at">height =</span> <span class="st">&quot;300px&quot;</span>)),</span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Defect log — edit Status (Open / Closed)&quot;</span>), <span class="fu">DTOutput</span>(<span class="st">&quot;defects&quot;</span>))</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    <span class="fu">card</span>(<span class="fu">card_header</span>(<span class="st">&quot;Defect log: edit Status (Open / Closed)&quot;</span>), <span class="fu">DTOutput</span>(<span class="st">&quot;defects&quot;</span>))</span>
 <span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>  )</span>
 <span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a></span>
@@ -2420,7 +2420,7 @@ vertical-align: -.125em;
 <span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small text-muted&quot;</span>, <span class="st">&quot;No test selected.&quot;</span>))</span>
 <span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>    t <span class="ot">&lt;-</span> rv<span class="sc">$</span>tests[sel, ]</span>
 <span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>    <span class="fu">tagList</span>(</span>
-<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;fw-bold&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;%s — %s&quot;</span>, t<span class="sc">$</span>TestID, t<span class="sc">$</span>TestTitle)),</span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;fw-bold&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;%s: %s&quot;</span>, t<span class="sc">$</span>TestID, t<span class="sc">$</span>TestTitle)),</span>
 <span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small text-muted mb-1&quot;</span>, <span class="fu">sprintf</span>(<span class="st">&quot;%s · %s · %s&quot;</span>, t<span class="sc">$</span>Area, t<span class="sc">$</span>RequirementID, t<span class="sc">$</span>Priority)),</span>
 <span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small mb-1&quot;</span>, tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Steps: &quot;</span>), t<span class="sc">$</span>Steps),</span>
 <span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a>      <span class="fu">div</span>(<span class="at">class =</span> <span class="st">&quot;small mb-2&quot;</span>, tags<span class="sc">$</span><span class="fu">b</span>(<span class="st">&quot;Expected: &quot;</span>), t<span class="sc">$</span>ExpectedResult),</span>

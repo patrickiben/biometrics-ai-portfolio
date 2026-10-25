@@ -66,13 +66,13 @@ server <- function(input, output, session) {
   output$v_sae <- renderText(as.character(k$sae))
 
   output$edish <- renderPlot({
-    P$flag <- ifelse(P$hys, "Hy's-Law (RED)", ifelse(P$alt > 3 & P$tbl <= 2, "ALT-only (near-miss)", "within limits"))
+    P$flag <- ifelse(P$hys, "Hy's-Law (RED)", ifelse(P$alt >= 3 & P$tbl <= 2, "ALT-only (near-miss)", "within limits"))
     ggplot(P, aes(alt, tbl, colour = flag)) +
       annotate("rect", xmin=3, xmax=Inf, ymin=2, ymax=Inf, fill="#e8657a", alpha=.08) +
       geom_hline(yintercept=2, linetype=2, colour="#e0a64c") +
       geom_vline(xintercept=3, linetype=2, colour="#e0a64c") +
       geom_point(size=3) +
-      geom_text(data=P[P$hys | P$alt>3, ], aes(label=id), colour="#c5cee4", size=3, vjust=-1) +
+      geom_text(data=P[P$hys | P$alt>=3, ], aes(label=id), colour="#c5cee4", size=3, vjust=-1) +
       scale_x_log10() + scale_y_log10() +
       scale_colour_manual(values=c("Hy's-Law (RED)"="#e8657a","ALT-only (near-miss)"="#e0a64c","within limits"="#43c47d")) +
       labs(x="peak ALT (x ULN, log)", y="peak TBili (x ULN, log)", colour=NULL,
@@ -91,7 +91,7 @@ server <- function(input, output, session) {
       div(class="d-flex gap-2 py-1", style="border-bottom:1px solid #2a3242",
         div(style=sprintf("flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px",col)),
         div(div(class="small", tags$b(r$id), " · ", r$check),
-            div(class="small text-muted", r$value, " — ", tags$code(r$rule))))
+            div(class="small text-muted", r$value, ": ", tags$code(r$rule))))
     }))
   })
 
@@ -133,13 +133,13 @@ server <- function(input, output, session) {
     s <- sel(); ae <- tm$aes[tm$aes$id == input$pid, ]
     scol <- c(GREEN="#43c47d", watch="#5f8aa8", AMBER="#e0a64c", RED="#e8657a")
     tagList(
-      div(class="fw-bold", sprintf("%s — %s (%d mg)", s$id, s$cohort, s$dose_mg)),
+      div(class="fw-bold", sprintf("%s: %s (%d mg)", s$id, s$cohort, s$dose_mg)),
       div(class="small text-muted mb-1", s$disposition),
       div(class="small", tags$b("eDISH: "),
-          if (s$hys) span(style="color:#e8657a;font-weight:700", sprintf("Hy's-Law position — ALT %.1fx & TBili %.1fx (R %.1f, %s)", s$alt, s$tbl, s$rratio, s$pattern))
-          else sprintf("ALT %.1fx / TBili %.1fx — not a Hy's position", s$alt, s$tbl)),
+          if (s$hys) span(style="color:#e8657a;font-weight:700", sprintf("Hy's-Law position: ALT %.1fx & TBili %.1fx (R %.1f, %s)", s$alt, s$tbl, s$rratio, s$pattern))
+          else sprintf("ALT %.1fx / TBili %.1fx, not a Hy's position", s$alt, s$tbl)),
       div(class="small", tags$b("QTcF: "), span(style=sprintf("color:%s;font-weight:700", scol[s$qsev]),
-          sprintf("%d ms (d%d) — %s", s$qt, s$dqt, s$qsev))),
+          sprintf("%d ms (d%d): %s", s$qt, s$dqt, s$qsev))),
       if (nrow(ae)) div(class="small mt-1", tags$b(sprintf("AEs (%d): ", nrow(ae))),
           paste(sprintf("%s G%d%s", ae$pt, ae$grade, ifelse(ae$serious=="Y"," SAE","")), collapse="; ")),
       if (nzchar(s$note)) div(class="small text-muted mt-1", tags$em(s$note))

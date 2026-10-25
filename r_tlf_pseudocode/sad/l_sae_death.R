@@ -61,7 +61,7 @@ ttl <- tfl_titles(
                "low to high. Includes records with AESER==Y (serious) and/or",
                "AESDTH==Y or a fatal outcome. TEAE = treatment-emergent (TRTEMFL=Y).",
                "Death Date from ADSL DTHDT (blank if non-fatal).",
-               "Relationship per investigator/analysis. MedDRA v27.0."))
+               "Relationship per investigator/analysis. {meddra}."))
 
 ## render: one block per dose level (page break), ascending; drop sort-key cols.
 ## listings::create_listing(sae, ...) or gt::gt(sae %>% select(-ASTDT, -DoseN))

@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<html lang="en"><head><meta charset="utf-8"><link rel="icon" href="data:,"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SAS TLF Pseudocode Library</title>
 <style>
   :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--r:12px}
@@ -21,6 +21,9 @@
   table.t th,table.t td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
   table.t th{color:var(--mut);font-weight:600;background:#0e1422}
   table.t tr:hover td{background:#0e1626}
+  /* phone width: long inline code wraps, and a wide table scrolls inside its own box */
+  code{overflow-wrap:anywhere}
+  @media(max-width:720px){table.t{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}li,p,td{overflow-wrap:anywhere}}
   .note,.warn{border-radius:9px;padding:11px 14px;margin:12px 0;font-size:13.6px}
   .note{background:#0e2230;border:1px solid #235049;border-left:3px solid var(--teal)}
   .note::before{content:"NOTE";display:block;font-size:10.5px;letter-spacing:.06em;color:var(--teal);font-weight:700;margin-bottom:3px}
@@ -66,7 +69,7 @@
     table.t th{background:#eef0f3 !important} table.t th,table.t td{border-color:#dde !important}
     .wnum{background:#caa24a !important;color:#241500 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .ways,#skb,#try>p,#try>h2+p,.skb-reset,.copybtn,.tools,footer,.checklist li::before,.checklist li::after{display:none !important}
-    #try>h2::after{content:" (interactive — omitted in print)";font-size:12px;color:#777;font-weight:400}
+    #try>h2::after{content:" (interactive: omitted in print)";font-size:12px;color:#777;font-weight:400}
     .shot,.wstep,.glance .g,table.t,.note,.warn{break-inside:avoid}
     .badge{color:#333 !important;background:#eee !important;border-color:#ccc !important}
     h2{break-after:avoid}
@@ -75,14 +78,14 @@
 </style></head><body><div class="wrap">
 
 <header class="hero">
-  <div class="home"><a href="../START_HERE.html">&larr; Program home</a></div>
+  <div class="home"><a href="../index.html">&larr; Home</a></div>
   <h1>SAS TLF Pseudocode Library <span class="badge">217 TLF PROGRAMS</span></h1>
-  <p class="sub">ADaM-based SAS pseudocode for every Table, Listing, and Figure in an early-phase clinical-pharmacology study &mdash; a complete, separate set per study design (parallel, crossover, single-sequence, SAD, MAD) plus the shared setup macros.</p>
+  <p class="sub">ADaM-based SAS pseudocode for every Table, Listing, and Figure in an early-phase clinical-pharmacology study: a complete, separate set per study design (parallel, crossover, single-sequence, SAD, MAD) plus the shared setup macros.</p>
 </header>
 
-<div class="warn"><strong>Status &mdash; illustrative pseudocode / skeleton, not validated software.</strong> These programs are spec / double-programming scaffolds, not validated production code. Nothing here originates a number: reported numbers come only from validated ADaM + double-programmed code per SOP, never from an LLM. All deliverables use <strong>participant</strong> (CDISC <code>USUBJID</code>/<code>SUBJID</code> preserved in code only).</div>
+<div class="warn"><strong>Status: pseudocode, SAS code not executed (no license).</strong> None of these programs has been run in SAS. They are specification and double-programming scaffolds, not validated production code, and nothing here originates a number. In a study, reported numbers come from validated, double-programmed SAS/R TLF programs on ADaM; NCA from Phoenix WinNonlin (version per ADRG, currently 8.8) or PKNCA; CDISC conformance is checked with Pinnacle 21 (FDA engine 2304.3), which produces no reported numbers. All text uses <strong>participant</strong> (CDISC <code>USUBJID</code>/<code>SUBJID</code> kept in code only).</div>
 
-<p>ADaM-based SAS <strong>pseudocode</strong> for every Table, Listing, and Figure (TLF) in an early-phase clin-pharm study, with a <strong>complete separate set per study design</strong>. Illustrative structure for spec / double-programming &mdash; not validated production code. Reported numbers come from validated ADaM + double-programmed code per SOP; nothing here originates a number.</p>
+<p>ADaM-based SAS <strong>pseudocode</strong> for every Table, Listing, and Figure (TLF) in an early-phase clin-pharm study, with a <strong>complete separate set per study design</strong>. Illustrative structure for specification and double programming, not validated production code; nothing here originates a number.</p>
 
 <div class="ways">
   <a href="#start">🧰 Before you start</a>
@@ -95,19 +98,19 @@
 </div>
 
 <h2 id="start">Before you start</h2>
-<div class="note"><strong>You'll need:</strong> <strong>SAS 9.4+</strong> (or SAS Studio) on a machine that can reach your study's CDISC <strong>ADaM datasets</strong> &nbsp;·&nbsp; the relevant <strong>ADaM tables for the TLF you're running</strong> — at minimum <code>ADSL</code>, plus the domain the program reads (<code>ADAE</code> for AE tables, <code>ADLB</code> for labs, <code>ADVS</code>/<code>ADEG</code> for vitals/ECG, <code>ADPC</code>/<code>ADPP</code> for PK, <code>ADPD</code> for PD, <code>ADIS</code> for immunogenicity, <code>ADEX</code> for exposure) &nbsp;·&nbsp; <strong>write access to an output folder</strong> for the result datasets &nbsp;·&nbsp; the study's <strong>format catalog</strong> (treatment order, AE severity, lab ranges) referenced by <code>%setup</code>. No internet, no install beyond SAS itself. <span class="mini">These are <strong>pseudocode skeletons</strong> — open one, point a <code>LIBNAME</code> at <em>your</em> ADaM, and complete the spec; don't expect a clean run out of the box.</span></div>
+<div class="note"><strong>You'll need:</strong> <strong>SAS 9.4M8 or later</strong> (9.4M9, June 2025, is current; SAS Studio also works) on a machine that can reach your study's CDISC <strong>ADaM datasets</strong> &nbsp;·&nbsp; the relevant <strong>ADaM tables for the TLF you're running</strong>, at minimum <code>ADSL</code>, plus the domain the program reads (<code>ADAE</code> for AE tables, <code>ADLB</code> for labs, <code>ADVS</code>/<code>ADEG</code> for vitals/ECG, <code>ADPC</code>/<code>ADPP</code> for PK, <code>ADPD</code> for PD, <code>ADIS</code> for immunogenicity, <code>ADEX</code> for exposure) &nbsp;·&nbsp; <strong>write access to an output folder</strong> for the result datasets &nbsp;·&nbsp; the study's <strong>format catalog</strong> (treatment order, AE severity, lab ranges) referenced by <code>%setup</code>. No internet, no install beyond SAS itself. <span class="mini">These are <strong>pseudocode skeletons</strong>: open one, point a <code>LIBNAME</code> at <em>your</em> ADaM, and complete the spec; don't expect a clean run out of the box.</span></div>
 
 <h2 id="run">How to run a program</h2>
-<p>There's <strong>no single command-line driver</strong> — each <code>.sas</code> is one self-contained TLF program. The pattern is the same for all 217: <strong>open it in SAS &rarr; point a <code>LIBNAME</code> at your ADaM &rarr; submit the program</strong>. Each program already <code>%include</code>s the shared macros and calls <code>%setup</code> / <code>%designvars</code> for you, so the two things you edit are the <strong>ADaM path</strong> and the <strong>output path</strong> in the <code>%setup</code> call near the top.</p>
+<p>There's <strong>no single command-line driver</strong>: each <code>.sas</code> is one self-contained TLF program. The pattern is the same for all 217: <strong>open it in SAS &rarr; point a <code>LIBNAME</code> at your ADaM &rarr; submit the program</strong>. Each program already <code>%include</code>s the shared macros and calls <code>%setup</code> / <code>%designvars</code> for you, so the two things you edit are the <strong>ADaM path</strong> and the <strong>output path</strong> in the <code>%setup</code> call near the top.</p>
 
-<p><strong>Quick-start checklist</strong> &mdash; click each as you finish it:</p>
+<p><strong>Quick-start checklist</strong>: click each as you finish it:</p>
 <ul class="checklist" id="qsc">
   <li><span>Open the program for the TLF you want, in the folder for your study's <strong>design</strong> (e.g. <code>parallel/t_demographics.sas</code>)</span></li>
   <li><span>Edit the <code>%setup(...)</code> line: set <code>adam=</code> to your ADaM library path and <code>out=</code> to your output folder</span></li>
   <li><span>Confirm <code>%designvars(design=...)</code> matches the folder (e.g. <code>PARALLEL</code> for <code>parallel/</code>)</span></li>
   <li><span>Make sure your study <strong>format catalog</strong> is available to <code>%setup</code> (treatment order, severity, lab ranges)</span></li>
   <li><span>Submit the program in SAS; check the log for <code>%include</code>/<code>%setup</code>/<code>%designvars</code> resolving cleanly</span></li>
-  <li><span>Open the output dataset / TLF and reconcile it against the validated (double-programmed) result per SOP</span></li>
+  <li><span>Open the output dataset / TLF and reconcile it against the validated, double-programmed result per the study&rsquo;s SOPs</span></li>
 </ul>
 <div class="tools">
   <button type="button" onclick="window.print()">🖨 Print / save as PDF</button>
@@ -116,7 +119,7 @@
 
 <h3>Run it</h3>
 <p>Either edit the <code>%setup</code> line inside the program and submit it directly, or drive it from a tiny wrapper that sets the libname and <code>%include</code>s the program. Both do the same thing:</p>
-<pre><code>/* --- run one TLF program from a wrapper (SAS 9.4+) --------------- */
+<pre><code>/* --- run one TLF program from a wrapper (SAS 9.4M8 or later) ----- */
 libname adam "/data/cp101/adam" access=readonly;   /* your ADaM datasets   */
 libname tfl  "/data/cp101/tfl";                     /* your output folder   */
 
@@ -124,12 +127,12 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
  *   parallel/  crossover/  single_sequence/  sad/  mad/                    */
 %include "parallel/t_demographics.sas";   /* one program -> one output      */
 
-/* — or, equivalently, open parallel/t_demographics.sas in SAS, edit its    *
+/* Or, equivalently, open parallel/t_demographics.sas in SAS, edit its    *
  *   %setup(study=CP-101, adam=/data/cp101/adam, out=/data/cp101/tfl);       *
- *   line to your paths, and just submit the whole program. —               */</code></pre>
-<div class="note">Each program's own header shows the canonical call sequence: <code>%include "../00_setup_macros.sas";</code> then <code>%setup(study=, adam=, out=);</code> then <code>%designvars(design=&lt;folder&gt;);</code> then the TLF body. Run from the design folder (or adjust the relative <code>../</code> path to <code>00_setup_macros.sas</code>). Reported numbers always come from validated ADaM + double-programmed code per SOP &mdash; never from this scaffold or an LLM.</div>
+ *   line to your paths, and just submit the whole program. */</code></pre>
+<div class="note">Each program's own header shows the canonical call sequence: <code>%include "../00_setup_macros.sas";</code> then <code>%setup(study=, adam=, out=);</code> then <code>%designvars(design=&lt;folder&gt;);</code> then the TLF body. Run from the design folder (or adjust the relative <code>../</code> path to <code>00_setup_macros.sas</code>). Reported numbers come from validated, double-programmed programs per the study&rsquo;s SOPs, never from this scaffold or an LLM.</div>
 
-<h2 id="designs">Designs (one folder each &mdash; full set per design)</h2>
+<h2 id="designs">Designs (one folder each: full set per design)</h2>
 <table class="t">
   <thead><tr><th>Folder</th><th>Design</th><th>Key analysis differences</th></tr></thead>
   <tbody>
@@ -140,7 +143,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
     <tr><td><code>mad/</code></td><td>Multiple Ascending Dose</td><td>Parallel cohorts, repeated dosing; <strong>accumulation ratio</strong> (Rac), steady-state assessment</td></tr>
   </tbody>
 </table>
-<p>Design is also wired in code via <code>%designvars(design=...)</code> in <code>00_setup_macros.sas</code>, so each design folder's programs differ only where the <strong>statistics</strong> genuinely differ (PK comparison, by-period/by-sequence safety, dose escalation) &mdash; Tables/Listings of safety are structurally identical, re-pointed to the design's treatment/period variables.</p>
+<p>Design is also wired in code via <code>%designvars(design=...)</code> in <code>00_setup_macros.sas</code>, so each design folder's programs differ only where the <strong>statistics</strong> genuinely differ (PK comparison, by-period/by-sequence safety, dose escalation): Tables/Listings of safety are structurally identical, re-pointed to the design's treatment/period variables.</p>
 
 <h2 id="flow">How each program runs</h2>
 <div class="flow">
@@ -161,18 +164,18 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <li><code>t_protocol_deviations</code> &middot; <code>t_prior_con_meds</code> &middot; <code>t_medical_history</code> &middot; <code>l_disposition</code></li>
 </ul>
 
-<h3>Safety &mdash; AE (ADAE)</h3>
+<h3>Safety: AE (ADAE)</h3>
 <ul>
   <li><code>t_ae_overview</code> &middot; <code>t_ae_by_soc_pt</code> &middot; <code>t_ae_by_severity</code> &middot; <code>t_ae_by_relationship</code></li>
   <li><code>t_ae_sae_death_withdrawal</code> &middot; <code>l_ae</code> &middot; <code>l_sae_death</code></li>
 </ul>
 
-<h3>Safety &mdash; Labs (ADLB)</h3>
+<h3>Safety: Labs (ADLB)</h3>
 <ul>
   <li><code>t_lab_summary</code> &middot; <code>t_lab_shift</code> &middot; <code>t_lab_marked_abnormal</code> &middot; <code>f_lab_lft_scatter</code> &middot; <code>f_lab_change</code> &middot; <code>l_lab_abnormal</code></li>
 </ul>
 
-<h3>Safety &mdash; Vitals / ECG (ADVS, ADEG)</h3>
+<h3>Safety: Vitals / ECG (ADVS, ADEG)</h3>
 <ul>
   <li><code>t_vitals_summary</code> &middot; <code>f_vitals_change</code> &middot; <code>l_vitals</code></li>
   <li><code>t_ecg_summary</code> &middot; <code>t_ecg_qtc_categorical</code> &middot; <code>f_qtc_change</code> &middot; <code>l_ecg</code></li>
@@ -206,7 +209,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
 <div class="note">Geometric PK statistics are computed on the <strong>log scale</strong> (never <code>exp(arithmetic mean)</code>). AE counts are distinct participants. Single-sequence participant-level tables key on <code>&amp;SEQVAR</code>/<code>&amp;SEQVARN</code> while period tables denominate from a period-bearing source. The library is free of <code>eDISH</code> / <code>Hy's Law</code> terminology.</div>
 
 <h2>Quality status</h2>
-<p>Complete: <strong>217 TLF programs</strong> across all five design folders + <code>00_setup_macros.sas</code> (218 files total). Built by fan-out generation, then a two-pass adversarial QC (6 family reviewers &rarr; per-finding verification: 35 confirmed defects fixed, 2 reviewer false-positives rejected), then a deterministic sweep. All programs scaffold correctly (<code>%include</code>/<code>%setup</code>/<code>%designvars</code>), <code>%designvars</code> matches each folder. Pseudocode for spec / double-programming &mdash; not validated production code; reported numbers still come from validated tools per SOP.</p>
+<p>Complete: <strong>217 TLF programs</strong> across all five design folders + <code>00_setup_macros.sas</code> (218 files total). Generated with AI assistance, then reviewed by an AI-agent panel in two passes (six reviewers by program family, then per-finding verification: 35 defects confirmed and fixed, 2 reviewer false positives rejected), then a deterministic sweep. Human sign-off is pending (see the <a href="../validation_harness/index.html">validation ledger</a>). Static checks confirm that every program has the expected structure (<code>%include</code>, <code>%setup</code>, <code>%designvars</code>) and that <code>%designvars</code> matches each folder. <strong>SAS code not executed (no license)</strong>, so no output has been compared with the R twin. Not validated production code.</p>
 
 <h2 id="trouble">Troubleshooting</h2>
 <table class="t">
@@ -216,13 +219,13 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
     <tr><td><code>ERROR: Physical file does not exist &hellip; 00_setup_macros.sas</code></td><td>The program's <code>%include "../00_setup_macros.sas"</code> path is relative to where you submit from</td><td>Submit from inside the design folder, or change the <code>%include</code> to the absolute path of <code>00_setup_macros.sas</code>.</td></tr>
     <tr><td>Columns/by-structure look wrong (e.g. no period split on a crossover)</td><td><code>%designvars(design=...)</code> doesn't match the folder you opened</td><td>Set it to the folder's design: <code>PARALLEL</code>, <code>CROSSOVER</code>, <code>SINGLESEQ</code>, <code>SAD</code>, or <code>MAD</code>. It resolves <code>&amp;TRTVAR</code>/<code>&amp;SEQVAR</code>/<code>&amp;BYPERIOD</code>.</td></tr>
     <tr><td><code>ERROR: Format &hellip; not found</code> in <code>PROC REPORT</code>/<code>FORMAT</code></td><td>The study format catalog (treatment order, AE severity, lab ranges) isn't available to <code>%setup</code></td><td>Build/point <code>tfl.formats</code> at your study format catalog (the <code>proc format library=tfl.formats</code> step in <code>00_setup_macros.sas</code>), then resubmit.</td></tr>
-    <tr><td>Geometric mean / Geo-CV% looks off vs the validated output</td><td>Expecting <code>exp(arithmetic mean)</code> &mdash; this library computes geo stats on the <strong>log scale</strong></td><td>That's intended: geo mean = <code>exp(mean of logs)</code>, Geo-CV% = <code>100*sqrt(exp(var of logs)-1)</code> (see <code>%pkstats</code>). Reconcile against the double-programmed value, not <code>exp(mean)</code>.</td></tr>
+    <tr><td>Geometric mean / Geo-CV% looks off vs the validated output</td><td>Expecting <code>exp(arithmetic mean)</code>: this library computes geo stats on the <strong>log scale</strong></td><td>That's intended: geo mean = <code>exp(mean of logs)</code>, Geo-CV% = <code>100*sqrt(exp(var of logs)-1)</code> (see <code>%pkstats</code>). Reconcile against the double-programmed value, not <code>exp(mean)</code>.</td></tr>
     <tr><td>AE counts higher than expected</td><td>Treating event <em>rows</em> as the unit instead of distinct participants</td><td>The AE macros count <code>count(distinct USUBJID)</code> per level (treatment-emergent via <code>TRTEMFL='Y'</code>). Reconcile participant counts, not row counts.</td></tr>
     <tr><td>Period table denominators don't add up (crossover / single-sequence)</td><td>Denominating a per-period table from <code>ADSL</code> (one record per participant)</td><td>Per-period denominators must come from a <strong>period-bearing source</strong> (<code>ADEX</code>/<code>ADIS</code>/<code>ADPD</code>); participant-level tables key on <code>&amp;SEQVAR</code>/<code>&amp;SEQVARN</code>.</td></tr>
     <tr><td>Looking for an eDISH / Hy's-Law panel</td><td>The library deliberately omits that terminology</td><td>Use <code>f_lab_lft_scatter.sas</code> + the lab tables for transaminase/bilirubin review; there is no <code>eDISH</code>/<code>Hy's Law</code> output by design.</td></tr>
   </tbody>
 </table>
-<p class="mini">Every program is a <strong>spec / double-programming scaffold</strong>, not validated production code. If a number here disagrees with the validated, double-programmed result, the validated result governs &mdash; always reconcile per SOP.</p>
+<p class="mini">Every program is a <strong>spec / double-programming scaffold</strong>, not validated production code. If a number here disagrees with the validated, double-programmed result, the validated result governs; reconcile per the study&rsquo;s SOPs.</p>
 
 <h2 id="code">Browse the code</h2>
 <p>Every program below links to its actual <code>.sas</code> file by relative path. Start with the shared macros, then pick a design folder.</p>
@@ -244,7 +247,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="parallel/t_medical_history.sas"><code>t_medical_history.sas</code></a>
   <a href="parallel/l_disposition.sas"><code>l_disposition.sas</code></a>
 </div>
-<p><strong>Safety &mdash; AE</strong></p>
+<p><strong>Safety: AE</strong></p>
 <div class="files">
   <a href="parallel/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
   <a href="parallel/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
@@ -254,7 +257,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="parallel/l_ae.sas"><code>l_ae.sas</code></a>
   <a href="parallel/l_sae_death.sas"><code>l_sae_death.sas</code></a>
 </div>
-<p><strong>Safety &mdash; Labs</strong></p>
+<p><strong>Safety: Labs</strong></p>
 <div class="files">
   <a href="parallel/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
   <a href="parallel/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
@@ -309,7 +312,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="crossover/t_medical_history.sas"><code>t_medical_history.sas</code></a>
   <a href="crossover/l_disposition.sas"><code>l_disposition.sas</code></a>
 </div>
-<p><strong>Safety &mdash; AE</strong></p>
+<p><strong>Safety: AE</strong></p>
 <div class="files">
   <a href="crossover/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
   <a href="crossover/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
@@ -319,7 +322,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="crossover/l_ae.sas"><code>l_ae.sas</code></a>
   <a href="crossover/l_sae_death.sas"><code>l_sae_death.sas</code></a>
 </div>
-<p><strong>Safety &mdash; Labs</strong></p>
+<p><strong>Safety: Labs</strong></p>
 <div class="files">
   <a href="crossover/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
   <a href="crossover/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
@@ -376,7 +379,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="single_sequence/t_medical_history.sas"><code>t_medical_history.sas</code></a>
   <a href="single_sequence/l_disposition.sas"><code>l_disposition.sas</code></a>
 </div>
-<p><strong>Safety &mdash; AE</strong></p>
+<p><strong>Safety: AE</strong></p>
 <div class="files">
   <a href="single_sequence/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
   <a href="single_sequence/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
@@ -386,7 +389,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="single_sequence/l_ae.sas"><code>l_ae.sas</code></a>
   <a href="single_sequence/l_sae_death.sas"><code>l_sae_death.sas</code></a>
 </div>
-<p><strong>Safety &mdash; Labs</strong></p>
+<p><strong>Safety: Labs</strong></p>
 <div class="files">
   <a href="single_sequence/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
   <a href="single_sequence/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
@@ -443,7 +446,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="sad/t_medical_history.sas"><code>t_medical_history.sas</code></a>
   <a href="sad/l_disposition.sas"><code>l_disposition.sas</code></a>
 </div>
-<p><strong>Safety &mdash; AE</strong></p>
+<p><strong>Safety: AE</strong></p>
 <div class="files">
   <a href="sad/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
   <a href="sad/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
@@ -453,7 +456,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="sad/l_ae.sas"><code>l_ae.sas</code></a>
   <a href="sad/l_sae_death.sas"><code>l_sae_death.sas</code></a>
 </div>
-<p><strong>Safety &mdash; Labs</strong></p>
+<p><strong>Safety: Labs</strong></p>
 <div class="files">
   <a href="sad/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
   <a href="sad/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
@@ -509,7 +512,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="mad/t_medical_history.sas"><code>t_medical_history.sas</code></a>
   <a href="mad/l_disposition.sas"><code>l_disposition.sas</code></a>
 </div>
-<p><strong>Safety &mdash; AE</strong></p>
+<p><strong>Safety: AE</strong></p>
 <div class="files">
   <a href="mad/t_ae_overview.sas"><code>t_ae_overview.sas</code></a>
   <a href="mad/t_ae_by_soc_pt.sas"><code>t_ae_by_soc_pt.sas</code></a>
@@ -519,7 +522,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
   <a href="mad/l_ae.sas"><code>l_ae.sas</code></a>
   <a href="mad/l_sae_death.sas"><code>l_sae_death.sas</code></a>
 </div>
-<p><strong>Safety &mdash; Labs</strong></p>
+<p><strong>Safety: Labs</strong></p>
 <div class="files">
   <a href="mad/t_lab_summary.sas"><code>t_lab_summary.sas</code></a>
   <a href="mad/t_lab_shift.sas"><code>t_lab_shift.sas</code></a>
@@ -565,7 +568,7 @@ libname tfl  "/data/cp101/tfl";                     /* your output folder   */
 </div>
 
 <footer>
-  SAS TLF Pseudocode Library &mdash; 218 files (217 TLF programs + <code>00_setup_macros.sas</code>) across 5 design folders. Illustrative pseudocode for spec / double-programming, not validated production code; reported numbers come only from validated tools per SOP. Terminology: participant. <a href="../START_HERE.html">&larr; Program home</a>
+  SAS TLF Pseudocode Library: 218 files (217 TLF programs + <code>00_setup_macros.sas</code>) across 5 design folders. Illustrative pseudocode for specification and double programming, not validated production code; SAS code not executed (no license). Reported numbers come from validated systems. Terminology: participant. <a href="../index.html">&larr; Home</a>
 </footer>
 
 </div>

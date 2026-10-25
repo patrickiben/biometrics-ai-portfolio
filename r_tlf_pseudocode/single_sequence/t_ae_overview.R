@@ -69,7 +69,7 @@ ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
    pop  = "Safety Population",
    foot = paste("DDI: Period 1 = victim alone (reference); Period 2 = victim + perpetrator (test).",
                 "A participant is counted once per category per period. % = participants / participants dosed in that period (ADEX).",
-                "TEAE = treatment-emergent. Related = AREL in Related/Possible/Probable/Definite. MedDRA v27.0."))
+                "TEAE = treatment-emergent. Related = AREL in Related/Possible/Probable/Definite. {meddra}."))
 
 ## rtables / gt rendering; one column per period + Total
 print(rep)

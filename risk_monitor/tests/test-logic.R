@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Unit tests for the 3-tier termination-risk roll-up. Base R only.
+# Unit tests for the 2-tier termination-risk roll-up. Base R only.
 # Run:  Rscript risk_monitor/tests/test-logic.R
 
 lp <- Find(file.exists, c("../shiny/R/logic.R", "risk_monitor/shiny/R/logic.R", "shiny/R/logic.R"))
@@ -12,8 +12,8 @@ f <- risk_feed(s)
 cn <- risk_counts(s)
 
 stopifnot(
-  "signals loaded"        = nrow(s) == 21,
-  "three tiers"           = setequal(unique(s$tier), TIERS),
+  "signals loaded"        = nrow(s) == 15,
+  "two tiers"             = setequal(unique(s$tier), TIERS),
   "overall in 0..100"     = o$score >= 0 && o$score <= 100,
   "rag valid"             = o$rag %in% c("green","amber","red"),
   "feed is firing only"   = all(f$level != "green"),

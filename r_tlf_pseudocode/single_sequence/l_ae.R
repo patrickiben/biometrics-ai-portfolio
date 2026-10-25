@@ -36,7 +36,7 @@ ae <- adam$adae %>% filter(SAFFL == "Y") %>%
 ttl <- tfl_titles(num = "16.2.7.1", type = "Listing", text = "Listing of Adverse Events",
    pop = "Safety Population",
    foot = paste("DDI: Period 1 = victim alone (reference); Period 2 = victim + perpetrator (test).",
-                "TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per investigator/analysis. MedDRA v27.0."))
+                "TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per investigator/analysis. {meddra}."))
 
 ## render: one block per participant (or per period), columns as ordered above
 ## listings::create_listing(ae, ...) or gt::gt(ae %>% select(-APERIODN, -ASTDT))

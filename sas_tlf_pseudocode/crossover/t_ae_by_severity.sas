@@ -79,7 +79,7 @@ quit;
 %tfltitle(num=14.3.1.3, type=Table,
    text=%str(Treatment-Emergent Adverse Events by Maximum Severity, System Organ Class and Preferred Term),
    pop=Safety Population,
-   foot=%str(A participant is counted once per term at the maximum severity for that treatment. Events attributed to TRTA at onset; within-participant crossover -> a participant may appear under more than one treatment. MedDRA v27.0.));
+   foot=%str(A participant is counted once per term at the maximum severity for that treatment. Events attributed to TRTA at onset; within-participant crossover -> a participant may appear under more than one treatment. &MEDDRAVER..));
 proc report data=_rep nowd split='|';
   columns level term ('Analysis Treatment' /* TRTAN nested by Mild|Moderate|Severe + Total */);
   define level / order noprint;

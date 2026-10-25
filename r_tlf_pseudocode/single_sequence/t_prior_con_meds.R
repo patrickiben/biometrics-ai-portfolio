@@ -2,7 +2,7 @@
 # TABLE     : t_prior_con_meds  (Single-/Fixed-Sequence DDI)
 # TITLE     : Prior and Concomitant Medications by Drug Class and Preferred Term
 # POPULATION: Safety Population (SAFFL == "Y")
-# INPUT     : ADCM (WHO Drug coded; PREFL / CONFL prior/concomitant flags)
+# INPUT     : ADCM (WHODrug coded; PREFL / CONFL prior/concomitant flags)
 # NOTE      : PSEUDOCODE. Counts = distinct PARTICIPANTS taking a medication
 #             (n_distinct USUBJID), NOT medication rows. PER-PERIOD table ->
 #             columns = Period 1 (Reference) | Period 2 (Test) | Total. BOTH a
@@ -32,7 +32,7 @@ adcm <- adam$adcm %>% filter(SAFFL == "Y") %>%
   mutate(per = .data[[perC]])
 
 ## --- generic block builder for one medication-timing flag ------------------
-## ATC text (CMCLAS) and PT (CMDECOD) from WHO Drug. flagvar = PREFL or CONFL
+## ATC text (CMCLAS) and PT (CMDECOD) from WHODrug. flagvar = PREFL or CONFL
 ## (prior vs concomitant). Distinct-participant counts at every level, BY PERIOD,
 ## with a Total column across periods (a participant counted once per Total cell).
 cm_block <- function(flagvar, block_label) {
@@ -78,7 +78,7 @@ ttl <- tfl_titles(num = "14.1.6", type = "Table",
    text = "Prior and Concomitant Medications by Drug Class and Preferred Term",
    pop  = "Safety Population",
    foot = paste("A participant is counted once at each level per period.",
-                "WHO Drug Dictionary; class = ATC level. Prior = PREFL (before",
+                "{whodrug} coding; class = ATC level. Prior = PREFL (before",
                 "first dose); concomitant = CONFL (ongoing during treatment).",
                 "Period 1 = reference (victim alone); Period 2 = test (victim +",
                 "perpetrator); the perpetrator appears in Period 2. Percentages",

@@ -99,7 +99,7 @@ proc transpose data=_rep out=_wide; by order cat; id trtn; var value; run;
 %tfltitle(num=14.3.1.1, type=Table,
    text=%str(Overview of Treatment-Emergent Adverse Events by Period),
    pop=Safety Population,
-   foot=%str(TEAE = treatment-emergent adverse event. A participant is counted once per category per period. Period 1 = reference; subsequent period(s) = test condition. % = participants with the event / N exposed in the period. MedDRA v27.0.));
+   foot=%str(TEAE = treatment-emergent adverse event. A participant is counted once per category per period. Period 1 = reference; subsequent period(s) = test condition. % = participants with the event / N exposed in the period. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns order cat ("By Period" /* period cols: P1=Reference, P2=Test... + Total */);
   define order / order noprint;

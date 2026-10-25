@@ -8,6 +8,7 @@ format:
     slide-number: true
     smaller: true
     transition: fade
+    html-math-method: plain
     fig-width: 9
     fig-height: 3.8
 mermaid-format: svg
@@ -81,7 +82,7 @@ cat(box("Traced", paste0(s$cov, "%"), "#3fd0c9"))
 cat('</div>')
 ```
 
-Every number here comes from the validated data, never from an assistant.
+Every number here comes from the UAT data files, never from an assistant.
 
 ## Execution by area
 

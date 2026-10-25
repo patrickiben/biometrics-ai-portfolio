@@ -1,10 +1,10 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CP-101 Program Tracker — interactive demo (Smartsheet × SAS/R)</title>
+<title>CP-101 Program Tracker: interactive demo (Smartsheet × SAS/R)</title>
 <style>
 :root{--dark:#0d1320;--ink:#0c1018;--muted:#5A607E;--ice:#D5DAF5;--line:#DDE1EE;--panel:#F4F5FB;--subtle:#F7F8FC;
  --ss:#3A6FB0;--ssbg:#EAF1FA;--indigo:#5b8cff;--indigoink:#5b8cff;--indbg:#ECECFB;--term:#070b12;
  --green:#1F9D55;--greenbg:#E6F6EC;--amber:#C2891C;--amberbg:#FBF1D8;--red:#C0392B;--redbg:#FBECEA;--slatebg:#EEF0F6;
- /* shared dark theme (page chrome only — the Smartsheet grid stays light) */
+ /* shared dark theme (page chrome only; the Smartsheet grid stays light) */
  --pg:#06090f;--pgink:#e7eef9;--pgmuted:#7e8ca6;--pgline:#1b2535;--pgcard:#0c1018;--acc:#34e3d4;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:Calibri,"Segoe UI",Helvetica,Arial,sans-serif;color:var(--pgink);line-height:1.5;background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%);background-attachment:fixed}
@@ -55,13 +55,13 @@ header.hero{padding:10px 2px 6px;margin-bottom:16px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin:12px 2px 0;font-size:12.5px;color:var(--pgmuted)}
 .legend .pill{font-size:11px}
 .top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--pgline);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--pgink)}.top b::before{content:"◢ ";color:#34e3d4}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--pgmuted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--pgink);border-color:var(--pgline);background:#0e141f}</style></head>
-<body><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="Smartsheet_SASR.html">Smartsheet · SAS/R</a><a href="../START_HERE.html">Full library</a></div></div>
+<body><div class="top"><b>Patrick Iben</b><div class="nav"><a href="../index.html">Home</a><a href="Smartsheet_SASR.html">Smartsheet · SAS/R</a></div></div>
 <div class="wrap">
   <header class="hero">
     <div class="eyebrow">SMARTSHEET × SAS/R · CP-101 · NO AI</div>
     <h1>The program tracker that updates itself</h1>
-    <p>Click <b>Run the nightly job</b> and watch a scheduled SAS/R job push the night's operational status to the tracker by a stable key — then re-run it to see it converge (never duplicate), and watch the ops-only allowlist block a non-operational column. The grid runs the <b>same deterministic logic</b> as the shipped <code>ss_macros.sas</code> / <code>ss_companion.R</code>.</p>
-    <span class="rep">Representative demo — the same code &amp; logic; no live Smartsheet, no PHI, ops-only.</span>
+    <p>Click <b>Run the nightly job</b> and watch a scheduled SAS/R job push the night's operational status to the tracker by a stable key, then re-run it to see it converge (never duplicate), and watch the ops-only allowlist block a non-operational column. The grid runs the <b>same deterministic logic</b> as the shipped <code>ss_macros.sas</code> / <code>ss_companion.R</code>.</p>
+    <span class="rep">Representative demo: the same code &amp; logic; no live Smartsheet, no PHI, ops-only.</span>
   </header>
 
   <div class="controls">
@@ -73,11 +73,11 @@ header.hero{padding:10px 2px 6px;margin-bottom:16px}
 
   <div class="cols">
     <div class="card">
-      <div class="sbar"><span class="logo"></span><span>Smartsheet — CP-101 Program Tracker</span></div>
+      <div class="sbar"><span class="logo"></span><span>Smartsheet: CP-101 Program Tracker</span></div>
       <div class="grid" id="grid"></div>
     </div>
     <div class="card console">
-      <div class="sbar" style="background:#0d1320"><span style="font-family:Consolas;color:#16c60c;font-weight:700">&gt;_</span><span>nightly job — SAS/R → Smartsheet API</span></div>
+      <div class="sbar" style="background:#0d1320"><span style="font-family:Consolas;color:#16c60c;font-weight:700">&gt;_</span><span>nightly job: SAS/R → Smartsheet API</span></div>
       <div class="clog" id="clog"></div>
     </div>
   </div>
@@ -88,21 +88,21 @@ header.hero{padding:10px 2px 6px;margin-bottom:16px}
     <span>📎 = status PDF attached by the job</span><span>green left-bar = row appended this run</span>
   </div>
 
-  <div class="gov"><b>Operations only.</b> Timelines, status, % complete, milestone dates, ownership — never PHI, participant-level data, unblinded info, or a reported clinical number (a coded allowlist enforces it). Smartsheet is a cloud tracker, not a system of record; validated systems own the authoritative numbers. No AI in the loop — deterministic SAS/R API calls. <a href="Smartsheet_SASR.html" style="color:var(--acc)">Full wiki →</a></div>
+  <div class="gov"><b>Operations only.</b> Timelines, status, % complete, milestone dates, ownership, never PHI, participant-level data, unblinded info, or a reported clinical number (a coded allowlist enforces it). Smartsheet is a cloud tracker, not a system of record; validated systems own the authoritative numbers. No AI in the loop: deterministic SAS/R API calls. <a href="Smartsheet_SASR.html" style="color:var(--acc)">Full wiki →</a></div>
 </div>
-<div id="toast"><div class="th">⚠ <b>Smartsheet Automation</b> · to: Project Manager, Biostat lead</div><div class="tt">CP-101 Program Tracker — a task is now At Risk</div><div class="tx">Row <b>CP101-ENR — Enrollment vs plan</b> changed to <b style="color:#c0392b">At Risk</b>. Sent by the workflow you configured once — triggered by tonight's update.</div></div>
+<div id="toast"><div class="th">⚠ <b>Smartsheet Automation</b> · to: Project Manager, Biostat lead</div><div class="tt">CP-101 Program Tracker: a task is now At Risk</div><div class="tx">Row <b>CP101-ENR: Enrollment vs plan</b> changed to <b style="color:#c0392b">At Risk</b>. Sent by the workflow you configured once: triggered by tonight's update.</div></div>
 
 <script>
 const BEFORE=[
  {id:"CP101-ENR",task:"Enrollment vs plan",status:"On Track",pct:null,owner:"PM",due:"ongoing"},
- {id:"CP101-ADPC",task:"ADaM spec — finalize",status:"On Track",pct:0.60,owner:"A. Patel",due:"15 Jun"},
+ {id:"CP101-ADPC",task:"ADaM spec: finalize",status:"On Track",pct:0.60,owner:"A. Patel",due:"15 Jun"},
  {id:"CP101-CUT",task:"Database soft-lock / data cut",status:"On Track",pct:null,owner:"DM",due:"17 Jun"},
  {id:"CP101-TLF",task:"Dry-run TLFs",status:"On Track",pct:0.10,owner:"J. Kim",due:"24 Jun"},
  {id:"CP101-DSMB",task:"DSMB pack",status:"On Track",pct:0.00,owner:"Biostat",due:"30 Jun"},
 ];
 const AFTER={"CP101-ENR":{status:"At Risk",due:"ongoing"},"CP101-ADPC":{pct:0.85},
  "CP101-CUT":{status:"Watch",due:"19 Jun"},"CP101-TLF":{due:"26 Jun"}};
-const NEWROW={id:"CP101-CSR",task:"CSR shell — build",status:"Planned",pct:0.00,owner:"Biostat",due:"10 Jul",isNew:true};
+const NEWROW={id:"CP101-CSR",task:"CSR shell: build",status:"Planned",pct:0.00,owner:"Biostat",due:"10 Jul",isNew:true};
 const pillCls=s=>({"On Track":"ontrack","Watch":"watch","At Risk":"atrisk","Planned":"planned"}[s]||"planned");
 let rows=[];
 function render(changed){
@@ -110,7 +110,7 @@ function render(changed){
   let h='<div class="grow head"><div class="gc">Task ID</div><div class="gc">Task</div><div class="gc">Status</div><div class="gc">% Done</div><div class="gc">Owner</div><div class="gc">Due</div><div class="gc"></div></div>';
   rows.forEach(r=>{
     const ch=changed[r.id]||{};
-    const pct=r.pct==null?'<span class="pct">—</span>':('<div class="pct">'+Math.round(r.pct*100)+'%</div><div class="bar"><i style="width:'+Math.round(r.pct*100)+'%"></i></div>');
+    const pct=r.pct==null?'<span class="pct">n/a</span>':('<div class="pct">'+Math.round(r.pct*100)+'%</div><div class="bar"><i style="width:'+Math.round(r.pct*100)+'%"></i></div>');
     h+='<div class="grow'+(r.isNew?' gnew':'')+'">'+
       '<div class="gc id">'+r.id+'</div><div class="gc">'+r.task+'</div>'+
       '<div class="gc'+(ch.status?' changed':'')+'"><span class="pill '+pillCls(r.status)+'">'+r.status+'</span></div>'+
@@ -132,7 +132,7 @@ function reset(){rows=BEFORE.map(r=>({...r}));render();clearLog();
 async function runJob(){
   bRun.disabled=true;bReset.disabled=true;
   log('== read the sheet first (keyed by Task code) ==','com'); log('GET  /sheets/5500','key'); await wait(700);
-  log('     5 rows read — CP101-ENR, ADPC, CUT, TLF, DSMB','dim'); await wait(600);
+  log('     5 rows read: CP101-ENR, ADPC, CUT, TLF, DSMB','dim'); await wait(600);
   log('== compute tonight\'s status, push by key (idempotent upsert) ==','com'); await wait(500);
   log('PUT  /sheets/5500/rows   POST /sheets/5500/rows','key'); await wait(500);
   // apply the changes, animating
@@ -152,7 +152,7 @@ async function runJob(){
 }
 async function rerun(){
   bRerun.disabled=true;
-  log('== re-run the SAME job — matched by key, converges, never duplicates ==','com'); await wait(500);
+  log('== re-run the SAME job: matched by key, converges, never duplicates ==','com'); await wait(500);
   log('GET  /sheets/5500   PUT /sheets/5500/rows','key'); await wait(600);
   log('[SHEETLINK] upsert sheet 5500: 5 updated, 0 added (idempotent by TaskID)','ok');
   setTimeout(()=>bRerun.disabled=false,400);
@@ -161,7 +161,7 @@ async function guard(){
   bGuard.disabled=true;
   log('== a stray non-operational column tries to ride along ==','com'); await wait(400);
   log('ss_guard(c("TaskID","ParticipantALT"), allow)','dim'); await wait(500);
-  log('[SHEETLINK] BLOCKED non-allowlisted column(s): PARTICIPANTALT — possible PHI/sensitive leak','bad');
+  log('[SHEETLINK] BLOCKED non-allowlisted column(s): PARTICIPANTALT; possible PHI/sensitive leak','bad');
   log('     → nothing sent. The allowlist stops PHI before it can reach the cloud.','dim');
   setTimeout(()=>bGuard.disabled=false,400);
 }

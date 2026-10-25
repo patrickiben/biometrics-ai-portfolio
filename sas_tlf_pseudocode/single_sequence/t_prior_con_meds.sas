@@ -9,7 +9,7 @@
 *             design: meds are shown BY PERIOD (APERIOD/APERIODC) so the
 *             interacting perpetrator drug (present only in the test period,
 *             Period 2) is visible against the reference period (Period 1).
-*             Columns = Period 1 (Reference) | Period 2 (Test) | Total. WHO-DD
+*             Columns = Period 1 (Reference) | Period 2 (Test) | Total. WHODrug
 *             class (CMCLAS) and preferred term (CMDECOD). % = participants / N.
 ******************************************************************************/
 %include "../00_setup_macros.sas";
@@ -44,7 +44,7 @@ quit;
   quit;
   data _any; set _any; length term $200; term="Participants with any &lbl"; level=0; run;
 
-  /* 2) by ATC/WHO-DD class (distinct participants within class, by period) */
+  /* 2) by ATC/WHODrug class (distinct participants within class, by period) */
   proc sql;
     create table _cls as
       select APERIOD as trtn, APERIODC as trt length=200, CMCLAS, count(distinct USUBJID) as nsubj
@@ -87,7 +87,7 @@ proc transpose data=_repv out=_wide; by block level term; id trtn; var value; ru
 %tfltitle(num=14.1.6, type=Table,
    text=%str(Prior and Concomitant Medications by Drug Class and Preferred Term),
    pop=Safety Population,
-   foot=%str(A participant is counted once at each level per period. Prior = PREFL (before first dose); concomitant = CONFL (ongoing during treatment). Period 1 = reference (victim alone); Period 2 = test (victim + perpetrator); the perpetrator medication appears in Period 2. WHO Drug Dictionary; class = ATC level. Percentages within period N.));
+   foot=%str(A participant is counted once at each level per period. Prior = PREFL (before first dose); concomitant = CONFL (ongoing during treatment). Period 1 = reference (victim alone); Period 2 = test (victim + perpetrator); the perpetrator medication appears in Period 2. &WHODRUGVER. coding; class = ATC level. Percentages within period N.));
 proc report data=_wide nowd split='|';
   columns block level term ("Study Period" /* Period1 | Period2 | Total */);
   define block / order 'Medication Timing' width=16;

@@ -60,7 +60,7 @@ proc transpose data=_rep out=_wide; by pord panel level term; id &TRTNVAR; var v
 %tfltitle(num=14.3.1.5, type=Table,
    text=%str(Serious Adverse Events, Deaths, and Adverse Events Leading to Study Discontinuation),
    pop=Safety Population,
-   foot=%str(SAE per AESER; death per AESDTH; discontinuation per AEACN=DRUG WITHDRAWN. Events attributed to TRTA at onset; within-participant crossover -> a participant may appear under more than one treatment. A participant is counted once at each level. MedDRA v27.0.));
+   foot=%str(SAE per AESER; death per AESDTH; discontinuation per AEACN=DRUG WITHDRAWN. Events attributed to TRTA at onset; within-participant crossover -> a participant may appear under more than one treatment. A participant is counted once at each level. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns pord panel level term ("Analysis Treatment" /* TRTAN cols + Total */);
   define pord  / order noprint;

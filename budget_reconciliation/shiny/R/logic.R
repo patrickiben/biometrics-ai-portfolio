@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------
-# logic.R — pure reconciliation logic for the "Find Hours" tool.
+# logic.R: pure reconciliation logic for the "Find Hours" tool.
 # HOURS / EFFORT ONLY. No dollars, rates, ROI, or headcount. Synthetic data.
 #
 # These are plain functions with no Shiny dependency, so the Shiny app, the

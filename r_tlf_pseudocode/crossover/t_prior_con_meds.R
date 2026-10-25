@@ -2,7 +2,7 @@
 # TABLE     : t_prior_con_meds  (Crossover - 2x2 / Williams)
 # TITLE     : Prior and Concomitant Medications by Drug Class
 # POPULATION: Safety Population (SAFFL == "Y")
-# INPUT     : ADCM  (one row per medication record; WHO-DD ATC class + decode)
+# INPUT     : ADCM  (one row per medication record; WHODrug ATC class + decode)
 # NOTE      : PSEUDOCODE. Counts = PARTICIPANTS taking >=1 medication (n_distinct
 #             USUBJID), NOT medication rows. Summary columns = treatment SEQUENCE
 #             (dv$seqvar = TRTSEQP) + Total; % denom = SAFFL N per sequence from
@@ -69,7 +69,7 @@ conmed_by_period <- cm %>% filter(ONTRTFL == "Y", !is.na(.data[[dv$byperiod[2]]]
 ttl <- tfl_titles(num = "14.1.6", type = "Table",
    text = "Prior and Concomitant Medications by Drug Class",
    pop  = "Safety Population",
-   foot = "A participant is counted once per class/term. Participant-level columns = randomized sequence (TRTSEQP). WHO-DD coding. Per-period denominators = participants dosed per period (ADEX).")
+   foot = "A participant is counted once per class/term. Participant-level columns = randomized sequence (TRTSEQP). {whodrug} coding. Per-period denominators = participants dosed per period (ADEX).")
 
 print(tab)
 print(conmed_by_period)   # companion by-period concomitant counts (dv$byperiod)

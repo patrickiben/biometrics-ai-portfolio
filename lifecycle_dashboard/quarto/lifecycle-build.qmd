@@ -29,14 +29,14 @@ shiny::runApp("lifecycle_dashboard/shiny")
 ```
 
 Pick a study, then move the what-if sliders (open queries, double-programmed %) and
-watch that study's row in the risk heatmap re-colour. The scoring is transparent, so
+watch that study's row in the risk heatmap re-color. The scoring is transparent, so
 every number is defensible.
 
 The whole console is three R files, shown here in full, nothing elided:
 
-- **shiny/R/logic.R** &mdash; the pure scoring and signal logic (no Shiny). The [visual guide](lifecycle-guide.html), the [dashboard](lifecycle-dashboard.html), and the unit tests call these same functions.
-- **shiny/R/gen_data.R** &mdash; the deterministic synthetic portfolio, the four CSVs the app reads.
-- **shiny/app.R** &mdash; the UI and the reactive server.
+- **shiny/R/logic.R**: the pure scoring and signal logic (no Shiny). The [visual guide](lifecycle-guide.html), the [dashboard](lifecycle-dashboard.html), and the unit tests call these same functions.
+- **shiny/R/gen_data.R**: the deterministic synthetic portfolio, the four CSVs the app reads.
+- **shiny/app.R**: the UI and the reactive server.
 
 The one idea to hold onto: the **rules** live in logic.R, the **screen** lives in app.R.
 You can change what "risk" means without touching the app, and change how it looks
@@ -84,7 +84,7 @@ at the parts that matter.
 
 ## How the reactivity works, part by part
 
-Follow the data, not the layout. Here is the chain that makes a slider re-colour the
+Follow the data, not the layout. Here is the chain that makes a slider re-color the
 heatmap.
 
 **The editable state lives in one place.** `rv <- reactiveValues(studies = seed$studies)`

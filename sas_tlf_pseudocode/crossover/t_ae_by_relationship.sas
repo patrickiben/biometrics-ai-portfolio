@@ -58,7 +58,7 @@ proc transpose data=_rep out=_wide; by level term; id &TRTNVAR; var value; run;
 %tfltitle(num=14.3.1.4, type=Table,
    text=%str(Treatment-Related Treatment-Emergent Adverse Events by System Organ Class and Preferred Term),
    pop=Safety Population,
-   foot=%str(Related = analysis relationship (AREL) of related/possibly/probably related. Events attributed to TRTA at onset; within-participant crossover -> a participant may appear under more than one treatment. A participant is counted once at each level. MedDRA v27.0.));
+   foot=%str(Related = analysis relationship (AREL) of related/possibly/probably related. Events attributed to TRTA at onset; within-participant crossover -> a participant may appear under more than one treatment. A participant is counted once at each level. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns level term ("Analysis Treatment" /* TRTAN cols + Total */);
   define level / order noprint;

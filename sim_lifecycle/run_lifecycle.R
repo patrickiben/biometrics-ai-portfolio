@@ -1,6 +1,6 @@
 #!/usr/bin/env Rscript
 ################################################################################
-# run_lifecycle.R — full SIMULATED study life cycle on one tool stack:
+# run_lifecycle.R: full SIMULATED study life cycle on one tool stack:
 # calibrated design -> synthetic ADaM -> TLF computations -> SLM draft
 # All participant-level data is SYNTHETIC (domain priors); only the design STRUCTURE
 # is calibrated to the public Phase-1 corpus (ClinicalTrials.gov). Not real clinical data (100% synthetic).
@@ -8,10 +8,11 @@
 ################################################################################
 source("sim_lifecycle/simulate_adam.R")
 
-## --- 1. sample a design (force a Bioequivalence crossover — dominant archetype)
-set.seed(2026)          # deterministic design sampling (G1 reproducibility)
-design <- sample_design(archetype = "BE", N = 40)
-adam <- simulate_study(design, seed = 2026)
+## --- 1. sample a design (a bioequivalence crossover, the dominant archetype) and simulate.
+## simulate_study() sets the seed first and then draws the design, so this one call regenerates
+## the committed out/*.csv byte for byte; validation_harness/run_harness.sh (G1) checks the same call.
+adam <- simulate_study(sample_design(archetype = "BE", N = 40), seed = 2026)
+design <- adam$design
 cat(sprintf("\n================ SIMULATED STUDY (calibrated design) ================\n"))
 cat(sprintf("Archetype: %s | model: %s | N=%d | site: %s | healthy: %s\n",
  design$archetype, design$model, design$N, design$site, design$healthy))
@@ -21,13 +22,13 @@ a <- adam$adsl
 cat(sprintf("\n[T] Demographics: age %.1f (%.1f) | %d F / %d M | weight %.1f kg | BMI %.1f\n",
  mean(a$AGE), sd(a$AGE), sum(a$SEX=="F"), sum(a$SEX=="M"), mean(a$WEIGHTBL), mean(a$BMIBL)))
 
-## --- 3. PK NCA summary (ADPP) — geometric, on the log scale ----------------
+## --- 3. PK NCA summary (ADPP): geometric, on the log scale ----------------
 geo <- function(param) {
  s <- adam$adpp[adam$adpp$PARAMCD==param, ]
  do.call(rbind, lapply(split(s$AVAL, s$TRTA), function(x){ x<-x[x>0]
  data.frame(n=length(x), geomean=round(exp(mean(log(x))),3),
  geocv=round(100*sqrt(exp(var(log(x)))-1),1)) })) }
-cat("\n[T] PK NCA — geometric mean (Geo CV%) by treatment:\n")
+cat("\n[T] PK NCA: geometric mean (Geo CV%) by treatment:\n")
 for (p in c("CMAX","AUCLST","AUCIFO")) { g <- geo(p)
  cat(sprintf(" %-7s Test: %s (%.1f%%) | Reference: %s (%.1f%%)\n", p,
  g["Test","geomean"], g["Test","geocv"], g["Reference","geomean"], g["Reference","geocv"])) }
@@ -42,12 +43,12 @@ be <- function(param) {
  data.frame(param=param, GMR=round(100*exp(est),1),
  lo=round(100*exp(est-tc*se),1), hi=round(100*exp(est+tc*se),1),
  intra_cv=round(100*sqrt(exp(summary(fit)$sigma^2)-1),1)) }
-cat("\n[T] Bioequivalence (Test vs Reference) — GMR and 90% CI:\n")
+cat("\n[T] Bioequivalence (Test vs Reference): GMR and 90% CI:\n")
 for (p in c("CMAX","AUCLST")) { b <- be(p)
  cat(sprintf(" %-7s GMR %.1f%% 90%% CI %.1f-%.1f%% intra-CV %.1f%% within 80-125%%: %s\n",
  p, b$GMR, b$lo, b$hi, b$intra_cv, ifelse(b$lo>=80 & b$hi<=125,"YES","no"))) }
 
-## --- 5. AE overview TLF (ADAE) — distinct participants --------------------------
+## --- 5. AE overview TLF (ADAE): distinct participants --------------------------
 ae <- adam$adae; N <- nrow(adam$adsl)
 nUSj <- function(f) length(unique(ae$USUBJID[f]))
 ae_result <- data.frame(
@@ -67,7 +68,7 @@ source("tlf_interpret/R/interpret.R")
 facts <- extract_facts("t_ae_overview", ae_result, arm = paste(design$archetype,"(Test)"), N = N)
 res <- interpret_tlf("t_ae_overview", facts)
 cat(sprintf("\n[SLM] interpretation status: %s (model: %s%s)\n",
- res$status, res$audit$model_name, if (isTRUE(res$audit$stub)) " — STUB, no model installed" else ""))
+ res$status, res$audit$model_name, if (isTRUE(res$audit$stub)) ": STUB, no model installed" else ""))
 cat(sprintf("[SLM] numeric-consistency: %s (%d numbers checked)\n",
  ifelse(res$validation$numbers$ok,"PASS","FAIL"), res$validation$numbers$n_checked))
 cat("[SLM] draft:\n ", res$draft, "\n", sep="")

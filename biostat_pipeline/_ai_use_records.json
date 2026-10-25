@@ -1,0 +1,38 @@
+[
+  {
+    "id": "AI-01",
+    "former_id": "S2-25",
+    "record": "AI-use plan: data classification and tool routing",
+    "description": "Per planned deliverable: the data-sensitivity class and where any AI assistance may run. Participant-level, unblinded or identifiable data: a local, version-pinned model with no data leaving the validated environment. De-identified text and specifications: a contracted cloud service under a data-processing agreement, never a consumer account. Reported numbers: validated programs and engines only.",
+    "owner": "Lead biostatistician",
+    "when": "Stage 2, before any AI-assisted work",
+    "standard": "21 CFR Part 11 audit trail; ALCOA++; ICH E6(R3) data integrity"
+  },
+  {
+    "id": "AI-02",
+    "former_id": "S3-36",
+    "record": "AI-use log (data stage)",
+    "description": "Per Stage 3 deliverable: the data class, where AI assistance ran, the engine of record for any dataset, and the model version used.",
+    "owner": "Lead biostatistician",
+    "when": "Stage 3, kept current",
+    "standard": "21 CFR Part 11 audit trail; ALCOA++; ICH E6(R3) data integrity"
+  },
+  {
+    "id": "AI-03",
+    "former_id": "S4-27",
+    "record": "AI-use log (analysis stage)",
+    "description": "Per output: the data class, where AI assistance ran, the engine of record for reported numbers (for example Phoenix WinNonlin, PKNCA or NONMEM), the model version, and retained prompts and outputs for AI-drafted code that was one side of double programming.",
+    "owner": "Lead biostatistician",
+    "when": "Stage 4, per output",
+    "standard": "21 CFR Part 11 audit trail; ALCOA++; ICH E6(R3) data integrity"
+  },
+  {
+    "id": "AI-04",
+    "former_id": "S5-16",
+    "record": "AI-use summary for the study file",
+    "description": "One summary across the study: model versions, the engine-of-record register showing every reported number came from a validated program or engine, and the retained prompt and output records.",
+    "owner": "Lead biostatistician with QA",
+    "when": "Stage 5, before release",
+    "standard": "21 CFR Part 11 audit trail; ALCOA++; ICH E6(R3) data integrity"
+  }
+]

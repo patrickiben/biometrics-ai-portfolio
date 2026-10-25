@@ -1,6 +1,6 @@
 ---
 title: "Trial-Termination Early-Warning"
-subtitle: "A visual, runnable guide to the 3-tier risk console"
+subtitle: "A visual, runnable guide to the 2-tier risk console"
 format:
   html:
     theme:
@@ -41,21 +41,23 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 :::
 
 ::: {.callout-important appearance="simple"}
-**The rule.** The AI **flags, aggregates, and drafts** the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study; the account lead owns the client signal. Reported safety numbers come from the validated safety database, never from a model.
+**The rule.** The console **flags, aggregates, and drafts** the alert, using fixed rules and no AI model. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study. Reported safety numbers come from the validated safety database, never from a model.
 :::
 
-## Three tiers, one roll-up
+::: {.callout-warning appearance="simple"}
+**Known issues, being fixed.** The severity-weighted average dilutes a single red safety signal: the red Hy's-Law candidate S-1042 rolls up to an amber Participant tier. The next revision replaces it with a worst-of roll-up and moves these tiers into TRIALMON. Signals marked ADV are illustrative placeholders; the optimal-transport and active-inference engine they describe is not implemented.
+:::
+
+## Two tiers, one roll-up
 
 ```{mermaid}
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
-  SRC["Data sources<br/>EDC · safety DB · labs<br/>IXRS · CTMS · finance"] --> RT{"Route by<br/>sensitivity"}
-  RT -->|"safety / PK /<br/>unblinded"| LOC["On-device model<br/>zero egress"]
-  RT -->|"non-sensitive<br/>ops"| CLD["Cloud Claude<br/>API + BAA"]
-  LOC --> ADV["Advanced engine<br/>OT + Active Inference"]
-  CLD --> ADV
-  ADV --> SC["Severity-weighted<br/>roll-up to tier RAG"]
+  SRC["Data sources<br/>EDC · safety DB · labs<br/>IXRS · CTMS"] --> FEED["Signal feed<br/>signals.csv<br/>(synthetic)"]
+  FEED --> SC["Severity-weighted<br/>roll-up to tier RAG<br/>(fixed rules)"]
+  ADV["ADV signals<br/>(placeholders,<br/>not implemented)"] -.-> SC
   SC --> ESC["Alert +<br/>escalation"]
+  ESC --> HUM["SRC / DSMB /<br/>medical monitor decide"]
 ```
 
 The scoring is transparent - each signal has a level (green/amber/red) and a
@@ -108,11 +110,11 @@ shiny::runApp("risk_monitor/shiny")
 # needs: install.packages(c("shiny","bslib","DT"))
 ```
 
-Select a signal, set its level, and watch the tier and overall risk re-colour. The
+Select a signal, set its level, and watch the tier and overall risk re-color. The
 [run-and-build page](risk-build.html) shows how the console is built from `R/logic.R`.
 
 ::: {.callout-tip appearance="simple"}
-**Going live:** the feed file [`signals.csv`](../shiny/data/signals.csv) is a representative subset of the 65-signal catalog. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.
+**Going live:** the feed file [`signals.csv`](../shiny/data/signals.csv) is a representative signal set. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.
 :::
 
 ## The other formats
@@ -123,4 +125,4 @@ Select a signal, set its level, and watch the tier and overall risk re-colour. T
 | Share (no R) | [Dashboard](risk-dashboard.html) |
 | Build | [Run-and-build walkthrough](risk-build.html) |
 
-*Synthetic, no PHI. The AI flags; the SRC / DSMB / PM / account lead decide.*
+*Synthetic, no PHI. The console flags; the SRC / DSMB / PM decide.*

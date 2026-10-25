@@ -29,20 +29,20 @@ shiny::runApp("risk_monitor/shiny")
 ```
 
 Select a signal, set its level (green / amber / red), and watch the tier RAG and the
-overall termination-risk index re-colour. Use "Reset to feed" to return to the seed
-state. The AI flags and drafts; the SRC / DSMB / medical monitor / PM / account lead
+overall termination-risk index re-color. Use "Reset to feed" to return to the seed
+state. The console flags and drafts; the SRC / DSMB / medical monitor / PM
 decide. Synthetic, no PHI, no participant records.
 
 The whole console is two files, shown here in full, nothing elided:
 
-- **shiny/R/logic.R** &mdash; the pure roll-up scoring (no Shiny). The [visual guide](risk-guide.html), the [dashboard](risk-dashboard.html), and the unit tests call these same functions.
-- **shiny/app.R** &mdash; the UI and the reactive server.
+- **shiny/R/logic.R**: the pure roll-up scoring (no Shiny). The [visual guide](risk-guide.html), the [dashboard](risk-dashboard.html), and the unit tests call these same functions.
+- **shiny/app.R**: the UI and the reactive server.
 
 The one idea to hold onto: the **rules** live in logic.R, the **screen** lives in app.R. You can change what a tier RAG means without touching the app, and change how it looks without touching the rules.
 
 ## The data it reads
 
-One CSV is the whole dataset. Edit it to point the console at your study (keep the column names): [`signals.csv`](../shiny/data/signals.csv). It carries `tier, id, signal, category, engine, level, weight, advanced, detail`, a representative subset of the 65-signal catalog. The `advanced = TRUE` rows are the continuous signals from the published-method engine (Optimal Transport / Wasserstein drift, Active Inference / free-energy).
+One CSV is the whole dataset. Edit it to point the console at your study (keep the column names): [`signals.csv`](../shiny/data/signals.csv). It carries `tier, id, signal, category, engine, level, weight, advanced, detail`, a representative signal set. The `advanced = TRUE` rows are illustrative placeholders; the optimal-transport and active-inference engine they describe is not implemented.
 
 ## The complete logic core: shiny/R/logic.R
 
@@ -51,7 +51,7 @@ Every line of the roll-up. `risk_load()` reads the CSV and levels the RAG factor
 ```{r logic, code=readLines("../shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-Read the roll-up: each signal has a level mapped to a severity in `SEVERITY` (green 0, amber 50, red 100) and a per-signal `weight`. A tier score is the weight-weighted mean of its signals' severities, and `risk_overall()` blends the three tier scores with `TIER_WEIGHT` (Participant 0.50, Study 0.30, Client 0.20). `rag_of()` turns any score into a colour at the thresholds 25 and 55. Change a weight or a threshold on that one line and every surface, the guide, the dashboard, and the app, updates at once.
+Read the roll-up: each signal has a level mapped to a severity in `SEVERITY` (green 0, amber 50, red 100) and a per-signal `weight`. A tier score is the weight-weighted mean of its signals' severities, and `risk_overall()` blends the two tier scores with `TIER_WEIGHT` (Participant 0.625, Study 0.375). `rag_of()` turns any score into a color at the thresholds 25 and 55. Change a weight or a threshold on that one line and every surface, the guide, the dashboard, and the app, updates at once.
 
 ## The complete app: shiny/app.R
 
@@ -62,7 +62,7 @@ Every line of the UI and server. Read it top to bottom; the walk-through below p
 
 ## How the reactivity works, part by part
 
-Follow the data, not the layout. Here is the chain that makes a click re-colour the risk index.
+Follow the data, not the layout. Here is the chain that makes a click re-color the risk index.
 
 **The editable state lives in one place.** `rv <- reactiveValues(signals = seed)` holds the one frame the user can change. Every output reads from `rv$signals`, so when it changes, everything that depends on it recomputes. That is the entire trick.
 
@@ -70,7 +70,7 @@ Follow the data, not the layout. Here is the chain that makes a click re-colour 
 
 **The rule is a reactive expression.** `ov <- reactive(risk_overall(rv$signals))` re-runs automatically whenever `rv$signals` changes. You never call `risk_overall()` by hand.
 
-**The value boxes just read the reactive.** The helper `vb()` reads `ov()`, pulls either the overall score or a named tier from `o$tiers`, colours the span by its RAG, and each of `output$v_overall`, `output$v_part`, `output$v_study`, and `output$v_client` renders it. When `rv$signals` changes, `ov()` recomputes and all four boxes re-colour.
+**The value boxes just read the reactive.** The helper `vb()` reads `ov()`, pulls either the overall score or a named tier from `o$tiers`, colors the span by its RAG, and each of `output$v_overall`, `output$v_part` and `output$v_study` renders it. When `rv$signals` changes, `ov()` recomputes and all three boxes re-color.
 
 **The table and the feed read the state directly.** `output$signals` renders `rv$signals` (filtered by `input$tier`) as a single-select `DT`; `output$feed` calls `risk_feed(rv$signals)` and lays out the firing signals red-first, badging the `advanced` ones "ADV". Nothing recomputes by hand; changing `rv$signals` drives it all.
 
