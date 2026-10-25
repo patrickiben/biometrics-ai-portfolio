@@ -178,6 +178,33 @@ test_that("CTCAE ALT, bilirubin, ALP, neutrophils, platelets and hemoglobin at t
   expect_equal(ctcae_grade("HGB", c(12, 10, 9.99, 8, 7.9), 12, 17, 14), c(0L, 1L, 2L, 2L, 3L))
 })
 
+test_that("the eDISH axes widen so the most severe participant stays on the plot", {
+  h <- hys_screen(TM$adlb)
+  expect_equal(edish_limits(h), list(x = c(.2, 10), y = c(.2, 6)))         # the shipped data fit the default
+  h$peak_at[h$USUBJID == "CP101-014"] <- 12; h$peak_tbl[h$USUBJID == "CP101-014"] <- 7
+  lim <- edish_limits(h)
+  expect_true(all(h$peak_at >= lim$x[1] & h$peak_at <= lim$x[2]))
+  expect_true(all(h$peak_tbl >= lim$y[1] & h$peak_tbl <= lim$y[2]))
+  h$peak_at[1] <- 0.1
+  expect_lt(edish_limits(h)$x[1], 0.1)
+  rh <- new.env(); sys.source(file.path(APP_DIR, "..", "trialmon_quarto", "_report-helpers.R"), envir = rh)
+  b <- ggplot2::ggplot_build(rh$edish_plot(h, rh$TM_LOOK$light))
+  pts <- b$data[[which(vapply(b$plot$layers, function(l) inherits(l$geom, "GeomPoint"), logical(1)))]]
+  expect_equal(sum(is.finite(pts$x) & is.finite(pts$y)), 18)              # every participant is drawn
+})
+
+test_that("watch rolls up: with only QTcF > 450 ms left, the participant tier is watch, not GREEN", {
+  keep <- c("CP101-001", "CP101-002", "CP101-003", "CP101-011", "CP101-012")
+  tm <- TM
+  for (d in c("adsl", "adlb", "adeg", "adae")) tm[[d]] <- tm[[d]][tm[[d]]$USUBJID %in% keep, ]
+  green_study <- study_signals(tm); green_study$LEVEL <- "GREEN"
+  r <- trialmon_rollup(tm, study = green_study)
+  expect_equal(c(r$participant, r$study, r$overall), c("watch", "GREEN", "watch"))
+  expect_equal(c(r$red, r$amber, r$watch), c(0, 0, 2))
+  expect_equal(sort(r$worklist$id), c("CP101-011", "CP101-012"))
+  expect_equal(participant_status(tm)$status, c("GREEN", "GREEN", "GREEN", "watch", "watch"))
+})
+
 test_that("roll-up is worst-of: a single RED is never diluted", {
   expect_equal(worst(c(rep("GREEN", 20), "RED")), "RED")
   expect_equal(worst(c("watch", "GREEN")), "watch")

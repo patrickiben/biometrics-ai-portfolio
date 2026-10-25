@@ -147,6 +147,17 @@ hys_screen <- function(adlb, window = 30, alp_convention = FALSE) {
   out
 }
 
+# eDISH axis limits (log scales): at least 0.2 to 10x ULN for AT and 0.2 to 6x ULN for TBL, widened
+# so that no participant, least of all the most severe, falls off the plot
+edish_limits <- function(h) {
+  rng <- function(v, lo, hi) {
+    v <- v[is.finite(v) & v > 0]
+    if (!length(v)) return(c(lo, hi))
+    c(if (min(v) < lo) 0.85 * min(v) else lo, if (1.2 * max(v) > hi) 1.2 * max(v) else hi)
+  }
+  list(x = rng(h$peak_at, .2, 10), y = rng(h$peak_tbl, .2, 6))
+}
+
 # ---- QTcF -------------------------------------------------------------------
 qtc_sev <- function(qtcf, chg) {
   ifelse(.gt(qtcf, 500) | .gt(chg, 60), "RED",

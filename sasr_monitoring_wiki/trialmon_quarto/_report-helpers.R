@@ -57,16 +57,17 @@ edish_plot <- function(h, look) {
                      levels = c("Potential Hy's Law", "AT > 3x ULN: confirm", "No hepatic flag"))
   cols <- setNames(look$pal[c("RED", "AMBER", "GREEN")], levels(h$screen))
   lab <- h[h$peak_at >= 2.5 | h$peak_tbl > 1.5, ]
+  lim <- edish_limits(h)                       # widened when needed, so no participant falls off
   ggplot2::ggplot(h, ggplot2::aes(peak_at, peak_tbl, colour = screen)) +
     ggplot2::annotate("rect", xmin = 3, xmax = Inf, ymin = 2, ymax = Inf, alpha = .10, fill = look$pal[["RED"]]) +
     ggplot2::geom_vline(xintercept = 3, linetype = 2, colour = look$pal[["AMBER"]]) +
     ggplot2::geom_hline(yintercept = 2, linetype = 2, colour = look$pal[["AMBER"]]) +
     ggplot2::geom_point(size = 2.8) +
     ggplot2::geom_text(data = lab, ggplot2::aes(label = USUBJID), vjust = -1, size = 3.2, show.legend = FALSE) +
-    ggplot2::annotate("text", x = 9.6, y = 5.6, label = "upper right: check timing", hjust = 1, size = 3.2, colour = look$pal[["RED"]]) +
-    ggplot2::annotate("text", x = 9.6, y = .22, label = "lower right: AT >= 3x, TBL <= 2x", hjust = 1, size = 3.2, colour = look$pal[["AMBER"]]) +
-    ggplot2::annotate("text", x = .21, y = 5.6, label = "upper left: TBL > 2x, AT < 3x", hjust = 0, size = 3.2, colour = look$fg) +
-    ggplot2::scale_x_log10(limits = c(.2, 10)) + ggplot2::scale_y_log10(limits = c(.2, 6)) +
+    ggplot2::annotate("text", x = .96 * lim$x[2], y = .93 * lim$y[2], label = "upper right: check timing", hjust = 1, size = 3.2, colour = look$pal[["RED"]]) +
+    ggplot2::annotate("text", x = .96 * lim$x[2], y = 1.1 * lim$y[1], label = "lower right: AT >= 3x, TBL <= 2x", hjust = 1, size = 3.2, colour = look$pal[["AMBER"]]) +
+    ggplot2::annotate("text", x = 1.05 * lim$x[1], y = .93 * lim$y[2], label = "upper left: TBL > 2x, AT < 3x", hjust = 0, size = 3.2, colour = look$fg) +
+    ggplot2::scale_x_log10(limits = lim$x) + ggplot2::scale_y_log10(limits = lim$y) +
     ggplot2::scale_colour_manual(values = cols, drop = FALSE, name = NULL) +
     ggplot2::labs(x = "Peak post-baseline ALT or AST (x ULN, log scale)", y = "Peak total bilirubin (x ULN, log scale)") +
     tm_theme(look)

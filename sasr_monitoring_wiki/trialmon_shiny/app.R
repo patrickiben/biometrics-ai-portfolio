@@ -88,7 +88,8 @@ ui <- page_sidebar(
       plotOutput("edish", height = "420px", click = "edish_click"),
       p(class = "foot", "Peak post-baseline ALT or AST against peak total bilirubin (TBL), as multiples of ULN, log scales. ",
         "Peaks need not be concurrent: a point in the upper-right quadrant is a potential Hy's Law case only when ",
-        "TBL > 2x ULN came on or after the aminotransferase elevation within the window. Click a point to open it."),
+        "TBL > 2x ULN came on or after an aminotransferase elevation (ALT or AST >= 3x ULN) within the window. ",
+        "Every such draw opens its own window. The axes widen so that no participant falls off. Click a point to open it."),
       plotOutput("traj", height = "260px"),
       DTOutput("liver_tbl")),
     nav_panel("QTcF",
@@ -183,15 +184,16 @@ server <- function(input, output, session) {
     h$screen <- factor(ifelse(h$hys, "Potential Hy's Law", ifelse(!is.na(h$at3x_day), "AT > 3x ULN: confirm", "No hepatic flag")),
                        levels = c("Potential Hy's Law", "AT > 3x ULN: confirm", "No hepatic flag"))
     lab <- h[h$peak_at >= 2.5 | h$peak_tbl > 1.5, ]
+    lim <- edish_limits(h)
     ggplot(h, aes(peak_at, peak_tbl, colour = screen)) +
       annotate("rect", xmin = 3, xmax = Inf, ymin = 2, ymax = Inf, alpha = .10, fill = pal()[["RED"]]) +
       geom_vline(xintercept = 3, linetype = 2, colour = pal()[["AMBER"]]) +
       geom_hline(yintercept = 2, linetype = 2, colour = pal()[["AMBER"]]) +
       geom_point(size = 3.2) +
       geom_text(data = lab, aes(label = USUBJID), vjust = -1, size = 3.4, show.legend = FALSE) +
-      annotate("text", x = 9.5, y = 6, label = "upper right: check timing", hjust = 1, size = 3.4, colour = pal()[["RED"]]) +
-      annotate("text", x = 9.5, y = 0.22, label = "lower right: AT >= 3x, TBL <= 2x", hjust = 1, size = 3.4, colour = pal()[["AMBER"]]) +
-      scale_x_log10(limits = c(.2, 10)) + scale_y_log10(limits = c(.2, 6)) +
+      annotate("text", x = .95 * lim$x[2], y = lim$y[2], label = "upper right: check timing", hjust = 1, size = 3.4, colour = pal()[["RED"]]) +
+      annotate("text", x = .95 * lim$x[2], y = 1.1 * lim$y[1], label = "lower right: AT >= 3x, TBL <= 2x", hjust = 1, size = 3.4, colour = pal()[["AMBER"]]) +
+      scale_x_log10(limits = lim$x) + scale_y_log10(limits = lim$y) +
       scale_colour_manual(values = setNames(pal()[c("RED", "AMBER", "GREEN")], levels(h$screen)), drop = FALSE,
                           name = "Hepatic screen") +
       labs(x = "Peak ALT or AST (x ULN, log scale)", y = "Peak total bilirubin (x ULN, log scale)") + gtheme()
