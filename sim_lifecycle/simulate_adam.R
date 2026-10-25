@@ -121,8 +121,12 @@ nca_one <- function(t, c) {
  ok <- !is.na(c) & c > 0
  if (sum(ok) < 3) return(NULL)
  cmax <- max(c[ok]); tmax <- t[ok][which.max(c[ok])]
- auclast <- sum(diff(t[ok]) * (head(c[ok],-1)+tail(c[ok],-1))/2) # linear trapezoid
- term <- tail(which(ok), 3) # terminal points
+ # AUC(0-t): from dosing (the predose zero) to the last quantifiable concentration, BLQ as 0
+ # (ICH M13A). Earlier versions kept only c > 0, which dropped the 0 to first-sample trapezoid
+ # and made AUClast 0.2% to 2.7% low.
+ last <- max(which(ok)); a <- which(!is.na(c) & seq_along(c) <= last)
+ auclast <- sum(diff(t[a]) * (head(c[a],-1)+tail(c[a],-1))/2) # linear trapezoid
+ term <- tail(which(ok), 3) # terminal points; zeros never enter the lambda_z fit
  fit <- lm(log(c[term]) ~ t[term]); lz <- unname(-coef(fit)[2]) # strip lm coef name
  if (is.na(lz) || lz <= 0) # no valid terminal slope
  return(c(CMAX=cmax, TMAX=tmax, AUCLST=auclast, AUCIFO=NA_real_, T12=NA_real_))

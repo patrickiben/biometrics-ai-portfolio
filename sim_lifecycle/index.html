@@ -40,19 +40,19 @@
   </div>
 
   <h2>What was executed</h2>
-  <p>Excerpt of the output of <code>Rscript sim_lifecycle/run_lifecycle.R</code> from the repository root, R 4.6.0, run on 2026-10-24. The run rewrote all eight <code>out/*.csv</code> files byte for byte identical to the committed copies.</p>
+  <p>Excerpt of the output of <code>Rscript sim_lifecycle/run_lifecycle.R</code> from the repository root, R 4.6.0, run on 2026-10-25, after the AUC fix (AUC(0-t) now starts at the predose zero, so AUClast is 0.2% to 2.7% higher than in earlier versions). The run rewrote all eight <code>out/*.csv</code> files byte for byte identical to the committed copies.</p>
 <pre class="log"><code>Archetype: BE | model: CROSSOVER | N=40 | site: Miami | healthy: TRUE
 
 [T] Demographics: age 43.8 (7.5) | 22 F / 18 M | weight 73.2 kg | BMI 26.0
 
 [T] PK NCA: geometric mean (Geo CV%) by treatment:
  CMAX    Test: 104.172 (39.1%) | Reference: 103.085 (37.5%)
- AUCLST  Test: 1134.764 (25.9%) | Reference: 1126.542 (32.1%)
- AUCIFO  Test: 1171.363 (27.1%) | Reference: 1167.964 (33.7%)
+ AUCLST  Test: 1144.19 (25.7%) | Reference: 1136.115 (31.8%)
+ AUCIFO  Test: 1180.888 (26.9%) | Reference: 1177.663 (33.4%)
 
 [T] Bioequivalence (Test vs Reference): GMR and 90% CI:
  CMAX    GMR 101.1% 90% CI 98.6-103.5% intra-CV 6.4% within 80-125%: YES
- AUCLST  GMR 100.7% 90% CI 95.9-105.8% intra-CV 13.0% within 80-125%: YES
+ AUCLST  GMR 100.7% 90% CI 96.0-105.7% intra-CV 12.9% within 80-125%: YES
 
 [T] AE overview (N=40): any TEAE 22 (55.0%), related 16, severe 2, SAE 0
 
@@ -65,7 +65,7 @@
 
 [CALIBRATION CHECK] Monte-Carlo N=400 vs fitted-from-42-studies
  Cmax CV%  36.5 vs 36
- AUClast CV%  35.1 vs 33
+ AUClast CV%  34.8 vs 33
  Tmax median   1.0 h vs 1.0 h
  t1/2 median   8.2 h vs 7.8 h
  any-AE rate 0.438 vs 0.430</code></pre>
