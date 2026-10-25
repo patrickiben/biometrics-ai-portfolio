@@ -14,7 +14,9 @@ The checks in [`run_harness.sh`](run_harness.sh) run against this repository's o
 pseudocode libraries and synthetic ADaM data and emit [`EVIDENCE_LEDGER.md`](EVIDENCE_LEDGER.md)
 (one row per gate). **What is actually checked:** most checks are structural (file inventories,
 pattern scans, counts); G1 re-runs the synthetic study; G5 is a manual record that the script does
-not compute; G6 is currently red (the QTc change figures use two reference-line conventions); G7
+not compute; G6 checks that every QTc change figure uses one reference-line convention (0, 30 and
+60 ms, the ICH E14 categorical thresholds) and went green on 2026-10-25 after the two figure types that
+drew a +10 ms line were aligned; G7
 reports "not signed" until a named statistician signs for AI use; SAS is never executed (no
 license). No gate has a human sign-off yet. Open [`index.html`](index.html) for the
 ledger view.
@@ -78,7 +80,7 @@ ledger view.
 - **Automatable:** numbering‑collision check; scope/terminology compliance; presence checks per deliverable type against the applicable checklist.
 - **Human judgment:** the narrative adequacy of each required item.
 - **Pass criterion:** zero TLF‑number collisions; zero out‑of‑scope terminology; ICH E14 QTc conventions applied uniformly; numbering twin‑consistent.
-- **As implemented here:** pattern checks for numbering, scope terms and ICH E14 conventions (categorical >450/480/500 ms and change >30/60 ms in every QTc table; the +10 ms reference line on every QTc change figure). Not a regulatory review.
+- **As implemented here:** pattern checks for numbering, scope terms and ICH E14 conventions (categorical >450/480/500 ms and change >30/60 ms in every QTc table; reference lines at 30 and 60 ms, and no +10 ms line, on every QTc change figure). The 10 ms threshold of regulatory concern applies to the upper bound of a placebo-corrected mean effect in a thorough QT study, which these descriptive change figures do not estimate. Cite ICH E14 (May 2005), E14 Q&A (R3) (10 Dec 2015) and the E14/S7B Q&As (Step 4 21 Feb 2022). Not a regulatory review.
 
 ### G7: AI‑use governance & accountability gate
 **Claim it defends:** *"AI assistance is disclosed and bounded: validated tools own every number, a qualified human signs every output, only operations content touches any shared/AI tool, models used for anything regulated are frozen, and there is a full audit trail."*

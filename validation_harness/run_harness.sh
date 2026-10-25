@@ -88,8 +88,11 @@ add "G5 Adversarial QC panel" "no skeptical reader can break the deliverable" "m
 # ---- G6 Regulatory & reporting standard -----------------------------------
 EDISH=$(grep -rilE "\bedish\b|hy'?s.?law" $SAS $R 2>/dev/null | grep -viE 'readme|index' | wc -l | tr -d ' ')
 # ICH E14 conventions, checked by pattern (not a regulatory review): every categorical QTc
-# program tests >450/>480/>500 ms and change >30/>60 ms; every QTc change figure draws the
-# +10 ms reference line, or every one draws the 30/60 ms lines (one convention, applied uniformly).
+# program tests >450/>480/>500 ms and change >30/>60 ms, and every QTc change figure uses the
+# one convention consistent with those categories: reference lines at 30 and 60 ms (the E14
+# categorical thresholds for an increase from baseline) and no +10 ms line. The 10 ms threshold
+# applies to the upper bound of a placebo-corrected mean effect in a thorough QT study, which
+# these descriptive change figures do not estimate.
 read E14CAT E14CATN E14TEN E14CAT3060 E14FIGN < <(python3 - <<'PY'
 import glob,re
 cat=glob.glob("r_tlf_pseudocode/*/t_ecg_qtc_categorical.R")+glob.glob("sas_tlf_pseudocode/*/t_ecg_qtc_categorical.sas")
@@ -107,9 +110,9 @@ n10=sum(map(ten,fig)); n36=sum(map(cat3060,fig))
 print(sum(map(ok_cat,cat)),len(cat),n10,n36,len(fig))
 PY
 )
-G6=green; { [ "${COLL:-1}" = 0 ] && [ "$EDISH" = 0 ] && [ "$E14CATN" -gt 0 ] && [ "$E14CAT" = "$E14CATN" ] && [ "$E14FIGN" -gt 0 ] && { [ "$E14TEN" = "$E14FIGN" ] || [ "$E14CAT3060" = "$E14FIGN" ]; }; } || G6=red
+G6=green; { [ "${COLL:-1}" = 0 ] && [ "$EDISH" = 0 ] && [ "$E14CATN" -gt 0 ] && [ "$E14CAT" = "$E14CATN" ] && [ "$E14FIGN" -gt 0 ] && [ "$E14CAT3060" = "$E14FIGN" ] && [ "$E14TEN" = 0 ]; } || G6=red
 add "G6 Reporting conventions" "TLF numbering, scope and ICH E14 conventions hold (pattern checks, not a regulatory review)" "$G6" \
-    "$COLL TLF-number collisions; $EDISH out-of-scope eDISH/Hy's terms in programs; ICH E14 categorical thresholds (>450/480/500 ms, change >30/60 ms) in $E14CAT/$E14CATN QTc tables; QTc change figures: $E14TEN/$E14FIGN draw the +10 ms mean-effect line and $E14CAT3060/$E14FIGN draw 30/60 ms lines (one convention must apply to all)"
+    "$COLL TLF-number collisions; $EDISH out-of-scope eDISH/Hy's terms in programs; ICH E14 categorical thresholds (>450/480/500 ms, change >30/60 ms) in $E14CAT/$E14CATN QTc tables; QTc change figures: $E14CAT3060/$E14FIGN draw the 30/60 ms ICH E14 categorical reference lines and $E14TEN draw a +10 ms line (the convention is 30/60 ms on every figure, no +10 ms line)"
 
 # ---- G7 AI-governance documentation (accountability needs a signature) ------
 # The scans below can only show that the AI-use limits are written down and that no PHI

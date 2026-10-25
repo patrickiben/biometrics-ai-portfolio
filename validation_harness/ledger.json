@@ -1,7 +1,7 @@
 {
- "generated": "2026-10-24 23:49 EDT",
+ "generated": "2026-10-25 10:34 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 5,
+ "green": 6,
  "manual": 1,
  "unsigned": 1,
  "total": 8,
@@ -10,7 +10,7 @@
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "469 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "487 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
@@ -44,8 +44,8 @@
   {
    "gate": "G6 Reporting conventions",
    "guards": "TLF numbering, scope and ICH E14 conventions hold (pattern checks, not a regulatory review)",
-   "status": "red",
-   "evidence": "0 TLF-number collisions; 0 out-of-scope eDISH/Hy's terms in programs; ICH E14 categorical thresholds (>450/480/500 ms, change >30/60 ms) in 10/10 QTc tables; QTc change figures: 4/10 draw the +10 ms mean-effect line and 6/10 draw 30/60 ms lines (one convention must apply to all)",
+   "status": "green",
+   "evidence": "0 TLF-number collisions; 0 out-of-scope eDISH/Hy's terms in programs; ICH E14 categorical thresholds (>450/480/500 ms, change >30/60 ms) in 10/10 QTc tables; QTc change figures: 10/10 draw the 30/60 ms ICH E14 categorical reference lines and 0 draw a +10 ms line (the convention is 30/60 ms on every figure, no +10 ms line)",
    "sign_off": "pending"
   },
   {
@@ -59,7 +59,7 @@
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 41 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
+   "evidence": "package_qc.py: 0 issues across 56 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
   }
  ]
