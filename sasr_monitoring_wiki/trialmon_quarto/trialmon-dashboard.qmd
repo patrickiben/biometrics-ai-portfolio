@@ -1,97 +1,127 @@
 ---
-title: "TRIALMON - Safety Screening Snapshot"
+title: "TRIALMON: safety screening snapshot"
+subtitle: "A read-only snapshot of the console at the Cohort 4 data cut (synthetic data)"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
-    embed-resources: true
+      light: [default, _theme-light.scss]
+      dark: [default, _theme-dark.scss]
+    respect-user-color-scheme: true
+    include-in-header: _head.html
+    include-before-body: _topbar.html
     page-layout: full
     toc: false
+    embed-resources: true
+    html-math-method: plain
+    fig-format: png
+    fig-dpi: 110
 execute:
   echo: false
   warning: false
   message: false
 knitr:
   opts_chunk:
-    dev: png
+    dev.args:
+      bg: transparent
 ---
 
 ```{r setup}
-library(ggplot2); library(knitr)
+library(ggplot2)
 source("../trialmon_shiny/R/logic.R")
+source("_report-helpers.R")
 tm <- trialmon_load("../trialmon_shiny/data")
-P  <- score_participants(tm$participants); k <- trialmon_kpis(tm)
-DARK <- theme_minimal(base_size=12) + theme(legend.position="top",
-  plot.background=element_rect(fill="#141925", colour=NA), panel.background=element_rect(fill="#141925", colour=NA),
-  text=element_text(colour="#e9edf7"), axis.text=element_text(colour="#c5cee4"), panel.grid=element_line(colour="#2a3242"))
+S <- trialmon_settings()
+roll <- trialmon_rollup(tm, S)
+h <- hys_screen(tm$adlb)
+k <- trialmon_kpis(tm)
 ```
 
-::: {.callout-important appearance="simple"}
-**Read-only screening snapshot**, computed from the safety data ([`participants.csv`](../trialmon_shiny/data/participants.csv), [`aes.csv`](../trialmon_shiny/data/aes.csv), [`cohorts.csv`](../trialmon_shiny/data/cohorts.csv)). Every panel is a screening lens: it flags a position for the medical monitor / SRC / DSMB, it never reports a clinical number or adjudicates. The interactive tool is the [run &amp; build the Shiny app](trialmon-build.html) page; the [visual guide](trialmon-guide.html) explains the rules. Synthetic, no PHI.
+::: {.callout-note appearance="simple"}
+Computed from the synthetic CSVs in [`trialmon_shiny/data/`](../trialmon_shiny/data/adsl.csv) by
+`R/logic.R`. Every level rolls up worst-of, watch included. The interactive version is the
+[Shiny console](trialmon-build.html); the rules are explained in the [guide](trialmon-guide.html); the
+committee view is the [SRC packet](trialmon-src-packet.html). The screen flags; the medical monitor and
+the committee decide.
 :::
 
 ```{r kpis, results='asis'}
-st <- trialmon_status(tm); scol <- c(GREEN="#43c47d", watch="#5f8aa8", AMBER="#e0a64c", RED="#e8657a")
-box <- function(label, value, col="#e9edf7") sprintf(
-  '<div style="flex:1 1 130px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>', col, value, label)
-cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
-cat(box("Safety status", st, scol[st])); cat(box("Participants", k$n))
-cat(box("RED flags", k$red, "#e8657a")); cat(box("AMBER flags", k$amber, "#e0a64c"))
-cat(box("Grade >=3 AE", k$g3ae)); cat(box("SAEs", k$sae))
-cat('</div>')
+cat('<div class="tm-kpis">',
+    kpi_html("Overall (worst-of)", sev_html(roll$overall)),
+    kpi_html("Participants and cohorts", sev_html(roll$participant)),
+    kpi_html("Study tier", sev_html(roll$study)),
+    kpi_html("RED flags", roll$red), kpi_html("AMBER flags", roll$amber), kpi_html("Watch", roll$watch),
+    kpi_html("Dosed participants", k$n), kpi_html("Confirmed DLTs (+ pending)", sprintf("%d (+%d)", k$dlt, k$pending)),
+    '</div>')
 ```
 
 :::: {.grid}
 
-::: {.g-col-12 .g-col-md-7}
-#### eDISH / Hy's-Law screen
-```{r edish, fig.width=7, fig.height=4.4}
-P$flag <- ifelse(P$hys, "Hy's-Law (RED)", ifelse(P$alt>=3 & P$tbl<=2, "ALT-only (near-miss)", "within limits"))
-ggplot(P, aes(alt, tbl, colour=flag)) +
-  annotate("rect", xmin=3, xmax=Inf, ymin=2, ymax=Inf, fill="#e8657a", alpha=.08) +
-  geom_hline(yintercept=2, linetype=2, colour="#e0a64c") + geom_vline(xintercept=3, linetype=2, colour="#e0a64c") +
-  geom_point(size=3) + geom_text(data=P[P$hys|P$alt>=3,], aes(label=id), colour="#c5cee4", size=3, vjust=-1) +
-  scale_x_log10() + scale_y_log10() +
-  scale_colour_manual(values=c("Hy's-Law (RED)"="#e8657a","ALT-only (near-miss)"="#e0a64c","within limits"="#43c47d")) +
-  labs(x="peak ALT (x ULN, log)", y="peak TBili (x ULN, log)", colour=NULL) + DARK
-```
-:::
+::: {.g-col-12 .g-col-lg-7}
+### Worklist (RED, then AMBER, then watch)
 
-::: {.g-col-12 .g-col-md-5}
-#### Screening worklist (ranked)
 ```{r wl, results='asis'}
-wl <- trialmon_worklist(tm)
-for (j in seq_len(nrow(wl))) { r <- wl[j,]; col <- if (r$sev=="RED") "#e8657a" else "#e0a64c"
-  cat(sprintf('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2a3242"><div style="flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px"></div><div><div style="font-size:13px;color:#e9edf7"><b>%s</b> · %s</div><div style="font-size:12px;color:#94a1c0">%s</div></div></div>', col, r$id, r$check, r$value)) }
+wl <- roll$worklist
+cat(html_table(data.frame(Level = sev_html(wl$sev), Tier = wl$tier, `Participant, cohort or indicator` = wl$id,
+  Screen = wl$check, Value = wl$value, check.names = FALSE), raw = "Level"))
 ```
+:::
+
+::: {.g-col-12 .g-col-lg-5}
+### eDISH
+
+```{r edish, fig.width=6.2, fig.height=4.6, fig.alt="eDISH plot of peak ALT or AST against peak total bilirubin."}
+#| renderings: [light, dark]
+both(function(look) edish_plot(h, look))
+```
+
+[Peaks need not be concurrent; the upper-right quadrant is a prompt to check timing. Potential Hy's Law
+(RED) requires TBL above 2x ULN on or after an aminotransferase elevation (ALT or AST at least 3x ULN)
+within `r S$hys_window` days of it; every such draw opens its own window.]{.tm-foot}
 :::
 
 ::::
 
 :::: {.grid}
-::: {.g-col-12 .g-col-md-6}
-#### 3+3 DLT ladder
-```{r ladder, fig.width=6, fig.height=3.2}
-ds <- dlt_state(tm); ds$cohort <- factor(ds$cohort, levels=ds$cohort)
-ggplot(ds, aes(cohort, dose_mg, fill=sev)) + geom_col(width=.7) +
-  geom_text(aes(label=sprintf("%d/%d DLT", dlt, evaluable)), vjust=-0.5, colour="#e9edf7", size=3.3) +
-  scale_fill_manual(values=c(GREEN="#43c47d", AMBER="#e0a64c", RED="#e8657a")) +
-  labs(x=NULL, y="dose (mg)", fill=NULL) + DARK
+
+::: {.g-col-12 .g-col-lg-6}
+### Dose escalation (rule reference only)
+
+```{r dlt, results='asis'}
+ds <- dlt_state(tm)
+cat(html_table(data.frame(Cohort = ds$COHORT, `Dose (mg)` = ds$DOSEMG, Dosed = ds$N, DLTs = ds$DLT,
+  Pending = ds$PENDING, Level = sev_html(ds$sev), check.names = FALSE),
+  num = c("Dose (mg)", "Dosed", "DLTs", "Pending"), raw = "Level"))
 ```
+
+[Illustrative 3+3 reference: 1 of 3 means expand to 6; 1 of 6 is escalation-eligible; 2 or more means
+the dose exceeds the MTD. Cohort 4 depends on the pending adjudication of CP101-018. The committee
+decides.]{.tm-foot}
 :::
-::: {.g-col-12 .g-col-md-6}
-#### AE by SOC x max grade
-```{r aegrid, fig.width=6, fig.height=3.2}
-ae <- tm$aes; ae$soc <- sub(" disorders","", ae$soc)
-g <- aggregate(list(n=ae$grade), by=list(soc=ae$soc, grade=factor(ae$grade, levels=1:4)), length)
-ggplot(g, aes(grade, soc, fill=n)) + geom_tile(colour="#141925") +
-  geom_text(aes(label=n), colour="#0b1020", fontface="bold", size=3.6) +
-  scale_fill_gradient(low="#3a4157", high="#e8657a") + labs(x="CTCAE grade", y=NULL) + DARK +
-  theme(legend.position="none")
+
+::: {.g-col-12 .g-col-lg-6}
+### Study tier
+
+```{r study, results='asis'}
+st <- study_signals(tm)
+cat(html_table(data.frame(Indicator = st$INDICATOR, Value = paste(st$VALUE, st$UNIT), Level = sev_html(st$LEVEL),
+  check.names = FALSE), raw = "Level"))
 ```
+
+[Pre-specified ranges; exceeding one triggers evaluation, not an automatic stop. Operational values are
+synthetic.]{.tm-foot}
 :::
+
 ::::
 
-*eDISH AND-gate: (ALT or AST >= 3x ULN) AND TBili > 2x ULN. CP101-009 (ALT 4.2x, TBili 1.6x) is the near-miss the gate keeps green. Known issue: 009 should also carry a repeat-testing flag (ALT above 3x ULN; FDA DILI guidance, 2009), added in the next revision. Reported safety numbers come from the validated safety database, never this screen.*
+### Adverse events by SOC (participants)
+
+```{r ae, results='asis'}
+a <- ae_soc_pt(tm); N <- attr(a, "N"); a <- a[a$PT == "", ]
+out <- data.frame(`System organ class` = a$SOC, check.names = FALSE)
+for (g in names(N)) out[[sprintf("%s (N=%d)", g, N[[g]])]] <- npct(a[[g]], N[[g]])
+cat(html_table(out, num = names(out)[-1]))
+```
+
+[MedDRA v`r S$meddra` (primary SOC); treatment-emergent AEs; participants counted once per row. AE
+grades as recorded by the investigator (NCI CTCAE v`r S$ae_ctcae`); lab grades elsewhere in TRIALMON:
+NCI CTCAE v`r S$ctcae`.]{.tm-foot}

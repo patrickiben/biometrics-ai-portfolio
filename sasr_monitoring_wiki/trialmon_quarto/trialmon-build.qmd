@@ -1,17 +1,23 @@
 ---
 title: "Run and build TRIALMON"
-subtitle: "The complete R Shiny safety-screening console, every line"
+subtitle: "The Shiny console, the screening rules and the tests, every line"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
+      light: [default, _theme-light.scss]
+      dark: [default, _theme-dark.scss]
+    respect-user-color-scheme: true
+    include-in-header: _head.html
+    include-before-body: _topbar.html
     toc: true
     toc-location: left
     toc-title: On this page
+    grid:
+      sidebar-width: 230px
+      body-width: 900px
+      margin-width: 40px
     embed-resources: true
-    highlight-style: github-dark
+    html-math-method: plain
     code-copy: true
     code-fold: false
 execute:
@@ -21,127 +27,131 @@ execute:
 
 ## Run it
 
-TRIALMON is a real R Shiny app. From the package root:
+TRIALMON is an R Shiny app on synthetic data. From the repository root:
 
 ```r
-install.packages(c("shiny", "bslib", "ggplot2"))   # once
+install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
 shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 ```
 
-Click a point on the eDISH plot (or pick a participant in the sidebar) to open that
-participant's evidence packet: the eDISH position, the QTcF tier, the adverse events,
-the disposition, and the analyte trajectory. Every panel is a SCREENING lens. It flags
-a position for the medical monitor / SRC / DSMB, it never reports a clinical number and
-never adjudicates a DLT or a Hy's-Law case. Reported safety numbers come from the
-validated safety database.
+The console opens on the ranked worklist. Click a point on the eDISH plot, or a participant row in
+the worklist, to open that participant's packet in the sidebar. The SAP settings in the sidebar switch
+the CTCAE version (v6.0 or v5.0), the potential Hy's Law window and the optional ALP convention, and
+every panel re-computes. The study tier has a what-if: pick an indicator, set its level, and watch the
+tiers re-roll worst-of. The worklist download is a CSV built in the browser; its file name starts with
+SYNTHETIC and its first column says the data are synthetic.
 
-The whole tool is a few short files, shown here in full, nothing elided:
+**Shinylive.** The app is ready for Shinylive (webR): its data sit inside the app folder, it uses only
+shiny, bslib, DT and ggplot2, and the download goes through `session$sendCustomMessage()` and a few
+lines of JavaScript that save a Blob, because a `downloadHandler` needs a server. A test export with the
+shinylive R package 0.5.0 (assets 0.10.12) gave the same tiers, counts and download in headless Chrome
+as the native app. Publishing it is a separate step.
 
-- **trialmon_shiny/R/logic.R** &mdash; the pure screening rules (no Shiny). The [visual guide](trialmon-guide.html), the [dashboard](trialmon-dashboard.html), and the unit tests all call these same functions.
-- **trialmon_shiny/R/gen_data.R** &mdash; writes the synthetic CSVs so you can see the shape; swap them for a read-only safety-database export.
-- **trialmon_shiny/app.R** &mdash; the UI and the reactive server.
+The files, shown in full below:
 
-The one idea to hold onto: the **rules** live in logic.R, the **screen** lives in app.R.
-You can change what a screen means without touching the app, and change how it looks
-without touching the rules.
+- **trialmon_shiny/R/logic.R**: the screening rules in base R, no Shiny. The [guide](trialmon-guide.html), the [snapshot](trialmon-dashboard.html), the [SRC packet](trialmon-src-packet.html) and the tests call these functions.
+- **trialmon_shiny/R/gen_data.R**: writes the synthetic ADaM-shaped CSVs from one seed.
+- **trialmon_shiny/app.R**: the UI and the reactive server.
+- **trialmon_tests/**: testthat tests for the rule boundaries, the shipped study and the server.
 
 ## The data it reads
 
-Three CSVs are the whole dataset. Open them directly, or edit them to point the app at
-your study (keep the column names): [`participants.csv`](../trialmon_shiny/data/participants.csv)
-(one row per participant, values as xULN multiples and ms, not measurements),
-[`aes.csv`](../trialmon_shiny/data/aes.csv) (the adverse-event rows), and
-[`cohorts.csv`](../trialmon_shiny/data/cohorts.csv) (the dose ladder). On a real study
-you replace them with a read-only export from the validated safety database / ADaM
-(ADLB, ADEG, ADAE), same columns. Nothing writes back.
+Seven CSVs in `trialmon_shiny/data/`, all synthetic: [`adsl`](../trialmon_shiny/data/adsl.csv) (one row
+per participant: cohort, dose, disposition, DLT status), [`adlb`](../trialmon_shiny/data/adlb.csv)
+(chemistry and hematology by visit, with ANRLO, ANRHI and BASE), [`adeg`](../trialmon_shiny/data/adeg.csv)
+(QTcF by visit and time point), [`adae`](../trialmon_shiny/data/adae.csv) (MedDRA preferred term and
+primary SOC, grade, seriousness), [`cohorts`](../trialmon_shiny/data/cohorts.csv),
+[`study_kri`](../trialmon_shiny/data/study_kri.csv) (operational study-level indicators) and
+[`notes`](../trialmon_shiny/data/notes.csv) (teaching notes for the planted cases). The column names
+follow ADaM where they can, so a read-only extract with the same columns would drop in. Nothing writes
+back.
 
-## The complete screening core: R/logic.R
+## The screening rules: R/logic.R {#logic}
 
-Every line of the screening logic. `trialmon_load()` reads the three CSVs;
-`score_participants()` attaches the eDISH AND-gate and the QTcF tier to each participant;
-`dlt_state()` rolls DLTs up per cohort for the 3+3 ladder; `trialmon_worklist()` builds
-the ranked flag list; `trialmon_status()` and `trialmon_kpis()` summarize the whole portfolio. Nothing here depends on Shiny, so you can test it in a plain console.
+Every line of the rules. `hys_screen()` carries the potential Hy's Law definition with its timing
+window and ALP option, the confirmation flag and the FDA discontinuation considerations;
+`qtc_screen()` the QTcF categories; `ctcae_grade()` the v6.0 and v5.0 lab grades; `tpt_state()` and
+`dlt_state()` the 3+3 rule reference; `study_signals()` the study tier; `trialmon_worklist()` and
+`trialmon_rollup()` the worst-of roll-up.
 
-```{r logic, code=readLines("../trialmon_shiny/R/logic.R"), eval=FALSE, echo=TRUE}
+```{r logic, code=readLines("../trialmon_shiny/R/logic.R")}
 ```
 
-Read the eDISH gate: `p$hys <- (p$alt >= 3 | p$ast >= 3) & p$tbl > 2`. That single line is
-why a high ALT alone does not fire. Bilirubin must be up too. In the synthetic data
-`CP101-009` (ALT 4.2x, TBili 1.6x) stays green because the second half of the `&` is
-false, while `CP101-014` (ALT 5.6x, TBili 3.1x) lands in the RED quadrant. Change that
-line and you change what "a Hy's-Law position" means, everywhere the guide, the
-dashboard, the app, and the tests, all at once.
+Three details carry most of the clinical weight. The Hy's Law test uses `.ge(ALT, 3)` (3-fold or greater)
+while the confirmation flag uses `.gt(ALT, 3)` (above 3x), as the FDA text does. Bilirubin is tested
+`.gt(BILI, 2)` only on draws from the day of an aminotransferase elevation to `window` days after it, and
+every draw with ALT or AST at least 3x ULN opens its own window, so a second rise is not missed. And
+`worst()` is the only roll-up: there is no weighted mean anywhere in the file, and the watch level is a
+worklist row, so it reaches the tiers too.
 
-## The complete data generator: R/gen_data.R
+## The data generator: R/gen_data.R
 
-Every line of the synthetic-data builder. It writes the three CSVs deterministically
-from one seed, plants the signature illustrative positions (the RED `CP101-014`, the
-near-miss `CP101-009`, the coordinated sub-threshold drift on `CP101-011`), and stops.
-On a real study you delete this step and drop in the safety-database export instead.
-
-```{r gendata, code=readLines("../trialmon_shiny/R/gen_data.R"), eval=FALSE, echo=TRUE}
+```{r gendata, code=readLines("../trialmon_shiny/R/gen_data.R")}
 ```
 
-## The complete app: app.R
+## The app: app.R
 
-Every line of the UI and server. Read it top to bottom; the walk-through below points
-at the parts that matter.
-
-```{r app, code=readLines("../trialmon_shiny/app.R"), eval=FALSE, echo=TRUE}
+```{r app, code=readLines("../trialmon_shiny/app.R")}
 ```
 
-## How the reactivity works, part by part
+### How the reactivity works
 
-Follow the data, not the layout. Here is the chain that makes a click on the scatter
-open a participant's evidence packet.
+**Settings are one reactive.** `settings()` reads the CTCAE version, the Hy's Law window, the ALP
+option and the MedDRA label, and falls back to the defaults if a box is cleared. `roll()` and `liver()`
+depend on it, so changing a setting re-computes every panel.
 
-**The whole portfolio is scored once, up front.** `tm <- trialmon_load("data")` reads the
-CSVs and `P <- score_participants(tm$participants)` attaches the eDISH and QTcF columns.
-The value boxes, the eDISH plot, the worklist, and the 3+3 ladder are all views of that
-one scored frame, so they always agree.
+**The study tier is the only editable state.** `study <- reactiveVal(STUDY0)` holds the study-level
+indicators. The what-if writes a new level into it; reset puts the feed back.
 
-**The signature scatter is a plot output with a click.** `output$edish` renders the log-log
-ALT-vs-TBili scatter with the Hy's-Law quadrant shaded; the `plotOutput("edish", click="edish_click")`
-in the UI turns every pixel of it into a click target.
+**No flicker on open.** The level radio starts on the selected indicator's own level
+(`selected = STUDY0$LEVEL[STUDY0$ID == KRI0]`), and both observers use `ignoreInit = TRUE`. Before, the
+radio started on its first choice and its observer wrote that value into the first indicator as the
+app opened, so a red signal briefly turned green. Two tests cover it: the radio's initial value in the
+rendered UI, and that opening the app with that value changes no indicator. With the fix reverted in a
+scratch copy, both fail.
 
-**Clicking maps back to a participant.** The observer on `input$edish_click` calls
-`nearPoints(P, input$edish_click, xvar="alt", yvar="tbl", maxpoints=1)` to find the
-nearest point on the log-log plot, then `updateSelectInput(session, "pid", selected = np$id[1])`
-sets the selected participant. You never wire the click to the packet by hand; changing
-`input$pid` is enough.
+**The download never touches the server's disk.** The observer on `input$dl` turns the worklist into CSV
+text with `as_csv_text()`, with a first `data_source` column that labels every row synthetic, and sends it
+with `session$sendCustomMessage("trialmon-download", ...)`; the handler in `DOWNLOAD_JS` wraps it in a
+Blob and clicks a temporary link. The file is named `SYNTHETIC_trialmon_worklist_CTCAEv6.0.csv` (or v5.0).
 
-**The selected participant drives the packet.** `sel <- reactive(P[P$id == input$pid, ])`
-is the one reactive everything on the detail side depends on. When `input$pid` changes,
-`sel()` recomputes, and `output$packet` (the sidebar evidence packet) and `output$traj`
-(the analyte trajectory) both re-render for the new participant.
-
-**The screens read the scored frame, not each other.** `output$worklist` calls
-`trialmon_worklist(tm)`, `output$ladder` calls `dlt_state(tm)`, and the value boxes read
-`trialmon_kpis(tm)`. Each is a pure function of the data, so there is no hidden order of
-operations to get wrong.
-
-## Verify it without a browser
-
-The screening rules are covered by a zero-dependency test you run with `Rscript`. It is
-the same file the guide and dashboard trust, and it pins the AND-gate directly: a high
-ALT with normal bilirubin must NOT be flagged as a Hy's-Law position.
-
-```{r tests, code=readLines("../trialmon_tests/test-logic.R"), eval=FALSE, echo=TRUE}
-```
-
-Run it:
+## The tests
 
 ```r
-Rscript sasr_monitoring_wiki/trialmon_tests/test-logic.R   # prints: TRIALMON logic: all tests passed
+Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R
 ```
 
-## Make it yours
+`test-boundaries.R` checks each rule exactly at its threshold and just either side: ALT exactly 3x ULN,
+bilirubin exactly 2x ULN, the 30-day window, a second aminotransferase elevation that opens its own
+window, ALP exactly 2x ULN and the ALP option read draw by draw, QTcF 450, 480 and 500 ms, changes of 30
+and 60 ms, 1 of 3 and 1 of 6 DLTs, the CTCAE cut points that differ between v5.0 and v6.0, the eDISH axis
+range (every participant drawn), and the watch level reaching the roll-up. `test-logic.R` checks where
+each planted case lands in the shipped data. `test-server.R` drives the app with `shiny::testServer()`:
+the initial radio state, the what-if and reset, the SAP settings, the participant packet (no NA), the
+CTCAE versions in the footnotes, and the synthetic-labeled download payload; it also checks that the app
+uses only Shinylive-ready packages and no `downloadHandler`.
 
-- **Change a threshold:** edit `qtc_sev()` or the eDISH gate in `R/logic.R`. Everything that shows a screen updates, because they all call that one function.
-- **Change the data:** swap the three CSVs for a read-only safety-database / ADaM export with the same columns.
-- **Add a screen:** add a rule to `R/logic.R` and a `trialmon_worklist()` entry, then a matching `render*` in `app.R`.
-- **Add a panel:** another `card()` in the UI and a matching `renderPlot`/`renderUI` in the server.
+### run-tests.R
 
-The same skeleton, a logic core plus scored frame plus pure summary functions plus
-outputs, builds the [lifecycle monitor](../../lifecycle_dashboard/quarto/lifecycle-build.html)
-and the [find-hours app](../../budget_reconciliation/quarto/hours-build.html) too.
+```{r run-tests, code=readLines("../trialmon_tests/run-tests.R")}
+```
+
+### testthat/helper-trialmon.R
+
+```{r helper, code=readLines("../trialmon_tests/testthat/helper-trialmon.R")}
+```
+
+### testthat/test-boundaries.R
+
+```{r test-boundaries, code=readLines("../trialmon_tests/testthat/test-boundaries.R")}
+```
+
+### testthat/test-logic.R
+
+```{r test-logic, code=readLines("../trialmon_tests/testthat/test-logic.R")}
+```
+
+### testthat/test-server.R
+
+```{r test-server, code=readLines("../trialmon_tests/testthat/test-server.R")}
+```
