@@ -13,6 +13,9 @@ install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
 shiny::runApp("lifecycle_dashboard/shiny")
 ```
 
+It also runs in the browser with Shinylive (webR): the site's Pages workflow exports this folder,
+data included, to `apps/lifecycle_dashboard/`.
+
 ## What's here
 
 | File | What it is |
@@ -22,6 +25,7 @@ shiny::runApp("lifecycle_dashboard/shiny")
 | `R/gen_data.R` | The deterministic synthetic-portfolio generator. |
 | `data/*.csv` | The portfolio (`studies`, `milestones`, `deliverables`, `query_trend`). |
 | `../tests/test-logic.R` | Unit tests (run with `Rscript`). |
+| `../tests/test-server.R` | The server driven headless with `shiny::testServer()`: opening the app leaves the data as loaded, a what-if moves the score, reset restores it, and the app still starts on data without CP-108. |
 
 The scoring is deliberately transparent:
 
@@ -36,8 +40,10 @@ RAG:  > 66 red   ·   34-66 amber   ·   <= 33 green
 replace them with a **read-only CTMS / EDC export** carrying the same columns
 (`studies.csv`: id, phase, days_to_dbl, open_queries, clean_pct, sdv_pct, the TLF
 counts, dbl_prog_pct, discrep; plus `milestones.csv`, `deliverables.csv`,
-`query_trend.csv`). Nothing here writes back to a source system. To change what
-"risk" means, edit `score_study()` in `R/logic.R`; nothing else changes.
+`query_trend.csv`). Nothing here writes back to a source system. The console opens
+on CP-108, the planted at-risk study, or on the first study by id when your data
+have no CP-108. To change what "risk" means, edit `score_study()` in `R/logic.R`;
+nothing else changes.
 
 ## Other formats
 

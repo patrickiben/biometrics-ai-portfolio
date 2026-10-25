@@ -32,6 +32,12 @@ Select a test and mark it Pass/Fail, close a defect, and the KPIs and the go-liv
 sign-off gate recompute live. Download your results to CSV from the sidebar to drop
 into the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) and the eTMF.
 
+It also runs in your browser with no install: [open the tracker in your browser](../../apps/uat_irt/)
+(Shinylive and webR; R starts in the browser, the first visit downloads about 55 MB, and it works
+best in Chrome or Edge; Safari support may vary). The app folder carries a copy of the three CSVs in `shiny/templates/`,
+because Shinylive exports only the app folder, and the download is built in the browser (a Blob)
+rather than by a `downloadHandler`.
+
 The whole app is two files, shown here in full, nothing elided:
 
 - **shiny/R/logic.R**: the pure gate and KPI logic (no Shiny). The [visual guide](uat-guide.html), the [dashboard](uat-dashboard.html), and the unit tests call these same functions.
@@ -41,7 +47,7 @@ The one idea to hold onto: the **rules** live in `logic.R`, the **screen** lives
 
 ## The data it reads
 
-Three CSVs are the whole dataset. Edit them to point the app at your study (keep the column names): [`test_scripts.csv`](../templates/test_scripts.csv), [`defect_log.csv`](../templates/defect_log.csv), [`traceability_matrix.csv`](../templates/traceability_matrix.csv).
+Three CSVs are the whole dataset. Edit them to point the app at your study (keep the column names): [`test_scripts.csv`](../templates/test_scripts.csv), [`defect_log.csv`](../templates/defect_log.csv), [`traceability_matrix.csv`](../templates/traceability_matrix.csv). In local R the app reads them from `templates/`; the browser build reads the copy in `shiny/templates/`, and the unit test fails if the two copies differ, so copy your edited files there too.
 
 ## The complete logic core: shiny/R/logic.R
 
@@ -92,8 +98,10 @@ observer on `input$defects_cell_edit` accepts only "Open" or "Closed", writes it
 `rv$defects`, and the gate recomputes.
 
 **Everything else just reads the reactives.** The value boxes read `summ()`, the gate card
-reads `gate()`, the by-area plot reads `rv$tests`, and the download handler writes `rv$tests`
-to CSV so results round-trip to Excel and the eTMF.
+reads `gate()`, and the by-area plot reads `rv$tests`. The download button's observer writes
+`rv$tests` to CSV text and sends it to the page with `session$sendCustomMessage()`; a few
+lines of JavaScript save it as a file, so results round-trip to Excel and the eTMF in local
+R and in the browser alike.
 
 ## Verify it without a browser
 
@@ -116,6 +124,8 @@ shiny::testServer("uat_irt/shiny", {
 })
 ```
 
+The same checks, plus the download, run as a script: `Rscript uat_irt/tests/test-server.R`.
+
 ## The unit tests: shiny is not involved
 
 The gate logic is covered by a zero-dependency test you run with `Rscript`. It is the
@@ -133,7 +143,7 @@ Rscript uat_irt/tests/test-logic.R      # prints: UAT logic: all tests passed
 ## Make it yours
 
 - Change the rule: edit `uat_gate()` in `shiny/R/logic.R`, for example to allow a Minor-defect waiver. Nothing else changes, because everything calls that one function.
-- Change the data: edit the three CSVs in `templates/`.
+- Change the data: edit the three CSVs in `templates/`, then copy them into `shiny/templates/`.
 - Add a column: add it to the CSV and to the `datatable()` column list in `app.R`.
 - Add a panel: another `card()` in the UI and a matching `render*` in the server.
 

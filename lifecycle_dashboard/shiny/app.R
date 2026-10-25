@@ -9,11 +9,16 @@
 #
 # Run:  shiny::runApp("lifecycle_dashboard/shiny")
 # Data: data/*.csv (regenerate with Rscript R/gen_data.R, or swap in a CTMS export).
+# Runs in the browser under Shinylive too: the data sit in data/ inside this folder.
 # ===========================================================================
-library(shiny); library(bslib); library(DT); library(ggplot2)
+suppressPackageStartupMessages({ library(shiny); library(bslib); library(DT); library(ggplot2) })
 source("R/logic.R")
 if (!file.exists("data/studies.csv")) { source("R/gen_data.R"); gen_portfolio("data") }
 seed <- lifecycle_load("data")
+# the study selected when the app opens: CP-108 (the planted at-risk study), or the first study
+# when the data have no CP-108, for example a CTMS export
+OPEN_ID <- if ("CP-108" %in% seed$studies$id) "CP-108" else sort(seed$studies$id)[1]
+S0 <- seed$studies[seed$studies$id == OPEN_ID, ][1, ]
 MS_ORDER <- c("Protocol","SAP","FPFV","LPLV","DBL","TLFs","CSR")
 DARK <- theme_minimal(base_size = 12) + theme(
   legend.position = "none", plot.background = element_rect(fill="#222630", colour=NA),
@@ -28,11 +33,11 @@ ui <- page_sidebar(
     width = 300,
     div(class = "small text-muted", "Operational health, protocol to CSR. Synthetic, no PHI. ",
         "Pick a study, then nudge the what-if sliders to see the transparent score move."),
-    selectInput("study", "Study", choices = sort(seed$studies$id), selected = "CP-108"),
+    selectInput("study", "Study", choices = sort(seed$studies$id), selected = OPEN_ID),
     hr(),
     div(class = "small fw-bold text-muted", "What-if on the selected study"),
-    sliderInput("openq", "Open queries", min = 0, max = 150, value = 0),
-    sliderInput("dblprog", "Double-programmed %", min = 0, max = 100, value = 50),
+    sliderInput("openq", "Open queries", min = 0, max = max(150, S0$open_queries), value = S0$open_queries),
+    sliderInput("dblprog", "Double-programmed %", min = 0, max = 100, value = S0$dbl_prog_pct),
     actionButton("reset", "Reset to data", class = "btn-sm btn-outline-warning")
   ),
   layout_columns(
@@ -61,7 +66,9 @@ ui <- page_sidebar(
 server <- function(input, output, session) {
   rv <- reactiveValues(studies = seed$studies)
 
-  # keep the what-if sliders in sync with the selected study's data
+  # keep the what-if sliders in sync with the selected study's data. The sliders open on the
+  # selected study's values and the what-if observer ignores its first run, so opening the app
+  # never writes slider defaults into a study (no flash of wrong KPIs at startup).
   observeEvent(input$study, {
     s <- rv$studies[rv$studies$id == input$study, ]
     updateSliderInput(session, "openq", value = s$open_queries,
@@ -72,7 +79,7 @@ server <- function(input, output, session) {
     i <- which(rv$studies$id == input$study)
     if (length(i) == 1) { rv$studies$open_queries[i] <- input$openq
       rv$studies$dbl_prog_pct[i] <- input$dblprog }
-  })
+  }, ignoreInit = TRUE)
   observeEvent(input$reset, {
     rv$studies <- seed$studies
     s <- seed$studies[seed$studies$id == input$study, ]

@@ -22,10 +22,10 @@ shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 The app is ready for Shinylive (webR): all data sit in `data/`, it uses only shiny, bslib, DT and
 ggplot2, and the CSV download is built in the browser (a Blob sent through
 `session$sendCustomMessage()`), not by a `downloadHandler`; the file is named
-`SYNTHETIC_trialmon_worklist_CTCAEv6.0.csv` and its first column labels every row synthetic. A test
-export with shinylive 0.5.0
-(assets 0.10.12) ran in headless Chrome with the same numbers as the native app; deployment is a
-separate step.
+`SYNTHETIC_trialmon_worklist_CTCAEv6.0.csv` and its first column labels every row synthetic. The
+site's Pages workflow (`.github/workflows/pages.yml`) exports it with shinylive 0.5.0 (assets
+0.10.12) to `apps/trialmon/`, where it runs in the browser; a local export rendered and responded
+in headless Chrome, and its CSV download worked.
 
 ## Files
 
