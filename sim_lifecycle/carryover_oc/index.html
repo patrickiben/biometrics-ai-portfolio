@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Residual Carryover Study | Patrick Iben</title>
+<meta name="description" content="Exploratory operating-characteristics study on synthetic data: how the ICH M13A 5% pre-dose rule performs in a single-dose 2x2 bioequivalence crossover when washout is borderline.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../site.css">
+<style>
+  .tcap { margin: 18px 0 6px; color: var(--muted); font-size: .86rem; line-height: 1.45; }
+  .tbl { max-width: 100%; overflow-x: auto; margin: 0 0 20px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+  table.oc { border-collapse: collapse; width: 100%; font-size: .8rem; font-variant-numeric: tabular-nums; }
+  table.oc th, table.oc td { padding: 6px 8px; border-top: 1px solid var(--line); text-align: right; white-space: nowrap; vertical-align: top; }
+  table.oc thead th { border-top: 0; }
+  table.oc thead th { background: var(--surface-2); color: var(--muted); font-weight: 600; text-align: right; }
+  table.oc thead th:first-child, table.oc th[scope="row"] { text-align: left; }
+  table.oc th[scope="row"] { white-space: normal; min-width: 13em; font-weight: 600; }
+  table.checks td, table.plain td { white-space: normal; text-align: left; min-width: 9em; }
+  table.checks th, table.checks thead th, table.plain th, table.plain thead th { text-align: left; }
+  table.checks th[scope="row"] { min-width: 0; }
+  table.oc td.ok { color: var(--led-fg); font-weight: 700; }
+  table.oc td.bad { color: var(--gap-fg); font-weight: 700; }
+  figure.fig { margin: 16px 0 20px; }
+  figure.fig img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  figure.fig figcaption { color: var(--muted); font-size: .88rem; margin-top: 6px; }
+  .eq { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 10px 14px; overflow-x: auto; font-family: var(--mono); font-size: .86rem; line-height: 1.6; }
+  .eq p { margin: 0; white-space: nowrap; }
+  details.more { margin: 12px 0 20px; }
+  details.more summary { cursor: pointer; font-weight: 600; color: var(--accent); }
+  blockquote.sap { margin: 12px 0; padding: 12px 16px; background: var(--surface); border-left: 4px solid var(--accent); border-radius: 4px; }
+  h3 { margin-top: 26px; }
+  ol.refs li, ul.refs li { margin: 0 0 6px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../../index.html">Home</a>
+      <a href="../../index.html#lifecycle">Lifecycle</a>
+      <a href="../index.html">PK sandbox</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+  <section class="page-head">
+    <p class="kicker">PK and clinical pharmacology</p>
+    <h1>Residual carryover and the ICH M13A 5% pre-dose rule</h1>
+    <p class="meta"><span class="lab tools">Tools built: runs</span><span class="lab tools">Exploratory (synthetic)</span><span class="lab tools">Subtraction: sensitivity analysis</span></p>
+    <p class="lede">When the washout of a crossover is set from the average half-life, participants who clear the drug slowly carry part of their period-1 dose into period 2. This study measures what the ICH M13A pre-dose rule costs and buys when washout is borderline: how often a product that is not equivalent passes, how often an equivalent product fails, and how many participants the rule drops. An <a href="https://www.fda.gov/media/194074/download">FDA presentation</a> (Zhang 2026) describes a study that failed this way; the study here puts numbers on that failure mode.</p>
+    <div class="note"><p>Tools built: runs. Exploratory operating-characteristics study on synthetic data. The carryover algebra and the 5% predose rule are established (Grizzle 1965; Senn, D'Angelo and Potvin 2004; Ocaña, Sánchez and Carrasco 2015; ICH M13A). The subtraction analysis is a sensitivity analysis only. Not regulatory guidance and not a validated method.</p></div>
+  </section>
+
+  <h2 id="question">Question</h2>
+  <p>In a single-dose 2x2 crossover, ICH M13A excludes a period whose pre-dose concentration is above 5% of that period's Cmax. A 2x2 analysis needs both periods, so the participant leaves the analysis. M13A also asks for at least 12 evaluable participants and does not ask for a test of carryover.</p>
+  <p>Two questions follow, for washouts between 2 and 10 mean half-lives:</p>
+  <div class="panel">
+    <ul>
+      <li>What are the consumer risk, the power, the share of participants excluded and the share of studies left with too few participants, under the rule and under two alternatives (including everyone, and subtracting the extrapolated residual)?</li>
+      <li>How much of the bias that remains after the rule comes from residual drug left in the retained participants, and how much from the selection the rule itself makes? The rule compares the pre-dose level with that period's own Cmax, and the residual tracks period-1 exposure, so when the products differ the rule excludes more participants from one sequence than the other.</li>
+    </ul>
+  </div>
+
+  <h2 id="model">Model</h2>
+  <p>The study is reported in the ADEMP structure (aims, data-generating mechanisms, estimand, methods, performance measures; Morris, White and Crowther 2019). All data are simulated.</p>
+  <div class="panel">
+    <ul>
+      <li><strong>Design.</strong> n = 24 participants, 12 per sequence (TR and RT), single dose per period. Formulation factor &phi;<sub>R</sub> = 1 and &phi;<sub>T</sub> = &theta;, the true geometric mean ratio (GMR).</li>
+      <li><strong>Own-dose profile</strong> (one compartment, first-order absorption, linear PK): c<sub>ip</sub>(t) = &phi; F<sub>i</sub> w<sub>ip</sub> (D/V) k<sub>a,i</sub> / (k<sub>a,i</sub> &minus; k<sub>i</sub>) (e<sup>&minus;k<sub>i</sub>t</sup> &minus; e<sup>&minus;k<sub>a,i</sub>t</sup>), with D/V = 2.</li>
+      <li><strong>Variability.</strong> Mean half-life 24 h: k<sub>i</sub> = (ln 2 / 24) exp(N(0, 0.30<sup>2</sup>)); k<sub>a,i</sub> = 1.2 exp(N(0, 0.20<sup>2</sup>)) per h; F<sub>i</sub> = exp(N(0, 0.20<sup>2</sup>)); within-participant w<sub>ip</sub> = exp(N(0, 0.15<sup>2</sup>)) per period.</li>
+      <li><strong>Carryover by superposition.</strong> Period 1 is y<sub>i1</sub>(t) = c<sub>i1</sub>(t); period 2 is y<sub>i2</sub>(t) = c<sub>i2</sub>(t) + c<sub>i1</sub>(t + W) for washout W.</li>
+      <li><strong>Misspecified disposition</strong> ("biexponential"): a slow phase 0.03 &phi; F<sub>i</sub> w<sub>ip</sub> e<sup>&minus;(k<sub>i</sub>/4)t</sup>(1 &minus; e<sup>&minus;k<sub>a,i</sub>t</sup>) is added to both periods and to the residual, so a monoexponential subtraction no longer matches the residual.</li>
+      <li><strong>Sampling and assay.</strong> 0, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 36, 48 and 72 h. Sensitivity configurations: sampling extended to 96 and 120 h; and 8% proportional assay error with an LLOQ of 0.5% of the median Cmax (BLQ treated as 0, M13A).</li>
+      <li><strong>Endpoints (NCA).</strong> AUC(0-t) by the linear trapezoid from t = 0 (the pre-dose sample is kept) to the last quantifiable sample; Cmax; and AUC(0-inf), from &lambda;<sub>z</sub> fitted to the last 3 positive points, used only for the M13A coverage condition AUC(0-t) / AUC(0-inf) &ge; 0.80.</li>
+      <li><strong>Estimand.</strong> log &theta;, the log GMR of test to reference. Consumer risk is the rate of concluding BE at &theta; = 0.80 or 1.25; power is that rate at &theta; = 0.95 or 1.00.</li>
+      <li><strong>Performance measures</strong>, each with its Monte Carlo standard error (MCSE): mean bias of log GMR-hat; rate of concluding BE; coverage of the 90% CI; share of participants excluded (overall and by sequence); share of studies not evaluable; share of profiles below 80% AUC coverage; and share of studies over the 20% trigger.</li>
+    </ul>
+  </div>
+  <p>With a constant residual fraction r = AUC[c<sub>i1</sub>(&middot; + W)] / AUC[c<sub>i1</sub>] and no within-participant noise, the naive estimate has a closed form (the algebra of Ocaña, Sánchez and Carrasco 2015 and earlier carryover work):</p>
+  <div class="eq">
+    <p>E[log GMR-hat] = log &theta; + &frac12;[log(1 + r/&theta;) &minus; log(1 + r&theta;)]</p>
+    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&approx; log &theta; &minus; (r/2)(&theta; &minus; 1/&theta;)</p>
+  </div>
+  <p>At &theta; = 1.25 the bias is about &minus;0.225 r, and at &theta; = 0.80 about +0.225 r: in both cases toward 1, which is toward equivalence at the boundary that defines consumer risk. Cmax has no closed form and is reported from the simulation.</p>
+  <p><strong>Replicates and random numbers.</strong> The replicate count is sized from a target MCSE of 0.005 for a rate of 0.05: 0.05 &times; 0.95 / 0.005<sup>2</sup> = 1,900, rounded up to 2,000. The generator is L'Ecuyer-CMRG with seed 20261025 and one stream per (&theta;, disposition) cell. Within a cell every washout, arm and configuration reuses the same simulated participants (common random numbers), so differences between arms are paired within study. <!--oc:runinfo-->
+Committed run: 2000 replicates per cell (MCSE 0.0049 at a rate of 0.05 and at most 0.0112, at a rate of 0.5), 8 cells, seed 20261025, R version 4.6.0 (2026-04-24); the grid took 9.7 s on 4 cores (2026-10-25).
+<!--/oc:runinfo--></p>
+
+  <h2 id="analyses">Analyses compared</h2>
+  <p>Every arm uses the same estimator: with d<sub>i</sub> = log Y(period 1) &minus; log Y(period 2), log GMR-hat = (mean d<sub>TR</sub> &minus; mean d<sub>RT</sub>) / 2, SE = &frac12; s<sub>p</sub> &radic;(1/n<sub>TR</sub> + 1/n<sub>RT</sub>) with s<sub>p</sub> the pooled within-sequence SD of d and n &minus; 2 degrees of freedom, and the 90% CI from the t distribution. This equals the participant + period + formulation model fitted by least squares (check T3). BE is concluded if and only if the 90% CI lies within 0.80 to 1.25 on unrounded limits. A study with fewer than 12 evaluable participants or an empty sequence is not evaluable and does not conclude BE.</p>
+  <p class="tcap" id="cap-s1">The six analysis arms.</p>
+  <div class="tbl"><table class="oc plain" aria-labelledby="cap-s1">
+    <thead><tr><th scope="col">Arm</th><th scope="col">Period-2 data</th><th scope="col">Participants analyzed</th><th scope="col">Role</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">A0: Oracle</th><td>No residual</td><td>All</td><td>The target the other arms are measured against</td></tr>
+      <tr><th scope="row">A1: Naive</th><td>With residual</td><td>All</td><td>Include everyone, ignore carryover</td></tr>
+      <tr><th scope="row">A2: M13A exclusion</th><td>With residual</td><td>Excludes a participant whose period-2 pre-dose concentration exceeds 5% of that period's own Cmax</td><td>The rule as written</td></tr>
+      <tr><th scope="row">A2s: Exclusion decision only</th><td>Residual removed</td><td>A2's exclusion decision</td><td>Isolates the selection the rule makes</td></tr>
+      <tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>y-hat(t) = max(0, y(t) &minus; y(0) e<sup>&minus;&lambda;<sub>z</sub>t</sup>), &lambda;<sub>z</sub> from that participant's period-1 terminal phase (last 3 points)</td><td>All</td><td>Predict-then-subtract</td></tr>
+      <tr><th scope="row">A3o: Subtraction with true k</th><td>As A3, with the true k<sub>i</sub></td><td>All</td><td>Diagnostic only: an oracle slope flatters subtraction</td></tr>
+    </tbody>
+  </table></div>
+  <p>The rule's leftover bias splits exactly, study by study: A2 &minus; A0 = (A2 &minus; A2s), the residual left in the retained participants, + (A2s &minus; A0), the selection.</p>
+
+  <h2 id="checks">Known-answer checks</h2>
+  <p>The test script checks the model, the NCA and the estimator against answers known in advance, runs negative controls, checks the 5% rule on hand-built profiles, recomputes every arm from its definition and checks the MCSE formulas, before any operating characteristic is read. KA1 to KA4 and NC1 and NC2 are the known answers and controls of the study plan.</p>
+<!--oc:checks-->
+<p class="tcap" id="cap-t12">Known-answer checks and controls, written by tests/test_carryover.R (21 PASS, 0 FAIL, 2 INFO). INFO rows compare against the unvalidated pilot and are reported, not enforced.</p>
+<div class="tbl"><table class="oc checks" aria-labelledby="cap-t12">
+<thead><tr><th scope="col">Test</th><th scope="col">Check</th><th scope="col">Criterion</th><th scope="col">Observed</th><th scope="col">Result</th></tr></thead>
+<tbody>
+<tr><th scope="row">T1</th><td>superposition (mono)</td><td>period-2 profile minus own-dose profile equals c_i1(t + W), and the period-2 profile equals state propagation of the gut and central amounts, within 1e-12</td><td>max abs difference 4.44e-16 (analytic), 8.88e-16 (state propagation)</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T1</th><td>superposition (biexp)</td><td>period-2 profile minus own-dose profile equals c_i1(t + W) within 1e-12 (state propagation: not applicable, biexponential)</td><td>max abs difference 4.44e-16 (analytic); state propagation not applicable (biexponential)</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T2</th><td>NCA by hand</td><td>AUC(0-t) 47, Cmax 10 at 2 h, lambda_z ln 2/2, AUC(0-inf) 47 + 4/ln 2; inner BLQ as 0 (AUC 6.5); within 1e-12</td><td>max abs difference 7.11e-15</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T2</th><td>PKNCA 0.12.1 cross-check</td><td>AUC(0-t), Cmax and lambda_z (last 3 positive points) agree with PKNCA (linear, BLQ kept as 0) within 1e-8 relative on 24 profiles with assay error</td><td>max relative difference 3.11e-15</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T3</th><td>2x2 estimator equals lm()</td><td>estimate and 90% CI limits equal the participant + period + formulation OLS fit within 1e-10 (50 complete, 50 unbalanced datasets)</td><td>max abs difference 1.44e-15 over 100 datasets</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T4</th><td>KA3 closed form, constant r (sd_ka = 0)</td><td>with sigma_k = sigma_w = 0 and no assay error, the naive log GMR-hat of every study equals the closed form within 1e-10</td><td>max abs difference 2.78e-16 over 300 studies; first-order approximation within 0.012 of the exact form</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T4</th><td>KA3 closed form, participant-specific r (sd_ka = 0.20)</td><td>with sigma_k = sigma_w = 0 and no assay error, the naive log GMR-hat of every study equals the closed form within 1e-10</td><td>max abs difference 2.22e-16 over 300 studies</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T5</th><td>KA2 symmetry (mono)</td><td>at theta = 1, bias of A1, A2 and A2s within 3 MCSE of 0 at every washout (AUC and Cmax); 500 replicates</td><td>max |bias|/MCSE 0.76 over 34 checks; not estimable (no evaluable study): A2 at W = 2, A2s at W = 2, A2 at W = 3, A2s at W = 3</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T5</th><td>KA2 symmetry (biexp)</td><td>at theta = 1, bias of A1, A2 and A2s within 3 MCSE of 0 at every washout (AUC and Cmax); 500 replicates</td><td>max |bias|/MCSE 1.78 over 34 checks; not estimable (no evaluable study): A2 at W = 2, A2s at W = 2, A2 at W = 3, A2s at W = 3</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T6</th><td>KA1 adequate washout</td><td>W = 10 x the largest individual t1/2: every arm within 3 MCSE of A0 (bias and BE rate, AUC and Cmax); A0 consumer risk within 0.05 +/- 0.015; zero exclusions</td><td>max |arm - A0|/MCSE 0.01; A0 consumer risk 0.056 (MCSE 0.010); exclusions 0</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T7</th><td>NC1 oracle invariance</td><td>A0 gives identical estimates at every washout, zero exclusions when the rule is applied to A0 data, and nominal consumer risk (0.05 +/- 0.015)</td><td>identical across 8 washouts: TRUE; exclusions 0; consumer risk 0.056</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T7</th><td>NC2 subtraction on oracle data</td><td>A3 applied to A0 data (no residual) leaves every concentration and estimate unchanged within 1e-12 (base and assay-error configurations)</td><td>max abs difference 0</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T8</th><td>M13A floor</td><td>11 evaluable participants: not evaluable and not BE; 12 and 13: evaluable; 12 in one sequence and 0 in the other: not evaluable</td><td>11: FALSE; 12: TRUE; 13: TRUE; empty sequence: FALSE</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T8</th><td>M13A 5% threshold</td><td>pre-dose at 4.9%, exactly 5.0% and 5.1% of Cmax: only 5.1% excluded; through analyze_washout() on 24 hand-built profiles (4.9% or 5.1% of the period's own Cmax, period-1 Cmax 2 or 0.5 times the period-2 Cmax): exactly the 5.1% participants excluded</td><td>boundary decisions FALSE, FALSE, TRUE; hand-built: 24 of 24 decisions as expected (12 excluded, 6 TR and 6 RT; own-period ratios 0.0490 and 0.0510; against the period-1 Cmax they would be 0.0245 to 0.1020)</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T9</th><td>KA4 cross-implementation</td><td>A0, A2s, A1 and A2 bias and consumer risk, and the share of participants the rule keeps in evaluable studies (theta 1.25, 5 mean t1/2), within 3 combined MCSE of judge A's Python check</td><td>max |R - Python| / combined MCSE 1.38 over 10 comparisons; R bias A2s -0.0048, A2 -0.0058, A1 -0.0098; consumer risk A2 0.052, A1 0.073, A0 0.051; kept 0.6686 (MCSE 0.0020) (Python: -0.0054, -0.0060, -0.0108; 0.062, 0.083, 0.056; kept 0.6655 and 0.6656)</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">INFO</th><td>misspecification, W = 2 t1/2</td><td>biexponential disposition: subtraction's consumer risk exceeds A0's at short washouts (the pilot, which subtracted with the true k as A3o does, reported 0.069 at 3 mean t1/2)</td><td>A3o (true k, as the pilot) 0.0495, paired difference from A0 +0.0040 (MCSE 0.0014); A3 (lambda_z from period 1) 0.0470, paired difference +0.0015 (MCSE 0.0009); A0 0.0455</td><td>INFO</td></tr>
+<tr><th scope="row">INFO</th><td>misspecification, W = 3 t1/2</td><td>biexponential disposition: subtraction's consumer risk exceeds A0's at short washouts (the pilot, which subtracted with the true k as A3o does, reported 0.069 at 3 mean t1/2)</td><td>A3o (true k, as the pilot) 0.0495, paired difference from A0 +0.0040 (MCSE 0.0014); A3 (lambda_z from period 1) 0.0490, paired difference +0.0035 (MCSE 0.0013); A0 0.0455</td><td>INFO</td></tr>
+<tr><th scope="row">T10</th><td>G1 invariance (washout_h unset)</td><td>simulate_study(sample_design("BE", N = 40), seed = 2026) regenerates the 8 committed CSVs byte for byte; washout_h = NULL is identical; identical to the generator before washout_h existed</td><td>8 of 8 files byte-identical; explicit NULL identical: TRUE; full-precision match with 515b092: TRUE</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T10</th><td>washout_h = 48 demonstration</td><td>no new random draws (the other six domains, and period-1 ADPC after the pre-dose sample, identical to the default); a pre-dose sample below the LLOQ is reported as &lt;LLOQ and counts as 0 (period-1 ADPP identical to the default; PDCMXR 0); quantified period-2 pre-dose values at or above the LLOQ; PDCMXR rows, ANL02FL null and PKEXRSN set for excluded participants; G3 structural checks pass</td><td>other domains identical: 6 of 6; period 1 after pre-dose identical: TRUE; period-1 NCA identical: TRUE; period-1 pre-dose &lt;LLOQ: 40 of 40; period-2 pre-dose quantified (at or above the LLOQ of 0.50): 27 of 40, &lt;LLOQ: 13; excluded: 11 of 40; flags consistent: TRUE; G3: PASS</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T11</th><td>arms recomputed from their definitions</td><td>for every washout: the exclusion decision equals pre-dose &gt; 0.05 x the period-2 profile's own maximum; A0, A1, A2, A2s, A3 and A3o estimates, CI limits and BE decisions (AUC(0-t) and Cmax) equal be_2x2() on the endpoints each arm is defined to use, within 1e-12; A2 and A2s differ in every study evaluable under the rule (the residual is positive)</td><td>exclusions identical: TRUE; max abs difference 0; BE decisions identical: TRUE; smallest |A2 - A2s| in an evaluable study 5.73e-09 (8 washouts)</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T11</th><td>subtraction against the oracle</td><td>monoexponential disposition, no assay error: A3 estimate and CI limits within 1e-8 of A0 (lambda_z from period 1) and A3o within 1e-10 (true k), every washout, AUC(0-t) and Cmax, with the same BE decision in every study</td><td>max abs difference A3 - A0 4.82e-12, A3o - A0 4.3e-15; BE decisions that differ: 0</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T11</th><td>exclusions by sequence</td><td>exclusion shares by sequence equal a recount with the sequence read from the period-1 product, within 1e-12 (every washout at a true GMR of 1.25, and 5 half-lives at 0.80); at 5 half-lives the sequence whose period-2 product gives lower exposure loses more participants: TR at a true GMR of 1.25 and RT at 0.80, each by more than 3 MCSE</td><td>max abs difference 0; TR - RT at 1.25: +0.178 (MCSE 0.008); RT - TR at 0.80: +0.162 (MCSE 0.008)</td><td class="ok">PASS</td></tr>
+<tr><th scope="row">T12</th><td>MCSE formulas and replicate sizing</td><td>rate and mean MCSEs equal hand-computed values within 1e-7; reps_for_mcse(0.05, 0.005) = 2,000 (MCSE 0.0049); share MCSE 0 for an exact multiple and within 10% of a bootstrap</td><td>max abs difference 7.76e-09; replicates 2000; share 0.7944 with MCSE 0.0394 against bootstrap SD 0.0410; exact multiple: share 0.8000, MCSE 0</td><td class="ok">PASS</td></tr>
+</tbody></table></div>
+<!--/oc:checks-->
+
+  <h2 id="results">Results</h2>
+  <p>Base configuration (no assay error, sampling to 72 h), AUC(0-t), monoexponential disposition unless stated. Every configuration, disposition and endpoint is in <a href="out/oc_results.csv"><code>out/oc_results.csv</code></a>.</p>
+<!--oc:findings-->
+<ul>
+<li><strong>Naive analysis.</strong> At a true GMR of 1.25 the consumer risk of including everyone is 0.318 (MCSE 0.010) at 2 mean half-lives, 0.159 (0.008) at 3, 0.073 (0.006) at 5 and 0.052 (0.005) at 10, against 0.051 (0.005) with no residual. The bias is toward 1, as the closed form predicts.</li>
+<li><strong>Interval coverage.</strong> With no residual the 90% CI covers the true GMR in 0.900 (MCSE 0.007) of studies. Including everyone, coverage falls to 0.678 (0.010) at 2 mean half-lives and 0.832 (0.008) at 3; under the M13A rule it is 0.878 (0.019) at 4 half-lives and 0.903 (0.007) at 5.</li>
+<li><strong>M13A rule, short washouts.</strong> At 2 and 3 mean half-lives the rule excludes 100% and 90% of participants and no study is evaluable, so consumer risk is 0 and so is power. At 4 half-lives 87% of studies are not evaluable and power at a true GMR of 0.95 is 0.115 (MCSE 0.007), against 0.987 (0.003) with no residual.</li>
+<li><strong>M13A rule, borderline washouts.</strong> At 5 mean half-lives the rule drops 34% of participants (43% in sequence TR, 25% in RT at a true GMR of 1.25) and brings consumer risk to 0.051 (MCSE 0.005); power at 0.95 falls to 0.888 (0.007). At 6 half-lives it drops 16% and consumer risk is 0.059 (0.005), close to the naive 0.065 (0.005).</li>
+<li><strong>Where the rule's bias comes from.</strong> At a true GMR of 1.25 the M13A arm's bias is -0.0054 (MCSE 0.0008) at 5 half-lives; selection contributes -0.0043 (0.0008) and retained residual -0.0010 (0.0001). Selection is 80% (MCSE 3%) of the total at 5 half-lives and 74% (3%) at 6; at 8 it is 44% (5%), where the two parts are comparable, and at 10 it is 28% (6%), where the retained residual is the larger part (delta-method MCSEs).</li>
+<li><strong>Subtraction (sensitivity analysis).</strong> With a monoexponential residual and no assay error, subtracting the extrapolated pre-dose concentration matches the oracle almost exactly, because the model it extrapolates is the model that generated the data: over the base grid the largest per-study difference in log GMR-hat from the oracle is 2.1e-09 (&lambda;<sub>z</sub> is fitted to period-1 points that still carry a trace of absorption; 1.7e-11 with the true k), and every study reaches the oracle's BE decision. Under the biexponential disposition its consumer risk at 3 half-lives is 0.049 (MCSE 0.005) against 0.045 (0.005) with no residual; with 8% assay error and an LLOQ it is 0.045 (0.005) against 0.048 (0.005).</li>
+<li><strong>Sampling.</strong> With sampling to 72 h and a mean half-life of 24 h, 20% of profiles have AUC(0-t) below 80% of AUC(0-inf), and 56% of studies cross the M13A 20% trigger even with no residual. Sampling to 120 h brings these to 0.6% and 0.0%.</li>
+<li><strong>Endpoints.</strong> Without assay error, Cmax and the joint decision (AUC(0-t) and Cmax both within the limits) give the same picture as AUC(0-t): their BE rates differ from it by at most 0.0015 and 0.0015 in the base configuration with the monoexponential disposition, and by at most 0.015 anywhere without assay error, because within-participant variation then largely scales each profile as a whole. With 8% assay error each sample has its own error and the endpoints separate: the joint rate is up to 0.076 lower than the AUC(0-t) rate (A1 arm, 2 mean half-lives, true GMR 1.25, biexponential disposition).</li>
+</ul>
+<!--/oc:findings-->
+
+  <h3 id="consumer-risk">Consumer risk</h3>
+  <figure class="fig">
+    <a href="out/figures/f1_consumer_risk.png"><picture>
+      <source srcset="out/figures/f1_consumer_risk_dark.png" media="(prefers-color-scheme: dark)">
+      <img src="out/figures/f1_consumer_risk.png" width="1500" height="1300" alt="F1: four panels of consumer risk against washout. The naive analysis rises from about 0.05 at 10 mean half-lives to about 0.32 at 2. The M13A exclusion arm is 0 at 2 and 3 half-lives, where no study is evaluable, and between about 0.045 and 0.07 from 5 half-lives on. The oracle and the subtraction arms stay near 0.05.">
+    </picture></a>
+    <figcaption>F1. Consumer risk (rate of concluding BE on AUC(0-t) at a true GMR of 0.80 or 1.25) against washout, by arm, with &plusmn;2 MCSE bars; the dashed line is 0.05. Points are offset sideways so that arms with equal values stay visible. Numbers: T2 below.</figcaption>
+  </figure>
+<!--oc:t2_125-->
+<p class="tcap" id="cap-t04">T2. Rate of concluding BE on AUC(0-t), true GMR 1.25 (consumer risk). Studies that are not evaluable count as not concluding BE. Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t04">
+<thead><tr><th scope="col">Arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">A0: Oracle: no residual</th><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">A1: Naive: all participants</th><td>0.318 (0.010)</td><td>0.159 (0.008)</td><td>0.101 (0.007)</td><td>0.073 (0.006)</td><td>0.065 (0.005)</td><td>0.055 (0.005)</td><td>0.052 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.009 (0.002)</td><td>0.051 (0.005)</td><td>0.059 (0.005)</td><td>0.054 (0.005)</td><td>0.052 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">A2s: Exclusion decision only (residual removed)</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.009 (0.002)</td><td>0.049 (0.005)</td><td>0.057 (0.005)</td><td>0.052 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">A3o: Subtraction with true k (diagnostic)</th><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td></tr>
+</tbody></table></div>
+<!--/oc:t2_125-->
+<!--oc:t2_08-->
+<p class="tcap" id="cap-t05">T2. Rate of concluding BE on AUC(0-t), true GMR 0.80 (consumer risk). Studies that are not evaluable count as not concluding BE. Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t05">
+<thead><tr><th scope="col">Arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">A0: Oracle: no residual</th><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">A1: Naive: all participants</th><td>0.322 (0.010)</td><td>0.167 (0.008)</td><td>0.102 (0.007)</td><td>0.080 (0.006)</td><td>0.065 (0.006)</td><td>0.053 (0.005)</td><td>0.046 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.004 (0.001)</td><td>0.054 (0.005)</td><td>0.062 (0.005)</td><td>0.059 (0.005)</td><td>0.046 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">A2s: Exclusion decision only (residual removed)</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.004 (0.001)</td><td>0.052 (0.005)</td><td>0.057 (0.005)</td><td>0.056 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">A3o: Subtraction with true k (diagnostic)</th><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+</tbody></table></div>
+<!--/oc:t2_08-->
+
+  <h3 id="power">Power</h3>
+  <figure class="fig">
+    <a href="out/figures/f2_power.png"><picture>
+      <source srcset="out/figures/f2_power_dark.png" media="(prefers-color-scheme: dark)">
+      <img src="out/figures/f2_power.png" width="1500" height="800" alt="F2: power at a true GMR of 0.95 against washout. The M13A exclusion arm has power 0 at 2 and 3 half-lives, 0.04 to 0.12 at 4 and 0.84 to 0.89 at 5, and reaches the oracle's 0.99 from 8 half-lives. The naive, oracle and subtraction arms stay near 0.99.">
+    </picture></a>
+    <figcaption>F2. Power (rate of concluding BE on AUC(0-t) at a true GMR of 0.95) against washout, by arm, with &plusmn;2 MCSE bars.</figcaption>
+  </figure>
+<!--oc:t2_095-->
+<p class="tcap" id="cap-t06">T2. Rate of concluding BE on AUC(0-t), true GMR 0.95 (power). Studies that are not evaluable count as not concluding BE. Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t06">
+<thead><tr><th scope="col">Arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">A0: Oracle: no residual</th><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td></tr>
+<tr><th scope="row">A1: Naive: all participants</th><td>1.000 (0.000)</td><td>0.996 (0.001)</td><td>0.991 (0.002)</td><td>0.989 (0.002)</td><td>0.988 (0.002)</td><td>0.988 (0.002)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td></tr>
+<tr><th scope="row">A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.115 (0.007)</td><td>0.888 (0.007)</td><td>0.970 (0.004)</td><td>0.986 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td></tr>
+<tr><th scope="row">A2s: Exclusion decision only (residual removed)</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.115 (0.007)</td><td>0.885 (0.007)</td><td>0.970 (0.004)</td><td>0.985 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td></tr>
+<tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td></tr>
+<tr><th scope="row">A3o: Subtraction with true k (diagnostic)</th><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td><td>0.987 (0.003)</td></tr>
+</tbody></table></div>
+<!--/oc:t2_095-->
+<!--oc:t2_1-->
+<p class="tcap" id="cap-t07">T2. Rate of concluding BE on AUC(0-t), true GMR 1.00 (power). Studies that are not evaluable count as not concluding BE. Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t07">
+<thead><tr><th scope="col">Arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">A0: Oracle: no residual</th><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td></tr>
+<tr><th scope="row">A1: Naive: all participants</th><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td></tr>
+<tr><th scope="row">A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.134 (0.008)</td><td>0.944 (0.005)</td><td>0.998 (0.001)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td></tr>
+<tr><th scope="row">A2s: Exclusion decision only (residual removed)</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.134 (0.008)</td><td>0.943 (0.005)</td><td>0.998 (0.001)</td><td>0.999 (0.001)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td></tr>
+<tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td></tr>
+<tr><th scope="row">A3o: Subtraction with true k (diagnostic)</th><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>1.000 (0.000)</td></tr>
+</tbody></table></div>
+<!--/oc:t2_1-->
+
+  <h3 id="bias">Bias and interval coverage</h3>
+<!--oc:t1_125-->
+<p class="tcap" id="cap-t01">T1a. Bias of log GMR-hat, AUC(0-t), true GMR 1.25. Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t01">
+<thead><tr><th scope="col">Arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">A0: Oracle: no residual</th><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td></tr>
+<tr><th scope="row">A1: Naive: all participants</th><td>-0.0467 (0.0008)</td><td>-0.0278 (0.0009)</td><td>-0.0165 (0.0009)</td><td>-0.0098 (0.0009)</td><td>-0.0060 (0.0009)</td><td>-0.0025 (0.0010)</td><td>-0.0012 (0.0010)</td><td>-0.0005 (0.0010)</td></tr>
+<tr><th scope="row">A2: M13A exclusion</th><td>n/e</td><td>n/e</td><td>-0.0085 (0.0038)</td><td>-0.0058 (0.0012)</td><td>-0.0054 (0.0010)</td><td>-0.0026 (0.0010)</td><td>-0.0013 (0.0010)</td><td>-0.0005 (0.0010)</td></tr>
+<tr><th scope="row">A2s: Exclusion decision only (residual removed)</th><td>n/e</td><td>n/e</td><td>-0.0078 (0.0039)</td><td>-0.0048 (0.0012)</td><td>-0.0041 (0.0011)</td><td>-0.0014 (0.0010)</td><td>-0.0007 (0.0010)</td><td>-0.0005 (0.0010)</td></tr>
+<tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td></tr>
+<tr><th scope="row">A3o: Subtraction with true k (diagnostic)</th><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td><td>-0.0005 (0.0010)</td></tr>
+<tr><th scope="row">Closed form, naive (no within-participant noise)</th><td>-0.0459</td><td>-0.0270</td><td>-0.0158</td><td>-0.0092</td><td>-0.0055</td><td>-0.0020</td><td>-0.0008</td><td>-0.0000</td></tr>
+</tbody></table></div>
+<!--/oc:t1_125-->
+<!--oc:t1_08-->
+<p class="tcap" id="cap-t02">T1b. Bias of log GMR-hat, AUC(0-t), true GMR 0.80. Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t02">
+<thead><tr><th scope="col">Arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">A0: Oracle: no residual</th><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td></tr>
+<tr><th scope="row">A1: Naive: all participants</th><td>0.0468 (0.0008)</td><td>0.0281 (0.0009)</td><td>0.0169 (0.0009)</td><td>0.0104 (0.0009)</td><td>0.0066 (0.0009)</td><td>0.0031 (0.0009)</td><td>0.0019 (0.0009)</td><td>0.0011 (0.0009)</td></tr>
+<tr><th scope="row">A2: M13A exclusion</th><td>n/e</td><td>n/e</td><td>-0.0015 (0.0037)</td><td>0.0060 (0.0012)</td><td>0.0059 (0.0010)</td><td>0.0036 (0.0010)</td><td>0.0020 (0.0009)</td><td>0.0011 (0.0009)</td></tr>
+<tr><th scope="row">A2s: Exclusion decision only (residual removed)</th><td>n/e</td><td>n/e</td><td>-0.0023 (0.0037)</td><td>0.0049 (0.0012)</td><td>0.0047 (0.0011)</td><td>0.0026 (0.0010)</td><td>0.0014 (0.0010)</td><td>0.0010 (0.0009)</td></tr>
+<tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td></tr>
+<tr><th scope="row">A3o: Subtraction with true k (diagnostic)</th><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td><td>0.0010 (0.0009)</td></tr>
+<tr><th scope="row">Closed form, naive (no within-participant noise)</th><td>0.0457</td><td>0.0269</td><td>0.0157</td><td>0.0093</td><td>0.0055</td><td>0.0021</td><td>0.0008</td><td>0.0000</td></tr>
+</tbody></table></div>
+<!--/oc:t1_08-->
+<!--oc:t1_cov-->
+<p class="tcap" id="cap-t03">T1c. Coverage of the 90% CI for the log GMR, AUC(0-t), true GMR 1.25 (studies evaluable in that arm). Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t03">
+<thead><tr><th scope="col">Arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">A0: Oracle: no residual</th><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td></tr>
+<tr><th scope="row">A1: Naive: all participants</th><td>0.678 (0.010)</td><td>0.832 (0.008)</td><td>0.879 (0.007)</td><td>0.895 (0.007)</td><td>0.901 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td></tr>
+<tr><th scope="row">A2: M13A exclusion</th><td>n/e</td><td>n/e</td><td>0.878 (0.019)</td><td>0.903 (0.007)</td><td>0.899 (0.007)</td><td>0.901 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td></tr>
+<tr><th scope="row">A2s: Exclusion decision only (residual removed)</th><td>n/e</td><td>n/e</td><td>0.871 (0.020)</td><td>0.905 (0.007)</td><td>0.901 (0.007)</td><td>0.900 (0.007)</td><td>0.899 (0.007)</td><td>0.900 (0.007)</td></tr>
+<tr><th scope="row">A3: Subtraction (sensitivity analysis)</th><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td></tr>
+<tr><th scope="row">A3o: Subtraction with true k (diagnostic)</th><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td><td>0.900 (0.007)</td></tr>
+</tbody></table></div>
+<!--/oc:t1_cov-->
+
+  <h3 id="exclusions">Exclusions and studies that are not evaluable</h3>
+<!--oc:t3-->
+<p class="tcap" id="cap-t09">T3. M13A pre-dose rule: share of participants excluded (overall and by sequence) and share of studies not evaluable (fewer than 12 participants or an empty sequence). Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t09">
+<thead><tr><th scope="col">Quantity</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">GMR 1.25: participants excluded</th><td>0.995 (0.000)</td><td>0.895 (0.001)</td><td>0.624 (0.002)</td><td>0.338 (0.002)</td><td>0.158 (0.002)</td><td>0.026 (0.001)</td><td>0.004 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 1.25: excluded, sequence TR</th><td>0.999 (0.000)</td><td>0.940 (0.002)</td><td>0.717 (0.003)</td><td>0.428 (0.003)</td><td>0.217 (0.003)</td><td>0.039 (0.001)</td><td>0.006 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 1.25: excluded, sequence RT</th><td>0.992 (0.001)</td><td>0.851 (0.002)</td><td>0.531 (0.003)</td><td>0.248 (0.003)</td><td>0.100 (0.002)</td><td>0.013 (0.001)</td><td>0.002 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 1.25: studies not evaluable</th><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>0.853 (0.008)</td><td>0.029 (0.004)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 1.00: participants excluded</th><td>0.997 (0.000)</td><td>0.902 (0.001)</td><td>0.629 (0.002)</td><td>0.338 (0.002)</td><td>0.152 (0.002)</td><td>0.023 (0.001)</td><td>0.003 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 1.00: excluded, sequence TR</th><td>0.997 (0.000)</td><td>0.904 (0.002)</td><td>0.630 (0.003)</td><td>0.340 (0.003)</td><td>0.154 (0.002)</td><td>0.024 (0.001)</td><td>0.003 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 1.00: excluded, sequence RT</th><td>0.996 (0.000)</td><td>0.901 (0.002)</td><td>0.628 (0.003)</td><td>0.337 (0.003)</td><td>0.151 (0.002)</td><td>0.023 (0.001)</td><td>0.003 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 1.00: studies not evaluable</th><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>0.859 (0.008)</td><td>0.032 (0.004)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 0.80: participants excluded</th><td>0.995 (0.000)</td><td>0.895 (0.001)</td><td>0.623 (0.002)</td><td>0.339 (0.002)</td><td>0.157 (0.002)</td><td>0.028 (0.001)</td><td>0.004 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 0.80: excluded, sequence TR</th><td>0.992 (0.001)</td><td>0.851 (0.002)</td><td>0.532 (0.003)</td><td>0.253 (0.003)</td><td>0.101 (0.002)</td><td>0.012 (0.001)</td><td>0.001 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 0.80: excluded, sequence RT</th><td>0.998 (0.000)</td><td>0.938 (0.002)</td><td>0.714 (0.003)</td><td>0.425 (0.003)</td><td>0.213 (0.003)</td><td>0.044 (0.001)</td><td>0.007 (0.001)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 0.80: studies not evaluable</th><td>1.000 (0.000)</td><td>1.000 (0.000)</td><td>0.855 (0.008)</td><td>0.032 (0.004)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td></tr>
+</tbody></table></div>
+<!--/oc:t3-->
+
+  <h3 id="coverage">The AUC coverage condition</h3>
+<!--oc:t4-->
+<p class="tcap" id="cap-t10">T4. M13A coverage condition AUC(0-t) / AUC(0-inf) &ge; 0.80 at a true GMR of 1.25: mean share of analyzed profiles below 0.80, and share of studies in which more than 20% of profiles fall below it (M13A then asks for a discussion of validity). Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t10">
+<thead><tr><th scope="col">Sampling; arm; quantity</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">Sampling to 72 h; A0: Oracle: no residual, profiles below 80%</th><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td></tr>
+<tr><th scope="row">Sampling to 72 h; A0: Oracle: no residual, studies over the 20% trigger</th><td>0.558 (0.011)</td><td>0.558 (0.011)</td><td>0.558 (0.011)</td><td>0.558 (0.011)</td><td>0.558 (0.011)</td><td>0.558 (0.011)</td><td>0.558 (0.011)</td><td>0.558 (0.011)</td></tr>
+<tr><th scope="row">Sampling to 72 h; A1: Naive: all participants, profiles below 80%</th><td>0.203 (0.002)</td><td>0.204 (0.002)</td><td>0.204 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td><td>0.205 (0.002)</td></tr>
+<tr><th scope="row">Sampling to 72 h; A1: Naive: all participants, studies over the 20% trigger</th><td>0.548 (0.011)</td><td>0.552 (0.011)</td><td>0.554 (0.011)</td><td>0.556 (0.011)</td><td>0.556 (0.011)</td><td>0.557 (0.011)</td><td>0.557 (0.011)</td><td>0.558 (0.011)</td></tr>
+<tr><th scope="row">Sampling to 72 h; A2: M13A exclusion, profiles below 80%</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.010 (0.001)</td><td>0.074 (0.001)</td><td>0.183 (0.002)</td><td>0.202 (0.002)</td><td>0.205 (0.002)</td></tr>
+<tr><th scope="row">Sampling to 72 h; A2: M13A exclusion, studies over the 20% trigger</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.026 (0.004)</td><td>0.427 (0.011)</td><td>0.534 (0.011)</td><td>0.558 (0.011)</td></tr>
+<tr><th scope="row">Sampling to 120 h; A0: Oracle: no residual, profiles below 80%</th><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td></tr>
+<tr><th scope="row">Sampling to 120 h; A0: Oracle: no residual, studies over the 20% trigger</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">Sampling to 120 h; A1: Naive: all participants, profiles below 80%</th><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td><td>0.006 (0.000)</td></tr>
+<tr><th scope="row">Sampling to 120 h; A1: Naive: all participants, studies over the 20% trigger</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">Sampling to 120 h; A2: M13A exclusion, profiles below 80%</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.003 (0.000)</td><td>0.006 (0.000)</td></tr>
+<tr><th scope="row">Sampling to 120 h; A2: M13A exclusion, studies over the 20% trigger</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td></tr>
+</tbody></table></div>
+<!--/oc:t4-->
+
+  <h3 id="decomposition">Selection versus retained residual</h3>
+  <figure class="fig">
+    <a href="out/figures/f3_decomposition.png"><picture>
+      <source srcset="out/figures/f3_decomposition_dark.png" media="(prefers-color-scheme: dark)">
+      <img src="out/figures/f3_decomposition.png" width="1500" height="780" alt="F3: stacked bars splitting the M13A arm's bias into selection and retained residual at each washout, for true GMRs of 1.25 and 0.80. At 5 and 6 half-lives selection is the larger part in both panels; by 10 half-lives the retained residual is. No study is evaluable at 2 and 3 half-lives.">
+    </picture></a>
+    <figcaption>F3. The M13A arm's bias (A2 &minus; A0, point with &plusmn;2 MCSE) stacked into selection (A2s &minus; A0) and retained residual (A2 &minus; A2s), paired within study; the open diamond is the naive arm's bias (A1 &minus; A0) for comparison. Numbers: T5.</figcaption>
+  </figure>
+<!--oc:t5-->
+<p class="tcap" id="cap-t11">T5. The M13A arm's bias split into retained residual (A2 - A2s) and selection (A2s - A0), and the rule against including everyone (A2 - A1), paired within study, AUC(0-t). Bias terms use studies evaluable under the rule; BE-rate terms use all studies. Cells: estimate (MCSE). Selection share: (A2s - A0) / (A2 - A0), with its delta-method MCSE; left blank when the total is within 2 MCSE of 0.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t11">
+<thead><tr><th scope="col">Washout</th><th scope="col">Evaluable studies</th><th scope="col">Total, A2 &minus; A0</th><th scope="col">Retained residual, A2 &minus; A2s</th><th scope="col">Selection, A2s &minus; A0</th><th scope="col">Selection share</th><th scope="col">BE rate, A2 &minus; A0</th><th scope="col">BE rate, selection</th><th scope="col">Bias, A2 &minus; A1</th><th scope="col">BE rate, A2 &minus; A1</th></tr></thead>
+<tbody>
+<tr><th scope="row">GMR 1.25, 2&times;</th><td>0</td><td>n/e</td><td>n/e</td><td>n/e</td><td></td><td>-0.051 (0.005)</td><td>-0.051 (0.005)</td><td>n/e</td><td>-0.318 (0.010)</td></tr>
+<tr><th scope="row">GMR 1.25, 3&times;</th><td>0</td><td>n/e</td><td>n/e</td><td>n/e</td><td></td><td>-0.051 (0.005)</td><td>-0.051 (0.005)</td><td>n/e</td><td>-0.159 (0.008)</td></tr>
+<tr><th scope="row">GMR 1.25, 4&times;</th><td>294</td><td>-0.0099 (0.0028)</td><td>-0.0007 (0.0002)</td><td>-0.0092 (0.0029)</td><td>93% (3%)</td><td>-0.042 (0.005)</td><td>-0.042 (0.005)</td><td>0.0054 (0.0028)</td><td>-0.092 (0.007)</td></tr>
+<tr><th scope="row">GMR 1.25, 5&times;</th><td>1942</td><td>-0.0054 (0.0008)</td><td>-0.0010 (0.0001)</td><td>-0.0043 (0.0008)</td><td>80% (3%)</td><td>-0.001 (0.005)</td><td>-0.002 (0.005)</td><td>0.0039 (0.0007)</td><td>-0.023 (0.005)</td></tr>
+<tr><th scope="row">GMR 1.25, 6&times;</th><td>2000</td><td>-0.0049 (0.0005)</td><td>-0.0013 (0.0001)</td><td>-0.0036 (0.0005)</td><td>74% (3%)</td><td>0.008 (0.004)</td><td>0.005 (0.004)</td><td>0.0006 (0.0004)</td><td>-0.005 (0.004)</td></tr>
+<tr><th scope="row">GMR 1.25, 8&times;</th><td>2000</td><td>-0.0021 (0.0002)</td><td>-0.0012 (0.0000)</td><td>-0.0009 (0.0002)</td><td>44% (5%)</td><td>0.004 (0.002)</td><td>0.002 (0.002)</td><td>-7.2e-05 (1.6e-04)</td><td>-0.001 (0.002)</td></tr>
+<tr><th scope="row">GMR 1.25, 10&times;</th><td>2000</td><td>-0.0009 (0.0001)</td><td>-0.0006 (0.0000)</td><td>-0.0002 (0.0001)</td><td>28% (6%)</td><td>0.001 (0.001)</td><td>0.001 (0.001)</td><td>-0.0001 (0.0001)</td><td>0.000 (0.001)</td></tr>
+<tr><th scope="row">GMR 1.25, KA1</th><td>2000</td><td>-2.5e-05 (1.2e-06)</td><td>-2.5e-05 (1.2e-06)</td><td>0.0000 (0.0000)</td><td>0% (0%)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.0000 (0.0000)</td><td>0.000 (0.000)</td></tr>
+<tr><th scope="row">GMR 0.80, 2&times;</th><td>0</td><td>n/e</td><td>n/e</td><td>n/e</td><td></td><td>-0.045 (0.005)</td><td>-0.045 (0.005)</td><td>n/e</td><td>-0.322 (0.010)</td></tr>
+<tr><th scope="row">GMR 0.80, 3&times;</th><td>0</td><td>n/e</td><td>n/e</td><td>n/e</td><td></td><td>-0.045 (0.005)</td><td>-0.045 (0.005)</td><td>n/e</td><td>-0.167 (0.008)</td></tr>
+<tr><th scope="row">GMR 0.80, 4&times;</th><td>290</td><td>0.0025 (0.0028)</td><td>0.0008 (0.0002)</td><td>0.0017 (0.0028)</td><td></td><td>-0.041 (0.005)</td><td>-0.041 (0.005)</td><td>-0.0121 (0.0027)</td><td>-0.097 (0.007)</td></tr>
+<tr><th scope="row">GMR 0.80, 5&times;</th><td>1937</td><td>0.0051 (0.0008)</td><td>0.0010 (0.0001)</td><td>0.0041 (0.0008)</td><td>80% (3%)</td><td>0.009 (0.006)</td><td>0.007 (0.005)</td><td>-0.0042 (0.0007)</td><td>-0.025 (0.006)</td></tr>
+<tr><th scope="row">GMR 0.80, 6&times;</th><td>2000</td><td>0.0049 (0.0005)</td><td>0.0012 (0.0001)</td><td>0.0037 (0.0005)</td><td>75% (3%)</td><td>0.018 (0.005)</td><td>0.012 (0.005)</td><td>-0.0007 (0.0004)</td><td>-0.003 (0.005)</td></tr>
+<tr><th scope="row">GMR 0.80, 8&times;</th><td>2000</td><td>0.0026 (0.0002)</td><td>0.0010 (0.0000)</td><td>0.0016 (0.0002)</td><td>60% (3%)</td><td>0.015 (0.003)</td><td>0.011 (0.003)</td><td>0.0005 (0.0002)</td><td>0.006 (0.003)</td></tr>
+<tr><th scope="row">GMR 0.80, 10&times;</th><td>2000</td><td>0.0010 (0.0001)</td><td>0.0006 (0.0000)</td><td>0.0004 (0.0001)</td><td>37% (5%)</td><td>0.002 (0.002)</td><td>0.001 (0.001)</td><td>0.0002 (0.0001)</td><td>0.001 (0.001)</td></tr>
+<tr><th scope="row">GMR 0.80, KA1</th><td>2000</td><td>2.5e-05 (1.2e-06)</td><td>2.5e-05 (1.2e-06)</td><td>0.0000 (0.0000)</td><td>0% (0%)</td><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.0000 (0.0000)</td><td>0.000 (0.000)</td></tr>
+</tbody></table></div>
+<!--/oc:t5-->
+
+  <details class="more">
+    <summary>Sensitivity: biexponential disposition, assay error and extended sampling</summary>
+<!--oc:t2_sens-->
+<p class="tcap" id="cap-t08">T2c. Consumer risk on AUC(0-t) at a true GMR of 1.25 under the biexponential disposition, 8% assay error with an LLOQ of 0.5% of the median Cmax, and sampling extended to 120 h. Columns: washout as a multiple of the mean half-life (24 h); KA1 = 10 times the largest individual half-life in each replicate. Cells: estimate (MCSE). n/e: no evaluable study.</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t08">
+<thead><tr><th scope="col">Configuration; arm</th><th scope="col">2&times;</th><th scope="col">3&times;</th><th scope="col">4&times;</th><th scope="col">5&times;</th><th scope="col">6&times;</th><th scope="col">8&times;</th><th scope="col">10&times;</th><th scope="col">KA1</th></tr></thead>
+<tbody>
+<tr><th scope="row">Base, biexponential; A0: Oracle: no residual</th><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">Base, biexponential; A1: Naive: all participants</th><td>0.336 (0.011)</td><td>0.177 (0.009)</td><td>0.109 (0.007)</td><td>0.085 (0.006)</td><td>0.070 (0.006)</td><td>0.054 (0.005)</td><td>0.051 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Base, biexponential; A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.004 (0.001)</td><td>0.057 (0.005)</td><td>0.066 (0.006)</td><td>0.054 (0.005)</td><td>0.052 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Base, biexponential; A3: Subtraction (sensitivity analysis)</th><td>0.047 (0.005)</td><td>0.049 (0.005)</td><td>0.049 (0.005)</td><td>0.049 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.047 (0.005)</td><td>0.047 (0.005)</td></tr>
+<tr><th scope="row">Assay error, monoexponential; A0: Oracle: no residual</th><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Assay error, monoexponential; A1: Naive: all participants</th><td>0.312 (0.010)</td><td>0.160 (0.008)</td><td>0.104 (0.007)</td><td>0.073 (0.006)</td><td>0.062 (0.005)</td><td>0.051 (0.005)</td><td>0.050 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Assay error, monoexponential; A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.015 (0.003)</td><td>0.059 (0.005)</td><td>0.060 (0.005)</td><td>0.056 (0.005)</td><td>0.051 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Assay error, monoexponential; A3: Subtraction (sensitivity analysis)</th><td>0.044 (0.005)</td><td>0.045 (0.005)</td><td>0.047 (0.005)</td><td>0.046 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Assay error, biexponential; A0: Oracle: no residual</th><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">Assay error, biexponential; A1: Naive: all participants</th><td>0.340 (0.011)</td><td>0.172 (0.008)</td><td>0.111 (0.007)</td><td>0.081 (0.006)</td><td>0.067 (0.006)</td><td>0.050 (0.005)</td><td>0.048 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">Assay error, biexponential; A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.007 (0.002)</td><td>0.068 (0.006)</td><td>0.067 (0.006)</td><td>0.053 (0.005)</td><td>0.050 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">Assay error, biexponential; A3: Subtraction (sensitivity analysis)</th><td>0.048 (0.005)</td><td>0.049 (0.005)</td><td>0.048 (0.005)</td><td>0.046 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, monoexponential; A0: Oracle: no residual</th><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, monoexponential; A1: Naive: all participants</th><td>0.319 (0.010)</td><td>0.159 (0.008)</td><td>0.101 (0.007)</td><td>0.073 (0.006)</td><td>0.065 (0.005)</td><td>0.056 (0.005)</td><td>0.052 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, monoexponential; A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.009 (0.002)</td><td>0.051 (0.005)</td><td>0.059 (0.005)</td><td>0.054 (0.005)</td><td>0.052 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, monoexponential; A3: Subtraction (sensitivity analysis)</th><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td><td>0.051 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, biexponential; A0: Oracle: no residual</th><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td><td>0.045 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, biexponential; A1: Naive: all participants</th><td>0.340 (0.011)</td><td>0.180 (0.009)</td><td>0.112 (0.007)</td><td>0.086 (0.006)</td><td>0.070 (0.006)</td><td>0.055 (0.005)</td><td>0.051 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, biexponential; A2: M13A exclusion</th><td>0.000 (0.000)</td><td>0.000 (0.000)</td><td>0.004 (0.001)</td><td>0.060 (0.005)</td><td>0.067 (0.006)</td><td>0.055 (0.005)</td><td>0.053 (0.005)</td><td>0.048 (0.005)</td></tr>
+<tr><th scope="row">Sampling to 120 h, biexponential; A3: Subtraction (sensitivity analysis)</th><td>0.043 (0.005)</td><td>0.047 (0.005)</td><td>0.049 (0.005)</td><td>0.049 (0.005)</td><td>0.049 (0.005)</td><td>0.049 (0.005)</td><td>0.048 (0.005)</td><td>0.047 (0.005)</td></tr>
+</tbody></table></div>
+<!--/oc:t2_sens-->
+  </details>
+
+  <h3 id="adam">Single-study ADaM demonstration</h3>
+  <p>The same rule applied to one study from the repository's <a href="../index.html">PK sandbox</a>, generated with the new <code>washout_h</code> option of <code>simulate_adam.R</code> (the sandbox's own PK model, median half-life about 8 h, washout 48 h). ADPC period-2 pre-dose rows then carry the period-1 residual: quantified when it is at or above the LLOQ, and reported as &lt;LLOQ (counted as 0, M13A) when it is below. ADPP gains <code>PDCMXR</code> (pre-dose concentration / Cmax of the same period), <code>ANL02FL</code> (bioequivalence analysis flag, "Y" or null) and <code>PKEXRSN</code> (the reason, as in the repository's flagship study).</p>
+<!--oc:demo-->
+<p>With <code>washout_h = 48</code>, 11 of 40 participants have a period-2 pre-dose concentration above 5% of that period's Cmax (largest ratio 0.107). Their ADPP rows carry a null <code>ANL02FL</code> in both periods, and the period-2 rows give the reason in <code>PKEXRSN</code>; 29 participants remain for the bioequivalence analysis.</p>
+<p class="tcap" id="cap-t13">Participants excluded from the bioequivalence analysis in the ADaM demonstration (out/adam_demo/adpp.csv; PDCMXR = pre-dose concentration / Cmax, period 2).</p>
+<div class="tbl"><table class="oc" aria-labelledby="cap-t13">
+<thead><tr><th scope="col">USUBJID</th><th scope="col">Sequence</th><th scope="col">Period-2 treatment</th><th scope="col">PDCMXR</th><th scope="col">ANL02FL</th><th scope="col">PKEXRSN</th></tr></thead>
+<tbody>
+<tr><th scope="row">CP-SIM-102-026</th><td>RT</td><td>Test</td><td>0.107</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-023</th><td>TR</td><td>Reference</td><td>0.089</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-025</th><td>TR</td><td>Reference</td><td>0.075</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-009</th><td>TR</td><td>Reference</td><td>0.066</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-012</th><td>RT</td><td>Test</td><td>0.063</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-036</th><td>RT</td><td>Test</td><td>0.057</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-019</th><td>TR</td><td>Reference</td><td>0.056</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-003</th><td>TR</td><td>Reference</td><td>0.055</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-022</th><td>RT</td><td>Test</td><td>0.054</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-029</th><td>TR</td><td>Reference</td><td>0.054</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+<tr><th scope="row">CP-SIM-102-018</th><td>RT</td><td>Test</td><td>0.052</td><td>(null)</td><td>PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX</td></tr>
+</tbody></table></div>
+<!--/oc:demo-->
+  <p class="small">Variable names: the ADaMIG for Non-compartmental Analysis Input Data (ADNCA) v1.0 defines <code>NCAXFL</code>, <code>NCAwXRS</code> and <code>PKSUMXF</code> to flag concentration records left out of the NCA or of PK summaries (as listed in the Pinnacle 21 and Certara webinar "What is ADNCA", September 2024; the CDISC document itself was not re-read for this page). This rule removes a participant from the bioequivalence model, not from the NCA, so the demonstration uses an ADPP analysis flag and the reason variable of the repository's flagship study instead. Record-level ADaM flags take "Y" or null. With <code>washout_h</code> unset the generator's output is byte-identical to the committed sandbox files (check T10).</p>
+
+  <h2 id="shows">What this shows and does not show</h2>
+  <div class="panel">
+    <p><strong>It shows</strong>, under the stated model only:</p>
+    <ul>
+      <li>At short washouts the 5% rule does not let a product that is not equivalent pass; it makes the study fail by leaving too few participants, the failure mode the FDA presentation describes. Its cost then falls on power, which collapses at 4 mean half-lives and is still reduced at 5.</li>
+<!--oc:shows_rule-->
+<li>At 5 mean half-lives the rule removes part of the naive bias, not all of it. Paired with including everyone in the same studies, it reduces the size of the bias by 0.0039 (MCSE 0.0007) at a true GMR of 1.25 and 0.0042 (0.0007) at 0.80, and lowers consumer risk by 0.023 (0.005) and 0.025 (0.006); its consumer risk is 0.051 (MCSE 0.005) and 0.054 (0.005), against 0.051 and 0.045 for the oracle.</li>
+<li>At 6 half-lives the rule drops 16% of participants with no detectable gain over including everyone: the paired changes in the size of the bias are -0.0006 (0.0004) and -0.0007 (0.0004), and in consumer risk -0.005 (0.004) and -0.003 (0.005) (true GMR 1.25 and 0.80). Paired with the oracle in the same studies, its consumer risk is higher by 0.008 (MCSE 0.004) and 0.018 (0.005).</li>
+<li>At 8 and 10 half-lives, where the rule drops 3% and 0.4% of participants, its selection makes its bias slightly larger than the naive analysis's at a true GMR of 0.80: by 0.0005 (MCSE 0.0002) and 0.0002 (0.0001), with consumer risk 0.0595 (MCSE 0.0053) against the naive 0.0535 (0.0050) at 8 half-lives, a paired difference of +0.006 (0.003). At 1.25 the same differences, +0.0001 (0.0002) and +0.0001 (0.0001), are not distinguishable from 0.</li>
+<!--/oc:shows_rule-->
+<!--oc:shows_sel-->
+<li>Most of the bias left after the rule at 5 to 6 half-lives comes from the selection the rule makes, not from residual left in the retained participants: selection is 80% (MCSE 3%) and 74% (3%) of it at 5 and 6 half-lives at a true GMR of 1.25, and 80% (3%) and 75% (3%) at 0.80. The rule conditions on the outcome: its denominator is the period's own Cmax, so it excludes more participants from the sequence whose period-2 product gives lower exposure (at 5 half-lives, 43% of TR and 25% of RT at a true GMR of 1.25, and 25% and 43% at 0.80).</li>
+<!--/oc:shows_sel-->
+      <li>The sampling schedule matters for a separate M13A condition: sampling to 72 h for a 24 h half-life leaves many profiles below 80% AUC coverage, with or without carryover.</li>
+    </ul>
+    <p><strong>It does not show:</strong></p>
+    <ul>
+      <li>Anything about a real product. The data are synthetic, from one PK model with one set of variability values and n = 24. There is no period effect, no dropout and no sequence effect other than carryover.</li>
+      <li>Separate behavior of Cmax without assay error: within-participant variation then largely scales each profile as a whole, which ties Cmax to AUC. Only the assay-error configuration separates the two endpoints.</li>
+      <li>That subtraction is safe. Without assay error and with a monoexponential residual it matches the oracle almost exactly, because the model it extrapolates is the model that generated the data; its behavior under other misspecifications (nonlinear PK, induction, a different terminal phase in period 2) is not studied. It is a sensitivity analysis, and the conclusion rests on the primary analysis.</li>
+<!--oc:pilot-->
+<li>One expected pattern from the pilot did not reproduce. The pilot subtracted with the true k, as arm A3o does here. With the biexponential phase at 3 half-lives, A3o's consumer risk is 0.0495 (MCSE 0.0049) against the oracle's 0.0455 (0.0047), a paired difference of +0.0040 (0.0014), and A3, with &lambda;<sub>z</sub> estimated from period 1, gives 0.0490 (0.0048); the pilot reported 0.069 (INFO rows in the checks).</li>
+<!--/oc:pilot-->
+      <li>Regulatory guidance or a validated method. The NCA is a short base-R implementation checked against PKNCA (check T2). In a study, NCA comes from a validated system such as Phoenix WinNonlin or a qualified PKNCA setup, and M13A applies as written.</li>
+    </ul>
+  </div>
+
+  <h2 id="sap">SAP language</h2>
+  <p>Wording a statistical analysis plan could use for the primary analysis and the two sensitivity analyses studied here:</p>
+  <blockquote class="sap"><p>"In this single-dose 2x2 study, a period whose predose concentration exceeds 5% of that period's Cmax will be excluded for that participant (ICH M13A); because both periods are required, the participant will be excluded from the bioequivalence analysis, and exclusions will be reported by sequence. As sensitivity analyses, the primary analysis will be repeated including all participants and after subtracting the extrapolated residual (predose concentration times exp(-lambda_z t), lambda_z from that participant's period-1 terminal phase). The bioequivalence conclusion rests on the primary analysis."</p></blockquote>
+
+  <h2 id="csr">CSR appendix shell</h2>
+  <p>Shells for reporting the rule and the sensitivity analyses; xx marks a value filled from the study's ADPP.</p>
+  <p class="tcap" id="cap-s14">Table 14.2.x.1. Participants excluded from the bioequivalence analysis under the pre-dose rule, by sequence (PK population)</p>
+  <div class="tbl"><table class="oc plain" aria-labelledby="cap-s14">
+    <thead><tr><th scope="col">Category</th><th scope="col">TR (N = xx)</th><th scope="col">RT (N = xx)</th><th scope="col">Total (N = xx)</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Period-2 pre-dose concentration &gt; 5% of Cmax, n (%)</th><td>xx (xx.x)</td><td>xx (xx.x)</td><td>xx (xx.x)</td></tr>
+      <tr><th scope="row">Pre-dose / Cmax among those excluded, median (min, max)</th><td>x.xxx (x.xxx, x.xxx)</td><td>x.xxx (x.xxx, x.xxx)</td><td>x.xxx (x.xxx, x.xxx)</td></tr>
+      <tr><th scope="row">Evaluable for bioequivalence (ANL02FL = "Y"), n (%)</th><td>xx (xx.x)</td><td>xx (xx.x)</td><td>xx (xx.x)</td></tr>
+    </tbody>
+  </table></div>
+  <p class="tcap" id="cap-s15">Table 14.2.x.2. Bioequivalence of test versus reference: primary analysis and sensitivity analyses</p>
+  <div class="tbl"><table class="oc plain" aria-labelledby="cap-s15">
+    <thead><tr><th scope="col">Analysis</th><th scope="col">Parameter</th><th scope="col">n</th><th scope="col">GMR (%)</th><th scope="col">90% CI (%)</th><th scope="col">Within 80.00 to 125.00%</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Primary: M13A pre-dose exclusion</th><td>AUC(0-t); Cmax</td><td>xx</td><td>xx.xx</td><td>xx.xx, xx.xx</td><td>Yes / No</td></tr>
+      <tr><th scope="row">Sensitivity: all participants</th><td>AUC(0-t); Cmax</td><td>xx</td><td>xx.xx</td><td>xx.xx, xx.xx</td><td>Yes / No</td></tr>
+      <tr><th scope="row">Sensitivity: extrapolated residual subtracted</th><td>AUC(0-t); Cmax</td><td>xx</td><td>xx.xx</td><td>xx.xx, xx.xx</td><td>Yes / No</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small">Footnotes for the shell: model with sequence, participant within sequence, period and formulation; limits compared unrounded; the conclusion rests on the primary analysis. A by-participant listing (16.2.x) gives USUBJID, sequence, period, pre-dose concentration, Cmax, their ratio and PKEXRSN for every participant excluded.</p>
+
+  <h2 id="provenance">Provenance and credit</h2>
+  <p><strong>Established prior art</strong>, credited first:</p>
+  <ul class="refs">
+    <li>Carryover is aliased with sequence in the 2x2 design: Grizzle 1965, <em>Biometrics</em> 21:467-480; Freeman 1989, <em>Statistics in Medicine</em> 8:1421-1432.</li>
+    <li>Carryover in bioequivalence crossovers: Senn, D'Angelo and Potvin 2004, <em>Pharmaceutical Statistics</em> 3:133-142; Ocaña, Sánchez and Carrasco 2015, <em>Pharmaceutical Statistics</em> 14:400-408, the closest prior art for the consumer-risk algebra above.</li>
+    <li>Two one-sided tests: Schuirmann 1987, <em>Journal of Pharmacokinetics and Biopharmaceutics</em> 15:657-680. The pre-dose rule, the 12-participant floor and the coverage condition: ICH M13A (Step 4 23 Jul 2024; FDA final 30 Oct 2024; EU effective 25 Jan 2025).</li>
+    <li>Adjusting for incomplete washout with a model (predict, then subtract or integrate): Huang et al., PAGE 32 (2024), abstract 10872; a Simulations Plus abstract at PKUK; and the KEYNOTE-555 protocol (NCT03665597), which adjusts when pre-dose is at least 5% of Cmax. These three come from the study plan and were not re-read for this page.</li>
+    <li>The failure mode itself: Zhang Z (FDA CDER, Office of Generic Drugs). Common bioequivalence study design deficiencies and how to avoid them. SBIA Generic Drug Forum, 22-23 April 2026, slide 8 (<a href="https://www.fda.gov/media/194074/download">fda.gov/media/194074</a>). It reports a crossover that failed because an inadequate washout led to many participants being excluded under the 5% of Cmax recommendation, and advises setting the washout from the variability of the half-life rather than its mean alone and pre-specifying alternatives such as subtraction. This page puts numbers on that failure mode.</li>
+    <li>Reporting of simulation studies: Morris, White and Crowther 2019, <em>Statistics in Medicine</em> 38:2074-2102.</li>
+  </ul>
+  <p><strong>What is new here</strong> is narrow. The failure mode and the advice to pre-specify alternatives are in the FDA presentation above; what this page adds is the operating characteristics of the M13A exclusion rule itself (consumer and producer risk, exclusion and non-evaluable rates) at borderline washouts under clearance variability, and the split of the rule's leftover bias into selection and retained residual. Searches of the literature and the BEBAC forum on 2026-10-25 found discussion of the rule but no published simulation of these quantities; that is not proof that none exists. The algebra, the 5% rule and predict-then-subtract are all established.</p>
+  <p><strong>Design.</strong> Comparing a naive, a censored and a model-adjusted analysis follows the design of my cluster randomized trial simulation study, where contamination plays the role residual drug plays here.</p>
+  <p class="small">Iben P. Contamination-resilient cluster randomized trial design under spatial interference: a simulation study of contamination control. Statistics in Medicine, submitted. Preprint: <a href="https://doi.org/10.5281/zenodo.23486177">doi:10.5281/zenodo.23486177</a> (latest version: <a href="https://doi.org/10.5281/zenodo.23486176">doi:10.5281/zenodo.23486176</a>). Study code and data: <a href="https://doi.org/10.17605/OSF.IO/XPA4S">doi:10.17605/OSF.IO/XPA4S</a>. That manuscript acknowledges Dr. Kathryn Colborn, who posed the original question, and the co-authors of an earlier unpublished trial-data manuscript: Banaei-Kashani, Kechris, Echodu, Eganyu, Bever and Yeka.</p>
+  <p><strong>How it was built and checked.</strong> The study plan was prepared with AI assistance and scored by two AI-agent reviewers; one of them wrote the Python check of the selection effect that T9 compares against, and an earlier, unvalidated Python pilot supplied the expected patterns. This module was drafted with AI assistance. T9 is a second implementation of the same plan, not independent double programming by a second person. Human sign-off is not yet recorded.</p>
+
+  <h2 id="run">Run it</h2>
+<pre><code>Rscript sim_lifecycle/carryover_oc/R/run_oc.R            # grid and ADaM demonstration (about 10 s on 4 cores)
+Rscript sim_lifecycle/carryover_oc/tests/test_carryover.R  # checks; writes the pass table
+Rscript sim_lifecycle/carryover_oc/R/tables.R              # tables, figures and this page's numbers</code></pre>
+  <p>Run from the repository root, in that order. Base R 4.6.0 only (the <code>parallel</code> package ships with R); <code>OC_CORES=1</code> runs serially with the same results. The PKNCA cross-check in T2 runs when PKNCA is installed and is skipped otherwise.</p>
+  <ul class="files">
+    <li><a href="R/dgm.R"><code>R/dgm.R</code></a><span class="d">settings, participants, profiles, residual, assay, closed form</span></li>
+    <li><a href="R/nca_m13a.R"><code>R/nca_m13a.R</code></a><span class="d">NCA for many profiles at once (M13A conventions)</span></li>
+    <li><a href="R/analyze.R"><code>R/analyze.R</code></a><span class="d">2x2 estimator, arms, MCSEs, decomposition, streams</span></li>
+    <li><a href="R/run_oc.R"><code>R/run_oc.R</code></a><span class="d">the grid and the ADaM demonstration</span></li>
+    <li><a href="R/tables.R"><code>R/tables.R</code></a><span class="d">T1 to T5, F1 to F3, generated page blocks</span></li>
+    <li><a href="tests/test_carryover.R"><code>tests/test_carryover.R</code></a><span class="d">T1 to T12 known-answer checks and controls</span></li>
+    <li><a href="out/oc_results.csv"><code>out/oc_results.csv</code></a><span class="d">every cell, washout, arm and endpoint, with MCSEs</span></li>
+    <li><a href="out/oc_bias_decomposition.csv"><code>out/oc_bias_decomposition.csv</code></a><span class="d">selection and retained residual, paired, with MCSEs</span></li>
+    <li><a href="out/known_answer_checks.csv"><code>out/known_answer_checks.csv</code></a><span class="d">the pass table above</span></li>
+    <li><a href="out/adam_demo/adpp.csv"><code>out/adam_demo/adpp.csv</code></a><span class="d">ADPP with PDCMXR, ANL02FL and PKEXRSN</span></li>
+  </ul>
+  <p class="small">Tables T1 to T5 are also in <code>out/tables/</code> as CSV; run facts are in <a href="out/run_info.csv"><code>out/run_info.csv</code></a>.</p>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Synthetic data only. Not real trial data, not regulatory guidance and not a validated deliverable. <a href="../index.html">PK sandbox</a> · <a href="../../index.html">Home page</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

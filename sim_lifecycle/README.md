@@ -17,6 +17,12 @@ Page: [`index.html`](index.html).
   plus `out/results_summary.csv`, the printed PK, bioequivalence and adverse-event results at
   10 significant digits (not rounded as in the printout). G1 compares only the eight domains; G9 recomputes the summary independently.
 - `priors.R` holds the design and domain priors as a hard-coded list.
+- `simulate_study(..., washout_h = NULL)`: setting `washout_h` (hours between the two doses)
+  adds each participant's period-1 residual to the period-2 profile by superposition, with no
+  new random draws, reports a pre-dose sample below the LLOQ as `<LLOQ` (counted as 0 in the NCA),
+  and adds the ICH M13A pre-dose ratio `PDCMXR`, `ANL02FL` and `PKEXRSN` to ADPP. Left unset, the
+  output is byte-identical to the committed files. The
+  [residual-carryover study](carryover_oc/index.html) in `carryover_oc/` uses it.
 
 ## Run
 
