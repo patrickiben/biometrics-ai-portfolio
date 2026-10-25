@@ -241,6 +241,15 @@ html:not(.js) .theme-toggle { display: none; }
   .small{font-size:13px;color:var(--muted)}
   #teeth-meta code,section.teeth p.small code{word-break:break-all}
   footer{color:var(--muted);font-size:13.5px;border-top:1px solid var(--line);margin-top:28px;padding-top:16px}
+  .gsum{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:6px;margin:16px 0 4px;padding:0;list-style:none}
+  .gsum li{margin:0;display:flex} .gsum li>a{flex:1}
+  .gsum a{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;min-height:40px;padding:8px 12px;border:1px solid var(--line-2);border-left:3px solid var(--line-2);border-radius:var(--r-sm);background:var(--surface);color:var(--text);text-decoration:none;font-size:13.5px;line-height:1.3}
+  .gsum a:hover{border-color:var(--accent);background:var(--surface-3);color:var(--ink)}
+  .gsum a.green{border-left-color:var(--green)} .gsum a.red{border-left-color:var(--red)} .gsum a.manual,.gsum a.unsigned,.gsum a.stale{border-left-color:var(--amber)}
+  .gsum .gid{font-size:12.5px}
+  .gsum .st{font:500 12px/1.3 var(--mono);white-space:nowrap}
+  .gsum .green .st{color:var(--green)} .gsum .red .st{color:var(--red)} .gsum .manual .st,.gsum .unsigned .st,.gsum .stale .st{color:var(--amber)}
+  .gate{scroll-margin-top:72px}
   @media print{.gate,.principle,.count{box-shadow:none;background:#fff}}
 </style></head>
 <body>
@@ -271,6 +280,7 @@ html:not(.js) .theme-toggle { display: none; }
     <h1>Trial‑Management Validation Harness</h1>
     <p class="sub">Ten gates for a clinical‑biometrics deliverable, run against this repository's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <strong>Most checks are structural</strong> (inventories, pattern scans, counts); G1 re-runs the synthetic study; <strong>G9</strong> recomputes the sandbox's PK, bioequivalence and adverse-event results with separately written code; <strong>G10</strong> reports <a href="#teeth">what the harness catches</a> when defects are planted on purpose; <strong>G5 is a manual record</strong>, not computed; <strong>G6</strong> checks that every QTc change figure uses one reference-line convention (0, 30 and 60 ms, the ICH E14 categorical thresholds); <strong>G7 stays &ldquo;not signed&rdquo;</strong> until a named statistician signs for AI use; <strong>SAS is never executed</strong> (no license). No gate has a human sign-off yet. <a href="README.md">Full spec &rarr;</a></p>
     <div class="meta" id="meta">Loading ledger…</div>
+    <ul class="gsum" id="gate-sum" aria-label="The ten gates at a glance; each links to its evidence below"></ul>
   </header>
 
   <div class="principle"><b>One rigor apparatus, ported.</b> This is the trial‑management sibling of a
@@ -310,7 +320,7 @@ html:not(.js) .theme-toggle { display: none; }
 
 <script id="ledger" type="application/json">
 {
- "generated": "2026-10-25 18:49 UTC",
+ "generated": "2026-10-25 19:16 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "green": 8,
  "manual": 1,
@@ -321,7 +331,7 @@ html:not(.js) .theme-toggle { display: none; }
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "519 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "520 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
@@ -370,7 +380,7 @@ html:not(.js) .theme-toggle { display: none; }
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 60 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
+   "evidence": "package_qc.py: 0 issues across 65 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
   },
   {
@@ -707,12 +717,18 @@ html:not(.js) .theme-toggle { display: none; }
     document.getElementById("gates").innerHTML = L.gates.map(function(g){
       var s=(g.status==="green"||g.status==="manual"||g.status==="stale")?g.status:(g.status==="not signed"?"unsigned":"red");
       var label=s==="unsigned"?"not signed":s;
-      return '<div class="gate '+s+'"><div class="gh"><span class="gid">'+g.gate.split(" ")[0]+'</span>'+
+      return '<div class="gate '+s+'" id="'+g.gate.split(" ")[0].toLowerCase()+'"><div class="gh"><span class="gid">'+g.gate.split(" ")[0]+'</span>'+
         '<span class="gt">'+g.gate.replace(/^G\d+ /,"")+'</span>'+
         '<span class="badge '+s+'"><span class="dot"></span>'+label+'</span></div>'+
         '<div class="guards"><span class="k">guards&nbsp;</span>'+g.guards+'</div>'+
         '<div class="evid">'+g.evidence+'</div>'+
         '<div class="sign"><span class="box">☐</span> human sign-off pending: a named biostatistician reviews and signs</div></div>';
+    }).join("");
+    document.getElementById("gate-sum").innerHTML = L.gates.map(function(g){
+      var s=(g.status==="green"||g.status==="manual"||g.status==="stale")?g.status:(g.status==="not signed"?"unsigned":"red");
+      var id=g.gate.split(" ")[0];
+      return '<li><a class="'+s+'" href="#'+id.toLowerCase()+'"><span class="gid">'+esc(id)+'</span><span>'+esc(g.gate.replace(/^G\d+ /,""))+'</span>'+
+        '<span class="st">'+(s==="unsigned"?"not signed":esc(s))+'</span></a></li>';
     }).join("");
   }
   var embedded = JSON.parse(document.getElementById("ledger").textContent);
@@ -787,7 +803,7 @@ html:not(.js) .theme-toggle { display: none; }
     var items = [].slice.call(scope.querySelectorAll("[data-item]"));
     var groups = [].slice.call(scope.querySelectorAll("[data-group]"));
     var q = box.querySelector('input[type="search"]'), out = box.querySelector(".count");
-    var noun = box.getAttribute("data-noun") || "items";
+    var noun = box.getAttribute("data-noun") || "items", empty = scope.querySelector(".f-empty");
     function on(attr) { var b = box.querySelector("button[" + attr + '][aria-pressed="true"]'); return b ? b.getAttribute(attr) : ""; }
     function run() {
       var st = on("data-f-stage"), lb = on("data-f-label"), text = q ? q.value.trim().toLowerCase() : "", n = 0;
@@ -796,10 +812,19 @@ html:not(.js) .theme-toggle { display: none; }
                  (!lb || (" " + (el.getAttribute("data-labels") || "") + " ").indexOf(" " + lb + " ") > -1) &&
                  (!text || el.textContent.toLowerCase().indexOf(text) > -1);
         el.hidden = !ok; if (ok) n++;
+        if (ok && text && el.tagName === "DETAILS") el.open = true;   /* a search shows its matches */
       });
       groups.forEach(function (g) { g.hidden = !g.querySelector("[data-item]:not([hidden])"); });
-      if (out) out.textContent = n + " of " + items.length + " " + noun + " shown";
+      if (out) out.textContent = n ? n + " of " + items.length + " " + noun + " shown" : "No " + noun + " match; 0 of " + items.length + " shown";
+      if (empty) empty.hidden = n > 0;
     }
+    function reset() {
+      box.querySelectorAll('button[aria-pressed="true"]').forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+      if (q) q.value = "";
+      run();
+      if (q) q.focus();
+    }
+    if (empty) empty.addEventListener("click", function (e) { if (e.target.closest("[data-f-reset]")) reset(); });
     box.addEventListener("click", function (e) {
       var b = e.target.closest("button[data-f-stage], button[data-f-label]"); if (!b) return;
       var attr = b.hasAttribute("data-f-stage") ? "data-f-stage" : "data-f-label", was = b.getAttribute("aria-pressed") === "true";
@@ -832,9 +857,29 @@ html:not(.js) .theme-toggle { display: none; }
     });
   }
 
+  /* lifecycle stages: disclosures, open by default; on phones all but a linked stage start folded */
+  function stages() {
+    var list = [].slice.call(d.querySelectorAll("details.stage-sec"));
+    if (!list.length) return;
+    function target() { var id = location.hash ? decodeURIComponent(location.hash.slice(1)) : ""; var t = id && d.getElementById(id); return t && t.matches("details.stage-sec") ? t : null; }
+    var t = target();
+    if (window.matchMedia && window.matchMedia("(max-width: 719.98px)").matches) {
+      list.forEach(function (x) { if (x !== t) x.open = false; });
+      if (t) t.scrollIntoView();
+    }
+    window.addEventListener("hashchange", function () { var x = target(); if (x) { x.open = true; x.scrollIntoView(); } });
+    d.querySelectorAll("[data-f-expand]").forEach(function (b) {
+      function label() { var all = list.every(function (x) { return x.open; }); b.textContent = all ? "Fold all stages" : "Open all stages"; }
+      b.addEventListener("click", function () { var all = list.every(function (x) { return x.open; }); list.forEach(function (x) { x.open = !all; }); label(); });
+      list.forEach(function (x) { x.addEventListener("toggle", label); });
+      label();
+    });
+  }
+
   function init() {
     paint();
     if (saved()) quarto(saved());
+    stages();
     d.querySelectorAll("[data-filter]").forEach(filter);
     copyButtons();
   }

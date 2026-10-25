@@ -64,26 +64,27 @@
     <p class="kicker">Monitoring and interim review</p>
     <h1 id="title">TRIALMON: safety review on synthetic data</h1>
     <p class="lede">A worked Safety Review Committee example for a first-in-human dose-escalation study: the screening rules, a console that applies them, and the packet a committee would read before deciding on the next dose.</p>
-    <p>
-      <span class="lab led">Led: DSMB reports (Emmes)</span>
-      <span class="lab sup">Supported: interim data review (Syneos Health)</span>
-      <span class="lab tools">Tools built: this module (runs; tests pass)</span>
-      <span class="lab gap">Gap: DMC charters, group-sequential interim design, BOIN or CRM design</span>
-    </p>
+    <dl class="labs-dl hero-labs">
+      <div class="led"><dt>Led</dt><dd>DSMB reports (Emmes)</dd></div>
+      <div class="sup"><dt>Supported</dt><dd>interim data review (Syneos Health)</dd></div>
+      <div class="tools"><dt>Tools built</dt><dd>this module (runs; tests pass)</dd></div>
+      <div class="gap"><dt>Gap</dt><dd>DMC charters, group-sequential interim design, BOIN or CRM design</dd></div>
+    </dl>
     <p class="note"><strong>Synthetic data only.</strong> Study CP-101 does not exist. TRIALMON flags positions for a medical monitor and a committee; it does not adjudicate DLTs or Hy's Law cases and makes no dose-escalation decision. It is not a validated system and produces no reported numbers.</p>
   </section>
 
   <section id="browser" aria-labelledby="browser-h">
-    <h2 id="browser-h">Run the console in your browser</h2>
+    <h2 id="browser-h">The console as a Shinylive build</h2>
     <div class="run">
       <figure>
         <a href="../apps/trialmon/"><img src="screenshots/trialmon-console.png" width="1280" height="800" loading="lazy" alt="The TRIALMON console as it opens: overall RED, study tier AMBER, 5 RED and 7 AMBER flags for 18 dosed participants, the ranked worklist, and the packet for participant CP101-014 in the sidebar."></a>
         <figcaption>The console as it opens, on synthetic data. If the app does not load, this screenshot and the <a href="trialmon_quarto/trialmon-dashboard.html">read-only snapshot</a> show the same screens.</figcaption>
       </figure>
       <div>
-        <p>The same R Shiny code runs in the browser with Shinylive, which runs R compiled to WebAssembly (webR). There is no server: the screens are computed in your browser from the synthetic data, and everything the app needs loads from this site.</p>
+        <p>The same R Shiny code is exported with Shinylive, which runs R compiled to WebAssembly (webR) in the browser. There is no server: the screens are computed in your browser from the synthetic data, and everything the app needs loads from this site.</p>
+        <p class="small"><span class="st st-note">Not yet checked in a real browser</span> The export was checked in headless Chrome from a local server (see What was executed below); no dated check in a visitor's browser is recorded, so the <a href="../apps.html#r-browser">Apps page</a> lists no Run in browser link for it yet.</p>
         <div class="note"><p><strong>Before you open it:</strong> R starts inside your browser, so the console takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary.</p></div>
-        <ul class="go"><li><a href="../apps/trialmon/">Open the console in your browser</a></li></ul>
+        <ul class="go"><li><a href="../apps/trialmon/" data-type="run">Shinylive build (not yet checked in a real browser)</a></li><li><a href="trialmon_quarto/trialmon-dashboard.html" data-type="snapshot">Read-only snapshot</a></li></ul>
       </div>
     </div>
   </section>
@@ -94,7 +95,7 @@
 
       <article class="card">
         <h3>SRC safety packet</h3>
-        <p class="meta"><span class="lab tools">Start here</span><span class="lab tools">Quarto, rendered</span></p>
+        <p class="meta"><span class="st st-note">Start here</span><span class="st st-note">Quarto, rendered</span></p>
         <p>Cohort summary, DLT table, eDISH plot with the potential Hy's Law timing, QTcF categories, CTCAE lab shifts, AEs by SOC and preferred term, study-level indicators, and a dose-escalation section that lays out the data and the protocol's options for the committee, without recommending one.</p>
         <p class="small">MedDRA and CTCAE versions are document parameters (defaults v29.1 and v6.0).</p>
         <ul class="go"><li><a href="trialmon_quarto/trialmon-src-packet.html">Open the packet</a></li></ul>
@@ -102,22 +103,22 @@
 
       <article class="card">
         <h3>How the screens work</h3>
-        <p class="meta"><span class="lab tools">Guide</span></p>
+        <p class="meta"><span class="st st-note">Guide</span></p>
         <p>Each rule with its source and a case from the data: why an upper-right eDISH point is not yet a Hy's Law case, why ALT 4.2x ULN with normal bilirubin still needs confirmation, how the CTCAE version changes a grade, and why the roll-up takes the worst level.</p>
         <ul class="go"><li><a href="trialmon_quarto/trialmon-guide.html">Read the guide</a></li></ul>
       </article>
 
       <article class="card">
         <h3>Snapshot</h3>
-        <p class="meta"><span class="lab tools">Read-only</span></p>
+        <p class="meta"><span class="st st-note">Read-only</span></p>
         <p>The console's worklist, eDISH plot, dose-escalation tally, study tier and AE summary on one page, at the Cohort 4 data cut.</p>
         <ul class="go"><li><a href="trialmon_quarto/trialmon-dashboard.html">Open the snapshot</a></li></ul>
       </article>
 
       <article class="card">
         <h3>Shiny console and tests</h3>
-        <p class="meta"><span class="lab tools">R Shiny</span><span class="lab tools">Runs in the browser</span></p>
-        <p>The console runs in local R, and in the browser under Shinylive (above). It needs only shiny, bslib, DT and ggplot2, keeps its data in the app folder and builds downloads in the browser. The run-and-build page lists every line, including the testthat and <code>shiny::testServer()</code> tests.</p>
+        <p class="meta"><span class="st st-runs">R Shiny: runs in local R</span><span class="st st-note">Shinylive build: not yet checked in a real browser</span></p>
+        <p>The console runs in local R; its Shinylive build is above. It needs only shiny, bslib, DT and ggplot2, keeps its data in the app folder and builds downloads in the browser. The run-and-build page lists every line, including the testthat and <code>shiny::testServer()</code> tests.</p>
         <ul class="go"><li><a href="trialmon_quarto/trialmon-build.html">Run and build</a></li></ul>
       </article>
 
