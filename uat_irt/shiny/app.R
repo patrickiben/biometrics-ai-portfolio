@@ -1,5 +1,5 @@
 # ===========================================================================
-# app.R — IRT / RTSM UAT Execution & Sign-off Tracker (Shiny)
+# app.R: IRT / RTSM UAT Execution & Sign-off Tracker (Shiny)
 #
 # A runnable, editable version of the UAT tracker. Select a test and mark it
 # Pass/Fail/Blocked, close a defect, and watch the KPIs and the go-live sign-off
@@ -41,7 +41,7 @@ ui <- page_sidebar(
   ),
   layout_columns(
     col_widths = c(8, 4),
-    card(card_header("Test scripts — click a row to select"),
+    card(card_header("Test scripts: click a row to select"),
          DTOutput("tests")),
     card(card_header("Go-live sign-off gate"),
          uiOutput("gate"))
@@ -49,7 +49,7 @@ ui <- page_sidebar(
   layout_columns(
     col_widths = c(7, 5),
     card(card_header("Execution by test area"), plotOutput("plot", height = "300px")),
-    card(card_header("Defect log — edit Status (Open / Closed)"), DTOutput("defects"))
+    card(card_header("Defect log: edit Status (Open / Closed)"), DTOutput("defects"))
   )
 )
 
@@ -94,7 +94,7 @@ server <- function(input, output, session) {
       return(div(class = "small text-muted", "No test selected."))
     t <- rv$tests[sel, ]
     tagList(
-      div(class = "fw-bold", sprintf("%s — %s", t$TestID, t$TestTitle)),
+      div(class = "fw-bold", sprintf("%s: %s", t$TestID, t$TestTitle)),
       div(class = "small text-muted mb-1", sprintf("%s · %s · %s", t$Area, t$RequirementID, t$Priority)),
       div(class = "small mb-1", tags$b("Steps: "), t$Steps),
       div(class = "small mb-2", tags$b("Expected: "), t$ExpectedResult),
