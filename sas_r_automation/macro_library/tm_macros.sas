@@ -5,13 +5,13 @@
   Loop : scheduler -> ingest -> FRESHNESS GATE -> GUARD -> checks -> roll-up -> digest,
          + a tier-2 urgent ALERT on a de-duplicated RED finding, always closed by a
          HEARTBEAT. Built for "covering while on leave"; the standing monitoring backbone.
-  Prefix  : %tm_<name>.  Tested concept: Base SAS 9.4. No third-party packages.
+  Prefix  : %tm_<name>.  Written for Base SAS 9.4 (M8 or later); not executed, no SAS license. No third-party packages.
   Honest  : these macros DETECT, PACKAGE and EMAIL pre-specified deterministic flags.
             They DO NOT triage, interpret, or adjudicate. A flag is a prompt for a human;
             the medical monitor and the covering biostatistician decide.
   Validate: validate the threshold logic + scheduling wrapper as study programs; keep
             anything REPORTED independently double-programmed.
-  v2 - corrected after an independent SAS/clinical review (see README, "Change log").
+  v2 - corrected after a review of the SAS and clinical logic (see README, "Change log").
 ====================================================================================*/
 
 %global TM_STUDY TM_RUNID TM_RUNDT TM_OUT TM_LOG TM_STATE TM_RC TM_STATUS TM_FRESH_OK TM_BACKUP;

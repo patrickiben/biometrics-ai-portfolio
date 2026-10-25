@@ -23,7 +23,7 @@
 %let CFG_BACKUP = biostat.backup@example.com;       /* also the watchdog / fail-loud target */
 %let CFG_ALIAS  = biostat-cover@example.com;
 %let CFG_PM     = pm.cp101@example.com;
-%let CFG_MGR    = manager@example.com;
+%let CFG_MGR    = studylead@example.com;
 %let CFG_MM_NAME= %str(Dr. R. Okafor);
 %let CFG_MM_PHONE= +1-555-0100;
 
