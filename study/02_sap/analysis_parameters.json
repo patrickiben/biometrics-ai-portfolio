@@ -1,0 +1,45 @@
+{
+  "study": "SIMBE01",
+  "synthetic": true,
+  "ci_level": 0.9,
+  "be_lower": 0.8,
+  "be_upper": 1.25,
+  "be_rule": "both primary parameters: 90% CI of the T/R geometric mean ratio within 80.00% to 125.00%, judged on unrounded limits",
+  "primary_params": ["CMAX", "AUCLST"],
+  "secondary_params": ["AUCIFO", "TMAX", "LAMZHL", "LAMZ", "AUCPEO"],
+  "model": "ln(AVAL) ~ sequence + participant(sequence) + period + formulation (fixed effects, GLM)",
+  "nca": {
+    "engine": "PKNCA",
+    "auc_method": "lin up/log down",
+    "conc_blq": {
+      "first": "keep",
+      "middle": "keep",
+      "last": "keep"
+    },
+    "blq_value": 0,
+    "time_variable": "ARRLT (actual time from the period's dose); pre-dose samples set to time 0",
+    "min_hl_points": 3,
+    "allow_tmax_in_half_life": false,
+    "lambda_z_selection": "largest number of points whose adjusted R-squared is within 1e-4 of the best (PKNCA default)",
+    "min_hl_r_squared": 0.9,
+    "max_aucinf_pext_pct": 20
+  },
+  "exclusion_rules": {
+    "emesis_window_h": 2,
+    "emesis_rule": "period excluded if emesis occurs within 2 h of dosing (twice the expected median tmax of 1 h)",
+    "predose_pct_cmax": 5,
+    "predose_rule": "period excluded if the pre-dose concentration is above 5% of that period's Cmax (ICH M13A)",
+    "low_exposure_pct": 5,
+    "low_exposure_rule": "period may be excluded if its AUC is below 5% of the product's geometric mean AUC calculated without the participant (ICH M13A)",
+    "min_evaluable": 12,
+    "auc_coverage_pct": 80,
+    "auc_coverage_share_pct": 20
+  },
+  "summary_stats": ["n", "arithmetic mean", "SD", "CV%", "geometric mean", "geometric CV%", "median", "minimum", "maximum"],
+  "conventions": {
+    "geometric_mean": "exp(mean(log x))",
+    "geometric_cv": "100*sqrt(exp(s^2_log) - 1)",
+    "within_cv": "100*sqrt(exp(MSE) - 1)",
+    "tmax": "median (minimum, maximum)"
+  }
+}

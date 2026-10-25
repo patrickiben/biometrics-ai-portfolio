@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Protocol Statistics Excerpt | Patrick Iben</title>
+<meta name="description" content="Protocol statistical-section excerpt for a synthetic 2x2 bioequivalence study, with ICH M11 headings, a PowerTOST sample size and a seeded randomization schedule.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../site.css">
+<link rel="stylesheet" href="../study.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../../index.html">Home</a>
+      <a href="../../index.html#lifecycle">Lifecycle</a>
+      <a href="../index.html">Worked example</a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap">
+  <section class="page-head">
+    <p class="kicker">Stage 1: design</p>
+    <h1>Protocol statistical sections: sample size and randomization</h1>
+    <p class="meta"><span class="lab led">Led (job): protocol statistical sections and randomization schedules</span><span class="lab tools">Runs here: PowerTOST, blockrand</span></p>
+    <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
+  </section>
+<div class="note"><p>This is an excerpt of the statistical content of a protocol for a synthetic study. The headings and numbers follow the ICH M11 template (CeSHarP; Step 4 19 Nov 2025; FDA final guidance May 2026). Only the sections that carry statistical content are shown, and the protocol for a real study would be reviewed and signed by its study team.</p></div><h2>3 Trial Objectives and Associated Estimands</h2>
+<h3>3.1 Primary Objective and Associated Estimand</h3>
+<p><strong>Primary objective.</strong> To show that a single oral 100 mg dose of the SIMDRUG test tablet (T) is bioequivalent to the reference tablet (R) in healthy adults under fasting conditions, in rate (Cmax) and extent (AUC(0-t)) of exposure.</p>
+<p><strong>Estimand.</strong> The five attributes follow ICH E9(R1):</p>
+<ul>
+<li><em>Treatment:</em> one 100 mg tablet of T, and one 100 mg tablet of R, each taken fasting, in a 2x2 crossover with a 14-day washout.</li>
+<li><em>Population:</em> healthy adults who meet the eligibility criteria.</li>
+<li><em>Variable:</em> Cmax and AUC(0-t) of SIMDRUG in plasma, from actual sampling times, for each participant and period.</li>
+<li><em>Intercurrent events:</em> emesis within 2 hours of dosing, withdrawal before the second period, and a pre-dose concentration above 5% of that period's Cmax are handled with a hypothetical strategy (exposure had the event not occurred). The handling is set out in section 10.4.1.2 and in the statistical analysis plan.</li>
+<li><em>Population-level summary:</em> the ratio of geometric means T/R with its two-sided 90% confidence interval. Bioequivalence is concluded for a parameter when the interval lies within 80.00% to 125.00%.</li>
+</ul>
+<h3>3.2 Secondary Objectives and Associated Estimands</h3>
+<ul>
+<li>To compare AUC(0-inf), tmax and the terminal half-life between T and R (supportive, same estimand attributes).</li>
+<li>To describe the safety of single doses of T and R (treatment-emergent adverse events by treatment at onset).</li>
+</ul>
+<h2>4 Trial Design</h2>
+<h3>4.1 Description of Trial Design</h3>
+<p>Randomized, open-label, single-center, single-dose, two-period, two-sequence crossover. Participants are randomized 1:1 to the sequence TR or RT and receive one dose on Day 1 and one on Day 15. Plasma is sampled before dosing and at 0.25, 0.5, 1, 1.5, 2, 3, 4, 6, 8, 12, 16, 24, 36 and 48 hours after each dose.</p>
+<h3>4.2.1 Rationale for Estimand(s)</h3>
+<p>The question is whether the two formulations deliver the same exposure when each is taken as directed. Events that interfere with absorption or with the comparison (emesis soon after dosing, carry-over, a missing period) do not reflect the formulations, so a hypothetical strategy targets exposure in their absence. A treatment-policy strategy is not used: it would mix formulation differences with events unrelated to them.</p>
+<h2>6 Trial Intervention and Concomitant Therapy</h2>
+<h3>6.7.2 Randomization</h3>
+<p>A computer-generated permuted-block schedule assigns sequences TR and RT 1:1. The schedule is generated with a documented seed by a statistician outside the study team and loaded into the randomization system before the first participant is dosed. Following the M11 template, the block size is not stated in the protocol. (This worked example publishes its synthetic schedule and block size on the design page so that the generation and balance check can be inspected.)</p>
+<h2>10 Statistical Considerations</h2>
+<h3>10.1 General Considerations</h3>
+<p>Analyses use R (R &gt;= 4.4.0; this example ran on R 4.6.0) with package versions pinned in the study lockfile. Pharmacokinetic parameters are log-transformed (natural log) before inferential analysis. Bioequivalence is tested with two one-sided tests at the 5% level, equivalent to a two-sided 90% confidence interval for the T/R ratio of geometric means.</p>
+<h3>10.2 Analysis Sets</h3>
+<ul>
+<li><em>Enrolled set:</em> every participant who is randomized.</li>
+<li><em>Safety set:</em> every participant who receives at least one dose.</li>
+<li><em>PK concentration set:</em> participants in the safety set with at least one quantifiable post-dose concentration.</li>
+<li><em>PK parameter set:</em> participants with at least one profile that yields the primary parameters.</li>
+<li><em>Bioequivalence set:</em> participants with evaluable Cmax and AUC(0-t) after both T and R, after the exclusions in section 10.4.1.2 (ICH M13A: the primary analysis includes every participant with evaluable data for both products).</li>
+</ul>
+<h3>10.3 Analyses of Demographics and Other Baseline Variables</h3>
+<p>Demographics and baseline characteristics are summarized by sequence and overall for the safety set. No formal tests are performed.</p>
+<h3>10.4 Analyses Associated with the Primary Objective</h3>
+<h4>10.4.1.1 Statistical Analysis Method</h4>
+<p>For each of ln(Cmax) and ln(AUC(0-t)), a general linear model with fixed effects for sequence, period, formulation and participant within sequence is fitted to the bioequivalence set (ICH M13A, Step 4 23 Jul 2024; FDA final 30 Oct 2024; EU effective 25 Jan 2025). The sequence effect is tested against the participant-within-sequence mean square; the other effects are tested against the residual mean square, and all four tests are reported. The T minus R difference in least-squares means and its 90% confidence interval are back-transformed to a ratio. Bioequivalence is concluded when both 90% intervals lie within 80.00% to 125.00%, judged on the unrounded limits. No test for carry-over is performed.</p>
+<h4>10.4.1.2 Handling of Data in Relation to Primary Estimand</h4>
+<p>Exclusions are decided and documented before bioanalysis, from the pre-specified rules: a period with emesis within 2 hours of dosing (twice the expected median tmax of 1 hour) is excluded; a period with a pre-dose concentration above 5% of that period's Cmax is excluded (ICH M13A); a period whose AUC is below 5% of the geometric mean AUC of that product, calculated without the participant, may be excluded (ICH M13A). A participant without evaluable data for both products leaves the bioequivalence set but stays in the safety and PK sets.</p>
+<h4>10.4.1.3 Handling of Missing Data in Relation to Primary Estimand</h4>
+<p>No values are imputed. Missed samples are omitted from the profile. Concentrations below the lower limit of quantification (0.50 ng/mL) are set to zero in PK calculations and omitted from the estimate of the terminal rate constant (ICH M13A).</p>
+<h4>10.4.1.5 Supplementary Analysis</h4>
+<p>A supplementary analysis repeats the primary model with the periods excluded under section 10.4.1.2 put back, for participants who have both periods. No separate sensitivity analysis is planned.</p>
+<h3>10.7 Safety Analyses</h3>
+<p>Treatment-emergent adverse events are summarized by the treatment taken at onset, counting each participant once per row, with the number of participants exposed to that treatment as the denominator.</p>
+<h3>10.9 Interim Analyses</h3>
+<p>None.</p>
+<h3>10.10 Multiplicity Adjustments</h3>
+<p>Bioequivalence requires both primary parameters to pass, so each is tested at the full 5% level (an intersection-union test) without adjustment.</p>
+<h3>10.11 Sample Size Determination</h3>
+<p>No earlier study of this synthetic product exists. The planning within-participant CV of 25% applies to both primary parameters. The simulator behind this example (<code>sim_lifecycle/priors.R</code>) puts occasion-to-occasion variability at 15% on apparent clearance plus an 8% proportional assay error; 25% adds a margin for a formulation that behaves less well than the simulator. The assumed true ratio is 0.95, a conventional allowance for a test product close to the reference (the simulator's true ratio is 1.00).</p>
+<p>With two one-sided tests at the 5% level, acceptance limits of 80.00% to 125.00%, CV 25% and a ratio of 0.95, PowerTOST 1.5.7 (exact method) gives <strong>28 evaluable participants for 80% power</strong> (achieved 80.7%) and <strong>38 for 90% power</strong> (achieved 90.9%). The study plans for 90% power and allows for 5% of participants not being evaluable: 38 / (1 - 0.05), rounded up to an even number, gives <strong>40 participants enrolled</strong> (20 per sequence). ICH M13A requires at least 12 evaluable participants; the plan exceeds that.</p>
+<p>From <code>pa.ABE()</code>, power stays at or above 80% when one assumption moves while the others stay at plan: a CV up to 29.8%, a ratio down to 0.9232, or as few as 28 evaluable participants. The tables below show the rest of the sensitivity grid.</p>
+<h3>Evaluable participants needed (80% / 90% power)</h3><div class="tblwrap"><table class="data"><caption>PowerTOST sampleN.TOST, exact method, 2x2 design, alpha 0.05, limits 80.00% to 125.00%. Cells: evaluable participants for 80% / 90% power.</caption><thead><tr><th scope="col">Within-participant CV</th><th scope="col">GMR 0.90</th><th scope="col">GMR 0.95</th><th scope="col">GMR 1.00</th><th scope="col">GMR 1.05</th></tr></thead><tbody><tr><td>15%</td><td>22 / 30</td><td>12 / 16</td><td>10 / 12</td><td>12 / 16</td></tr>
+<tr><td>20%</td><td>38 / 50</td><td>20 / 26</td><td>16 / 20</td><td>18 / 24</td></tr>
+<tr><td>25%</td><td>56 / 78</td><td>28 / 38</td><td>24 / 28</td><td>28 / 36</td></tr>
+<tr><td>30%</td><td>80 / 108</td><td>40 / 52</td><td>32 / 40</td><td>38 / 52</td></tr>
+<tr><td>35%</td><td>106 / 146</td><td>52 / 70</td><td>42 / 52</td><td>50 / 68</td></tr></tbody></table></div><h3>Power with the planned 38 evaluable participants</h3><div class="tblwrap"><table class="data"><caption>PowerTOST power.TOST with n = 38 evaluable participants.</caption><thead><tr><th scope="col">Within-participant CV</th><th scope="col">GMR 0.90</th><th scope="col">GMR 0.95</th><th scope="col">GMR 1.00</th><th scope="col">GMR 1.05</th></tr></thead><tbody><tr><td>15%</td><td>95.8%</td><td>100.0%</td><td>100.0%</td><td>100.0%</td></tr>
+<tr><td>20%</td><td>81.5%</td><td>98.0%</td><td>99.9%</td><td>98.3%</td></tr>
+<tr><td>25%</td><td>65.6%</td><td>90.9%</td><td>97.4%</td><td>91.6%</td></tr>
+<tr><td>30%</td><td>52.8%</td><td>79.5%</td><td>89.2%</td><td>80.4%</td></tr>
+<tr><td>35%</td><td>42.9%</td><td>66.2%</td><td>75.5%</td><td>67.0%</td></tr></tbody></table></div><h3>Dropout inflation</h3><div class="tblwrap"><table class="data"><caption>Enrolled = evaluable / (1 - rate), rounded up to an even number for 1:1 sequences. The plan uses 5%.</caption><thead><tr><th scope="col">Not evaluable</th><th scope="col">Evaluable needed</th><th scope="col">Enrolled (even)</th></tr></thead><tbody><tr><td>0%</td><td>38</td><td>38</td></tr>
+<tr><td>5%</td><td>38</td><td>40</td></tr>
+<tr><td>10%</td><td>38</td><td>44</td></tr>
+<tr><td>15%</td><td>38</td><td>46</td></tr></tbody></table></div><h2>Randomization schedule (synthetic)</h2><p>Generated with <code>blockrand</code> 1.5, seed 2026, permuted blocks of 4 (block size shown here only because the study is synthetic). Balance check:</p>
+<div class="tblwrap"><table class="data"><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Expected</th><th scope="col">Status</th></tr></thead><tbody><tr><td>Schedule length equals planned enrollment</td><td>40</td><td>40</td><td>pass</td></tr>
+<tr><td>Blocks with 2 TR and 2 RT</td><td>10 of 10</td><td>10 of 10</td><td>pass</td></tr>
+<tr><td>Overall TR : RT</td><td>20 : 20</td><td>20 : 20</td><td>pass</td></tr>
+<tr><td>Largest running imbalance (TR minus RT)</td><td>2</td><td>2 or less</td><td>pass</td></tr></tbody></table></div><p>Files: <a href="randomization_schedule.csv">randomization_schedule.csv</a>, <a href="balance_check.csv">balance_check.csv</a>, <a href="sample_size.csv">sample_size.csv</a>, <a href="sensitivity_n.csv">sensitivity_n.csv</a>, <a href="sensitivity_power.csv">sensitivity_power.csv</a>, <a href="dropout_inflation.csv">dropout_inflation.csv</a>, <a href="design_parameters.json">design_parameters.json</a>. Program: <code>study/01_design/design.R</code>.</p>
+
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Generated by <code>study/run_all.R</code> from code in this repository. Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable. <a href="../index.html">Back to the worked example</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

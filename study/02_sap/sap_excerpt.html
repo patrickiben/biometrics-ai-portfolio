@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAP Excerpt | Patrick Iben</title>
+<meta name="description" content="Statistical analysis plan excerpt for a synthetic 2x2 bioequivalence study: E9(R1) estimand, analysis sets, the ICH M13A model, BLQ and missing-data rules.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../site.css">
+<link rel="stylesheet" href="../study.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../../index.html">Home</a>
+      <a href="../../index.html#lifecycle">Lifecycle</a>
+      <a href="../index.html">Worked example</a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap">
+  <section class="page-head">
+    <p class="kicker">Stage 2: statistical analysis plan</p>
+    <h1>SAP statistical methods: estimand, analysis sets and the BE model</h1>
+    <p class="meta"><span class="lab led">Led (job): analysis plans and mock shells</span><span class="lab tools">Settings feed the code: analysis_parameters.json</span></p>
+    <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
+  </section>
+<div class="note"><p>Excerpt of the statistical methods of a statistical analysis plan (SAP) for the synthetic study SIMBE01. The settings in this plan are also written to <a href="analysis_parameters.json">analysis_parameters.json</a>, which the analysis programs read, so the plan and the code cannot drift apart silently.</p></div><h2>1 Estimand (ICH E9(R1))</h2>
+<table>
+<thead>
+<tr>
+<th>Attribute</th>
+<th>Primary estimand</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Treatment</td>
+<td>One 100 mg tablet of the test product (T) and of the reference product (R; the comparator in ICH M13A terms), fasting, in a 2x2 crossover with a 14-day washout</td>
+</tr>
+<tr>
+<td>Population</td>
+<td>Healthy adults meeting the protocol's eligibility criteria</td>
+</tr>
+<tr>
+<td>Variable</td>
+<td>Cmax and AUC(0-t) of SIMDRUG in plasma from actual sampling times</td>
+</tr>
+<tr>
+<td>Intercurrent events</td>
+<td>Handled with a hypothetical strategy; see the table below</td>
+</tr>
+<tr>
+<td>Population-level summary</td>
+<td>Ratio of geometric means T/R with a two-sided 90% confidence interval; bioequivalence if both intervals lie within 80.00% to 125.00%</td>
+</tr>
+</tbody>
+</table>
+<p>ICH E9(R1) was adopted at Step 4 on 20 Nov 2019 (FDA final guidance May 2021). It lists five strategies for intercurrent events; the table after the next one says which one is used and why.</p>
+<div class="tblwrap"><table class="data"><caption>Intercurrent events and their handling. Every exclusion is decided and documented before bioanalysis (ICH M13A).</caption><thead><tr><th scope="col">Intercurrent event</th><th scope="col">Strategy</th><th scope="col">How it is implemented</th></tr></thead><tbody><tr><td>Emesis within 2 h of dosing</td><td>Hypothetical</td><td>The period's PK parameters are excluded (ADPP ANL01FL not Y; PKEXRSN gives the reason)</td></tr>
+<tr><td>Withdrawal before the second period</td><td>Hypothetical</td><td>The participant contributes one period and leaves the bioequivalence set (ADSL BEFL = N)</td></tr>
+<tr><td>Pre-dose concentration above 5% of the period's Cmax</td><td>Hypothetical</td><td>The period is excluded from the primary analysis (ICH M13A carry-over rule)</td></tr>
+<tr><td>Period AUC below 5% of the product's geometric mean AUC</td><td>Hypothetical</td><td>The period may be excluded; at most one participant per study is expected (ICH M13A)</td></tr>
+<tr><td>Prohibited medication that could change exposure</td><td>Hypothetical</td><td>The period is excluded if the medication is judged, before bioanalysis, to affect exposure (not exercised: no concomitant medications were simulated)</td></tr></tbody></table></div><div class="tblwrap"><table class="data"><caption>The five ICH E9(R1) strategies and why only one applies here.</caption><thead><tr><th scope="col">E9(R1) strategy</th><th scope="col">Used here</th><th scope="col">Reason</th></tr></thead><tbody><tr><td>Treatment policy</td><td>No</td><td>Would fold events unrelated to the formulations (for example emesis) into the formulation comparison</td></tr>
+<tr><td>Hypothetical</td><td>Yes</td><td>Targets exposure had the event not occurred; matches the M13A rules for excluding periods decided before bioanalysis</td></tr>
+<tr><td>Composite variable</td><td>No</td><td>The variable is a continuous exposure measure; no event outcome is combined with it</td></tr>
+<tr><td>While on treatment</td><td>No</td><td>Single doses; there is no treatment duration to truncate</td></tr>
+<tr><td>Principal stratum</td><td>No</td><td>The target population is all eligible participants, not a stratum defined by a post-randomization event</td></tr></tbody></table></div><h2>2 Analysis sets</h2>
+<div class="tblwrap"><table class="data"><thead><tr><th scope="col">Analysis set</th><th scope="col">ADaM flag</th><th scope="col">Definition</th><th scope="col">Used for</th></tr></thead><tbody><tr><td>Enrolled</td><td>ADSL.RANDFL</td><td>Randomized</td><td>Disposition</td></tr>
+<tr><td>Safety</td><td>ADSL.SAFFL</td><td>Received at least one dose</td><td>Demographics, adverse events</td></tr>
+<tr><td>PK concentration</td><td>ADSL.PKCFL</td><td>Safety set and at least one quantifiable post-dose concentration</td><td>Concentration summaries and figures</td></tr>
+<tr><td>PK parameter</td><td>ADSL.PKPFL</td><td>At least one profile with evaluable Cmax and AUC(0-t) and no exclusion</td><td>PK parameter summaries</td></tr>
+<tr><td>Bioequivalence</td><td>ADSL.BEFL</td><td>Evaluable Cmax and AUC(0-t) after both T and R, after exclusions</td><td>Bioequivalence analysis</td></tr></tbody></table></div><h2>3 Pharmacokinetic parameters</h2>
+<p>Parameters come from non-compartmental analysis (NCA) with PKNCA 0.12.1 on <strong>actual</strong> sampling times relative to each period's dose (ADPC.ARRLT). Pre-dose samples are assigned time 0. The NCA settings follow ICH M13A (Step 4 23 Jul 2024; FDA final 30 Oct 2024; EU effective 25 Jan 2025):</p>
+<ul>
+<li>AUC by the linear-up/log-down trapezoidal method (M13A gives the linear trapezoidal method as an example and asks that the method be reported).</li>
+<li>Concentrations below the LLOQ (0.50 ng/mL) are treated as zero wherever they fall in the profile: <code>PKNCA.options(conc.blq = list(first = &quot;keep&quot;, middle = &quot;keep&quot;, last = &quot;keep&quot;))</code>. PKNCA treats a kept BLQ value as zero. This changes the PKNCA default, which drops BLQ values in the middle of a profile.</li>
+<li>BLQ values are omitted from the terminal rate constant: PKNCA excludes zeros from the log-linear fit.</li>
+<li>The terminal phase uses at least 3 points after tmax, chosen by adjusted R-squared (PKNCA defaults <code>min.hl.points = 3</code>, <code>allow.tmax.in.half.life = FALSE</code>).</li>
+<li>Primary: Cmax and AUC(0-t) (AUC to the last quantifiable concentration). Additional: AUC(0-inf), AUC(0-t)/AUC(0-inf), tmax, the terminal rate constant (lambda z) and t1/2.</li>
+<li>AUC(0-t) should cover at least 80% of AUC(0-inf). If fewer than 80% coverage occurs in more than 20% of profiles, the report discusses the study's validity (ICH M13A).</li>
+<li>Summary statistics: n, arithmetic mean, SD, CV%, geometric mean, geometric CV%, median, minimum and maximum; tmax as median (minimum, maximum). Geometric mean = exp(mean(log x)); geometric CV% = 100*sqrt(exp(s^2) - 1) on the log scale.</li>
+<li>Individual profiles are plotted against actual times; mean profiles against nominal times (ICH M13A).</li>
+</ul>
+<h2>4 Bioequivalence model</h2>
+<p>For each primary parameter, on the bioequivalence set:</p>
+<pre><code>lm(log(AVAL) ~ SEQUENCE + USUBJID + PERIOD + TRTA)      # USUBJID nested in SEQUENCE
+</code></pre>
+<ul>
+<li>Fixed effects for sequence, participant within sequence, period and formulation (a general linear model, as ICH M13A allows).</li>
+<li>The ANOVA table reports all four effects. Sequence is tested against the participant-within-sequence mean square; participant within sequence, period and formulation are tested against the residual mean square. Sequence and participant-within-sequence sums of squares are sequential; period and formulation sums of squares are adjusted for every other term (so the table matches a Type III table when the sequences are unequal in size).</li>
+<li>The T minus R difference of least-squares means and its 90% confidence interval use the residual mean square with its degrees of freedom; the limits are exponentiated to a ratio. The decision uses the unrounded limits; the tables show two decimals.</li>
+<li>Within-participant CV% = 100*sqrt(exp(MSE) - 1).</li>
+<li>No carry-over test (ICH M13A). Carry-over is addressed by the pre-dose concentration rule.</li>
+<li>Supplementary analysis (ICH E9(R1) term): the same model with the excluded periods put back, for participants who have both periods. It changes how the intercurrent events are handled, so it is supplementary, not a sensitivity analysis of the primary estimand.</li>
+</ul>
+<h2>5 Missing data and values below the LLOQ</h2>
+<ul>
+<li>No imputation. A missed sample is omitted and the profile is analyzed with the remaining samples; the listing flags it.</li>
+<li>BLQ values are zero in PK calculations and omitted from lambda z (ICH M13A). Concentration summaries by nominal time also use zero for BLQ and report how many values were BLQ.</li>
+<li>A participant without evaluable primary parameters for both products leaves the bioequivalence set (ICH M13A: the primary analysis includes all participants with evaluable data for both products). At least 12 evaluable participants are required for the study to be acceptable.</li>
+</ul>
+<h2>6 Safety</h2>
+<p>Treatment-emergent adverse events (onset on or after the first dose) are assigned to the treatment taken most recently before onset. Each participant counts once per row; the denominator is the number of participants exposed to that treatment. Coding: MedDRA (version set at study start; this example uses the label MedDRA v29.1 for synthetic coding).</p>
+<h2>7 Outputs</h2>
+<p>Mock shells for every planned output are on the <a href="mock_shells.html">mock shells page</a>: Table 14.1.2 demographics, 14.3.1.1 adverse-event overview, 14.4.1.1 concentration summary, 14.4.4.1 PK parameter summary, 14.4.3.1 bioequivalence results and 14.4.3.2 the ANOVA effects table. The executed versions are in the <a href="../04_analysis/index.html">analysis stage</a>.</p>
+
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Generated by <code>study/run_all.R</code> from code in this repository. Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable. <a href="../index.html">Back to the worked example</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

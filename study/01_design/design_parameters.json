@@ -1,0 +1,39 @@
+{
+  "study": "SIMBE01",
+  "synthetic": true,
+  "design": "2x2 crossover, sequences TR and RT",
+  "dose_mg": 100,
+  "washout_days": 14,
+  "periods": 2,
+  "planning": {
+    "cv_pct": 25,
+    "gmr_pct": 95,
+    "lower_pct": 80,
+    "upper_pct": 125,
+    "alpha_one_sided": 0.05,
+    "ci_level_pct": 90,
+    "n_evaluable_80": 28,
+    "n_evaluable_90": 38,
+    "power_90_achieved": 0.9089,
+    "power_80_achieved": 0.8074,
+    "dropout_pct": 5,
+    "n_enrolled": 40,
+    "pa_abe_min_power": 0.8,
+    "pa_abe_cv_pct": 29.81,
+    "pa_abe_gmr_pct": 92.32,
+    "pa_abe_n": 28
+  },
+  "randomization": {
+    "seed": 2026,
+    "method": "permuted blocks (blockrand 1.5)",
+    "block_size": 4,
+    "n_blocks": 10,
+    "n_TR": 20,
+    "n_RT": 20,
+    "max_running_imbalance": 2
+  },
+  "software": {
+    "PowerTOST": "1.5.7",
+    "blockrand": "1.5"
+  }
+}
