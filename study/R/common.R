@@ -125,6 +125,12 @@ read_sdtm <- function(nm) {
   admiral::convert_blanks_to_na(tibble::as_tibble(x))
 }
 
+## ADPP.NCAEXRSN terms for the SAP parameter rules (used by 03_adam/05_adpp.R and the
+## specification, so the data and the codelist cannot disagree)
+nca_rule_terms <- function(sap) c(
+  r2   = sprintf("ADJUSTED R-SQUARED BELOW %.2f", sap$nca$min_hl_adj_r_squared),
+  pext = sprintf("AUC(0-INF) EXTRAPOLATED ABOVE %g%%", sap$nca$max_aucinf_pext_pct))
+
 ## --- small statistics helpers (conventions from the verified baseline) -----------
 geomean <- function(x) exp(mean(log(x)))
 geocv   <- function(x) 100 * sqrt(exp(stats::var(log(x))) - 1)

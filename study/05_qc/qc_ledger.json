@@ -1,17 +1,17 @@
 {
   "label": "Same-author re-derivation by a second method; not independent double programming",
   "tool": "diffdf 1.1.2",
-  "checks": 37,
-  "pass": 37,
+  "checks": 40,
+  "pass": 40,
   "fail": 0,
-  "values_compared": 4863,
+  "values_compared": 5100,
   "ledger": [
     {
       "id": "Q1",
       "item": "NCA parameters per profile",
       "variable": "CMAX",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
@@ -23,7 +23,7 @@
       "item": "NCA parameters per profile",
       "variable": "TMAX",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
@@ -35,7 +35,7 @@
       "item": "NCA parameters per profile",
       "variable": "TLST",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
@@ -47,7 +47,7 @@
       "item": "NCA parameters per profile",
       "variable": "CLST",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
@@ -59,7 +59,7 @@
       "item": "NCA parameters per profile",
       "variable": "AUCLST",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
@@ -71,7 +71,7 @@
       "item": "NCA parameters per profile",
       "variable": "AUCIFO",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
@@ -83,11 +83,11 @@
       "item": "NCA parameters per profile",
       "variable": "AUCPEO",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 3.197442311e-14,
+      "max_abs_diff": 3.552713679e-14,
       "status": "pass"
     },
     {
@@ -95,7 +95,7 @@
       "item": "NCA parameters per profile",
       "variable": "LAMZHL",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
@@ -107,7 +107,7 @@
       "item": "NCA parameters per profile",
       "variable": "LAMZ",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
@@ -119,7 +119,7 @@
       "item": "NCA parameters per profile",
       "variable": "LAMZNPT",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 0,
       "mismatches": 0,
@@ -131,7 +131,7 @@
       "item": "NCA parameters per profile",
       "variable": "R2ADJ",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
@@ -143,7 +143,7 @@
       "item": "NCA parameters per profile",
       "variable": "LAMZLL",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
@@ -155,11 +155,35 @@
       "item": "NCA parameters per profile",
       "variable": "LAMZUL",
       "primary": "PKNCA 0.12.1 pk.nca()",
-      "qc": "NonCompart 0.8.4 tblNCA()",
+      "qc": "NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R",
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
       "max_abs_diff": 0,
+      "status": "pass"
+    },
+    {
+      "id": "Q1b",
+      "item": "NCA parameter rules: values flagged per profile",
+      "variable": "AUCIFO_EXCL",
+      "primary": "PKNCA exclude() (01_nca.R)",
+      "qc": "base-R rule on the NonCompart values",
+      "n_compared": 79,
+      "tolerance": 0,
+      "mismatches": 0,
+      "max_abs_diff": null,
+      "status": "pass"
+    },
+    {
+      "id": "Q1b",
+      "item": "NCA parameter rules: values flagged per profile",
+      "variable": "LAMZ_EXCL",
+      "primary": "PKNCA exclude() (01_nca.R)",
+      "qc": "base-R rule on the NonCompart values",
+      "n_compared": 79,
+      "tolerance": 0,
+      "mismatches": 0,
+      "max_abs_diff": null,
       "status": "pass"
     },
     {
@@ -171,7 +195,7 @@
       "n_compared": 3,
       "tolerance": 1e-10,
       "mismatches": 0,
-      "max_abs_diff": 6.661338148e-16,
+      "max_abs_diff": 4.440892099e-16,
       "status": "pass"
     },
     {
@@ -183,7 +207,7 @@
       "n_compared": 3,
       "tolerance": 1e-10,
       "mismatches": 0,
-      "max_abs_diff": 5.551115123e-16,
+      "max_abs_diff": 4.440892099e-16,
       "status": "pass"
     },
     {
@@ -243,7 +267,7 @@
       "n_compared": 3,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 5.851048535e-10,
+      "max_abs_diff": 6.099348804e-10,
       "status": "pass"
     },
     {
@@ -255,7 +279,7 @@
       "n_compared": 3,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 6.561828858e-10,
+      "max_abs_diff": 6.862352908e-10,
       "status": "pass"
     },
     {
@@ -267,7 +291,7 @@
       "n_compared": 3,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 1.547399737e-07,
+      "max_abs_diff": 1.600433706e-07,
       "status": "pass"
     },
     {
@@ -448,6 +472,18 @@
       "tolerance": 1e-06,
       "mismatches": 1,
       "max_abs_diff": 1.427903846,
+      "status": "pass"
+    },
+    {
+      "id": "Q8",
+      "item": "Control: NonCompart AUC(0-t) without the zero-segment trapezoid; pass = mismatches in exactly the 1 profile(s) with a BLQ value between quantifiable samples",
+      "variable": "AUCLST",
+      "primary": "PKNCA results",
+      "qc": "NonCompart tblNCA() as it comes",
+      "n_compared": 79,
+      "tolerance": 1e-06,
+      "mismatches": 1,
+      "max_abs_diff": 69.3925,
       "status": "pass"
     }
   ]

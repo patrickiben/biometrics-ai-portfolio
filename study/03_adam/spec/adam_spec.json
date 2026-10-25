@@ -2425,6 +2425,24 @@
     {
       "Order": 26,
       "Dataset": "ADPP",
+      "Variable": "NCAEXRSN",
+      "Label": "Reason Value Excluded by NCA Rule",
+      "Data Type": "text",
+      "Length": 40,
+      "Significant Digits": null,
+      "Format": null,
+      "Mandatory": "No",
+      "Codelist": "NCAEXRSN",
+      "Origin": "Derived",
+      "Pages": null,
+      "Method": "MT.NCAEXRSN",
+      "Predecessor": null,
+      "Role": null,
+      "Comment": null
+    },
+    {
+      "Order": 27,
+      "Dataset": "ADPP",
       "Variable": "ADT",
       "Label": "Analysis Date",
       "Data Type": "integer",
@@ -2441,7 +2459,7 @@
       "Comment": null
     },
     {
-      "Order": 27,
+      "Order": 28,
       "Dataset": "ADPP",
       "Variable": "ADY",
       "Label": "Analysis Relative Day",
@@ -2459,7 +2477,7 @@
       "Comment": null
     },
     {
-      "Order": 28,
+      "Order": 29,
       "Dataset": "ADPP",
       "Variable": "AVISIT",
       "Label": "Analysis Visit",
@@ -2477,7 +2495,7 @@
       "Comment": null
     },
     {
-      "Order": 29,
+      "Order": 30,
       "Dataset": "ADPP",
       "Variable": "AVISITN",
       "Label": "Analysis Visit (N)",
@@ -2495,7 +2513,7 @@
       "Comment": null
     },
     {
-      "Order": 30,
+      "Order": 31,
       "Dataset": "ADPP",
       "Variable": "SRCDOM",
       "Label": "Source Data",
@@ -2513,7 +2531,7 @@
       "Comment": null
     },
     {
-      "Order": 31,
+      "Order": 32,
       "Dataset": "ADPP",
       "Variable": "SRCVAR",
       "Label": "Source Variable",
@@ -2531,7 +2549,7 @@
       "Comment": null
     },
     {
-      "Order": 32,
+      "Order": 33,
       "Dataset": "ADPP",
       "Variable": "SRCSEQ",
       "Label": "Source Sequence Number",
@@ -2549,7 +2567,7 @@
       "Comment": null
     },
     {
-      "Order": 33,
+      "Order": 34,
       "Dataset": "ADPP",
       "Variable": "ASEQ",
       "Label": "Analysis Sequence Number",
@@ -3639,6 +3657,26 @@
       "Decoded Value": "AUC BELOW 5% OF GEOMETRIC MEAN AUC"
     },
     {
+      "ID": "NCAEXRSN",
+      "Name": "NCAEXRSN",
+      "NCI Codelist Code": null,
+      "Data Type": "text",
+      "Order": 1,
+      "Term": "ADJUSTED R-SQUARED BELOW 0.90",
+      "NCI Term Code": null,
+      "Decoded Value": "ADJUSTED R-SQUARED BELOW 0.90"
+    },
+    {
+      "ID": "NCAEXRSN",
+      "Name": "NCAEXRSN",
+      "NCI Codelist Code": null,
+      "Data Type": "text",
+      "Order": 2,
+      "Term": "AUC(0-INF) EXTRAPOLATED ABOVE 20%",
+      "NCI Term Code": null,
+      "Decoded Value": "AUC(0-INF) EXTRAPOLATED ABOVE 20%"
+    },
+    {
       "ID": "SEV",
       "Name": "SEV",
       "NCI Codelist Code": null,
@@ -4083,7 +4121,7 @@
       "ID": "MT.ANL01FL.PP",
       "Name": "Algorithm for ANL01FL.PP",
       "Type": "Computation",
-      "Description": "Y when Cmax and AUC(0-t) exist for the period and PKEXRSN is missing: descriptive PK summaries.",
+      "Description": "Y when Cmax and AUC(0-t) exist for the period, PKEXRSN is missing, and NCAEXRSN is missing for the record: descriptive PK summaries.",
       "Expression Context": null,
       "Expression Code": null,
       "Document": null,
@@ -4093,7 +4131,7 @@
       "ID": "MT.ANL02FL.PP",
       "Name": "Algorithm for ANL02FL.PP",
       "Type": "Computation",
-      "Description": "Y when ANL01FL = Y and the participant has ANL01FL = Y periods for both products: bioequivalence analysis.",
+      "Description": "Y when ANL01FL = Y and the participant has evaluable periods (Cmax and AUC(0-t), PKEXRSN missing) for both products: bioequivalence analysis. The supportive AUC(0-inf) analysis uses participants with ANL02FL = Y for AUCIFO in both periods.",
       "Expression Context": null,
       "Expression Code": null,
       "Document": null,
@@ -4103,7 +4141,17 @@
       "ID": "MT.PKEXRSN",
       "Name": "Algorithm for PKEXRSN",
       "Type": "Computation",
-      "Description": "SAP exclusion rules in order: emesis within 2 h of dosing (ADAE); pre-dose concentration above 5% of the period's Cmax; AUC(0-t) below 5% of the product's geometric mean AUC without the participant (ICH M13A).",
+      "Description": "SAP period rules in order: emesis within 2 h of dosing (ADAE; a protocol violation documented before bioanalysis, ICH M13A 2.2.1); pre-dose concentration above 5% of the period's Cmax (ICH M13A 2.2.3.3) and AUC(0-t) below 5% of the product's geometric mean AUC without the participant (ICH M13A 2.2.1.1), both applied to the bioanalytical results.",
+      "Expression Context": null,
+      "Expression Code": null,
+      "Document": null,
+      "Pages": null
+    },
+    {
+      "ID": "MT.NCAEXRSN",
+      "Name": "Algorithm for NCAEXRSN",
+      "Type": "Computation",
+      "Description": "PP.PPEXCL (PKNCA exclude() in 04_analysis/01_nca.R) decoded: adjusted R-squared of the terminal fit below the SAP minimum flags lambda z and every parameter that depends on it; AUC(0-inf) more than the SAP maximum extrapolated flags AUC(0-inf). The value stays in AVAL.",
       "Expression Context": null,
       "Expression Code": null,
       "Document": null,

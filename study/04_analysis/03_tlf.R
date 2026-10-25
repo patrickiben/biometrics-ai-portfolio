@@ -21,6 +21,7 @@ dir.create(tdir, showWarnings = FALSE)
 FOOT_SYN <- "Synthetic data; not a regulatory deliverable."
 prov <- sprintf("Program: study/04_analysis/03_tlf.R; data cut-off %s (synthetic).", STUDY$cutoff)
 prov_be <- sprintf("Program: study/04_analysis/02_be.R and 03_tlf.R; data cut-off %s (synthetic).", STUDY$cutoff)
+SAPT <- jsonlite::read_json(sp("02_sap", "analysis_parameters.json"), simplifyVector = TRUE)
 TRT_LEV <- c("Test", "Reference")
 f1 <- function(x, d) formatC(x, format = "f", digits = d)
 ## rtables HTML; the attribute stops Quarto from re-parsing the table when the report embeds it
@@ -98,6 +99,10 @@ t_conc <- build_table(lyt_conc, conc_df, alt_counts_df = conc_df %>% distinct(US
 
 ## --- T 14.4.4.1 PK parameters -------------------------------------------------------------------
 pk_show <- c(CMAX = 1, AUCLST = 1, AUCIFO = 1, AUCPEO = 2, LAMZHL = 2, LAMZ = 4, TMAX = 2)
+## values flagged by the SAP parameter rules (ADPP.NCAEXRSN) in periods that are otherwise summarized
+n_rule <- function(term) adpp %>% filter(NCAEXRSN %in% term, PARAMCD == "AUCIFO", is.na(PKEXRSN)) %>%
+  semi_join(filter(adsl, PKPFL == "Y"), by = "USUBJID") %>% nrow()
+rule_terms <- nca_rule_terms(SAPT)
 par_df <- adpp %>% filter(ANL01FL == "Y", PARAMCD %in% names(pk_show), !is.na(AVAL)) %>%
   semi_join(filter(adsl, PKPFL == "Y"), by = "USUBJID") %>%
   mutate(TRTA = factor(TRTA, levels = TRT_LEV), PARAM = factor(PARAM, levels = unique(PARAM[order(match(PARAMCD, names(pk_show)))])))
@@ -117,9 +122,12 @@ afun_par <- function(df, .var, ...) {
 }
 lyt_par <- basic_table(title = "Table 14.4.4.1 Summary of Plasma SIMDRUG PK Parameters",
                        subtitles = c("PK parameter set", "Study SIMBE01 (synthetic)"),
-                       main_footer = c("NCA with PKNCA 0.12.1 on actual sampling times; AUC by linear-up/log-down; BLQ = 0 and omitted from lambda z (ICH M13A).",
+                       main_footer = c(sprintf("NCA with PKNCA %s on actual sampling times; AUC by linear-up/log-down; BLQ = 0 and omitted from lambda z (ICH M13A).", pkg_version("PKNCA")),
                                        "Geometric mean = exp(mean(log x)); geometric CV% = 100*sqrt(exp(s^2) - 1) on the log scale.",
-                                       "Periods excluded under the SAP rules are not summarized (ADPP.ANL01FL).", FOOT_SYN),
+                                       "Periods excluded under the SAP rules are not summarized (ADPP.ANL01FL).",
+                                       sprintf("AUC(0-inf) is not summarized when more than %g%% is extrapolated (%d profiles); lambda z-based parameters are not summarized when the adjusted R-squared is below %.2f (%d profiles). Values kept in ADPP (NCAEXRSN).",
+                                               SAPT$nca$max_aucinf_pext_pct, n_rule(rule_terms[["pext"]]), SAPT$nca$min_hl_adj_r_squared, n_rule(rule_terms[["r2"]])),
+                                       FOOT_SYN),
                        prov_footer = prov, show_colcounts = TRUE) %>%
   split_cols_by("TRTA") %>%
   split_rows_by("PARAM", label_pos = "hidden", split_fun = drop_split_levels) %>%
@@ -139,7 +147,9 @@ main_title(t_be) <- "Table 14.4.3.1 Bioequivalence Analysis: Ratio of Geometric 
 subtitles(t_be) <- c("Bioequivalence set", "Study SIMBE01 (synthetic)")
 main_footer(t_be) <- c("General linear model on ln(parameter): sequence, participant(sequence), period, formulation (fixed effects; ICH M13A).",
                        "Adjusted geometric mean = exp(least-squares mean). Ratio and 90% CI back-transformed from the T - R difference; decision on unrounded limits.",
-                       "Within-participant CV% = 100*sqrt(exp(MSE) - 1).", FOOT_SYN)
+                       "Within-participant CV% = 100*sqrt(exp(MSE) - 1).",
+                       sprintf("AUC(0-inf): participants whose AUC(0-inf) passes the SAP parameter rules (at most %g%% extrapolated, adjusted R-squared at least %.2f) in both periods.",
+                               SAPT$nca$max_aucinf_pext_pct, SAPT$nca$min_hl_adj_r_squared), FOOT_SYN)
 prov_footer(t_be) <- prov_be
 
 ## --- T 14.4.3.2 ANOVA effects ---------------------------------------------------------------------
@@ -196,6 +206,7 @@ p_log <- ggplot(filter(mean_df, m > 0), aes(NRRLT, m, colour = TRTA, shape = TRT
   labs(x = "Nominal time after dose (h)", y = "Mean SIMDRUG concentration (ng/mL, log scale)", colour = NULL, shape = NULL,
        title = "Figure 14.4.2.1b Mean plasma concentrations, semi-log scale (PK concentration set)",
        caption = "Nominal times; time points with a zero mean are not shown on the log scale. Synthetic data.") + base_theme
+excl_ids <- sub("^SIMBE01-101-", "", unique(exclusions$USUBJID[!is.na(exclusions$PKEXRSN)]))
 ind_df <- adpc %>% filter(PARAMCD == "SIMDRUG", ANL01FL == "Y", AVAL > 0) %>% mutate(TRTA = factor(TRTA, levels = TRT_LEV),
                                                                                     ID = sub("^SIMBE01-101-", "", USUBJID))
 p_ind <- ggplot(ind_df, aes(ARRLT, AVAL, colour = TRTA)) + geom_line(linewidth = 0.4) + geom_point(size = 0.6) +
@@ -203,7 +214,8 @@ p_ind <- ggplot(ind_df, aes(ARRLT, AVAL, colour = TRTA)) + geom_line(linewidth =
   scale_x_continuous(breaks = c(0, 24, 48)) +
   labs(x = "Actual time after dose (h)", y = "SIMDRUG concentration (ng/mL, log scale)", colour = NULL,
        title = "Figure 14.4.2.2 Individual plasma concentrations, semi-log scale, actual times",
-       caption = "Actual sampling times (ICH M13A). Quantifiable values only. Includes the excluded period of participant 029. Synthetic data.") +
+       caption = sprintf("Actual sampling times (ICH M13A). Quantifiable values only (a BLQ value between two samples is not drawn). Includes the excluded period(s) of participant(s) %s. Synthetic data.",
+                         paste(excl_ids, collapse = ", "))) +
   theme_bw(base_size = 9) + theme(legend.position = "bottom", strip.text = element_text(size = 7), plot.caption = element_text(hjust = 0, size = 7))
 ggsave(file.path(tdir, "f_14_4_2_1a_mean_linear.png"), p_lin, width = 8, height = 5, dpi = 110, device = grDevices::png, type = "cairo")
 ggsave(file.path(tdir, "f_14_4_2_1b_mean_semilog.png"), p_log, width = 8, height = 5, dpi = 110, device = grDevices::png, type = "cairo")

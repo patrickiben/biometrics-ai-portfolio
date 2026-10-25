@@ -39,7 +39,10 @@ stage("study/04_analysis/03_tlf.R")           #   tables (RTF, HTML) and figures
 ## 4 Quarto results report: objects handed over through a temporary RDS (not committed)
 obj <- file.path(tempdir(), "study_objects.rds")
 saveRDS(list(be_results = be_results, be_supplementary = be_supplementary, be_pass = be_pass, adsl = adsl,
-             exclusions = exclusions, pk_checks = pk_checks, TLF = TLF,
+             exclusions = exclusions, pk_checks = pk_checks, TLF = TLF, blq_effect = blq_effect, first_point = first_point,
+             scenarios = jsonlite::read_json(sp("03_adam", "sdtm", "scenarios.json")),
+             design = jsonlite::read_json(sp("01_design", "design_parameters.json"))$planning,
+             sap = jsonlite::read_json(sp("02_sap", "analysis_parameters.json")),
              versions = c(PKNCA = pkg_version("PKNCA"))), obj)
 quarto <- Sys.getenv("QUARTO", unset = Sys.which("quarto"))
 if (!nzchar(quarto)) stop("Quarto not found: set QUARTO to the quarto executable")

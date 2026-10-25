@@ -25,15 +25,20 @@ SAP <- list(
     min_hl_points = 3,
     allow_tmax_in_half_life = FALSE,
     lambda_z_selection = "largest number of points whose adjusted R-squared is within 1e-4 of the best (PKNCA default)",
-    min_hl_r_squared = 0.9,
-    max_aucinf_pext_pct = 20
+    zero_segment = "linear trapezoid for a segment that starts or ends at a zero (BLQ) concentration; log-down only when both concentrations are positive",
+    ## parameter rules, applied with PKNCA exclude(); excluded values stay in ADPP with NCAEXRSN set
+    min_hl_adj_r_squared = 0.9,
+    min_hl_adj_r_squared_rule = "lambda z, t1/2, AUC(0-inf) and the extrapolated percentage are not summarized or analyzed when the adjusted R-squared of the terminal fit is below 0.90",
+    max_aucinf_pext_pct = 20,
+    max_aucinf_pext_rule = "AUC(0-inf) is not summarized or analyzed when more than 20% of it is extrapolated; the extrapolated percentage itself is still summarized"
   ),
   exclusion_rules = list(
     emesis_window_h = 2, emesis_rule = "period excluded if emesis occurs within 2 h of dosing (twice the expected median tmax of 1 h); a protocol violation documented when it happens, before bioanalysis (ICH M13A 2.2.1)",
     predose_pct_cmax = 5, predose_rule = "period excluded if the pre-dose concentration is above 5% of that period's Cmax; applied to the bioanalytical results (ICH M13A 2.2.3.3)",
     low_exposure_pct = 5, low_exposure_rule = "period may be excluded if its AUC is below 5% of the product's geometric mean AUC calculated without the participant, at most 1 participant expected; applied to the bioanalytical results (ICH M13A 2.2.1.1)",
     min_evaluable = 12,
-    auc_coverage_pct = 80, auc_coverage_share_pct = 20
+    auc_coverage_pct = 80, auc_coverage_share_pct = 20,
+    first_point_cmax_rule = "participants whose Cmax is at the first post-dose sample in either period are removed in a supplementary analysis; the primary analysis keeps them (ICH M13A 2.1.8.1)"
   ),
   summary_stats = c("n", "arithmetic mean", "SD", "CV%", "geometric mean", "geometric CV%", "median", "minimum", "maximum"),
   conventions = list(geometric_mean = "exp(mean(log x))", geometric_cv = "100*sqrt(exp(s^2_log) - 1)",
@@ -77,7 +82,7 @@ sets <- data.frame(
   check.names = FALSE)
 
 body <- paste0(
-'<div class="note"><p>Excerpt of the statistical methods of a statistical analysis plan (SAP) for the synthetic study SIMBE01. The settings in this plan are also written to <a href="analysis_parameters.json">analysis_parameters.json</a>, which the analysis programs read, so the plan and the code cannot drift apart silently.</p></div>',
+'<div class="note"><p>Excerpt of the statistical methods of a statistical analysis plan (SAP) for the synthetic study SIMBE01. The numerical settings in this plan (acceptance limits, exclusion thresholds and NCA options) are also written to <a href="analysis_parameters.json">analysis_parameters.json</a>, which the analysis programs read, so a change to a setting reaches the code and this plan together.</p></div>',
 md(
 "## 1 Estimand (ICH E9(R1))",
 "",
@@ -99,12 +104,13 @@ md(
 "",
 "Parameters come from non-compartmental analysis (NCA) with PKNCA 0.12.1 on **actual** sampling times relative to each period's dose (ADPC.ARRLT). Pre-dose samples are assigned time 0. The NCA settings follow ICH M13A (Step 4 23 Jul 2024; FDA final 30 Oct 2024; EU effective 25 Jan 2025):",
 "",
-"- AUC by the linear-up/log-down trapezoidal method (M13A gives the linear trapezoidal method as an example and asks that the method be reported).",
-"- Concentrations below the LLOQ (0.50 ng/mL) are treated as zero wherever they fall in the profile: `PKNCA.options(conc.blq = list(first = \"keep\", middle = \"keep\", last = \"keep\"))`. PKNCA treats a kept BLQ value as zero. This changes the PKNCA default, which drops BLQ values in the middle of a profile.",
+"- AUC by the linear-up/log-down trapezoidal method (M13A gives the linear trapezoidal method as an example and asks that the method be reported). The log-down rule applies only when both concentrations are positive; a segment that starts or ends at a zero (BLQ) concentration uses the linear trapezoid, as PKNCA does.",
+"- Concentrations below the LLOQ (0.50 ng/mL) are treated as zero wherever they fall in the profile (ICH M13A 2.2.2.2): `PKNCA.options(conc.blq = list(first = \"keep\", middle = \"keep\", last = \"keep\"))`. PKNCA treats a kept BLQ value as zero. This changes the PKNCA default, which drops BLQ values in the middle of a profile. One simulated profile has a BLQ result between quantifiable samples, and the analysis page shows how much the choice changes its AUC(0-t).",
 "- BLQ values are omitted from the terminal rate constant: PKNCA excludes zeros from the log-linear fit.",
 "- The terminal phase uses at least 3 points after tmax, chosen by adjusted R-squared (PKNCA defaults `min.hl.points = 3`, `allow.tmax.in.half.life = FALSE`).",
 "- Primary: Cmax and AUC(0-t) (AUC to the last quantifiable concentration). Additional: AUC(0-inf), AUC(0-t)/AUC(0-inf), tmax, the terminal rate constant (lambda z) and t1/2.",
-"- AUC(0-t) should cover at least 80% of AUC(0-inf). If fewer than 80% coverage occurs in more than 20% of profiles, the report discusses the study's validity (ICH M13A).",
+"- Parameter rules: lambda z, t1/2, AUC(0-inf) and the extrapolated percentage are not summarized or analyzed when the adjusted R-squared of the terminal fit is below 0.90; AUC(0-inf) is not summarized or analyzed when more than 20% of it is extrapolated (the extrapolated percentage itself is still summarized). They are applied with PKNCA `exclude()`, with a rule function that flags every parameter that depends on lambda z (`get.parameter.deps(\"half.life\")`) or AUC(0-inf) alone. The values stay in ADPP, with ANL01FL and ANL02FL not Y and NCAEXRSN giving the rule.",
+"- AUC(0-t) should cover at least 80% of AUC(0-inf). If coverage is below 80% in more than 20% of profiles, the report discusses the study's validity (ICH M13A 2.2.2.2). This check counts every evaluable profile, including those whose AUC(0-inf) is not summarized under the 20% rule.",
 "- Summary statistics: n, arithmetic mean, SD, CV%, geometric mean, geometric CV%, median, minimum and maximum; tmax as median (minimum, maximum). Geometric mean = exp(mean(log x)); geometric CV% = 100*sqrt(exp(s^2) - 1) on the log scale.",
 "- Individual profiles are plotted against actual times; mean profiles against nominal times (ICH M13A).",
 "",
@@ -121,7 +127,9 @@ md(
 "- The T minus R difference of least-squares means and its 90% confidence interval use the residual mean square with its degrees of freedom; the limits are exponentiated to a ratio. The decision uses the unrounded limits; the tables show two decimals.",
 "- Within-participant CV% = 100*sqrt(exp(MSE) - 1).",
 "- No carry-over test (ICH M13A). Carry-over is addressed by the pre-dose concentration rule.",
-"- Supplementary analysis (ICH E9(R1) term): the same model with the excluded periods put back, for participants who have both periods. It changes how the intercurrent events are handled, so it is supplementary, not a sensitivity analysis of the primary estimand.",
+"- Supportive AUC(0-inf) analysis: the same model, on participants in the bioequivalence set whose AUC(0-inf) passes the parameter rules in both periods.",
+"- Supplementary analysis 1 (ICH E9(R1) term): the same model with the excluded periods put back, for participants who have both periods. It changes how the intercurrent events are handled, so it is supplementary, not a sensitivity analysis of the primary estimand.",
+"- Supplementary analysis 2 (ICH M13A 2.1.8.1): the same model without the participants whose Cmax is at the first post-dose sample (0.25 h) in either period, since their true Cmax may have come earlier. The report discusses whether the conclusion depends on them.",
 "",
 "## 5 Missing data and values below the LLOQ",
 "",
@@ -182,8 +190,8 @@ shells <- paste0(
   shell("14.1.2", "Demographic and Baseline Characteristics", "Safety set", demo, "Percentages use the number of participants in the column."),
   shell("14.3.1.1", "Overview of Treatment-Emergent Adverse Events", "Safety set", aeo, paste0("Counted by treatment at onset; each participant counts once per row; N = participants dosed with that treatment. No total column: in a crossover a participant contributes to both columns. ", STUDY$dict_meddra, ".")),
   shell("14.4.1.1", "Summary of Plasma SIMDRUG Concentrations (ng/mL) by Nominal Time", "PK concentration set", conc, "BLQ (below 0.50 ng/mL) set to 0 (ICH M13A); n BLQ in parentheses. Periods excluded under the SAP rules are not summarized."),
-  shell("14.4.4.1", "Summary of Plasma SIMDRUG PK Parameters", "PK parameter set", ppar, "Actual sampling times. AUC by linear-up/log-down. Geometric CV% = 100*sqrt(exp(s^2) - 1). Periods excluded under the SAP rules are not summarized."),
-  shell("14.4.3.1", "Bioequivalence Analysis: Ratio of Geometric Means (Test/Reference) and 90% CI", "Bioequivalence set", bes, "GLM on ln(parameter): sequence, participant(sequence), period, formulation. Decision on unrounded limits."),
+  shell("14.4.4.1", "Summary of Plasma SIMDRUG PK Parameters", "PK parameter set", ppar, "Actual sampling times. AUC by linear-up/log-down. Geometric CV% = 100*sqrt(exp(s^2) - 1). Periods excluded under the SAP rules are not summarized. AUC(0-inf) is not summarized when more than 20% is extrapolated; lambda z-based parameters are not summarized when the adjusted R-squared is below 0.90 (n excluded given in a footnote)."),
+  shell("14.4.3.1", "Bioequivalence Analysis: Ratio of Geometric Means (Test/Reference) and 90% CI", "Bioequivalence set", bes, "GLM on ln(parameter): sequence, participant(sequence), period, formulation. Decision on unrounded limits. AUC(0-inf): participants whose AUC(0-inf) passes the parameter rules in both periods."),
   shell("14.4.3.2", "ANOVA Effects for ln(Cmax) and ln(AUC(0-t))", "Bioequivalence set", anv, "Sequence tested against participant(sequence); other effects against the residual. No carry-over test (ICH M13A).")
 )
 write_text(page_html(

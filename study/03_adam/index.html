@@ -40,9 +40,10 @@
 <tr><td>SIMBE01-101-029</td><td>vomits 45 minutes after the Period 2 dose</td></tr>
 <tr><td>SIMBE01-101-008</td><td>measurable Period 2 pre-dose concentration at 2.5% of that period's Cmax (below the 5% rule)</td></tr>
 <tr><td>SIMBE01-101-035</td><td>12 h sample in Period 1 not collected</td></tr>
-<tr><td>SIMBE01-101-012</td><td>4 h sample in Period 1 drawn 25 minutes late</td></tr></tbody></table></div><h2>ADaM datasets</h2><div class="tblwrap"><table class="data"><thead><tr><th scope="col">Dataset</th><th scope="col">Records</th><th scope="col">Variables</th><th scope="col">Template</th></tr></thead><tbody><tr><td>ADSL</td><td>  40</td><td>54</td><td>ad_adsl.R pattern; derive_vars_period() for the crossover</td></tr>
+<tr><td>SIMBE01-101-012</td><td>4 h sample in Period 1 drawn 25 minutes late</td></tr>
+<tr><td>SIMBE01-101-024</td><td>6 h sample in Period 2 reported below the LLOQ between quantifiable samples (a simulated sample-handling problem; no reassay)</td></tr></tbody></table></div><h2>ADaM datasets</h2><div class="tblwrap"><table class="data"><thead><tr><th scope="col">Dataset</th><th scope="col">Records</th><th scope="col">Variables</th><th scope="col">Template</th></tr></thead><tbody><tr><td>ADSL</td><td>  40</td><td>54</td><td>ad_adsl.R pattern; derive_vars_period() for the crossover</td></tr>
 <tr><td>ADPC</td><td>1264</td><td>52</td><td>ad_adpc.R, step by step (adaptations listed below)</td></tr>
-<tr><td>ADPP</td><td>1027</td><td>33</td><td>ad_adpp.R; SAP exclusion rules</td></tr>
+<tr><td>ADPP</td><td>1027</td><td>34</td><td>ad_adpp.R; SAP exclusion rules</td></tr>
 <tr><td>ADAE</td><td>  32</td><td>31</td><td>ad_adae.R pattern; period from create_period_dataset()</td></tr></tbody></table></div><ul class="files"><li><a href="data/adsl.xpt">adsl.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adsl.csv">csv</a> <a href="data/json/adsl.json">Dataset-JSON</a></li><li><a href="data/adpc.xpt">adpc.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adpc.csv">csv</a> <a href="data/json/adpc.json">Dataset-JSON</a></li><li><a href="data/adpp.xpt">adpp.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adpp.csv">csv</a> <a href="data/json/adpp.json">Dataset-JSON</a></li><li><a href="data/adae.xpt">adae.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adae.csv">csv</a> <a href="data/json/adae.json">Dataset-JSON</a></li></ul><h3>Template adaptations in ADPC (each one commented in <code>03_adam/03_adpc.R</code>)</h3>
 <ul>
 <li>The analyte name joins PC and EX, because EXTRT carries the formulation (<code>SIMDRUG TEST</code> or <code>SIMDRUG REFERENCE</code>).</li>
@@ -65,12 +66,12 @@
 <tr><td>ADPC</td><td>text values fit the spec lengths</td><td>pass</td><td>30 text variables</td></tr>
 <tr><td>ADPC</td><td>mandatory variables populated</td><td>pass</td><td>35 mandatory variables</td></tr>
 <tr><td>ADPC</td><td>XPT v5 read back: names, order and labels match the spec</td><td>pass</td><td>1264 rows x 52 columns; dataset label 'PK Concentrations Analysis Dataset'</td></tr>
-<tr><td>ADPP</td><td>metatools::check_variables (strict)</td><td>pass</td><td>33 variables in data, 33 in spec</td></tr>
+<tr><td>ADPP</td><td>metatools::check_variables (strict)</td><td>pass</td><td>34 variables in data, 34 in spec</td></tr>
 <tr><td>ADPP</td><td>metatools::check_ct_data</td><td>pass</td><td>all values in their codelists</td></tr>
 <tr><td>ADPP</td><td>metatools::check_unique_keys</td><td>pass</td><td>STUDYID, USUBJID, APERIOD, PARAMCD</td></tr>
-<tr><td>ADPP</td><td>text values fit the spec lengths</td><td>pass</td><td>23 text variables</td></tr>
+<tr><td>ADPP</td><td>text values fit the spec lengths</td><td>pass</td><td>24 text variables</td></tr>
 <tr><td>ADPP</td><td>mandatory variables populated</td><td>pass</td><td>26 mandatory variables</td></tr>
-<tr><td>ADPP</td><td>XPT v5 read back: names, order and labels match the spec</td><td>pass</td><td>1027 rows x 33 columns; dataset label 'PK Parameters Analysis Dataset'</td></tr>
+<tr><td>ADPP</td><td>XPT v5 read back: names, order and labels match the spec</td><td>pass</td><td>1027 rows x 34 columns; dataset label 'PK Parameters Analysis Dataset'</td></tr>
 <tr><td>ADAE</td><td>metatools::check_variables (strict)</td><td>pass</td><td>31 variables in data, 31 in spec</td></tr>
 <tr><td>ADAE</td><td>metatools::check_ct_data</td><td>pass</td><td>all values in their codelists</td></tr>
 <tr><td>ADAE</td><td>metatools::check_unique_keys</td><td>pass</td><td>STUDYID, USUBJID, ASEQ</td></tr>

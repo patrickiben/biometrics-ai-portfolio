@@ -9,6 +9,9 @@
 # experimental helpers that behave unexpectedly.
 #
 #   Q1  NCA: NonCompart 0.8.4 tblNCA() vs PKNCA 0.12.1, same input, per parameter
+#       (NonCompart's log-down formula gives a segment that falls to a zero concentration no
+#       area; the SAP uses the linear trapezoid there, so the QC route adds it in base R)
+#   Q1b NCA parameter rules: flags from the NonCompart values (base R) vs PKNCA exclude()
 #   Q2  BE model: closed-form two-sample t-test on within-participant period differences
 #       vs the GLM (lm)
 #   Q3  BE model: nlme::lme() with a random participant effect vs the GLM (equal for
@@ -18,6 +21,8 @@
 #   Q5  ADSL population flags vs a base-R re-derivation from the SDTM-like domains and PP
 #   Q6  Table 14.3.1.1 counts vs a base-R count from the SDTM-like AE and EX domains
 #   Q7  control: a planted 0.1% change in one AUC(0-t) must give exactly one mismatch
+#   Q8  control: NonCompart AUC(0-t) without the zero-segment trapezoid must differ from
+#       PKNCA in exactly the profiles with a BLQ value between quantifiable samples
 #
 # Inputs : objects adpc, adpp, adsl, nca_wide, be_results, TLF; 03_adam/sdtm/*.csv
 # Outputs: 05_qc/qc_ledger.json, qc_ledger.csv, qc_ledger.html, qc_nca_side_by_side.csv
@@ -49,27 +54,53 @@ cmp <- function(id, item, base, compare, keys, cols, tol, primary, qc_method) {
 nc_in <- adpc %>% filter(PARAMCD == "SIMDRUG", ANL01FL == "Y") %>%
   mutate(TIME = pmax(ARRLT, 0)) %>% arrange(USUBJID, APERIOD, TIME) %>%
   select(USUBJID, APERIOD, TIME, AVAL) %>% as.data.frame()
+## R2ADJ = 0: with a positive value NonCompart re-selects the terminal phase interactively
+## when the best fit is below it; the SAP rule is applied to its output below instead
 nc <- tblNCA(nc_in, key = c("USUBJID", "APERIOD"), colTime = "TIME", colConc = "AVAL", dose = STUDY$dose_mg,
              adm = "Extravascular", doseUnit = "mg", timeUnit = "h", concUnit = "ng/mL",
-             down = "Log", R2ADJ = SAP$nca$min_hl_r_squared)
+             down = "Log", R2ADJ = 0)
 nc_par <- c("CMAX", "TMAX", "TLST", "CLST", "AUCLST", "AUCIFO", "AUCPEO", "LAMZHL", "LAMZ", "LAMZNPT", "R2ADJ", "LAMZLL", "LAMZUL")
-nc_w <- as.data.frame(nc)[, c("USUBJID", "APERIOD", nc_par)]
-for (v in nc_par) nc_w[[v]] <- as.numeric(nc_w[[v]])
-nc_w$APERIOD <- as.integer(nc_w$APERIOD)
+nc_raw <- as.data.frame(nc)[, c("USUBJID", "APERIOD", nc_par)]
+for (v in nc_par) nc_raw[[v]] <- as.numeric(nc_raw[[v]])
+nc_raw$APERIOD <- as.integer(nc_raw$APERIOD)
+## zero-segment trapezoid: a segment that falls from a positive value to a zero (BLQ) value
+## before tlast gets (t2 - t1) * C1 / 2 (SAP; PKNCA does the same); NonCompart gives it 0
+zero_seg <- nc_in %>% group_by(USUBJID, APERIOD) %>% arrange(TIME, .by_group = TRUE) %>%
+  mutate(prev_t = lag(TIME), prev_c = lag(AVAL), before_tlast = TIME < max(TIME[AVAL > 0])) %>%
+  filter(!is.na(prev_c), prev_c > 0, AVAL == 0, before_tlast) %>%
+  summarise(ZSEG = sum((TIME - prev_t) * prev_c / 2), n_zero_seg = n(), .groups = "drop") %>%
+  mutate(APERIOD = as.integer(APERIOD))
+nc_w <- nc_raw %>% left_join(zero_seg, by = c("USUBJID", "APERIOD")) %>%
+  mutate(ZSEG = coalesce(ZSEG, 0), AUCLST = AUCLST + ZSEG, AUCIFO = AUCIFO + ZSEG,
+         AUCPEO = 100 * (AUCIFO - AUCLST) / AUCIFO) %>%
+  select(USUBJID, APERIOD, all_of(nc_par)) %>% as.data.frame()
 pk_w <- as.data.frame(nca_wide)[, c("USUBJID", "APERIOD", nc_par)]
 pk_w$APERIOD <- as.integer(pk_w$APERIOD)
 nca_tol <- list(CMAX = 1e-9, CLST = 1e-9, TMAX = 1e-9, TLST = 1e-9, LAMZLL = 1e-9, LAMZUL = 1e-9, LAMZNPT = 0,
                 AUCLST = 1e-6, AUCIFO = 1e-6, AUCPEO = 1e-6, LAMZHL = 1e-6, LAMZ = 1e-9, R2ADJ = 1e-9)
 cmp("Q1", "NCA parameters per profile", pk_w, nc_w, c("USUBJID", "APERIOD"), nc_par, nca_tol,
-    "PKNCA 0.12.1 pk.nca()", "NonCompart 0.8.4 tblNCA()")
+    paste("PKNCA", pkg_version("PKNCA"), "pk.nca()"),
+    paste("NonCompart", pkg_version("NonCompart"), "tblNCA(), plus the zero-segment trapezoid in base R"))
 nca_diff <- merge(pk_w, nc_w, by = c("USUBJID", "APERIOD"), suffixes = c("_PKNCA", "_NonCompart"))
 write_csv_det(nca_diff, sp("05_qc", "qc_nca_side_by_side.csv"))
+
+## --- Q1b NCA parameter rules ---------------------------------------------------------------
+pk_fl <- as.data.frame(nca_wide)[, c("USUBJID", "APERIOD", "AUCIFO_EXCL", "LAMZ_EXCL")]
+pk_fl$APERIOD <- as.integer(pk_fl$APERIOD)
+r2_bad <- !is.na(nc_w$R2ADJ) & nc_w$R2ADJ < SAP$nca$min_hl_adj_r_squared
+nc_fl <- data.frame(USUBJID = nc_w$USUBJID, APERIOD = nc_w$APERIOD,
+                    AUCIFO_EXCL = ifelse(r2_bad | (!is.na(nc_w$AUCPEO) & nc_w$AUCPEO > SAP$nca$max_aucinf_pext_pct), "Y", "N"),
+                    LAMZ_EXCL = ifelse(r2_bad, "Y", "N"))
+cmp("Q1b", "NCA parameter rules: values flagged per profile", pk_fl, nc_fl, c("USUBJID", "APERIOD"), c("AUCIFO_EXCL", "LAMZ_EXCL"),
+    list(AUCIFO_EXCL = 0), "PKNCA exclude() (01_nca.R)", "base-R rule on the NonCompart values")
 
 ## --- Q2 and Q3 BE model ----------------------------------------------------------------------
 be_alt <- function(p) {
   d <- adpp %>% filter(PARAMCD == p, ANL02FL == "Y") %>% mutate(y = log(AVAL)) %>%
     select(USUBJID, TRTSEQP, APERIOD, TRTA, y)
-  w <- d %>% select(USUBJID, TRTSEQP, APERIOD, y) %>% pivot_wider(names_from = APERIOD, values_from = y, names_prefix = "P")
+  w <- d %>% select(USUBJID, TRTSEQP, APERIOD, y) %>% pivot_wider(names_from = APERIOD, values_from = y, names_prefix = "P") %>%
+    filter(!is.na(P1), !is.na(P2))                              # both periods (SAP; matters for AUC(0-inf))
+  d <- d %>% semi_join(w, by = "USUBJID")
   w$hd <- (w$P2 - w$P1) / 2                                     # half period difference
   a <- w$hd[w$TRTSEQP == "TR"]; b <- w$hd[w$TRTSEQP == "RT"]
   est <- mean(b) - mean(a)                                      # TR: (R - T)/2 + pi; RT: (T - R)/2 + pi
@@ -163,6 +194,13 @@ cmp("Q7", "Control: planted 0.1% change in one AUC(0-t)", pk_w, planted, c("USUB
 ledger[[length(ledger)]]$status <- ifelse(ledger[[length(ledger)]]$mismatches == 1, "pass", "fail")   # expected: exactly one
 ledger[[length(ledger)]]$item <- "Control: planted 0.1% change in one AUC(0-t); pass = exactly 1 mismatch found"
 
+## --- Q8 control: the BLQ scenario reaches the comparison ---------------------------------------
+n_zero_prof <- nrow(zero_seg)
+cmp("Q8", "Control: NonCompart AUC(0-t) without the zero-segment trapezoid", pk_w, nc_raw, c("USUBJID", "APERIOD"), "AUCLST",
+    list(AUCLST = 1e-6), "PKNCA results", "NonCompart tblNCA() as it comes")
+ledger[[length(ledger)]]$status <- ifelse(n_zero_prof >= 1 && ledger[[length(ledger)]]$mismatches == n_zero_prof, "pass", "fail")
+ledger[[length(ledger)]]$item <- sprintf("Control: NonCompart AUC(0-t) without the zero-segment trapezoid; pass = mismatches in exactly the %d profile(s) with a BLQ value between quantifiable samples", n_zero_prof)
+
 ## --- write the ledger ------------------------------------------------------------------------------
 qc_ledger <- do.call(rbind, ledger)
 n_pass <- sum(qc_ledger$status == "pass"); n_fail <- sum(qc_ledger$status == "fail")
@@ -187,22 +225,26 @@ body <- paste0(
   md(
     "### How to read it",
     "",
-    "- **Q1** runs a second NCA engine (NonCompart) on the same ADPC input with the same settings: linear-up/log-down AUC, BLQ as zero, at least 3 terminal points after tmax chosen by adjusted R-squared.",
+    sprintf("- **Q1** runs a second NCA engine (NonCompart) on the same ADPC input with the same settings: linear-up/log-down AUC, BLQ as zero, at least 3 terminal points after tmax chosen by adjusted R-squared. The input includes %d profile(s) with a BLQ value between quantifiable samples (scenario 6), so the BLQ rule is compared, not only assumed. NonCompart's log-down formula gives a segment that falls to zero no area; the SAP uses the linear trapezoid there, as PKNCA does, so the QC route adds that trapezoid in base R (%d segment(s)).", n_zero_prof, sum(zero_seg$n_zero_seg)),
+    sprintf("- **Q1b** applies the SAP parameter rules (adjusted R-squared at least %.2f; AUC(0-inf) at most %g%% extrapolated) to the NonCompart values in base R and compares the flags with PKNCA `exclude()`.", SAP$nca$min_hl_adj_r_squared, SAP$nca$max_aucinf_pext_pct),
     "- **Q2** is the closed-form crossover analysis: half the within-participant period difference, compared between sequences with a two-sample t-test. For complete 2x2 data it gives the same estimate, interval and residual variance as the GLM.",
     "- **Q3** refits the model with a random participant effect (`nlme::lme`, REML, tight convergence settings). With every participant contributing both periods it reproduces the GLM's estimate, interval and residual variance; the 1e-6 tolerance allows for the iterative fit. With the default settings the CV agreed only to about 5e-6 percentage points, so the settings were tightened rather than the tolerance widened.",
     "- **Q4** checks the admiral-derived times, including `derive_var_nfrlt()`, which admiral 1.5.0 labels experimental.",
     "- **Q5** and **Q6** rebuild the population flags and the adverse-event counts from the SDTM-like domains without admiral or tern.",
     "- **Q7** is a control: a 0.1% change planted in one value must be found exactly once, which shows the comparison can fail.",
+    "- **Q8** is a control for the BLQ scenario: NonCompart's AUC(0-t) as it comes must differ from PKNCA in exactly the profiles with a BLQ value between quantifiable samples, which shows that the scenario reaches the comparison and that the adjustment in Q1 is confined to it.",
     "",
     "Files: [qc_ledger.csv](qc_ledger.csv), [qc_ledger.json](qc_ledger.json), [qc_nca_side_by_side.csv](qc_nca_side_by_side.csv) (PKNCA and NonCompart values for every profile). Program: `study/05_qc/qc.R`.",
     "",
     "### What the QC found while this example was built",
     "",
-    "The first full run had 6 failures out of 37, all now resolved; the fixes are in the code, not in the tolerances:",
+    "The first full run had 6 failures out of the 37 checks it had then, all resolved; the fixes are in the code, not in the tolerances:",
     "",
     "- TLST, LAMZLL and LAMZUL differed by about 3e-9 h because ADPC was rounded to 10 significant digits after PKNCA had already run on the unrounded times. ADPC is now rounded when it is built, so both engines and the XPT file see the same times.",
     "- The degrees of freedom were stored as integer in one route and as double in the other; the comparison now uses values, not storage types.",
     "- With nlme's default convergence settings the REML residual variance matched the GLM only to about 5e-6 percentage points of CV; the refit now uses tight convergence settings and meets the pre-set 1e-6 tolerance.",
+    "",
+    "A later review added a BLQ value between quantifiable samples (scenario 6) so that the ICH M13A BLQ setting is exercised. Q1 then failed for that profile's AUC(0-t), AUC(0-inf) and extrapolated percentage: NonCompart gives a segment that falls to zero no area, while the SAP and PKNCA use the linear trapezoid. The QC route now adds that trapezoid, and Q8 checks that the difference is confined to that profile. The same review found that the SAP's adjusted R-squared and extrapolation thresholds were passed to PKNCA as options, which do nothing on their own; they are now applied with `exclude()` and checked in Q1b.",
     "",
     "### Not covered",
     "",

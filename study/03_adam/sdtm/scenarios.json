@@ -32,5 +32,12 @@
     "dev_min": 25,
     "what": "4 h sample in Period 1 drawn 25 minutes late",
     "usubjid": "SIMBE01-101-012"
+  },
+  "mid_blq": {
+    "subj": "024",
+    "period": 2,
+    "tpt": 6,
+    "what": "6 h sample in Period 2 reported below the LLOQ between quantifiable samples (a simulated sample-handling problem; no reassay)",
+    "usubjid": "SIMBE01-101-024"
   }
 }

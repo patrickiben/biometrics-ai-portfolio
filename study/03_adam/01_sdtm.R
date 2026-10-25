@@ -28,7 +28,10 @@ SCENARIOS <- list(
   emesis       = list(subj = "029", period = 2L, onset_min = 45L, what = "vomits 45 minutes after the Period 2 dose"),
   carryover    = list(subj = "008", period = 2L, frac = 0.025, what = "measurable Period 2 pre-dose concentration at 2.5% of that period's Cmax (below the 5% rule)"),
   missed       = list(subj = "035", period = 1L, tpt = 12, what = "12 h sample in Period 1 not collected"),
-  late_sample  = list(subj = "012", period = 1L, tpt = 4, dev_min = 25L, what = "4 h sample in Period 1 drawn 25 minutes late")
+  late_sample  = list(subj = "012", period = 1L, tpt = 4, dev_min = 25L, what = "4 h sample in Period 1 drawn 25 minutes late"),
+  ## exercises the ICH M13A BLQ rule (BLQ = 0 wherever it falls), which differs from the
+  ## PKNCA default only when a BLQ value sits between quantifiable concentrations
+  mid_blq      = list(subj = "024", period = 2L, tpt = 6, what = "6 h sample in Period 2 reported below the LLOQ between quantifiable samples (a simulated sample-handling problem; no reassay)")
 )
 
 set.seed(STUDY$seed)
@@ -107,6 +110,8 @@ for (i in seq_len(N)) for (p in 1:2) {
   if (subj[i] == SCENARIOS$carryover$subj && p == SCENARIOS$carryover$period)
     conc[tpts == 0] <- SCENARIOS$carryover$frac * max(conc)
   conc <- signif(conc, 3)
+  sc <- SCENARIOS$mid_blq                                           # set after all random draws,
+  if (subj[i] == sc$subj && p == sc$period) conc[tpts == sc$tpt] <- 0   # so no other value changes
   missed <- subj[i] == SCENARIOS$missed$subj & p == SCENARIOS$missed$period & tpts == SCENARIOS$missed$tpt
   blq <- !missed & conc < STUDY$lloq
   k <- k + 1L

@@ -14,9 +14,9 @@ here is real trial data, a validated system or a regulatory deliverable.
 | 1 Design | [`01_design/`](01_design/protocol_statistics.html) | PowerTOST sample size at 80% and 90% power with a sensitivity grid and dropout inflation; blockrand permuted-block schedule (TR/RT, seed 2026) with a balance check; protocol statistics excerpt with ICH M11 headings | Led: protocol statistical sections and randomization schedules |
 | 2 SAP | [`02_sap/`](02_sap/sap_excerpt.html) | Estimand (five ICH E9(R1) attributes, intercurrent-event strategies), analysis sets, the ICH M13A model, BLQ and missing-data rules, [mock shells](02_sap/mock_shells.html); settings in `analysis_parameters.json` feed the code | Led: analysis plans and mock TLFs |
 | 3 ADaM | [`03_adam/`](03_adam/index.html) | SDTM-like DM, EX, PC, AE, VS, DS; ADSL, ADPC, ADPP, ADAE with admiral 1.5.0 (ad_adpc.R and ad_adpp.R templates; NFRLT/AFRLT); specification in Pinnacle 21 layout (xlsx) and JSON read by `metacore::spec_to_metacore()`; metatools checks; XPT v5 with xportr; Dataset-JSON v1.1 (not accepted by FDA as of Oct 2026) | Supported: created or reviewed CDISC analysis specifications. Gap: define.xml and ADRG are not authored |
-| 4 Analysis | [`04_analysis/`](04_analysis/index.html) | PKNCA NCA with BLQ kept as zero (ICH M13A); the M13A GLM with all four effect tests and the 90% CI; six rtables/tern tables to RTF (`formatters::export_as_rtf()`) and HTML; figures; a [Quarto report](04_analysis/report/report.html) | Led: PK analyses for crossover and BE studies |
-| 5 QC | [`05_qc/`](05_qc/qc_ledger.html) | Same-author re-derivation: NonCompart vs PKNCA, the BE model by a closed-form period-difference t-test and by `nlme::lme()`, base-R rebuilds of ADPC times, population flags and AE counts, all compared with diffdf at stated tolerances; a planted-difference control | Supported: reviewed outputs. Not independent double programming |
-| 6 CSR | [`06_csr/`](06_csr/csr_section11.html) | Section 11-style text with every number read from an output, checked by the `tlf_interpret` number-grounding validator, with controls that show what it catches and what it cannot | Supported: statistical input to CSRs; Led: final statistical reports |
+| 4 Analysis | [`04_analysis/`](04_analysis/index.html) | PKNCA NCA with BLQ kept as zero (ICH M13A), with its effect against the PKNCA default shown; the SAP parameter rules (adjusted R-squared, AUC(0-inf) extrapolation) applied with PKNCA `exclude()`; the M13A GLM with all four effect tests and the 90% CI; supplementary analyses, including one without the participants whose Cmax is at the first post-dose sample (M13A 2.1.8.1); six rtables/tern tables to RTF (`formatters::export_as_rtf()`) and HTML; figures; a [Quarto report](04_analysis/report/report.html) | Led: PK analyses for crossover and BE studies |
+| 5 QC | [`05_qc/`](05_qc/qc_ledger.html) | Same-author re-derivation: NonCompart vs PKNCA (including the BLQ scenario and the parameter-rule flags), the BE model by a closed-form period-difference t-test and by `nlme::lme()`, base-R rebuilds of ADPC times, population flags and AE counts, all compared with diffdf at stated tolerances; two controls that must fail in a known way | Supported: reviewed outputs. Not independent double programming |
+| 6 CSR | [`06_csr/`](06_csr/csr_section11.html) | Section 11-style text with every number read from an output, filled into fixed sentence templates (written with an AI coding assistant; no language model runs in the pipeline), checked by the `tlf_interpret` number-grounding validator, with controls that show what it catches and what it cannot | Supported: statistical input to CSRs; Led: final statistical reports |
 
 ## Run
 
@@ -38,8 +38,9 @@ check because PNG rendering depends on system fonts); it has not yet run on GitH
 The SDTM-like layer reuses `sim_lifecycle/priors.R` (demographics, PK and adverse-event priors)
 and the one-compartment model in `sim_lifecycle/simulate_adam.R`, with the same design (2x2,
 N = 40, seed 2026). It adds the randomization schedule, calendar dates, actual sampling times
-and five documented scenarios (a withdrawal, emesis after dosing, a pre-dose carry-over value
-below the 5% rule, a missed sample and a late sample). `sim_lifecycle/` itself is unchanged.
+and six documented scenarios (a withdrawal, emesis after dosing, a pre-dose carry-over value
+below the 5% rule, a missed sample, a late sample and a BLQ result between quantifiable
+samples). `sim_lifecycle/` itself is unchanged.
 
 ## Not covered
 

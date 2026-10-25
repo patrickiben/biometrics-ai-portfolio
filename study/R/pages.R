@@ -11,6 +11,11 @@ mchk <- utils::read.csv(sp("03_adam", "data", "metadata_checks.csv"))
 pkg <- c("admiral", "metacore", "metatools", "xportr", "datasetjson", "PKNCA", "NonCompart", "PowerTOST", "blockrand",
          "rtables", "tern", "formatters", "r2rtf", "diffdf", "dplyr", "ggplot2", "knitr", "rmarkdown", "openxlsx", "renv")
 VERS <- vapply(pkg, pkg_version, "")                       # CRAN form, as in renv.lock (PowerTOST 1.5-7)
+NCAS <- jsonlite::read_json(sp("04_analysis", "nca_settings.json"))
+CHK <- utils::read.csv(sp("04_analysis", "pk_checks.csv"))
+chkv <- function(id) CHK$value[CHK$id == id]
+ai <- be_results[be_results$PARAMCD == "AUCIFO", ]
+blq_auc <- blq_effect[blq_effect$PARAMCD == "AUCLST", ]
 v <- function(p) VERS[[p]]
 cm <- be_results[be_results$PARAMCD == "CMAX", ]; au <- be_results[be_results$PARAMCD == "AUCLST", ]
 p2 <- function(x) formatC(100 * x, format = "f", digits = 2)
@@ -72,15 +77,24 @@ body04 <- paste0(
   sprintf('<li><span class="k">AUC(0-t) ratio T/R</span><span class="v">%s%%</span> 90%% CI %s to %s</li>', p2(au$ratio), p2(au$lower), p2(au$upper)),
   sprintf('<li><span class="k">Bioequivalence set</span><span class="v">%d</span> of %d participants</li>', cm$n, nrow(adsl)),
   sprintf('<li><span class="k">Conclusion</span><span class="v">%s</span> on unrounded limits</li>', if (be_pass) "BE shown" else "BE not shown"), '</ul>',
-  md(sprintf("NCA with PKNCA %s, configured per the SAP: actual times, linear-up/log-down AUC, `conc.blq = list(first = \"keep\", middle = \"keep\", last = \"keep\")` so BLQ counts as zero everywhere (ICH M13A), lambda z from at least 3 points after tmax. The bioequivalence model is the ICH M13A general linear model (sequence, participant within sequence, period, formulation). Tables use rtables %s and tern %s; RTF comes from `formatters::export_as_rtf()` (formatters %s with r2rtf %s).",
-             v("PKNCA"), v("rtables"), v("tern"), v("formatters"), v("r2rtf"))),
+  md(sprintf("NCA with PKNCA %s, configured per the SAP: actual times, linear-up/log-down AUC, `conc.blq = list(first = \"keep\", middle = \"keep\", last = \"keep\")` so BLQ counts as zero everywhere (ICH M13A), lambda z from at least 3 points after tmax. The SAP parameter rules are applied with PKNCA `exclude()`: AUC(0-inf) is flagged in %d profiles with more than %s%% extrapolated and lambda z-based parameters in %d profiles with adjusted R-squared below %s; the values stay in ADPP (NCAEXRSN) and are not summarized or analyzed. The bioequivalence model is the ICH M13A general linear model (sequence, participant within sequence, period, formulation). Tables use rtables %s and tern %s; RTF comes from `formatters::export_as_rtf()` (formatters %s with r2rtf %s).",
+             v("PKNCA"), chkv("aucinf_pext"), NCAS$parameter_rules$max_aucinf_pext_pct, chkv("adj_r2"),
+             formatC(NCAS$parameter_rules$min_hl_adj_r_squared, format = "f", digits = 2), v("rtables"), v("tern"), v("formatters"), v("r2rtf"))),
+  '<h2>What the ICH M13A BLQ setting changes</h2>',
+  md(sprintf("PKNCA's default drops a BLQ value that sits between quantifiable concentrations; ICH M13A treats it as zero. %s such a value (scenario 6), so the same NCA was also run with the PKNCA default. The values that differ:",
+             if (NCAS$blq$profiles_with_blq_between_quantifiable == 1) "One profile has" else sprintf("%d profiles have", NCAS$blq$profiles_with_blq_between_quantifiable))),
+  html_table(transmute(blq_effect, Participant = USUBJID, Period = APERIOD, Treatment = TRTA, Parameter = PARAMCD,
+                       `BLQ kept as 0 (ICH M13A, used)` = fmt(M13A, 2), `PKNCA default (BLQ dropped)` = fmt(PKNCA_default, 2),
+                       `Difference (%)` = fmt(pct_difference, 1)),
+             caption = "Only parameters that differ between the two BLQ settings are listed (blq_rule_effect.csv)."),
+  md(sprintf("Cmax fell at the first post-dose sample in %d evaluable profiles ([first_point_cmax.csv](first_point_cmax.csv)). ICH M13A asks for a discussion of robustness, so a supplementary analysis removes those participants from the bioequivalence set; its result is in the report and in [be_supplementary.csv](be_supplementary.csv).", chkv("first_point_cmax"))),
   '<h2>Results report</h2>',
   md("[report/report.html](report/report.html): the Quarto report (rendered by `run_all.R`) with the figures, every table, the exclusions and the ICH M13A acceptability checks."),
   '<h2>Tables</h2>', tl_html,
   '<h2>Figures</h2>',
   '<figure><img src="tlf/f_14_4_2_1a_mean_linear.png" alt="Mean plasma SIMDRUG concentrations by nominal time for Test and Reference, linear scale" width="880" height="550" loading="lazy"><figcaption>Figure 14.4.2.1a, mean concentrations (linear). Also <a href="tlf/f_14_4_2_1b_mean_semilog.png">semi-log</a> and <a href="tlf/f_14_4_2_2_individual.png">individual profiles (actual times)</a>.</figcaption></figure>',
   '<h2>Result files</h2>',
-  md("[nca_parameters.csv](nca_parameters.csv) (one row per profile), [nca_settings.json](nca_settings.json), [be_results.csv](be_results.csv), [be_results.json](be_results.json), [be_anova.csv](be_anova.csv), [be_supplementary.csv](be_supplementary.csv), [pk_checks.csv](pk_checks.csv), [analysis_sets.csv](analysis_sets.csv). Programs: `01_nca.R`, `02_be.R`, `03_tlf.R`, `report/report.qmd`."),
+  md("[nca_parameters.csv](nca_parameters.csv) (one row per profile), [nca_settings.json](nca_settings.json) (options and parameter rules), [blq_rule_effect.csv](blq_rule_effect.csv), [be_results.csv](be_results.csv), [be_results.json](be_results.json), [be_anova.csv](be_anova.csv), [be_supplementary.csv](be_supplementary.csv), [first_point_cmax.csv](first_point_cmax.csv), [pk_checks.csv](pk_checks.csv), [analysis_sets.csv](analysis_sets.csv). Programs: `01_nca.R`, `02_be.R`, `03_tlf.R`, `report/report.qmd`."),
   '<div class="not-covered"><p><strong>Not covered here.</strong> SAS was not used in this example; the SAS twins in the TLF library are not executed (no license). Phoenix WinNonlin was not used. These outputs are executed on synthetic data and are not validated deliverables.</p></div>')
 write_text(page_html(title = "Analysis Outputs", kicker = "Stage 4: analysis", h1 = "NCA, bioequivalence analysis and executed tables",
                      description = "Executed NCA (PKNCA), ICH M13A bioequivalence analysis and rtables/tern tables with RTF export for a synthetic 2x2 crossover.",
@@ -126,7 +140,7 @@ body_idx <- paste0(
       L("02_sap/analysis_parameters.json", "analysis_parameters.json", "settings the code reads"))),
   stage_sec(3, "SDTM-like inputs, ADaM, specification and XPT",
     paste0(lab("sup", "Supported (job): created or reviewed CDISC analysis specifications"), lab("tools", "Tools built: runs here"), lab("gap", "Gap: define.xml, ADRG")),
-    c(sprintf("Simulated DM, EX, PC, AE, VS and DS (%d concentration records at actual times) with five documented scenarios: a withdrawal, emesis, a pre-dose carry-over value, a missed sample and a late sample.", sum(adpc$PARAMCD == "SIMDRUG")),
+    c(sprintf("Simulated DM, EX, PC, AE, VS and DS (%d concentration records at actual times) with %d documented scenarios: a withdrawal, emesis, a pre-dose carry-over value, a missed sample, a late sample and a BLQ result between quantifiable samples.", sum(adpc$PARAMCD == "SIMDRUG"), length(SCN)),
       sprintf("ADSL, ADPC, ADPP and ADAE with admiral %s following its ad_adpc.R and ad_adpp.R templates (NFRLT, AFRLT, NRRLT, ARRLT), adaptations listed.", v("admiral")),
       sprintf("Specification in Pinnacle 21 layout (xlsx) and JSON, read by metacore::spec_to_metacore(); <strong>%d of %d metadata checks passed</strong> (metatools check_variables, check_ct_data, check_unique_keys, lengths, mandatory values, XPT read-back).", sum(mchk$pass), nrow(mchk)),
       sprintf("SAS XPORT v5 with labels and lengths from xportr %s; Dataset-JSON v1.1 copies from datasetjson %s, which FDA has not accepted as of Oct 2026.", v("xportr"), v("datasetjson"))),
@@ -137,9 +151,13 @@ body_idx <- paste0(
     "define.xml and the ADRG are not authored; no Pinnacle 21 or CDISC CORE run; the inputs are SDTM-like, not conformant SDTM."),
   stage_sec(4, "NCA, bioequivalence analysis and TLFs",
     paste0(lab("led", "Led (job): lead biostatistician on crossover and BE studies; PK analyses"), lab("sup", "Supported (job): TLF review"), lab("tools", "Tools built: runs here")),
-    c(sprintf("PKNCA %s NCA on actual times with BLQ kept as zero in every position (ICH M13A): %d profiles.", v("PKNCA"), nrow(nca_wide)),
+    c(sprintf("PKNCA %s NCA on actual times with BLQ kept as zero in every position (ICH M13A): %d profiles. For the profile with a BLQ value between quantifiable samples, AUC(0-t) is %s h*ng/mL against %s with the PKNCA default, which drops that value.",
+              v("PKNCA"), nrow(nca_wide), fmt(blq_auc$M13A[1], 1), fmt(blq_auc$PKNCA_default[1], 1)),
+      sprintf("SAP parameter rules through PKNCA exclude(): AUC(0-inf) flagged in %d profiles (more than %s%% extrapolated); the supportive AUC(0-inf) analysis uses %d participants.",
+              chkv("aucinf_pext"), NCAS$parameter_rules$max_aucinf_pext_pct, ai$n),
       sprintf("ICH M13A GLM: <strong>Cmax ratio %s%% (90%% CI %s to %s), AUC(0-t) ratio %s%% (90%% CI %s to %s)</strong> in %d participants; %s.",
               p2(cm$ratio), p2(cm$lower), p2(cm$upper), p2(au$ratio), p2(au$lower), p2(au$upper), cm$n, if (be_pass) "bioequivalence shown" else "bioequivalence not shown"),
+      sprintf("Cmax at the first post-dose sample in %d profiles (ICH M13A 2.1.8.1); a supplementary analysis without those participants.", chkv("first_point_cmax")),
       sprintf("Six tables with rtables %s and tern %s, each exported to RTF with formatters::export_as_rtf() and to HTML; three figures; a Quarto results report.", v("rtables"), v("tern"))),
     c(L("04_analysis/index.html", "Analysis page", "tables, figures, result files"),
       L("04_analysis/report/report.html", "report.html", "Quarto results report"),
@@ -149,9 +167,9 @@ body_idx <- paste0(
   stage_sec(5, "QC: re-derivation by a second method",
     paste0(lab("sup", "Supported (job): reviewed outputs"), lab("tools", "Tools built: same-author re-derivation"), lab("gap", "Gap: independent double programming")),
     c(sprintf("<strong>%d of %d checks passed</strong> (%d values compared with diffdf %s at stated tolerances).", QC$pass, QC$checks, QC$values_compared, v("diffdf")),
-      sprintf("NonCompart %s vs PKNCA for every NCA parameter; the BE model refit as a closed-form period-difference t-test and with nlme::lme().", v("NonCompart")),
+      sprintf("NonCompart %s vs PKNCA for every NCA parameter, including the profile with a BLQ value between quantifiable samples, and the SAP parameter-rule flags; the BE model refit as a closed-form period-difference t-test and with nlme::lme().", v("NonCompart")),
       "ADPC times (including the experimental derive_var_nfrlt()), ADSL population flags and the adverse-event counts rebuilt in base R from the SDTM-like data.",
-      "A planted 0.1% change is found exactly once, so the comparison is shown to fail when it should."),
+      "Controls: a planted 0.1% change is found exactly once, and NonCompart's unadjusted AUC(0-t) differs from PKNCA in exactly the BLQ profile, so the comparison is shown to fail when it should."),
     c(L("05_qc/qc_ledger.html", "qc_ledger.html", "executed ledger with pass/fail counts"),
       L("05_qc/qc_ledger.csv", "qc_ledger.csv", "one row per compared variable"),
       L("05_qc/qc_nca_side_by_side.csv", "qc_nca_side_by_side.csv", "both engines, every profile")),

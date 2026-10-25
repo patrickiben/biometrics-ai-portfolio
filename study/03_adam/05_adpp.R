@@ -17,6 +17,9 @@
 #             (M13A 2.2.3.3). Applied to the bioanalytical results.
 #   LOWEXP    AUC(0-t) < 5% of the product's geometric mean AUC without the participant
 #             (M13A 2.2.1.1; at most 1 participant). Applied to the bioanalytical results.
+# Parameter rules from the NCA (PP.PPEXCL, set by PKNCA exclude() in 04_analysis/01_nca.R)
+# become NCAEXRSN: those records get ANL01FL and ANL02FL not Y; the rest of the profile
+# is still used.
 #
 # Inputs : 03_adam/sdtm/pp.csv, objects adsl_core, adpc, adae
 # Outputs: objects `adpp`, `adsl` (final), `adpc` (with ANL02FL), `exclusions`
@@ -48,9 +51,14 @@ adpp_pp <- pp %>%
   derive_vars_dt(new_vars_prefix = "A", dtc = PPRFTDTC) %>%
   derive_vars_dy(reference_date = TRTSDT, source_vars = exprs(ADT))
 
+nca_terms <- nca_rule_terms(SAP)
 adpp_aval <- adpp_pp %>%
   left_join(select(param_lookup, PPTESTCD, PARAMCD), by = "PPTESTCD") %>%
-  mutate(PARCAT1 = PPCAT, AVAL = PPSTRESN, AVALU = PPSTRESU) %>%
+  mutate(PARCAT1 = PPCAT, AVAL = PPSTRESN, AVALU = PPSTRESU,
+         NCAEXRSN = case_when(grepl("adj.r.squared", PPEXCL, fixed = TRUE) ~ nca_terms[["r2"]],
+                              grepl("aucpext", PPEXCL, fixed = TRUE) ~ nca_terms[["pext"]],
+                              TRUE ~ NA_character_)) %>%
+  { stopifnot(all(is.na(.$PPEXCL) == is.na(.$NCAEXRSN))); . } %>%      # every PKNCA reason is mapped
   select(-PPSTRESN, -PPSTRESC) %>%
   mutate(SRCDOM = DOMAIN, SRCVAR = "SEQ", SRCSEQ = PPSEQ) %>%
   select(-DOMAIN, -PPSEQ)
@@ -102,13 +110,17 @@ be_subj <- prof %>% filter(ANL01FL == "Y") %>% group_by(USUBJID) %>%
 prof <- prof %>% mutate(ANL02FL = ifelse(ANL01FL %in% "Y" & USUBJID %in% be_subj, "Y", NA_character_))
 
 ## --- ADPP ----------------------------------------------------------------------------------
+## the profile flags apply to every parameter of the period, except a value that a parameter
+## rule flags (NCAEXRSN), which is kept in ADPP but not summarized or analyzed
 adpp <- adpp_avisit %>%
   left_join(select(prof, USUBJID, APERIOD, PKEXRSN, ANL01FL, ANL02FL), by = c("USUBJID", "APERIOD")) %>%
+  mutate(ANL01FL = ifelse(is.na(NCAEXRSN), ANL01FL, NA_character_),
+         ANL02FL = ifelse(is.na(NCAEXRSN), ANL02FL, NA_character_)) %>%
   derive_vars_merged(dataset_add = select(adsl_core, STUDYID, USUBJID, SUBJID, SITEID, AGE, SEX, RACE, TRTSEQP, SAFFL),
                      by_vars = exprs(STUDYID, USUBJID)) %>%
   derive_var_obs_number(new_var = ASEQ, by_vars = exprs(STUDYID, USUBJID), order = exprs(APERIOD, PARAMN), check_type = "error") %>%
   select(STUDYID, USUBJID, SUBJID, SITEID, AGE, SEX, RACE, TRTSEQP, SAFFL, APERIOD, APERIODC, TRTP, TRTA, TRTAN,
-         PARAMCD, PARAM, PARAMN, PARCAT1, AVAL, AVALU, PPSTAT, PPREASND, ANL01FL, ANL02FL, PKEXRSN,
+         PARAMCD, PARAM, PARAMN, PARCAT1, AVAL, AVALU, PPSTAT, PPREASND, ANL01FL, ANL02FL, PKEXRSN, NCAEXRSN,
          ADT, ADY, AVISIT, AVISITN, SRCDOM, SRCVAR, SRCSEQ, ASEQ) %>%
   arrange(USUBJID, ASEQ) %>%
   num_round()
@@ -131,6 +143,6 @@ adsl <- adsl_core %>%
 n_be <- sum(adsl$BEFL == "Y")
 stopifnot(n_be >= rules$min_evaluable)
 write_csv_det(exclusions, sp("03_adam", "data", "exclusion_rules_evaluated.csv"))
-cat(sprintf("[03_adam/adpp] %d records; periods excluded: %d (%s); BE set %d of %d (M13A minimum %d)\n",
+cat(sprintf("[03_adam/adpp] %d records; periods excluded: %d (%s); values flagged by NCA rules: %d; BE set %d of %d (M13A minimum %d)\n",
             nrow(adpp), sum(!is.na(prof$PKEXRSN)), paste(unique(na.omit(prof$PKEXRSN)), collapse = "; "),
-            n_be, nrow(adsl), rules$min_evaluable))
+            sum(!is.na(adpp$NCAEXRSN)), n_be, nrow(adsl), rules$min_evaluable))

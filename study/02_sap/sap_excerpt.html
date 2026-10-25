@@ -28,7 +28,7 @@
     <p class="meta"><span class="lab led">Led (job): analysis plans and mock shells</span><span class="lab tools">Settings feed the code: analysis_parameters.json</span></p>
     <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
   </section>
-<div class="note"><p>Excerpt of the statistical methods of a statistical analysis plan (SAP) for the synthetic study SIMBE01. The settings in this plan are also written to <a href="analysis_parameters.json">analysis_parameters.json</a>, which the analysis programs read, so the plan and the code cannot drift apart silently.</p></div><h2>1 Estimand (ICH E9(R1))</h2>
+<div class="note"><p>Excerpt of the statistical methods of a statistical analysis plan (SAP) for the synthetic study SIMBE01. The numerical settings in this plan (acceptance limits, exclusion thresholds and NCA options) are also written to <a href="analysis_parameters.json">analysis_parameters.json</a>, which the analysis programs read, so a change to a setting reaches the code and this plan together.</p></div><h2>1 Estimand (ICH E9(R1))</h2>
 <table>
 <thead>
 <tr>
@@ -76,12 +76,13 @@
 <tr><td>Bioequivalence</td><td>ADSL.BEFL</td><td>Evaluable Cmax and AUC(0-t) after both T and R, after exclusions</td><td>Bioequivalence analysis</td></tr></tbody></table></div><h2>3 Pharmacokinetic parameters</h2>
 <p>Parameters come from non-compartmental analysis (NCA) with PKNCA 0.12.1 on <strong>actual</strong> sampling times relative to each period's dose (ADPC.ARRLT). Pre-dose samples are assigned time 0. The NCA settings follow ICH M13A (Step 4 23 Jul 2024; FDA final 30 Oct 2024; EU effective 25 Jan 2025):</p>
 <ul>
-<li>AUC by the linear-up/log-down trapezoidal method (M13A gives the linear trapezoidal method as an example and asks that the method be reported).</li>
-<li>Concentrations below the LLOQ (0.50 ng/mL) are treated as zero wherever they fall in the profile: <code>PKNCA.options(conc.blq = list(first = &quot;keep&quot;, middle = &quot;keep&quot;, last = &quot;keep&quot;))</code>. PKNCA treats a kept BLQ value as zero. This changes the PKNCA default, which drops BLQ values in the middle of a profile.</li>
+<li>AUC by the linear-up/log-down trapezoidal method (M13A gives the linear trapezoidal method as an example and asks that the method be reported). The log-down rule applies only when both concentrations are positive; a segment that starts or ends at a zero (BLQ) concentration uses the linear trapezoid, as PKNCA does.</li>
+<li>Concentrations below the LLOQ (0.50 ng/mL) are treated as zero wherever they fall in the profile (ICH M13A 2.2.2.2): <code>PKNCA.options(conc.blq = list(first = &quot;keep&quot;, middle = &quot;keep&quot;, last = &quot;keep&quot;))</code>. PKNCA treats a kept BLQ value as zero. This changes the PKNCA default, which drops BLQ values in the middle of a profile. One simulated profile has a BLQ result between quantifiable samples, and the analysis page shows how much the choice changes its AUC(0-t).</li>
 <li>BLQ values are omitted from the terminal rate constant: PKNCA excludes zeros from the log-linear fit.</li>
 <li>The terminal phase uses at least 3 points after tmax, chosen by adjusted R-squared (PKNCA defaults <code>min.hl.points = 3</code>, <code>allow.tmax.in.half.life = FALSE</code>).</li>
 <li>Primary: Cmax and AUC(0-t) (AUC to the last quantifiable concentration). Additional: AUC(0-inf), AUC(0-t)/AUC(0-inf), tmax, the terminal rate constant (lambda z) and t1/2.</li>
-<li>AUC(0-t) should cover at least 80% of AUC(0-inf). If fewer than 80% coverage occurs in more than 20% of profiles, the report discusses the study's validity (ICH M13A).</li>
+<li>Parameter rules: lambda z, t1/2, AUC(0-inf) and the extrapolated percentage are not summarized or analyzed when the adjusted R-squared of the terminal fit is below 0.90; AUC(0-inf) is not summarized or analyzed when more than 20% of it is extrapolated (the extrapolated percentage itself is still summarized). They are applied with PKNCA <code>exclude()</code>, with a rule function that flags every parameter that depends on lambda z (<code>get.parameter.deps(&quot;half.life&quot;)</code>) or AUC(0-inf) alone. The values stay in ADPP, with ANL01FL and ANL02FL not Y and NCAEXRSN giving the rule.</li>
+<li>AUC(0-t) should cover at least 80% of AUC(0-inf). If coverage is below 80% in more than 20% of profiles, the report discusses the study's validity (ICH M13A 2.2.2.2). This check counts every evaluable profile, including those whose AUC(0-inf) is not summarized under the 20% rule.</li>
 <li>Summary statistics: n, arithmetic mean, SD, CV%, geometric mean, geometric CV%, median, minimum and maximum; tmax as median (minimum, maximum). Geometric mean = exp(mean(log x)); geometric CV% = 100*sqrt(exp(s^2) - 1) on the log scale.</li>
 <li>Individual profiles are plotted against actual times; mean profiles against nominal times (ICH M13A).</li>
 </ul>
@@ -95,7 +96,9 @@
 <li>The T minus R difference of least-squares means and its 90% confidence interval use the residual mean square with its degrees of freedom; the limits are exponentiated to a ratio. The decision uses the unrounded limits; the tables show two decimals.</li>
 <li>Within-participant CV% = 100*sqrt(exp(MSE) - 1).</li>
 <li>No carry-over test (ICH M13A). Carry-over is addressed by the pre-dose concentration rule.</li>
-<li>Supplementary analysis (ICH E9(R1) term): the same model with the excluded periods put back, for participants who have both periods. It changes how the intercurrent events are handled, so it is supplementary, not a sensitivity analysis of the primary estimand.</li>
+<li>Supportive AUC(0-inf) analysis: the same model, on participants in the bioequivalence set whose AUC(0-inf) passes the parameter rules in both periods.</li>
+<li>Supplementary analysis 1 (ICH E9(R1) term): the same model with the excluded periods put back, for participants who have both periods. It changes how the intercurrent events are handled, so it is supplementary, not a sensitivity analysis of the primary estimand.</li>
+<li>Supplementary analysis 2 (ICH M13A 2.1.8.1): the same model without the participants whose Cmax is at the first post-dose sample (0.25 h) in either period, since their true Cmax may have come earlier. The report discusses whether the conclusion depends on them.</li>
 </ul>
 <h2>5 Missing data and values below the LLOQ</h2>
 <ul>

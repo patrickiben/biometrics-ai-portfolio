@@ -1,4 +1,4 @@
 "","n","Adjusted geometric mean, Test","Adjusted geometric mean, Reference","Ratio T/R (%)","90% CI (%)","Within-participant CV%","Within 80.00 to 125.00%"
 "Cmax (ng/mL)","38","103.3","102.2","101.07","98.89, 103.30","5.6","Yes"
-"AUC(0-t) (h*ng/mL)","38","1204.9","1161.5","103.74","98.38, 109.39","13.8","Yes"
-"AUC(0-inf) (h*ng/mL), supportive","38","1264.8","1203.4","105.10","99.24, 111.30","14.9","Yes"
+"AUC(0-t) (h*ng/mL)","38","1204.9","1158.7","103.99","98.52, 109.75","14.0","Yes"
+"AUC(0-inf) (h*ng/mL), supportive","37","1243.3","1188.4","104.62","98.63, 110.97","15.1","Yes"

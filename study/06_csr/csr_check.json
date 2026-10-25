@@ -82,7 +82,7 @@
       "expected": "REJECTED",
       "status": "REJECTED",
       "unmatched": "108.31",
-      "text": "The adjusted geometric mean Cmax was 103.3 ng/mL for Test and 102.2 ng/mL for Reference. The ratio of geometric means (Test/Reference) was 101.07% with a 90% confidence interval of 98.89% to 108.31%. For AUC(0-t) the adjusted geometric means were 1204.9 and 1161.5 h*ng/mL, and the ratio was 103.74% (90% CI 98.38% to 109.39%). Both intervals lie within 80.00% to 125.00% (Table 14.4.3.1).",
+      "text": "The adjusted geometric mean Cmax was 103.3 ng/mL for Test and 102.2 ng/mL for Reference. The ratio of geometric means (Test/Reference) was 101.07% with a 90% confidence interval of 98.89% to 108.31%. For AUC(0-t) the adjusted geometric means were 1204.9 and 1158.7 h*ng/mL, and the ratio was 103.99% (90% CI 98.52% to 109.75%). Both intervals lie within 80.00% to 125.00% (Table 14.4.3.1).",
       "as_expected": true
     },
     {

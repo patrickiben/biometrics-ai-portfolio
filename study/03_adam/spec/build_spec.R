@@ -9,6 +9,7 @@
 # ADRG are not authored in this example).
 ################################################################################
 spec_dir <- sp("03_adam", "spec")
+SAP <- jsonlite::read_json(sp("02_sap", "analysis_parameters.json"), simplifyVector = TRUE)
 
 v <- function(var, label, type = "text", length = 8, codelist = NA, origin = "Derived", method = NA,
               predecessor = NA, format = NA, mandatory = "Yes", role = NA) {
@@ -148,6 +149,7 @@ ADPP = dplyr::bind_rows(id_vars, adsl_carry,
   v("ANL01FL", "Analysis Flag 01", length = 1, codelist = "Y", method = "MT.ANL01FL.PP", mandatory = "No"),
   v("ANL02FL", "Analysis Flag 02", length = 1, codelist = "Y", method = "MT.ANL02FL.PP", mandatory = "No"),
   v("PKEXRSN", "Reason Excluded from PK Analyses", length = 40, codelist = "PKEXRSN", method = "MT.PKEXRSN", mandatory = "No"),
+  v("NCAEXRSN", "Reason Value Excluded by NCA Rule", length = 40, codelist = "NCAEXRSN", method = "MT.NCAEXRSN", mandatory = "No"),
   dd("ADT", "Analysis Date", "MT.ADT.PP"),
   v("ADY", "Analysis Relative Day", "integer", method = "MT.ADY"),
   v("AVISIT", "Analysis Visit", length = 6, method = "MT.AVISIT.PP"),
@@ -220,6 +222,7 @@ codelists <- dplyr::bind_rows(
   cl("PARAMCD.PC", c("SIMDRUG", "DOSE"), c("SIMDRUG Concentration in Plasma", "SIMDRUG Dose")),
   cl("PARAMCD.PP", c("CMAX", "AUCLST", "AUCIFO", "AUCPEO", "TMAX", "LAMZHL", "LAMZ", "LAMZNPT", "R2ADJ", "LAMZLL", "LAMZUL", "TLST", "CLST")),
   cl("PKEXRSN", c("EMESIS WITHIN 2 H OF DOSING", "PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX", "AUC BELOW 5% OF GEOMETRIC MEAN AUC")),
+  cl("NCAEXRSN", unname(nca_rule_terms(SAP))),
   cl("SEV", c("MILD", "MODERATE", "SEVERE")), cl("REL", c("RELATED", "NOT RELATED")))
 
 methods <- tibble::tribble(
@@ -262,9 +265,10 @@ methods <- tibble::tribble(
   "MT.APERIOD.PP", "PP.VISITNUM (the period of the NCA profile).",
   "MT.TRTA.PP", "TRTxxP/TRTxxA of APERIOD (crossover adaptation of admiral ad_adpp.R).",
   "MT.PARAMCD.PP", "PP.PPTESTCD through the parameter lookup table.",
-  "MT.ANL01FL.PP", "Y when Cmax and AUC(0-t) exist for the period and PKEXRSN is missing: descriptive PK summaries.",
-  "MT.ANL02FL.PP", "Y when ANL01FL = Y and the participant has ANL01FL = Y periods for both products: bioequivalence analysis.",
-  "MT.PKEXRSN", "SAP exclusion rules in order: emesis within 2 h of dosing (ADAE); pre-dose concentration above 5% of the period's Cmax; AUC(0-t) below 5% of the product's geometric mean AUC without the participant (ICH M13A).",
+  "MT.ANL01FL.PP", "Y when Cmax and AUC(0-t) exist for the period, PKEXRSN is missing, and NCAEXRSN is missing for the record: descriptive PK summaries.",
+  "MT.ANL02FL.PP", "Y when ANL01FL = Y and the participant has evaluable periods (Cmax and AUC(0-t), PKEXRSN missing) for both products: bioequivalence analysis. The supportive AUC(0-inf) analysis uses participants with ANL02FL = Y for AUCIFO in both periods.",
+  "MT.PKEXRSN", "SAP period rules in order: emesis within 2 h of dosing (ADAE; a protocol violation documented before bioanalysis, ICH M13A 2.2.1); pre-dose concentration above 5% of the period's Cmax (ICH M13A 2.2.3.3) and AUC(0-t) below 5% of the product's geometric mean AUC without the participant (ICH M13A 2.2.1.1), both applied to the bioanalytical results.",
+  "MT.NCAEXRSN", "PP.PPEXCL (PKNCA exclude() in 04_analysis/01_nca.R) decoded: adjusted R-squared of the terminal fit below the SAP minimum flags lambda z and every parameter that depends on it; AUC(0-inf) more than the SAP maximum extrapolated flags AUC(0-inf). The value stays in AVAL.",
   "MT.ADT.PP", "admiral::derive_vars_dt() of PP.PPRFTDTC.",
   "MT.AVISIT.PP", "Day ADY, as in admiral ad_adpp.R.",
   "MT.APERIOD.AE", "admiral::create_period_dataset() + derive_vars_joined(): the period whose start and end datetimes contain ASTDTM; TRTA from that period.",
