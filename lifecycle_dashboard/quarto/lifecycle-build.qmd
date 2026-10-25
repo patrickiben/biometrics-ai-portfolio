@@ -34,7 +34,7 @@ every number is defensible.
 
 It also runs in your browser with no install: [open the console in your browser](../../apps/lifecycle_dashboard/)
 (Shinylive and webR; R starts in the browser, the first visit downloads about 55 MB, and it works
-best in Chrome or Edge).
+best in Chrome or Edge; Safari support may vary).
 
 The whole console is three R files, shown here in full, nothing elided:
 

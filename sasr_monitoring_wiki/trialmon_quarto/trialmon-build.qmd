@@ -41,11 +41,14 @@ every panel re-computes. The study tier has a what-if: pick an indicator, set it
 tiers re-roll worst-of. The worklist download is a CSV built in the browser; its file name starts with
 SYNTHETIC and its first column says the data are synthetic.
 
-**Shinylive.** The app is ready for Shinylive (webR): its data sit inside the app folder, it uses only
-shiny, bslib, DT and ggplot2, and the download goes through `session$sendCustomMessage()` and a few
-lines of JavaScript that save a Blob, because a `downloadHandler` needs a server. A test export with the
-shinylive R package 0.5.0 (assets 0.10.12) gave the same tiers, counts and download in headless Chrome
-as the native app. Publishing it is a separate step.
+**In your browser.** It also runs in your browser with no install: [open the console in your
+browser](../../apps/trialmon/) (Shinylive and webR; R starts in the browser, the first visit downloads
+about 55 MB, and it works best in Chrome or Edge; Safari support may vary). The app needed no changes
+for that: its data sit inside the app folder, it uses only shiny, bslib, DT and ggplot2, and the
+download goes through `session$sendCustomMessage()` and a few lines of JavaScript that save a Blob,
+because a `downloadHandler` needs a server. The site's Pages workflow (`.github/workflows/pages.yml`)
+exports it with the shinylive R package 0.5.0 (assets 0.10.12), and a local export gave the same
+tiers, counts and download in headless Chrome as the native app.
 
 The files, shown in full below:
 
