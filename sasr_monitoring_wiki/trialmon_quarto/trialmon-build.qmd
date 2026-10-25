@@ -38,7 +38,8 @@ The console opens on the ranked worklist. Click a point on the eDISH plot, or a 
 the worklist, to open that participant's packet in the sidebar. The SAP settings in the sidebar switch
 the CTCAE version (v6.0 or v5.0), the potential Hy's Law window and the optional ALP convention, and
 every panel re-computes. The study tier has a what-if: pick an indicator, set its level, and watch the
-tiers re-roll worst-of. The worklist download is a CSV built in the browser.
+tiers re-roll worst-of. The worklist download is a CSV built in the browser; its file name starts with
+SYNTHETIC and its first column says the data are synthetic.
 
 **Shinylive.** The app is ready for Shinylive (webR): its data sit inside the app folder, it uses only
 shiny, bslib, DT and ggplot2, and the download goes through `session$sendCustomMessage()` and a few
@@ -78,8 +79,10 @@ window and ALP option, the confirmation flag and the FDA discontinuation conside
 
 Three details carry most of the clinical weight. The Hy's Law test uses `.ge(ALT, 3)` (3-fold or greater)
 while the confirmation flag uses `.gt(ALT, 3)` (above 3x), as the FDA text does. Bilirubin is tested
-`.gt(BILI, 2)` only on draws from the day of the aminotransferase elevation to `window` days after it.
-And `worst()` is the only roll-up: there is no weighted mean anywhere in the file.
+`.gt(BILI, 2)` only on draws from the day of an aminotransferase elevation to `window` days after it, and
+every draw with ALT or AST at least 3x ULN opens its own window, so a second rise is not missed. And
+`worst()` is the only roll-up: there is no weighted mean anywhere in the file, and the watch level is a
+worklist row, so it reaches the tiers too.
 
 ## The data generator: R/gen_data.R
 
@@ -108,8 +111,9 @@ rendered UI, and that opening the app with that value changes no indicator. With
 scratch copy, both fail.
 
 **The download never touches the server's disk.** The observer on `input$dl` turns the worklist into CSV
-text with `as_csv_text()` and sends it with `session$sendCustomMessage("trialmon-download", ...)`; the
-handler in `DOWNLOAD_JS` wraps it in a Blob and clicks a temporary link.
+text with `as_csv_text()`, with a first `data_source` column that labels every row synthetic, and sends it
+with `session$sendCustomMessage("trialmon-download", ...)`; the handler in `DOWNLOAD_JS` wraps it in a
+Blob and clicks a temporary link. The file is named `SYNTHETIC_trialmon_worklist_CTCAEv6.0.csv` (or v5.0).
 
 ## The tests
 
@@ -118,12 +122,14 @@ Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R
 ```
 
 `test-boundaries.R` checks each rule exactly at its threshold and just either side: ALT exactly 3x ULN,
-bilirubin exactly 2x ULN, the 30-day window, ALP exactly 2x ULN, QTcF 450, 480 and 500 ms, changes of 30
-and 60 ms, 1 of 3 and 1 of 6 DLTs, and the CTCAE cut points that differ between v5.0 and v6.0.
-`test-logic.R` checks where each planted case lands in the shipped data. `test-server.R` drives the app
-with `shiny::testServer()`: the initial radio state, the what-if and reset, the SAP settings, and the
-download payload; it also checks that the app uses only Shinylive-ready packages and no
-`downloadHandler`.
+bilirubin exactly 2x ULN, the 30-day window, a second aminotransferase elevation that opens its own
+window, ALP exactly 2x ULN and the ALP option read draw by draw, QTcF 450, 480 and 500 ms, changes of 30
+and 60 ms, 1 of 3 and 1 of 6 DLTs, the CTCAE cut points that differ between v5.0 and v6.0, the eDISH axis
+range (every participant drawn), and the watch level reaching the roll-up. `test-logic.R` checks where
+each planted case lands in the shipped data. `test-server.R` drives the app with `shiny::testServer()`:
+the initial radio state, the what-if and reset, the SAP settings, the participant packet (no NA), the
+CTCAE versions in the footnotes, and the synthetic-labeled download payload; it also checks that the app
+uses only Shinylive-ready packages and no `downloadHandler`.
 
 ### run-tests.R
 

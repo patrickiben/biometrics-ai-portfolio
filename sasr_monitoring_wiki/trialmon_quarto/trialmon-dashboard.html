@@ -2378,7 +2378,7 @@ vertical-align: -.125em;
 <i class="callout-icon"></i>
 </div>
 <div class="callout-body-container">
-<p>Computed from the synthetic CSVs in <a href="../trialmon_shiny/data/adsl.csv"><code>trialmon_shiny/data/</code></a> by <code>R/logic.R</code>. Every level rolls up worst-of. The interactive version is the <a href="trialmon-build.html">Shiny console</a>; the rules are explained in the <a href="trialmon-guide.html">guide</a>; the committee view is the <a href="trialmon-src-packet.html">SRC packet</a>. The screen flags; the medical monitor and the committee decide.</p>
+<p>Computed from the synthetic CSVs in <a href="../trialmon_shiny/data/adsl.csv"><code>trialmon_shiny/data/</code></a> by <code>R/logic.R</code>. Every level rolls up worst-of, watch included. The interactive version is the <a href="trialmon-build.html">Shiny console</a>; the rules are explained in the <a href="trialmon-guide.html">guide</a>; the committee view is the <a href="trialmon-src-packet.html">SRC packet</a>. The screen flags; the medical monitor and the committee decide.</p>
 </div>
 </div>
 </div>
@@ -2425,6 +2425,14 @@ AMBER flags
 </div>
 <div class="tm-kpi">
 <div class="k">
+Watch
+</div>
+<div class="v">
+2
+</div>
+</div>
+<div class="tm-kpi">
+<div class="k">
 Dosed participants
 </div>
 <div class="v">
@@ -2441,8 +2449,8 @@ Confirmed DLTs (+ pending)
 </div>
 </div>
 <div class="grid">
-<section id="worklist-red-first" class="level3 g-col-12 g-col-lg-7">
-<h3 class="anchored" data-anchor-id="worklist-red-first">Worklist (RED first)</h3>
+<section id="worklist-red-then-amber-then-watch" class="level3 g-col-12 g-col-lg-7">
+<h3 class="anchored" data-anchor-id="worklist-red-then-amber-then-watch">Worklist (RED, then AMBER, then watch)</h3>
 <div class="tm-wrap">
 <table class="tm-table">
 <thead>
@@ -2479,7 +2487,7 @@ CP101-014
 Potential Hy’s Law
 </td>
 <td>
-AT 5.6x ULN from Day 15; TBL 3.1x ULN on Day 22; ALP 1.1x ULN; R 4.0 (mixed)
+AT 4.4x ULN on Day 15; TBL 3.1x ULN on Day 22; ALP 1.1x ULN then; R 4.0 (mixed); peak AT 5.6x ULN
 </td>
 </tr>
 <tr>
@@ -2669,6 +2677,40 @@ Screen-failure rate
 30.8 %: 8 of 26 screened did not meet eligibility (plan: 25%)
 </td>
 </tr>
+<tr>
+<td>
+<span class="sev sev-watch">watch</span>
+</td>
+<td>
+Participant
+</td>
+<td class="nw">
+CP101-011
+</td>
+<td>
+QTcF (ICH E14 categories)
+</td>
+<td>
+474 ms on Day 22 (baseline 448; change 26 ms)
+</td>
+</tr>
+<tr>
+<td>
+<span class="sev sev-watch">watch</span>
+</td>
+<td>
+Participant
+</td>
+<td class="nw">
+CP101-012
+</td>
+<td>
+QTcF (ICH E14 categories)
+</td>
+<td>
+468 ms on Day 15 (baseline 446; change 22 ms)
+</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -2691,7 +2733,7 @@ Screen-failure rate
 </div>
 </div>
 </div>
-<p><span class="tm-foot">Peaks need not be concurrent; the upper-right quadrant is a prompt to check timing. Potential Hy’s Law (RED) requires TBL above 2x ULN on or after the aminotransferase elevation within 30 days.</span></p>
+<p><span class="tm-foot">Peaks need not be concurrent; the upper-right quadrant is a prompt to check timing. Potential Hy’s Law (RED) requires TBL above 2x ULN on or after an aminotransferase elevation (ALT or AST at least 3x ULN) within 30 days of it; every such draw opens its own window.</span></p>
 </section>
 </div>
 <div class="grid">
@@ -3098,7 +3140,7 @@ Hepatobiliary disorders
 </tbody>
 </table>
 </div>
-<p><span class="tm-foot">MedDRA v29.1 (primary SOC); treatment-emergent AEs; participants counted once per row. Lab grades elsewhere in TRIALMON: NCI CTCAE v6.0.</span></p>
+<p><span class="tm-foot">MedDRA v29.1 (primary SOC); treatment-emergent AEs; participants counted once per row. AE grades as recorded by the investigator (NCI CTCAE v6.0); lab grades elsewhere in TRIALMON: NCI CTCAE v6.0.</span></p>
 </section>
 
 </main>

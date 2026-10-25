@@ -86,12 +86,12 @@
   <section id="rules" aria-labelledby="rules-h">
     <h2 id="rules-h">Definitions used</h2>
     <ul class="rules">
-      <li><strong>Potential Hy's Law:</strong> ALT or AST at least 3x ULN, and total bilirubin above 2x ULN on or after that day within 30 days (an SAP convention). ALP is shown alongside; "ALP below 2x ULN" applies only as a labeled SAP option. Source: FDA, <em>Drug-Induced Liver Injury: Premarketing Clinical Evaluation</em> (July 2009).</li>
+      <li><strong>Potential Hy's Law:</strong> ALT or AST at least 3x ULN, and total bilirubin above 2x ULN on or after that draw within 30 days of it (an SAP convention); every such draw opens its own window, so a second rise is screened too. ALP is shown alongside; "ALP below 2x ULN" applies only as a labeled SAP option. Source: FDA, <em>Drug-Induced Liver Injury: Premarketing Clinical Evaluation</em> (July 2009).</li>
       <li><strong>Confirmation:</strong> any ALT or AST above 3x ULN calls for repeat ALT, AST, ALP and total bilirubin within 48 to 72 hours. Participant CP101-009 (ALT 4.2x, AST 3.6x, bilirubin 1.6x ULN) is flagged for it, not shown green.</li>
       <li><strong>QTcF:</strong> maximum post-baseline value above 450, 480 and 500 ms; increase from baseline above 30 and 60 ms (ICH E14 and its Q&amp;As).</li>
-      <li><strong>Lab grades:</strong> NCI CTCAE v6.0 by default or v5.0 per protocol, named in every footnote; creatinine on multiples of ULN and fold over baseline.</li>
+      <li><strong>Lab grades:</strong> NCI CTCAE v6.0 by default or v5.0 per protocol, named in every footnote; creatinine on multiples of ULN and fold over baseline. AE grades stay as the investigator recorded them.</li>
       <li><strong>Dose escalation:</strong> a 3+3 tally as an illustrative rule reference only; BOIN is noted as the model-assisted alternative and not implemented. The committee decides.</li>
-      <li><strong>Roll-up:</strong> worst-of at every level, so one RED is never averaged away.</li>
+      <li><strong>Roll-up:</strong> worst-of at every level, the QTcF watch level included, so one RED is never averaged away.</li>
     </ul>
   </section>
 
@@ -99,7 +99,7 @@
     <h2 id="status-h">What was executed</h2>
     <table class="status">
       <tr><th scope="row">Data</th><td>Synthetic, ADaM-shaped CSVs written from one seed: 18 participants in four dosed cohorts, with planted cases for each rule.</td></tr>
-      <tr><th scope="row">Rules and console</th><td>One R file of rules drives the console, the guide, the snapshot and the packet. Tested with testthat and <code>shiny::testServer()</code> on R 4.6.0: 155 expectations pass, including each rule at its exact threshold.</td></tr>
+      <tr><th scope="row">Rules and console</th><td>One R file of rules drives the console, the guide, the snapshot and the packet. Tested with testthat and <code>shiny::testServer()</code> on R 4.6.0: 215 expectations in 42 tests pass, including each rule at its exact threshold and a second aminotransferase elevation that opens its own window.</td></tr>
       <tr><th scope="row">Pages</th><td>Rendered with Quarto 1.10.19 on 25 October 2026; checked in headless Chrome in light and dark at desktop and phone widths.</td></tr>
       <tr><th scope="row">Not done</th><td>No validated system, no independent programming, no review by a medical monitor. The CTCAE v6.0 cut points follow admiral 1.5.0's metadata and were not re-checked against the NCI workbook. Drafted with AI assistance; the author's sign-off has not been given yet.</td></tr>
     </table>

@@ -38,7 +38,7 @@ k <- trialmon_kpis(tm)
 
 ::: {.callout-note appearance="simple"}
 Computed from the synthetic CSVs in [`trialmon_shiny/data/`](../trialmon_shiny/data/adsl.csv) by
-`R/logic.R`. Every level rolls up worst-of. The interactive version is the
+`R/logic.R`. Every level rolls up worst-of, watch included. The interactive version is the
 [Shiny console](trialmon-build.html); the rules are explained in the [guide](trialmon-guide.html); the
 committee view is the [SRC packet](trialmon-src-packet.html). The screen flags; the medical monitor and
 the committee decide.
@@ -49,7 +49,7 @@ cat('<div class="tm-kpis">',
     kpi_html("Overall (worst-of)", sev_html(roll$overall)),
     kpi_html("Participants and cohorts", sev_html(roll$participant)),
     kpi_html("Study tier", sev_html(roll$study)),
-    kpi_html("RED flags", roll$red), kpi_html("AMBER flags", roll$amber),
+    kpi_html("RED flags", roll$red), kpi_html("AMBER flags", roll$amber), kpi_html("Watch", roll$watch),
     kpi_html("Dosed participants", k$n), kpi_html("Confirmed DLTs (+ pending)", sprintf("%d (+%d)", k$dlt, k$pending)),
     '</div>')
 ```
@@ -57,7 +57,7 @@ cat('<div class="tm-kpis">',
 :::: {.grid}
 
 ::: {.g-col-12 .g-col-lg-7}
-### Worklist (RED first)
+### Worklist (RED, then AMBER, then watch)
 
 ```{r wl, results='asis'}
 wl <- roll$worklist
@@ -75,7 +75,8 @@ both(function(look) edish_plot(h, look))
 ```
 
 [Peaks need not be concurrent; the upper-right quadrant is a prompt to check timing. Potential Hy's Law
-(RED) requires TBL above 2x ULN on or after the aminotransferase elevation within 30 days.]{.tm-foot}
+(RED) requires TBL above 2x ULN on or after an aminotransferase elevation (ALT or AST at least 3x ULN)
+within `r S$hys_window` days of it; every such draw opens its own window.]{.tm-foot}
 :::
 
 ::::
@@ -121,5 +122,6 @@ for (g in names(N)) out[[sprintf("%s (N=%d)", g, N[[g]])]] <- npct(a[[g]], N[[g]
 cat(html_table(out, num = names(out)[-1]))
 ```
 
-[MedDRA v`r S$meddra` (primary SOC); treatment-emergent AEs; participants counted once per row. Lab
-grades elsewhere in TRIALMON: NCI CTCAE v`r S$ctcae`.]{.tm-foot}
+[MedDRA v`r S$meddra` (primary SOC); treatment-emergent AEs; participants counted once per row. AE
+grades as recorded by the investigator (NCI CTCAE v`r S$ae_ctcae`); lab grades elsewhere in TRIALMON:
+NCI CTCAE v`r S$ctcae`.]{.tm-foot}

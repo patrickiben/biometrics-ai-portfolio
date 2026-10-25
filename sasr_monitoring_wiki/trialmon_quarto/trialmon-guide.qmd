@@ -57,14 +57,14 @@ cat(html_table(data.frame(
   Screen = c("Potential Hy's Law", "Aminotransferase confirmation", "eDISH quadrants", "R ratio",
              "QTcF categories", "Lab grades", "DLT tally", "Roll-up"),
   Definition = c(
-    "ALT or AST >= 3x ULN, and total bilirubin (TBL) > 2x ULN on or after that day within 30 days (an SAP convention). ALP shown; ALP < 2x ULN only as a labeled SAP option.",
+    "ALT or AST >= 3x ULN, and total bilirubin (TBL) > 2x ULN on or after that draw within 30 days of it (an SAP convention). Every such draw opens its own window. ALP shown; ALP < 2x ULN in that draw only as a labeled SAP option.",
     "ALT or AST > 3x ULN: repeat ALT, AST, ALP and TBL within 48 to 72 hours.",
     "Peak post-baseline ALT or AST against peak TBL, both x ULN, lines at 3x and 2x. Peaks need not be concurrent.",
-    "(ALT/ULN)/(ALP/ULN) at the first draw with ALT >= 3x ULN: >= 5 hepatocellular, 2 < R < 5 mixed, <= 2 cholestatic.",
+    "(ALT/ULN)/(ALP/ULN) at the reported ALT or AST >= 3x ULN draw (the qualifying one for a potential Hy's Law case, otherwise the first): >= 5 hepatocellular, 2 < R < 5 mixed, <= 2 cholestatic.",
     "Maximum post-baseline QTcF > 450, > 480, > 500 ms; maximum change > 30, > 60 ms. Screen: RED > 500 or > 60; AMBER > 480 or > 30; watch > 450.",
-    "NCI CTCAE v6.0 by default, v5.0 per protocol, named in every footnote.",
+    "Lab grades derived under NCI CTCAE v6.0 by default, v5.0 per protocol, named in every footnote. AE grades stay as the investigator recorded them.",
     "3+3 as an illustrative rule reference: 0 of 3 or 1 of 6 escalation-eligible; 1 of 3 expand to 6; 2 or more: the dose exceeds the MTD.",
-    "Worst-of at participant, cohort, study tier and overall. Never an average."),
+    "Worst-of at participant (watch included), cohort, study tier and overall. Never an average."),
   Source = c("FDA DILI guidance (July 2009)", "FDA DILI guidance (July 2009)", "Plotting convention",
              "CIOMS/RUCAM convention", "ICH E14 (2005); E14 Q&A (R3) (2015); E14/S7B Q&As (2022)",
              "NCI CTCAE v6.0 / v5.0", "Illustrative only; BOIN noted below", "TRIALMON design")),
@@ -76,7 +76,8 @@ cat(html_table(data.frame(
 A point in the upper-right eDISH quadrant means the participant's *peak* aminotransferase reached 3x
 ULN and their *peak* bilirubin passed 2x ULN, but the two peaks can come weeks apart. The potential
 Hy's Law screen adds the timing: bilirubin above 2x ULN on or after the aminotransferase elevation,
-within the window. Separately, FDA's guidance asks for a repeat of ALT, AST, ALP and TBL within 48 to
+within the window. Every draw with ALT or AST at least 3x ULN opens its own window, so a second rise
+weeks after the first is screened too. Separately, FDA's guidance asks for a repeat of ALT, AST, ALP and TBL within 48 to
 72 hours of any aminotransferase **above** 3x ULN, so a high ALT with normal bilirubin still gets a
 flag. It is not a Hy's Law finding, and it is not green.
 
@@ -94,14 +95,15 @@ both(function(look) edish_plot(h, look))
 ```{r liver-cases, results='asis'}
 x <- h[h$USUBJID %in% c("CP101-014", "CP101-009", "CP101-004"), ]
 cat(html_table(data.frame(Participant = x$USUBJID, Quadrant = sub(":.*", "", x$quadrant),
-  `ALT or AST >= 3x from day` = x$at3_day, `TBL > 2x on or after (day)` = x$tbl_day,
+  `ALT or AST >= 3x (day)` = x$at3_day, `TBL > 2x on or after (day)` = x$tbl_day,
   `Potential Hy's Law` = ifelse(x$hys, "Yes", "No"), Screen = sev_html(x$sev), check.names = FALSE),
-  num = c("ALT or AST >= 3x from day", "TBL > 2x on or after (day)"), raw = "Screen"))
+  num = c("ALT or AST >= 3x (day)", "TBL > 2x on or after (day)"), raw = "Screen"))
 ```
 
 [Exactly 3x ULN counts for Hy's Law (FDA: "3-fold or greater"), but the confirmation flag needs a value
 above 3x, as in the FDA text. Bilirubin must be above 2x ULN, so exactly 2x does not count. The tests
-pin each of these boundaries.]{.tm-foot}
+pin each of these boundaries, including a second elevation 39 days after the first. The eDISH axes widen
+when a participant's peak is beyond 10x ULN (AT) or 6x ULN (TBL), so no point falls off.]{.tm-foot}
 
 ## QTcF: categories, not a verdict
 
@@ -168,7 +170,9 @@ up to amber. TRIALMON takes the worst level at every step instead. Today the par
 tier is `r roll$participant` and the study tier is `r roll$study`, so the overall screen is
 `r roll$overall`. Setting every study-level indicator to green leaves the overall screen at
 `r trialmon_rollup(tm, study = transform(study_signals(tm), LEVEL = "GREEN"))$overall`: one RED
-participant is enough, and no number of greens dilutes it.
+participant is enough, and no number of greens dilutes it. The watch level (QTcF above 450 ms) is a
+worklist row too, so `r roll$watch` participants at watch would keep the participant tier at watch
+even if every RED and AMBER flag were cleared.
 
 ## Run it
 

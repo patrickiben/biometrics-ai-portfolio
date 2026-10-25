@@ -3,7 +3,8 @@
 A Safety Review Committee style console for a synthetic dose-escalation study: a ranked worklist,
 the eDISH plot (click a point to open that participant), QTcF categories, CTCAE lab shifts, adverse
 events by SOC and PT, the DLT tally against an illustrative 3+3 rule, and a study tier of operational
-indicators with a what-if. Every level rolls up worst-of, so one RED is never averaged away.
+indicators with a what-if. Every level rolls up worst-of, the QTcF watch level included, so one RED is
+never averaged away.
 
 **Synthetic data only.** Study CP-101 does not exist. The console flags positions for the medical
 monitor and the committee; it does not adjudicate DLTs or Hy's Law cases and it makes no
@@ -19,7 +20,9 @@ shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 
 The app is ready for Shinylive (webR): all data sit in `data/`, it uses only shiny, bslib, DT and
 ggplot2, and the CSV download is built in the browser (a Blob sent through
-`session$sendCustomMessage()`), not by a `downloadHandler`. A test export with shinylive 0.5.0
+`session$sendCustomMessage()`), not by a `downloadHandler`; the file is named
+`SYNTHETIC_trialmon_worklist_CTCAEv6.0.csv` and its first column labels every row synthetic. A test
+export with shinylive 0.5.0
 (assets 0.10.12) ran in headless Chrome with the same numbers as the native app; deployment is a
 separate step.
 
@@ -36,20 +39,24 @@ separate step.
 ## The rules
 
 ```
-Potential Hy's Law  ALT or AST >= 3x ULN, and TBL > 2x ULN on or after that day within 30 days
-                    (an SAP convention). ALP shown; "ALP < 2x ULN" only as a labeled SAP option.
+Potential Hy's Law  ALT or AST >= 3x ULN, and TBL > 2x ULN on or after that draw within 30 days of
+                    it (an SAP convention). Every such draw opens its own window. ALP shown;
+                    "ALP < 2x ULN" in that draw only as a labeled SAP option.
                     FDA, Drug-Induced Liver Injury: Premarketing Clinical Evaluation (July 2009).
 Confirm             ALT or AST > 3x ULN: repeat ALT, AST, ALP and TBL within 48 to 72 hours.
-eDISH               peak ALT or AST vs peak TBL (x ULN); lines at 3x and 2x; peaks need not be concurrent.
-R ratio             (ALT/ULN)/(ALP/ULN) at the first ALT >= 3x ULN: >= 5 hepatocellular,
+eDISH               peak ALT or AST vs peak TBL (x ULN); lines at 3x and 2x; peaks need not be concurrent;
+                    the axes widen so that no participant falls off.
+R ratio             (ALT/ULN)/(ALP/ULN) at the reported ALT or AST >= 3x ULN draw: >= 5 hepatocellular,
                     2 < R < 5 mixed, <= 2 cholestatic.
 QTcF                > 450, > 480, > 500 ms; change > 30, > 60 ms (ICH E14; E14/S7B Q&As).
-                    RED > 500 or > 60; AMBER > 480 or > 30; watch > 450.
+                    RED > 500 or > 60; AMBER > 480 or > 30; watch > 450 (a worklist row).
 Lab grades          NCI CTCAE v6.0 by default, v5.0 per protocol; creatinine on x ULN and fold over
                     baseline (v5.0: the worse of the two; v6.0: baseline fold only below the LLN).
+                    AE grades stay as the investigator recorded them (v6.0 in these data).
 3+3 (illustrative)  0 of 3 or 1 of 6: escalation-eligible; 1 of 3: expand to 6; 2 or more: the dose
                     exceeds the MTD. BOIN is the model-assisted alternative; not implemented here.
-Roll-up             worst-of at participant, cohort, study tier and overall. Never an average.
+Roll-up             worst-of at participant (watch included), cohort, study tier and overall.
+                    Never an average.
 ```
 
 The CTCAE v6.0 cut points follow admiral 1.5.0's `atoxgr_criteria_ctcv6`; they were not re-checked
