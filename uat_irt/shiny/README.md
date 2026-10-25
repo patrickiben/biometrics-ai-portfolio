@@ -1,8 +1,29 @@
 # IRT / RTSM UAT Tracker - Shiny app
 
-A runnable, editable version of the UAT execution & sign-off tracker. Select a
-test, mark it Pass/Fail, close a defect, and the KPIs and the go-live sign-off
-gate recompute live. Operations-only, synthetic data, no PHI.
+A runnable, editable version of the UAT execution & sign-off tracker. Select a test, mark it
+Pass, Fail or Blocked, close a defect, add a draft test for the untraced requirement, and the KPIs
+and the go-live sign-off gate recompute live. Operations-only, synthetic data, no PHI.
+
+## What a visitor sees on first load
+
+Every panel has content as soon as R is ready; nothing waits for a click:
+
+- a header with a **Synthetic data** badge, a change counter ("Seed data, no changes yet"), the
+  CSV download, Reset to seed and a light/dark switch that starts from the system setting;
+- a **Start here** card (collapsible): what the app shows, what each color means, three things to try;
+- five KPI boxes, each with a one-line explanation (for example "92% of the 24 executed");
+- the **test-script table**, searchable, with **RAND-04** selected (a failing critical test with an
+  open critical defect), so the **Selected test** card shows its steps, buttons to mark it and a
+  button to close its defect;
+- the **go-live gate**: the verdict, then each criterion as met or blocking with the items that
+  block it. Each ID opens that test; "Add a draft test" covers the untraced requirement. Five
+  actions take the seed from NOT ready to READY;
+- the execution-by-area plot and the editable defect log.
+
+Each empty state says why it is empty and what to do (no selected test, a search that matches
+nothing, no tests or defects loaded). Colors are the portfolio site's tokens (`site.css`) in light
+and dark: green Pass/Closed, red Fail/Critical, amber Blocked/Open/Major, blue In Progress, grey
+Not Run/Minor. Each change shows a short confirmation that says where the gate now stands.
 
 ## Run it
 
@@ -23,16 +44,28 @@ seed CSVs in `templates/`, and the CSV download is built in the browser (a Blob 
 the site opens the app behind a launch page that reports each step of starting R
 ([how it works](../../apps/_shared/README.md)).
 
+Two details matter only in the browser:
+
+- **DataTables loads with the page.** Its scripts normally arrive with the first table's value.
+  When both tables arrive in the same update, Shiny loads the scripts for one and lets the other
+  start without waiting, so under Shinylive one table stayed empty ("$table.DataTable is not a
+  function"). `app.R` attaches the same dependency (`dt-core-bootstrap5`, same version) to the
+  page, so both tables find DataTables ready.
+- **Nothing heavy runs at startup.** The app reads three small CSVs; every panel is computed from
+  them in well under a second. In a local Shinylive build every panel had content 7.9 to 8.5 s
+  after the page opened (fresh browser profile and reload), almost all of it R and its packages
+  starting.
+
 ## What's here
 
 | File | What it is |
 |---|---|
-| `app.R` | The Shiny app: UI (a `bslib` sidebar layout) + server (the reactive graph). |
-| `R/logic.R` | The **pure logic** - the go-live gate and the KPI math, as plain functions with no Shiny dependency. The Quarto guide and the unit tests call the *same* functions. |
+| `app.R` | The Shiny app: UI (a `bslib` page in the site theme, with the Start here card) + server (the reactive graph). |
+| `R/logic.R` | The **pure logic** - the go-live gate, the KPI math, what blocks the gate, covering a traceability gap and counting changes, as plain functions with no Shiny dependency. The Quarto guide and the unit tests call the *same* functions. |
 | `../templates/*.csv` | The seed data (test scripts, defect log, traceability matrix). These are the editable templates. |
 | `templates/*.csv` | A byte-for-byte copy of the seed data, so the app folder is complete for the browser build. Local R reads `../templates/` first. |
 | `../tests/test-logic.R` | Unit tests for the gate/KPI logic, plus a check that the two copies of the CSVs match (run with `Rscript`). |
-| `../tests/test-server.R` | The server driven headless with `shiny::testServer()`: the download, marking a test, closing defects, reset. |
+| `../tests/test-server.R` | The server driven headless with `shiny::testServer()`: first-load content, the download, marking a test, closing defects (button and typed edit), covering the gap to READY, the empty state, the dark plot, reset. |
 
 ## Make it your own
 
@@ -41,8 +74,11 @@ the site opens the app behind a launch page that reports each step of starting R
    (keep the column names). Copy them into `templates/` here too, or the browser build
    keeps the old rows and the unit test fails.
 2. Re-run the app. The gate rule (every Critical test passing, zero open
-   Critical/Major defects, 100% traceability) applies to your data automatically.
-3. Download your results to CSV from the sidebar and drop them into the Excel
+   Critical/Major defects, 100% traceability) applies to your data automatically. If your data
+   has no test called RAND-04, change `DEFAULT_TEST` in `app.R` to the test you want selected on
+   first load, and update `smoke.expect` in [`apps/uat_irt/launch.json`](../../apps/uat_irt/launch.json),
+   which pins the first-load numbers the deploy smoke test checks.
+3. Download your results to CSV from the header and drop them into the Excel
    workbook and the eTMF.
 
 The logic is deliberately separated from the UI so you can change *what the gate
