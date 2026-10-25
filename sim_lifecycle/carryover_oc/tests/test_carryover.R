@@ -270,10 +270,20 @@ check("T10", "G1 invariance (washout_h unset)", "simulate_study(sample_design(\"
 
 sW <- with(gen, simulate_study(sample_design("BE", N = 40), seed = 2026, washout_h = 48))
 other <- vapply(c("adsl", "adex", "adae", "advs", "adlb", "adeg"), function(nm) identical(s0[[nm]], sW[[nm]]), logical(1))
-p1same <- identical(s0$adpc[s0$adpc$APERIOD == 1, ], sW$adpc[sW$adpc$APERIOD == 1, ])
-pre2 <- sW$adpc$AVAL[sW$adpc$APERIOD == 2 & sW$adpc$ATPTN == 0]   # reported at 3 decimals
-pre1 <- sW$adpc$AVAL[sW$adpc$APERIOD == 1 & sW$adpc$ATPTN == 0]
+## With washout_h set every sample below the LLOQ is BLQ, the pre-dose one included (M13A: BLQ
+## counts as 0). Period 1 therefore matches the default after the pre-dose sample, and its NCA
+## (AUC(0-t) from the pre-dose zero) matches the default exactly.
+lloq_g <- get("PK", envir = gen)$lloq
+post1 <- function(a) { x <- a[a$APERIOD == 1 & a$ATPTN > 0, ]; rownames(x) <- NULL; x }
+p1same <- identical(post1(s0$adpc), post1(sW$adpc))
+pp1 <- function(p) { x <- p[p$APERIOD == 1 & p$PARAMCD != "PDCMXR", names(s0$adpp)]; rownames(x) <- NULL; x }
+nca1_same <- identical(pp1(s0$adpp), pp1(sW$adpp))
+pre1 <- sW$adpc[sW$adpc$APERIOD == 1 & sW$adpc$ATPTN == 0, ]
+pre2 <- sW$adpc[sW$adpc$APERIOD == 2 & sW$adpc$ATPTN == 0, ]
+q2 <- pre2$AVALC != "<LLOQ"
 pp <- sW$adpp; r2 <- pp[pp$PARAMCD == "PDCMXR" & pp$APERIOD == 2, ]
+blq_ok <- all(is.na(pre1$AVAL) & pre1$AVALC == "<LLOQ") && all(is.na(pre2$AVAL[!q2])) && all(pre2$AVAL[q2] >= lloq_g) &&
+  sum(q2) > 0 && all(r2$AVAL[r2$USUBJID %in% pre2$USUBJID[!q2]] == 0) && all(pp$AVAL[pp$PARAMCD == "PDCMXR" & pp$APERIOD == 1] == 0)
 xs <- r2$USUBJID[r2$AVAL > 0.05]
 flag_ok <- all(is.na(pp$ANL02FL[pp$USUBJID %in% xs])) && all(pp$ANL02FL[!pp$USUBJID %in% xs] == "Y") &&
   all(!is.na(pp$PKEXRSN[pp$USUBJID %in% xs & pp$APERIOD == 2])) && all(is.na(pp$PKEXRSN[pp$APERIOD == 1]))
@@ -281,11 +291,11 @@ td2 <- tempfile("demo_"); dir.create(td2)
 for (nm in doms) write_oc_csv(sW[[nm]], file.path(td2, paste0(nm, ".csv")))
 conf <- system2(file.path(R.home("bin"), "Rscript"), c("validation_harness/checks/conformance.R", td2), stdout = TRUE, stderr = TRUE)
 conf_ok <- any(grepl("G3_VERDICT: PASS", conf))
-check("T10", "washout_h = 48 demonstration", "no new random draws (other domains and period-1 ADPC identical), period-1 pre-dose 0 and period-2 pre-dose nonzero (a residual below 0.0005 rounds to 0 at three decimals), PDCMXR rows, ANL02FL null and PKEXRSN set for excluded participants, G3 structural checks pass",
-      sprintf("other domains identical: %d of 6; period 1 identical: %s; period-2 pre-dose nonzero: %d of %d (the rest round to 0.000); excluded: %d of 40; flags consistent: %s; G3: %s",
-              sum(other), p1same, sum(pre2 > 0), length(pre2), length(xs), flag_ok, if (conf_ok) "PASS" else "FAIL"),
-      all(other) && p1same && all(pre1 == 0) && sum(pre2 > 0) > 0 && all(pre2 >= 0) && flag_ok && conf_ok &&
-        all(c("ANL02FL", "PKEXRSN") %in% names(pp)))
+check("T10", "washout_h = 48 demonstration", "no new random draws (the other six domains, and period-1 ADPC after the pre-dose sample, identical to the default); a pre-dose sample below the LLOQ is reported as <LLOQ and counts as 0 (period-1 ADPP identical to the default; PDCMXR 0); quantified period-2 pre-dose values at or above the LLOQ; PDCMXR rows, ANL02FL null and PKEXRSN set for excluded participants; G3 structural checks pass",
+      sprintf("other domains identical: %d of 6; period 1 after pre-dose identical: %s; period-1 NCA identical: %s; period-1 pre-dose <LLOQ: %d of %d; period-2 pre-dose quantified (at or above the LLOQ of %.2f): %d of %d, <LLOQ: %d; excluded: %d of 40; flags consistent: %s; G3: %s",
+              sum(other), p1same, nca1_same, sum(pre1$AVALC == "<LLOQ"), nrow(pre1), lloq_g, sum(q2), nrow(pre2), sum(!q2),
+              length(xs), flag_ok, if (conf_ok) "PASS" else "FAIL"),
+      all(other) && p1same && nca1_same && blq_ok && flag_ok && conf_ok && all(c("ANL02FL", "PKEXRSN") %in% names(pp)))
 
 ## ---- write the pass table and stop on any failure -----------------------------------------
 tab <- do.call(rbind, CHECKS)

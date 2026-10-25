@@ -91,7 +91,8 @@ sim_adex <- function(adsl, d) {
 ## period-2 dose of a crossover. When it is set, each period-2 profile gains the residual of the
 ## same participant's period-1 dose, .conc1(t + washout_h) with the stored period-1 dose and CL
 ## (linear superposition), added before the proportional residual error. The residual is
-## deterministic, so no random numbers are drawn for it and every other draw is unchanged. With
+## deterministic, so no random numbers are drawn for it and every other draw is unchanged. A
+## pre-dose sample below the LLOQ is then reported as <LLOQ, like a post-dose one. With
 ## washout_h = NULL the code path, the draws and the output are exactly those of earlier versions.
 sim_adpc <- function(adsl, adex, d, washout_h = NULL) {
  if (!is.null(washout_h))
@@ -119,7 +120,9 @@ sim_adpc <- function(adsl, adex, d, washout_h = NULL) {
    cc <- cc + .conc1(PK$times + washout_h, q[["dose"]], q[["CL"]], Vi[u], Kai[u]) * PK$conc_scale }
  }
  cc <- cc * exp(rnorm(length(cc), 0, PK$prop_err)) # proportional residual
- blq <- cc < PK$lloq & PK$times > 0
+ ## with washout_h set the pre-dose sample can hold a residual, so it is flagged BLQ like any
+ ## other sample (M13A: BLQ counts as 0); unset, the pre-dose zero is reported as before
+ blq <- cc < PK$lloq & (PK$times > 0 | !is.null(washout_h))
  k <- k+1
  rows[[k]] <- data.frame(USUBJID=u, APERIOD=per, APERIODC=paste("Period",per),
  TRTA=trt, PARAMCD="CONC", PARAM="Plasma concentration (ng/mL)",
@@ -132,6 +135,7 @@ sim_adpc <- function(adsl, adex, d, washout_h = NULL) {
 
 ## --- NCA: derive ADPP parameters from ADPC ---------------------------------
 nca_one <- function(t, c) {
+ c[t == 0 & is.na(c)] <- 0 # a pre-dose BLQ counts as 0 (M13A); reached only with washout_h set
  ok <- !is.na(c) & c > 0
  if (sum(ok) < 3) return(NULL)
  cmax <- max(c[ok]); tmax <- t[ok][which.max(c[ok])]
