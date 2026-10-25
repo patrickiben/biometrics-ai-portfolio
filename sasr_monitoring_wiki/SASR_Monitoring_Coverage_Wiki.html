@@ -65,7 +65,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
 <nav id="side" aria-label="Wiki sections"><div class="brand"><b>SAS/R Monitoring<br>&amp; On-Leave Coverage</b><span>Deterministic scheduled SAS/R that watches the trial &amp; keeps the tracker current, so nothing slips while you&rsquo;re out</span><span class="tag">FOR BIOSTATISTICIANS</span></div>
 <label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off">
 <a href="#start" data-t="start">Start here</a>
-<a href="#dashboard" data-t="dashboard">Interactive dashboard</a>
+<a href="#dashboard" data-t="dashboard">Safety review demo</a>
 <a href="#arch" data-t="arch">Architecture</a>
 <a href="#checks" data-t="checks">The checks</a>
 <a href="#alerts" data-t="alerts">Alerts &amp; escalation</a>
@@ -125,59 +125,15 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <div class="callout win"><strong>Why this is the lowest-risk piece.</strong> The detection is pre-specified, deterministic SAS/R: the same logic you already validate, just scheduled and self-escalating. No cloud, no AI in the loop, no model to qualify. It <em>detects, packages, and pages</em>; humans decide. That is exactly the property a regulated shop wants from unattended automation.</div>
     <p>Below: the architecture, the checks, the alerting + escalation, the <a href="#onleave">covering-while-on-leave runbook</a> (the headline), the tracker, the macro libraries and the safeguards.</p>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring: detect, package, page; humans decide &middot; validated, double-programmed programs own every reported number &middot; illustrative; revised October 2026.</div></section>
-<section id="dashboard" aria-label="Interactive dashboard">
-    <h1>The interactive dashboard: the backbone made visible</h1>
-    <div class="callout honest"><strong>Known issue, being fixed.</strong> In this synthetic demo, participant <code>CP101-009</code> (ALT 4.2x and AST 3.6x ULN, total bilirubin 1.6x ULN) is shown GREEN. FDA&rsquo;s DILI guidance (2009) calls for repeat ALT, AST, ALP and total bilirubin within 48 to 72 hours of an aminotransferase above 3x ULN, so this case should be flagged for review. The next revision corrects the screening rule; until then, read these pages for layout and process, not for the clinical rules.</div>
-    <p class="lede">A self-contained, click-through dashboard on a <strong>synthetic, longitudinal</strong> CP-101 run (22 participants &times; 8 visits), presented as a <strong>dark operations console</strong> (status pill, a what-if <em>scenario simulator</em>, cohort <em>ranking bars</em>, a freshness strip, and a network view). It is a <em>teaching view</em> of what the deterministic loop produces, not a production console, not a record. Open it in any browser; nothing leaves the file.</p>
+<section id="dashboard" aria-label="Safety review demo">
+    <h1>The safety review demo: TRIALMON</h1>
+    <p class="lede">The screening rules this job runs are shown, on synthetic data, in the <strong>TRIALMON</strong> safety review module: an R Shiny console, a guide to each rule, a snapshot, and a Safety Review Committee style packet for a dose-escalation study. All of it is computed by one R file of rules and covered by tests.</p>
     <div class="dl">
-      <a class="btn" href="TRIALMON_Dashboard.html">&#9656;&nbsp; Open the TRIALMON dashboard</a>
-      <a class="btn ghost" href="TRIALMON_Dashboard_Wiki.html">&#128214;&nbsp; The Field Guide (how to read it)</a>
+      <a class="btn" href="index.html">&#9656;&nbsp; Open the TRIALMON module</a>
+      <a class="btn ghost" href="trialmon_quarto/trialmon-src-packet.html">The SRC safety packet</a>
     </div>
-    <div class="callout rule"><strong>What it is and isn&rsquo;t.</strong> It runs on <strong>synthetic data</strong>, no PHI, no real participants, no unblinding. Every flag is a <em>screening prompt</em>, never a determination and never a reportable number; reported numbers (incidence tables, the ICH&nbsp;E14 table, central reads, MTD, final disposition) come from validated, double-programmed programs (Pinnacle&nbsp;21 checks conformance only). It is an <em>illustration</em> of the backbone, not the validated job itself.</div>
-    <div class="callout honest"><strong>One tab is fenced off as exploratory.</strong> An <em>&ldquo;Exploratory &#9656; structure&rdquo;</em> section adds unsupervised <b>persistence-homology</b> trial-structure analytics: H₀ clustering of participants in safety-feature space (the &beta;₀ curve + barcode + a PCA embedding) and a site network, for hypothesis generation only. It is <b>explicitly NOT part of the deterministic safety backbone</b>: it never produces a flag, a determination, or a number, and nothing there escalates study status. The deterministic-flag participants happen to surface as topological outliers there too: an independent structural cross-check, not a second opinion that decides anything.</div>
-    <h2>What it shows: seven core sections + one exploratory, per-visit detail</h2>
-    <p>A section sub-nav (Overview &middot; Hepatic &middot; Cardiac &middot; Labs&nbsp;&amp;&nbsp;Vitals &middot; AE&nbsp;&amp;&nbsp;DLT &middot; Disposition &middot; Participants) with a KPI tile strip and a standing governance ribbon. Every per-visit series is built so its worst on-treatment value equals the original summary: nothing contradicts the headline plots.</p>
-    <figure class="diagram" role="img" aria-labelledby="d-dash-title">
-      <svg viewBox="0 0 860 300" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
-        <title id="d-dash-title">Seven core dashboard sections sit inside the deterministic safety backbone; one exploratory persistence-homology tab is fenced off outside it and never produces a flag, number, or status change.</title>
-        <!-- validated zone -->
-        <rect x="14" y="46" width="600" height="240" rx="10" fill="none" stroke="var(--green)" stroke-dasharray="5 4"/>
-        <text x="30" y="68" font-size="12" font-weight="700" fill="var(--green)">VALIDATED SAFETY BACKBONE &middot; synthetic CP-101 &middot; flags = screening prompts only</text>
-        <!-- seven section tiles -->
-        <g font-size="12.5" font-weight="700">
-          <rect x="30" y="82" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="44" y="106" fill="var(--ink)">Overview</text><text x="44" y="124" font-size="10.5" font-weight="400" fill="var(--muted)">KPIs &middot; worklist &middot; freshness &middot; heatmap</text>
-          <rect x="218" y="82" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="232" y="106" fill="var(--ink)">Hepatic</text><text x="232" y="124" font-size="10.5" font-weight="400" fill="var(--muted)">eDISH trails &middot; LFT &middot; AND-gate</text>
-          <rect x="406" y="82" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="420" y="106" fill="var(--ink)">Cardiac</text><text x="420" y="124" font-size="10.5" font-weight="400" fill="var(--muted)">QTcF trajectory &middot; E14 census</text>
-          <rect x="30" y="148" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="44" y="172" fill="var(--ink)">Labs &amp; Vitals</text><text x="44" y="190" font-size="10.5" font-weight="400" fill="var(--muted)">shift grid &middot; heme &middot; renal &middot; PCS</text>
-          <rect x="218" y="148" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="232" y="172" fill="var(--ink)">AE &amp; DLT</text><text x="232" y="190" font-size="10.5" font-weight="400" fill="var(--muted)">3+3 ladder &middot; SOC&times;grade &middot; swimlane</text>
-          <rect x="406" y="148" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="420" y="172" fill="var(--ink)">Disposition</text><text x="420" y="190" font-size="10.5" font-weight="400" fill="var(--muted)">funnel &middot; RBQM KRIs &middot; deviations</text>
-          <rect x="124" y="214" width="178" height="56" rx="8" fill="var(--panel)" stroke="var(--steel)"/><text x="138" y="238" fill="var(--ink)">Participants</text><text x="138" y="256" font-size="10.5" font-weight="400" fill="var(--muted)">sortable roster &middot; evidence modal</text>
-        </g>
-        <!-- exploratory fenced off -->
-        <rect x="636" y="82" width="208" height="188" rx="10" fill="var(--panel)" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 3"/>
-        <text x="740" y="106" text-anchor="middle" font-size="12.5" font-weight="700" fill="var(--amber)">Exploratory</text>
-        <text x="740" y="123" text-anchor="middle" font-size="11" fill="var(--muted)">persistence-homology</text>
-        <text x="740" y="139" text-anchor="middle" font-size="11" fill="var(--muted)">&beta;&#8320; curve &middot; barcode</text>
-        <text x="740" y="155" text-anchor="middle" font-size="11" fill="var(--muted)">PCA &middot; site network</text>
-        <line x1="660" y1="172" x2="820" y2="172" stroke="var(--line)"/>
-        <text x="740" y="194" text-anchor="middle" font-size="11" font-weight="700" fill="var(--red)">NOT the backbone</text>
-        <text x="740" y="212" text-anchor="middle" font-size="10.5" fill="var(--muted)">no flag &middot; no number</text>
-        <text x="740" y="227" text-anchor="middle" font-size="10.5" fill="var(--muted)">no status change</text>
-        <text x="740" y="252" text-anchor="middle" font-size="10.5" fill="var(--muted)">hypothesis-generation</text>
-        <text x="740" y="266" text-anchor="middle" font-size="10.5" fill="var(--muted)">cross-check only</text>
-      </svg>
-      <figcaption><b>Seven core sections, one fenced-off tab.</b> Everything inside the green zone is the governed teaching view of the deterministic backbone; the <b>exploratory</b> persistence-homology tab sits deliberately outside it and never produces a flag, number, or status change.</figcaption>
-    </figure>
-    <ul>
-      <li><b>Overview</b>: KPI tiles; a prioritized <em>attention worklist</em> (every open AMBER/RED screening flag, click-to-open); a first-class <em>data-freshness/SLA</em> panel (stale-green &rarr; RED); and a <em>study heatmap</em> (participant &times; visit, worst flag: the &ldquo;when did it start&rdquo; view).</li>
-      <li><b>Hepatic</b>: the eDISH scatter now with per-visit <em>history trails</em> (where a participant has been, not a prediction); per-visit <em>LFT trajectories</em>; an <em>R-ratio pattern</em> strip; and a peak/baseline/trend table. The near-miss (high ALT, bilirubin under 2&times;) is kept GREEN by the AND-gate at every visit; see the known issue above.</li>
-      <li><b>Cardiac</b>: per-visit QTcF (Fridericia) trajectory with a cohort-median band, and an ICH&nbsp;E14 categorical outlier <em>census</em> (clearly labeled &ldquo;screening census, not the E14 table&rdquo;; baseline-watch shown distinctly).</li>
-      <li><b>Labs &amp; Vitals</b>: a baseline&rarr;worst <em>lab-shift grid</em> (CTCAE-style screening bands, not adjudicated grades), hematology trajectories, a renal fold-rise panel (eGFR an estimate), and a vitals/orthostatic PCS board (operational context).</li>
-      <li><b>AE &amp; DLT</b>: a 3+3 escalation <em>state ladder</em> (trigger / decision-pending only; the SRC decides, never the dashboard), an AE SOC&times;CTCAE-grade matrix (severity and seriousness kept separate), and an AE onset swimlane vs study day.</li>
-      <li><b>Disposition</b>: an enrollment/disposition funnel, RBQM KRI tiles + a protocol-deviation log, and a visit-compliance matrix (a missed visit is routed to a human, never read as &ldquo;fine&rdquo;).</li>
-      <li><b>Participants</b>: a sortable/filterable/searchable roster; and on <b>click anywhere</b>, an evidence-packet modal with per-visit sparkline trajectories.</li>
-    </ul>
-    <div class="callout tip"><strong>A full field guide ships with it.</strong> The dashboard comes with a dedicated, operating-depth <a href="TRIALMON_Dashboard_Wiki.html">Field Guide</a>: a 15-section reference that documents every section, panel, threshold and governance rule, the synthetic data model, and a guided tour of the planted teaching cases. Read it next to the dashboard the first time through.</div>
+    <div class="callout rule"><strong>The definitions it uses.</strong> Potential Hy&rsquo;s Law: ALT or AST at least 3x ULN, and total bilirubin above 2x ULN on or after that day within 30 days (an SAP convention), with ALP shown alongside (FDA DILI guidance, July 2009). Any ALT or AST above 3x ULN is flagged for confirmation (repeat ALT, AST, ALP and total bilirubin within 48 to 72 hours), so a participant such as <code>CP101-009</code> (ALT 4.2x, AST 3.6x, total bilirubin 1.6x ULN) is never shown green. QTcF categories follow ICH E14 and its Q&amp;As; lab grades name the NCI CTCAE version (v6.0 by default); every level rolls up worst-of.</div>
+    <div class="callout honest"><strong>Retired.</strong> The earlier hand-built dashboard and its field guide were retired in October 2026: they ran on a second synthetic dataset and kept <code>CP101-009</code> green. The TRIALMON module replaces both.</div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring: detect, package, page; humans decide &middot; validated, double-programmed programs own every reported number &middot; illustrative; revised October 2026.</div></section>
 <section id="arch" aria-label="Architecture">
     <h1>Architecture: the daily job</h1>
@@ -195,7 +151,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <h1>The monitoring checks: deterministic flags</h1>
     <p class="lede">Each check reads validated analysis data and writes a flagged dataset with a <code>sev</code> column (GREEN / AMBER / RED) against <strong>pre-specified thresholds</strong>. They are <strong>screening flags, not diagnoses</strong>: a RED is a prompt for a human, not a finding.</p>
     <table class="cat"><thead><tr><th>Check</th><th>What it flags</th><th>Default thresholds</th></tr></thead><tbody>
-      <tr><td><code>%tm_chk_hyslaw</code></td><td>eDISH / Hy&rsquo;s-Law screening: ALT or AST &gt;&times;ULN <b>and</b> TBili &gt;&times;ULN</td><td>ALT/AST 3&times;, TBili 2&times;, ALP 2&times;<i>screening flag, not a diagnosis</i></td></tr>
+      <tr><td><code>%tm_chk_hyslaw</code></td><td>eDISH / Hy&rsquo;s-Law screening: ALT or AST at or above k&times;ULN <b>and</b> TBili above m&times;ULN</td><td>ALT/AST &ge;3&times;, TBili &gt;2&times;; ALP and the R ratio are shown and never downgrade a flag; the macro has no timing window (the <a href="index.html">TRIALMON</a> R screen adds one)<i>screening flag, not a diagnosis</i></td></tr>
       <tr><td><code>%tm_chk_qtcf</code></td><td>QTcF absolute &amp; change-from-baseline tiers (ICH E14)</td><td>RED abs 500 / &Delta;60; AMBER abs 480 / &Delta;30</td></tr>
       <tr><td><code>%tm_chk_ae</code></td><td>AE/SAE running tally by cohort: participant-incidence + event counts</td><td>study-specified</td></tr>
       <tr><td><code>%tm_chk_dlt</code></td><td>Candidate-DLT tally vs the 3+3 rule (against an <b>adjudicated</b> DLT flag + completed window)</td><td><i>does not make the escalation decision</i></td></tr>

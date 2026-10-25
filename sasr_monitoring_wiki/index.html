@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TRIALMON safety review | Patrick Iben</title>
+<meta name="description" content="TRIALMON: a Safety Review Committee style worked example for a dose-escalation study, on synthetic data. Screening rules, a Shiny console, and the packet a committee would read.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../site.css">
+<style>
+  .hero .lab { white-space: normal; }
+  .rules { margin: 8px 0 0; padding-left: 1.2em; }
+  .rules li { margin: 0 0 8px; }
+  .status { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); font-size: .93rem; }
+  .status th, .status td { text-align: left; vertical-align: top; padding: 9px 12px; border-bottom: 1px solid var(--line); }
+  .status tr:last-child th, .status tr:last-child td { border-bottom: 0; }
+  .status th { width: 30%; font-weight: 700; }
+  @media (max-width: 600px) { .status th, .status td { display: block; width: auto; } .status th { border-bottom: 0; padding-bottom: 0; } }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../index.html#lifecycle">Lifecycle</a>
+      <a href="../index.html#start">Start here</a>
+      <a href="../index.html#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <section class="hero" aria-labelledby="title">
+    <p class="kicker">Monitoring and interim review</p>
+    <h1 id="title">TRIALMON: safety review on synthetic data</h1>
+    <p class="lede">A worked Safety Review Committee example for a first-in-human dose-escalation study: the screening rules, a console that applies them, and the packet a committee would read before deciding on the next dose.</p>
+    <p>
+      <span class="lab led">Led: DSMB reports (Emmes)</span>
+      <span class="lab sup">Supported: interim data review (Syneos Health)</span>
+      <span class="lab tools">Tools built: this module (runs; tests pass)</span>
+      <span class="lab gap">Gap: DMC charters, group-sequential interim design, BOIN or CRM design</span>
+    </p>
+    <p class="note"><strong>Synthetic data only.</strong> Study CP-101 does not exist. TRIALMON flags positions for a medical monitor and a committee; it does not adjudicate DLTs or Hy's Law cases and makes no dose-escalation decision. It is not a validated system and produces no reported numbers.</p>
+  </section>
+
+  <section id="pieces" aria-labelledby="pieces-h">
+    <h2 id="pieces-h">The pieces</h2>
+    <div class="cards">
+
+      <article class="card">
+        <h3>SRC safety packet</h3>
+        <p class="meta"><span class="lab tools">Start here</span><span class="lab tools">Quarto, rendered</span></p>
+        <p>Cohort summary, DLT table, eDISH plot with the potential Hy's Law timing, QTcF categories, CTCAE lab shifts, AEs by SOC and preferred term, study-level indicators, and a dose-escalation section that lays out the data and the protocol's options for the committee, without recommending one.</p>
+        <p class="small">MedDRA and CTCAE versions are document parameters (defaults v29.1 and v6.0).</p>
+        <ul class="go"><li><a href="trialmon_quarto/trialmon-src-packet.html">Open the packet</a></li></ul>
+      </article>
+
+      <article class="card">
+        <h3>How the screens work</h3>
+        <p class="meta"><span class="lab tools">Guide</span></p>
+        <p>Each rule with its source and a case from the data: why an upper-right eDISH point is not yet a Hy's Law case, why ALT 4.2x ULN with normal bilirubin still needs confirmation, how the CTCAE version changes a grade, and why the roll-up takes the worst level.</p>
+        <ul class="go"><li><a href="trialmon_quarto/trialmon-guide.html">Read the guide</a></li></ul>
+      </article>
+
+      <article class="card">
+        <h3>Snapshot</h3>
+        <p class="meta"><span class="lab tools">Read-only</span></p>
+        <p>The console's worklist, eDISH plot, dose-escalation tally, study tier and AE summary on one page, at the Cohort 4 data cut.</p>
+        <ul class="go"><li><a href="trialmon_quarto/trialmon-dashboard.html">Open the snapshot</a></li></ul>
+      </article>
+
+      <article class="card">
+        <h3>Shiny console and tests</h3>
+        <p class="meta"><span class="lab tools">R Shiny</span><span class="lab tools">Shinylive-ready</span></p>
+        <p>The console runs in local R. It needs only shiny, bslib, DT and ggplot2, keeps its data in the app folder and builds downloads in the browser, so it can run in the browser under Shinylive. The run-and-build page lists every line, including the testthat and <code>shiny::testServer()</code> tests.</p>
+        <ul class="go"><li><a href="trialmon_quarto/trialmon-build.html">Run and build</a></li></ul>
+      </article>
+
+    </div>
+  </section>
+
+  <section id="rules" aria-labelledby="rules-h">
+    <h2 id="rules-h">Definitions used</h2>
+    <ul class="rules">
+      <li><strong>Potential Hy's Law:</strong> ALT or AST at least 3x ULN, and total bilirubin above 2x ULN on or after that day within 30 days (an SAP convention). ALP is shown alongside; "ALP below 2x ULN" applies only as a labeled SAP option. Source: FDA, <em>Drug-Induced Liver Injury: Premarketing Clinical Evaluation</em> (July 2009).</li>
+      <li><strong>Confirmation:</strong> any ALT or AST above 3x ULN calls for repeat ALT, AST, ALP and total bilirubin within 48 to 72 hours. Participant CP101-009 (ALT 4.2x, AST 3.6x, bilirubin 1.6x ULN) is flagged for it, not shown green.</li>
+      <li><strong>QTcF:</strong> maximum post-baseline value above 450, 480 and 500 ms; increase from baseline above 30 and 60 ms (ICH E14 and its Q&amp;As).</li>
+      <li><strong>Lab grades:</strong> NCI CTCAE v6.0 by default or v5.0 per protocol, named in every footnote; creatinine on multiples of ULN and fold over baseline.</li>
+      <li><strong>Dose escalation:</strong> a 3+3 tally as an illustrative rule reference only; BOIN is noted as the model-assisted alternative and not implemented. The committee decides.</li>
+      <li><strong>Roll-up:</strong> worst-of at every level, so one RED is never averaged away.</li>
+    </ul>
+  </section>
+
+  <section id="status" aria-labelledby="status-h">
+    <h2 id="status-h">What was executed</h2>
+    <table class="status">
+      <tr><th scope="row">Data</th><td>Synthetic, ADaM-shaped CSVs written from one seed: 18 participants in four dosed cohorts, with planted cases for each rule.</td></tr>
+      <tr><th scope="row">Rules and console</th><td>One R file of rules drives the console, the guide, the snapshot and the packet. Tested with testthat and <code>shiny::testServer()</code> on R 4.6.0: 155 expectations pass, including each rule at its exact threshold.</td></tr>
+      <tr><th scope="row">Pages</th><td>Rendered with Quarto 1.10.19 on 25 October 2026; checked in headless Chrome in light and dark at desktop and phone widths.</td></tr>
+      <tr><th scope="row">Not done</th><td>No validated system, no independent programming, no review by a medical monitor. The CTCAE v6.0 cut points follow admiral 1.5.0's metadata and were not re-checked against the NCI workbook. Drafted with AI assistance; the author's sign-off has not been given yet.</td></tr>
+    </table>
+    <p class="small">Related: the scheduled-monitoring jobs behind these checks are described, as SAS and R macros that have not been executed, in the <a href="SASR_Monitoring_Coverage_Wiki.html">monitoring and coverage wiki</a>.</p>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Synthetic data only. Not a validated or Part 11 system. <a href="../index.html">Back to the home page</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
