@@ -27,6 +27,8 @@
   .badge.green .dot{background:var(--green)} .badge.red .dot{background:var(--red)}
   .gate.manual{border-left:4px solid var(--gold)}
   .badge.manual{color:var(--gold);background:rgba(224,166,76,.12);border:1px solid rgba(224,166,76,.4)} .badge.manual .dot{background:var(--gold)}
+  .gate.unsigned{border-left:4px solid #b9a6f5}
+  .badge.unsigned{color:#c9b8ff;background:rgba(160,140,255,.12);border:1px solid rgba(160,140,255,.4)} .badge.unsigned .dot{background:#c9b8ff}
   .guards{font-size:13.4px;color:var(--ink);margin:8px 0 6px}
   .guards .k{color:var(--gold);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em}
   .evid{font-family:var(--mono);font-size:12px;color:var(--mut);background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:8px 11px;margin-top:6px}
@@ -40,7 +42,7 @@
   <header class="hero">
     <div class="home"><a href="../index.html">&larr; Home</a> &middot; <a href="README.md">harness spec</a></div>
     <h1>Trial‑Management Validation Harness <span style="font-size:13px;color:var(--mut);font-weight:400">· evidence ledger</span></h1>
-    <p class="sub">Eight gates for a clinical‑biometrics deliverable, run against this repository's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <strong>Most checks are structural</strong> (inventories, pattern scans, counts); G1 re-runs the synthetic study; <strong>G5 is a manual record</strong>, not computed; <strong>SAS is never executed</strong> (no license). No gate has a human sign-off yet. <a href="README.md">Full spec &rarr;</a></p>
+    <p class="sub">Eight gates for a clinical‑biometrics deliverable, run against this repository's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <strong>Most checks are structural</strong> (inventories, pattern scans, counts); G1 re-runs the synthetic study; <strong>G5 is a manual record</strong>, not computed; <strong>G6 is red</strong> (the QTc change figures use two reference-line conventions); <strong>G7 stays &ldquo;not signed&rdquo;</strong> until a named statistician signs for AI use; <strong>SAS is never executed</strong> (no license). No gate has a human sign-off yet. <a href="README.md">Full spec &rarr;</a></p>
     <div class="meta" id="meta">Loading ledger…</div>
   </header>
 
@@ -49,7 +51,8 @@
     integrity · robustness · adversarial review · reporting standard · AI‑use. The organizing principle is
     the split you see in every row below: <b>automate detection and re‑execution; reserve the final
     decision for the qualified biostatistician.</b> Every evidence cell except G5's is produced by the
-    script; every sign-off is human, and none has been given yet.</div>
+    script; every sign-off is human, and none has been given yet. G7 guards accountability, so its
+    scans alone never turn it green.</div>
 
   <div id="gates"></div>
 
@@ -63,22 +66,23 @@
 
 <script id="ledger" type="application/json">
 {
- "generated": "2026-10-24 22:11 EDT",
+ "generated": "2026-10-24 23:23 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 6,
+ "green": 5,
  "manual": 1,
+ "unsigned": 1,
  "total": 8,
  "gates": [
   {
    "gate": "G1 Reproducibility & environment",
-   "guards": "every number is regenerable from code + frozen inputs",
+   "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "469 R programs parse (0 fail); synthetic study re-runs bit-STABLE from seed 2026 (base R)",
+   "evidence": "469 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
-   "gate": "G2 Numeric-provenance",
-   "guards": "no reported number is produced by an LLM",
+   "gate": "G2 PK and count convention scans",
+   "guards": "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)",
    "status": "green",
    "evidence": "static scans: geometric-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; drafter number-validation self-test present (5)",
    "sign_off": "pending"
@@ -112,17 +116,17 @@
    "sign_off": "pending"
   },
   {
-   "gate": "G7 AI-use governance & accountability",
-   "guards": "AI is disclosed and bounded; a human signs",
-   "status": "green",
-   "evidence": "0 experimental/non-standard method labels in analysis programs; 0 PHI hits; frozen-model + human-gate discipline documented in 7 tlf_interpret files",
+   "gate": "G7 AI-governance documentation present",
+   "guards": "the drafter's AI-use limits (frozen model, human gate) are written down and no PHI turns up (file scans); accountability needs a named statistician's signature, not yet given",
+   "status": "not signed",
+   "evidence": "0 experimental/non-standard method labels in analysis programs; 0 PHI hits; frozen-model + human-gate discipline documented in 7 tlf_interpret files. Not signed: the scans pass, but no one has signed for AI use",
    "sign_off": "pending"
   },
   {
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 41 HTML pages (broken links, deliverables missing from the nav, orphaned pages, terminology drift, count drift)",
+   "evidence": "package_qc.py: 0 issues across 41 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
   }
  ]
@@ -132,12 +136,13 @@
 (function(){
   function render(L){
     document.getElementById("meta").innerHTML =
-      "Generated "+L.generated+" · "+L.r_version+" · <b>"+L.green+" of "+(L.total-(L.manual||0))+" automated gates green</b>"+(L.manual?" · "+L.manual+" manual record":"")+" · human sign-off pending";
+      "Generated "+L.generated+" · "+L.r_version+" · <b>"+L.green+" of "+(L.total-(L.manual||0)-(L.unsigned||0))+" scan-based gates green</b>"+(L.manual?" · "+L.manual+" manual record":"")+(L.unsigned?" · "+L.unsigned+" not signed":"")+" · human sign-off pending";
     document.getElementById("gates").innerHTML = L.gates.map(function(g){
-      var s=(g.status==="green"||g.status==="manual")?g.status:"red";
+      var s=(g.status==="green"||g.status==="manual")?g.status:(g.status==="not signed"?"unsigned":"red");
+      var label=s==="unsigned"?"not signed":s;
       return '<div class="gate '+s+'"><div class="gh"><span class="gid">'+g.gate.split(" ")[0]+'</span>'+
         '<span class="gt">'+g.gate.replace(/^G\d+ /,"")+'</span>'+
-        '<span class="badge '+s+'"><span class="dot"></span>'+s+'</span></div>'+
+        '<span class="badge '+s+'"><span class="dot"></span>'+label+'</span></div>'+
         '<div class="guards"><span class="k">guards&nbsp;</span>'+g.guards+'</div>'+
         '<div class="evid">'+g.evidence+'</div>'+
         '<div class="sign"><span class="box">☐</span> human sign-off pending: a named biostatistician reviews and signs</div></div>';

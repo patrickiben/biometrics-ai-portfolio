@@ -14,7 +14,9 @@ The checks in [`run_harness.sh`](run_harness.sh) run against this repository's o
 pseudocode libraries and synthetic ADaM data and emit [`EVIDENCE_LEDGER.md`](EVIDENCE_LEDGER.md)
 (one row per gate). **What is actually checked:** most checks are structural (file inventories,
 pattern scans, counts); G1 re-runs the synthetic study; G5 is a manual record that the script does
-not compute; SAS is never executed (no license). No gate has a human sign-off yet. Open [`index.html`](index.html) for the
+not compute; G6 is currently red (the QTc change figures use two reference-line conventions); G7
+reports "not signed" until a named statistician signs for AI use; SAS is never executed (no
+license). No gate has a human sign-off yet. Open [`index.html`](index.html) for the
 ledger view.
 
 > Scope note: everything here operates on **100% synthetic** data. There is no PHI. The gates are the
@@ -31,6 +33,7 @@ ledger view.
 - **Automatable:** environment capture; clean‑clone re‑execution; output‑invariance across repeated runs; "every program parses / compiles."
 - **Human judgment:** define the numerical tolerance up front (bit‑identical is not guaranteed across SAS/R/BLAS builds); sign the run.
 - **Pass criterion:** a fresh clone reproduces the synthetic study **bit‑stable from its seed**; **every** program parses; no machine‑specific paths.
+- **As implemented here:** re-runs `simulate_study()` with seed 2026 and compares all eight committed output files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte, and parses every R program. It does not run the TLF libraries on data or execute SAS.
 
 ### G2: Numeric‑provenance gate (numbers ↔ validated tool)
 **Claim it defends:** *"Every reported or regulated number came from a validated tool, never a language model, and summary/simulation numbers carry their uncertainty."*
@@ -39,6 +42,7 @@ ledger view.
 - **Automatable:** table‑vs‑source numeric diff; a scan that every PK program uses the log‑scale geometric convention; a scan that counts use `n_distinct(USUBJID)` / `CLASS USUBJID`; confirmation that the narrative drafter's self‑test **rejects any number it did not receive from the pipeline**.
 - **Human judgment:** whether a difference sits within Monte‑Carlo noise (a 1–2 MCSE move is not a finding).
 - **Pass criterion:** zero LLM‑sourced numbers; the log‑scale geometric convention present in every PK mean program; counts distinct‑participant; the drafter's number‑validation self‑test is present.
+- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer.
 
 ### G3: Data conformance & integrity gate (CDISC + no PHI)
 **Claim it defends:** *"The analysis data is CDISC‑conformant, referentially intact across domains, correctly termed, and carries no PHI/PII or unblinded content."*
@@ -83,6 +87,16 @@ ledger view.
 - **Automatable:** forbidden‑content scan; PHI scan; confirmation that the frozen‑model discipline and a human gate are documented in every AI pipeline.
 - **Human judgment:** the disclosure, the sign‑off, the accountability; essentially all of it.
 - **Pass criterion:** zero forbidden content; zero PHI; every AI pipeline has a documented human gate; the frozen‑model discipline is documented; the AI‑use disclosure is accurate.
+- **As implemented here:** the ledger calls this gate "AI-governance documentation present": file scans for forbidden method labels and PHI, and for the frozen-model and human-gate rules in `tlf_interpret`. Because the gate guards accountability, its status is "not signed" (never green) until a named statistician signs for AI use; failed scans turn it red.
+
+### G8: Package & GUI consistency gate
+**Claim it defends:** *"The published package is navigable, its links resolve, and its pages and documents say the same thing."*
+
+- **Do:** link integrity across pages and Markdown; retired content stays retired; every module is listed in the inventory; consistent terminology, framing and counts, including the text of published spreadsheets, Word files, slide decks, PDFs and JSON files.
+- **Automatable:** all of the above (`package_qc.py`).
+- **Human judgment:** whether the content is right; the check reads the package, not the statistics.
+- **Pass criterion:** `package_qc.py` reports zero issues.
+- **As implemented here:** runs `python3 package_qc.py`; external links are requested only with `--external`, so the gate does not depend on the network.
 
 ---
 
@@ -94,7 +108,7 @@ ledger view.
 ## The evidence ledger
 
 A single table, committed with the deliverable, **one row per gate**: *gate · applies? (Y/N) · status
-(green/red) · artifact (path to the script/log/output that proves it) · human sign‑off · date.* The
+(green/red; "manual" for a hand-entered record; "not signed" where only a signature can pass the gate) · artifact (path to the script/log/output that proves it) · human sign‑off · date.* The
 deliverable is delivery‑confident when every "applies = Y" row is green with an artifact behind it.
 Run [`run_harness.sh`](run_harness.sh) to (re)generate [`EVIDENCE_LEDGER.md`](EVIDENCE_LEDGER.md) and
 `ledger.json` against this repo.

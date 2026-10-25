@@ -4,7 +4,8 @@
 # Runs the automatable checks of the 8 gates against THIS repository's SAS/R TLF
 # pseudocode libraries + synthetic ADaM, and emits EVIDENCE_LEDGER.md + ledger.json.
 # Most checks are structural (files, patterns, counts); G1 re-runs the synthetic study.
-# G5 is a manual record, not computed here. SAS is never executed (no license).
+# G5 is a manual record, not computed here; G7 stays "not signed" until a named
+# statistician signs it. SAS is never executed (no license).
 # Automate detection; the biostatistician signs. 100% synthetic data; no PHI.
 # Usage:  bash validation_harness/run_harness.sh
 ###############################################################################
@@ -21,17 +22,17 @@ echo "== Trial-Management Validation Harness =="
 
 # ---- G1 Reproducibility & environment --------------------------------------
 read RTOT RBAD < <(Rscript -e 'f<-list.files(c("'$R'","sim_lifecycle","'$SAS'/.."),pattern="[.]R$",recursive=TRUE,full.names=TRUE); f<-unique(f); b<-sum(vapply(f,function(x)inherits(try(parse(x),silent=TRUE),"try-error"),logical(1))); cat(length(f),b)' 2>/dev/null)
-REPRO=$(Rscript -e 'setwd("'"$REPO"'"); suppressWarnings(source("sim_lifecycle/simulate_adam.R")); set.seed(2026); s<-simulate_study(sample_design("BE",N=40),seed=2026); td<-tempfile(); dir.create(td); for(nm in c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg")) write.csv(s[[nm]],file.path(td,paste0(nm,".csv")),row.names=FALSE); same<-all(vapply(c("adsl","adpp","adae"),function(nm) identical(readLines(file.path(td,paste0(nm,".csv"))),readLines(file.path("sim_lifecycle/out",paste0(nm,".csv")))),logical(1))); cat(if(same)"STABLE" else "DRIFT")' 2>/dev/null)
-G1=green; [ "${RBAD:-1}" = 0 ] && [ "$REPRO" = STABLE ] || G1=red
-add "G1 Reproducibility & environment" "every number is regenerable from code + frozen inputs" "$G1" \
-    "$RTOT R programs parse (${RBAD:-?} fail); synthetic study re-runs bit-$REPRO from seed 2026 (base R)"
+REPRO=$(Rscript -e 'setwd("'"$REPO"'"); suppressWarnings(source("sim_lifecycle/simulate_adam.R")); set.seed(2026); s<-simulate_study(sample_design("BE",N=40),seed=2026); td<-tempfile(); dir.create(td); for(nm in c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg")) write.csv(s[[nm]],file.path(td,paste0(nm,".csv")),row.names=FALSE); same<-vapply(c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg"),function(nm) identical(readLines(file.path(td,paste0(nm,".csv"))),readLines(file.path("sim_lifecycle/out",paste0(nm,".csv")))),logical(1)); cat(sum(same))' 2>/dev/null)
+G1=green; [ "${RBAD:-1}" = 0 ] && [ "${REPRO:-0}" = 8 ] || G1=red
+add "G1 Reproducibility & environment" "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses" "$G1" \
+    "$RTOT R programs parse (${RBAD:-?} fail); the synthetic study regenerates ${REPRO:-0} of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)"
 
 # ---- G2 Numeric-provenance (numbers <- validated tool) ---------------------
 GEO=$(grep -rl 'exp(mean(log' $R 2>/dev/null | wc -l | tr -d ' ')
 NDIST=$(( $(grep -rl 'n_distinct(USUBJID)' $R 2>/dev/null | wc -l) + $(grep -rl 'CLASS USUBJID\|distinct USUBJID' $SAS 2>/dev/null | wc -l) ))
 DRAFT=$(grep -rilE 'hallucinat|reject.*number|number.*not (in|from)|selftest|self-test' tlf_interpret 2>/dev/null | wc -l | tr -d ' ')
 G2=green; { [ "$GEO" -gt 0 ] && [ "$NDIST" -gt 0 ] && [ "$DRAFT" -gt 0 ]; } || G2=red
-add "G2 Numeric-provenance" "no reported number is produced by an LLM" "$G2" \
+add "G2 PK and count convention scans" "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)" "$G2" \
     "static scans: geometric-on-log-scale in $GEO PK programs; distinct-participant counting in $NDIST programs; drafter number-validation self-test present ($DRAFT)"
 
 # ---- G3 Data conformance & integrity (CDISC + no PHI) ----------------------
@@ -110,13 +111,16 @@ G6=green; { [ "${COLL:-1}" = 0 ] && [ "$EDISH" = 0 ] && [ "$E14CATN" -gt 0 ] && 
 add "G6 Reporting conventions" "TLF numbering, scope and ICH E14 conventions hold (pattern checks, not a regulatory review)" "$G6" \
     "$COLL TLF-number collisions; $EDISH out-of-scope eDISH/Hy's terms in programs; ICH E14 categorical thresholds (>450/480/500 ms, change >30/60 ms) in $E14CAT/$E14CATN QTc tables; QTc change figures: $E14TEN/$E14FIGN draw the +10 ms mean-effect line and $E14CAT3060/$E14FIGN draw 30/60 ms lines (one convention must apply to all)"
 
-# ---- G7 AI-use governance & accountability --------------------------------
+# ---- G7 AI-governance documentation (accountability needs a signature) ------
+# The scans below can only show that the AI-use limits are written down and that no PHI
+# turns up. The gate guards accountability, which needs a named statistician's signature,
+# so it reports "not signed" (never green) until that sign-off exists; failed scans are red.
 # generic scan: no experimental / non-standard / unvalidated method labels in the analysis programs
 JARG=$(grep -rniE 'experimental (engine|method|analytic)|research-grade (engine|model)|non-standard (analytic )?method|unvalidated (engine|model)' sas_tlf_pseudocode r_tlf_pseudocode sim_lifecycle 2>/dev/null | wc -l | tr -d ' ')
 GOV=$(grep -rilE 'frozen|temperature 0|human[ -]gate|pinned|human approv' tlf_interpret 2>/dev/null | wc -l | tr -d ' ')
-G7=green; { [ "$JARG" = 0 ] && [ "$PII" = 0 ] && [ "$GOV" -gt 0 ]; } || G7=red
-add "G7 AI-use governance & accountability" "AI is disclosed and bounded; a human signs" "$G7" \
-    "$JARG experimental/non-standard method labels in analysis programs; $PII PHI hits; frozen-model + human-gate discipline documented in $GOV tlf_interpret files"
+G7="not signed"; { [ "$JARG" = 0 ] && [ "$PII" = 0 ] && [ "$GOV" -gt 0 ]; } || G7=red
+add "G7 AI-governance documentation present" "the drafter's AI-use limits (frozen model, human gate) are written down and no PHI turns up (file scans); accountability needs a named statistician's signature, not yet given" "$G7" \
+    "$JARG experimental/non-standard method labels in analysis programs; $PII PHI hits; frozen-model + human-gate discipline documented in $GOV tlf_interpret files. Not signed: the scans pass, but no one has signed for AI use"
 
 # ---- G8 Package & GUI consistency (whole package) --------------------------
 python3 package_qc.py >/dev/null 2>&1; PKGRC=$?
@@ -124,15 +128,19 @@ PKGN=$(grep -oE '[0-9]+ issue' package_qc_report.md 2>/dev/null | grep -oE '[0-9
 PKGP=$(grep -oE 'Scanned [0-9]+ HTML' package_qc_report.md 2>/dev/null | grep -oE '[0-9]+' | head -1)
 G8=green; [ "${PKGRC:-1}" = 0 ] || G8=red
 add "G8 Package & GUI consistency" "the package is navigable, linked, and internally consistent" "$G8" \
-    "package_qc.py: ${PKGN:-?} issues across ${PKGP:-?} HTML pages (broken links, deliverables missing from the nav, orphaned pages, terminology drift, count drift)"
+    "package_qc.py: ${PKGN:-?} issues across ${PKGP:-?} HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)"
 
 # ---- emit ledger -----------------------------------------------------------
 STAMP="$(date '+%Y-%m-%d %H:%M %Z')"; RVER="$(Rscript -e 'cat(R.version.string)' 2>/dev/null)"
-n=${#GATE[@]}; greens=0; manual=0; for s in "${STATUS[@]}"; do [ "$s" = green ] && greens=$((greens+1)); [ "$s" = manual ] && manual=$((manual+1)); done
+n=${#GATE[@]}; greens=0; manual=0; unsigned=0
+for s in "${STATUS[@]}"; do
+  [ "$s" = green ] && greens=$((greens+1)); [ "$s" = manual ] && manual=$((manual+1)); [ "$s" = "not signed" ] && unsigned=$((unsigned+1))
+done
+scanned=$((n-manual-unsigned))
 {
   echo "# Evidence Ledger: Trial-Management Validation Harness"
   echo
-  echo "_Generated $STAMP · $RVER · $greens of $((n-manual)) automated gates green, $manual manual record · run on this repo's synthetic deliverables · human sign-off pending on every gate._"
+  echo "_Generated $STAMP · $RVER · $greens of $scanned scan-based gates green, $manual manual record, $unsigned not signed · run on this repo's synthetic deliverables · human sign-off pending on every gate._"
   echo
   echo "| Gate | Guards (the fragile object) | Status | Evidence (automated) | Human sign-off |"
   echo "|---|---|:--:|---|---|"
@@ -142,7 +150,8 @@ n=${#GATE[@]}; greens=0; manual=0; for s in "${STATUS[@]}"; do [ "$s" = green ] 
   done
   echo
   echo "> **The split:** every evidence cell above is produced by this script except G5, which is a"
-  echo "> manual record. Most checks are structural; SAS is never executed. The **Human sign-off** column"
+  echo "> manual record. G7's scans pass, but its status stays \"not signed\" until a named statistician"
+  echo "> signs for AI use. Most checks are structural; SAS is never executed. The **Human sign-off** column"
   echo "> is not automated: a named biostatistician reviews each gate and signs, and no gate is signed yet."
   echo "> Re-run: \`bash validation_harness/run_harness.sh\`"
 } > validation_harness/EVIDENCE_LEDGER.md
@@ -150,14 +159,20 @@ n=${#GATE[@]}; greens=0; manual=0; for s in "${STATUS[@]}"; do [ "$s" = green ] 
 # ledger.json: emit via env vars (avoids array-quoting pitfalls)
 export _G="$(printf '%s\n' "${GATE[@]}")"; export _U="$(printf '%s\n' "${GUARDS[@]}")"
 export _S="$(printf '%s\n' "${STATUS[@]}")"; export _E="$(printf '%s\n' "${EVID[@]}")"
-export _STAMP="$STAMP" _RVER="$RVER" _GREENS="$greens" _N="$n" _MANUAL="$manual"
-python3 - <<'PY' > validation_harness/ledger.json
-import os,json
+export _STAMP="$STAMP" _RVER="$RVER" _GREENS="$greens" _N="$n" _MANUAL="$manual" _UNSIGNED="$unsigned"
+python3 - <<'PY'
+import os,json,re
 g=os.environ["_G"].splitlines(); u=os.environ["_U"].splitlines()
 s=os.environ["_S"].splitlines(); e=os.environ["_E"].splitlines()
 rows=[{"gate":a,"guards":b,"status":c,"evidence":d,"sign_off":"pending"} for a,b,c,d in zip(g,u,s,e)]
-json.dump({"generated":os.environ["_STAMP"],"r_version":os.environ["_RVER"],
-           "green":int(os.environ["_GREENS"]),"manual":int(os.environ["_MANUAL"]),"total":int(os.environ["_N"]),"gates":rows},
-          open("/dev/stdout","w"),indent=1)
+L={"generated":os.environ["_STAMP"],"r_version":os.environ["_RVER"],
+   "green":int(os.environ["_GREENS"]),"manual":int(os.environ["_MANUAL"]),"unsigned":int(os.environ["_UNSIGNED"]),
+   "total":int(os.environ["_N"]),"gates":rows}
+txt=json.dumps(L,indent=1,ensure_ascii=False)
+open("validation_harness/ledger.json","w",encoding="utf-8").write(txt)
+# keep the copy embedded in index.html (used when the page is opened from disk) in step
+p="validation_harness/index.html"; h=open(p,encoding="utf-8").read()
+h=re.sub(r'(<script id="ledger" type="application/json">\n).*?(\n</script>)',lambda m:m.group(1)+txt+m.group(2),h,count=1,flags=re.S)
+open(p,"w",encoding="utf-8").write(h)
 PY
-echo; echo "Ledger: $greens of $((n-manual)) automated gates green, $manual manual -> validation_harness/EVIDENCE_LEDGER.md + ledger.json"
+echo; echo "Ledger: $greens of $scanned scan-based gates green, $manual manual, $unsigned not signed -> validation_harness/EVIDENCE_LEDGER.md + ledger.json (+ index.html copy)"
