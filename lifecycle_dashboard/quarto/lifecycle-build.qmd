@@ -32,6 +32,10 @@ Pick a study, then move the what-if sliders (open queries, double-programmed %) 
 watch that study's row in the risk heatmap re-color. The scoring is transparent, so
 every number is defensible.
 
+It also runs in your browser with no install: [open the console in your browser](../../apps/lifecycle_dashboard/)
+(Shinylive and webR; R starts in the browser, the first visit downloads about 55 MB, and it works
+best in Chrome or Edge).
+
 The whole console is three R files, shown here in full, nothing elided:
 
 - **shiny/R/logic.R**: the pure scoring and signal logic (no Shiny). The [visual guide](lifecycle-guide.html), the [dashboard](lifecycle-dashboard.html), and the unit tests call these same functions.
@@ -96,7 +100,9 @@ entire trick.
 finds the selected study's row with `which(rv$studies$id == input$study)` and writes the
 slider values into `rv$studies$open_queries[i]` and `rv$studies$dbl_prog_pct[i]`. A
 second observer on `input$study` keeps the sliders in sync when you switch studies, and
-`input$reset` restores `seed$studies`.
+`input$reset` restores `seed$studies`. The sliders open on the selected study's own values
+and the what-if observer skips its first run, so opening the app never writes slider
+defaults into a study.
 
 **The rules are reactive expressions.** The `data_now` reactive reassembles the portfolio
 (studies from `rv$studies`, plus the seed milestones, deliverables, and query trend),
@@ -125,6 +131,9 @@ shiny::testServer("lifecycle_dashboard/shiny", {
   st()$overall[st()$id == "CP-108"]     # rises as open queries climb
 })
 ```
+
+A scripted version, which also checks that opening the app leaves the data as loaded, runs
+with `Rscript lifecycle_dashboard/tests/test-server.R`.
 
 ## The unit tests: shiny is not involved
 
