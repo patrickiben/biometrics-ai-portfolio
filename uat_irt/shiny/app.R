@@ -1,9 +1,9 @@
 # ===========================================================================
 # app.R: IRT / RTSM UAT execution and sign-off tracker (Shiny)
 #
-# A runnable, editable version of the UAT tracker. Select a test and mark it Pass, Fail or
-# Blocked, close a defect, add a draft test for an untraced requirement, and watch the KPIs and
-# the go-live sign-off gate recompute. Operations data only, synthetic, no participant data.
+# A runnable, editable version of the UAT tracker. Select a test and record its result, close a
+# defect once its test passes a retest, add a draft test for an untraced requirement, and watch the
+# KPIs and the go-live sign-off gate recompute. Operations data only, synthetic, no participant data.
 #
 # Run:  shiny::runApp("uat_irt/shiny")     (from the package root)
 #
@@ -31,7 +31,9 @@ source("R/logic.R")
 seed <- uat_load()   # ../templates in local R; the bundled templates/ in the browser
 
 DEFAULT_TEST <- "RAND-04"   # selected on first load: failing, critical, with an open critical defect
-TEST_COLS    <- c("TestID", "Area", "RequirementID", "TestTitle", "Priority", "Status", "LinkedDefect")
+# Status comes right after ID, so a phone shows the two that matter without scrolling sideways
+TEST_COLS    <- c("TestID", "Status", "TestTitle", "Priority", "Area", "RequirementID", "LinkedDefect")
+TEST_NAMES   <- c("ID", "Status", "Title", "Priority", "Area", "Requirement", "Defect")
 DEFECT_COLS  <- c("DefectID", "Severity", "Status", "FoundInTest", "Description")
 PAGE_LEN     <- 10
 
@@ -49,10 +51,18 @@ gate_text <- function(g) {
   if (g$go) return("The gate is READY for sign-off.")
   left <- c(if (g$crit_fail) paste(n_of(g$crit_fail, "critical test"), "not passing"),
             if (g$open_cm) n_of(g$open_cm, "open critical or major defect"),
-            if (g$trace_gap) paste(n_of(g$trace_gap, "requirement"), "without a test"))
+            if (g$unretested) paste(n_of(g$unretested, "closed defect"), "whose test has not passed a retest"),
+            if (g$untracked) paste(n_of(g$untracked, "failing test"), "with no open defect"),
+            if (g$trace_gap) paste(n_of(g$trace_gap, "requirement"), "without a test"),
+            if (g$not_run) paste(n_of(g$not_run, "test"), "not run yet"))
   paste0("The gate is still blocked: ", and_list(left), ".")
 }
 pill <- function(x) span(class = paste0("uat-pill s-", gsub("[^a-z]", "", tolower(x))), x)
+nw   <- function(x) span(class = "uat-nw", x)   # an ID that never breaks at its hyphen
+and_ids <- function(ids, last = " and ") {      # and_list() as tags, each ID kept on one line
+  n <- length(ids)
+  tagList(lapply(seq_len(n), function(k) tagList(nw(ids[k]), if (k < n - 1) ", " else if (k == n - 1) last)))
+}
 
 # ---- styles: the site tokens for status colors, a calm header, readable tables -----------------
 UAT_CSS <- "
@@ -102,7 +112,7 @@ UAT_CSS <- "
 .uat-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:14px}
 .uat-kpis>.bslib-value-box{margin-bottom:0;border-top:4px solid var(--uat-tone,var(--uat-line))}
 .uat-kpis .card-body{padding:0}
-.uat-kpis .value-box-area{padding:.6rem .95rem .7rem;gap:0}
+.uat-kpis .value-box-area{padding:.6rem .95rem .7rem;gap:0;justify-content:flex-start}
 .uat-kpis .value-box-title{font-size:.9rem;font-weight:600;margin-bottom:.1rem}
 .uat-kpis .value-box-value{font-size:2rem;font-weight:700;line-height:1.15;margin-bottom:.15rem;color:var(--uat-tone-fg,inherit)}
 .uat-kpi-note{font-size:.85rem;color:var(--uat-muted);line-height:1.35}
@@ -116,6 +126,11 @@ UAT_CSS <- "
  .uat-page{padding:10px 10px 24px}.uat-hint{margin-left:0}}
 .uat-row{margin-bottom:14px}
 .uat-stack{display:flex;flex-direction:column;gap:14px}
+/* one column (below bslib's lg breakpoint): the gate first, then the test scripts, the selected
+   test right below them, then the plot */
+@media (max-width:991.98px){.uat-row>.bslib-grid-item,.uat-row>.bslib-grid-item>.uat-stack{display:contents}
+ .uat-row .uat-stack>.card{grid-column:1/-1}
+ .uat-c-gate{order:1}.uat-c-tests{order:2}.uat-c-sel{order:3}.uat-c-plot{order:4}}
 .uat-page table.dataTable{--dt-row-selected:231,239,250;--dt-row-selected-text:24,33,43;--dt-row-selected-link:7,87,191}
 [data-bs-theme=dark] .uat-page table.dataTable{--dt-row-selected:30,43,59;--dt-row-selected-text:230,234,238;--dt-row-selected-link:125,181,255}
 .uat-page table.dataTable>tbody>tr.selected>td:first-child{box-shadow:inset 4px 0 0 var(--uat-accent),inset 0 0 0 9999px rgb(var(--dt-row-selected))}
@@ -126,7 +141,7 @@ UAT_CSS <- "
 .uat-page table.dataTable td,.uat-page table.dataTable th{font-size:.9rem;vertical-align:middle}
 .uat-page table.dataTable td.uat-id{font-weight:600;white-space:nowrap}
 .uat-page table.dataTable .dt-nowrap{white-space:nowrap}
-.uat-page table.dataTable .uat-title-col{min-width:12rem}
+.uat-page table.dataTable .uat-title-col{min-width:10rem}
 .uat-page #defects table.dataTable td:last-child{min-width:14rem}
 .uat-page div.dataTables_wrapper div.dataTables_filter{float:none;text-align:left;margin:0}
 .uat-page div.dataTables_wrapper div.dataTables_filter label{display:block;width:100%}
@@ -173,6 +188,8 @@ UAT_CSS <- "
 .uat-defect{border:1px solid var(--uat-line);border-radius:.45rem;padding:.5rem .65rem;font-size:.88rem}
 .uat-defect-head{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin-bottom:.25rem}
 .uat-defect .btn{margin-top:.45rem}
+.uat-defect .uat-callout{margin:.45rem 0 0}
+.uat-stack-sm{display:flex;flex-direction:column;gap:8px}
 .uat-btn{color:var(--bs-body-color);background:var(--bs-tertiary-bg);border:1px solid var(--uat-line)}
 .uat-btn:hover,.uat-btn:focus-visible{color:var(--bs-body-color);background:var(--bs-tertiary-bg);border-color:var(--uat-accent)}
 .uat-btn-accent{color:var(--uat-accent);border-color:var(--uat-accent)}
@@ -183,8 +200,19 @@ UAT_CSS <- "
 #shiny-notification-panel .shiny-notification-warning{border-left-color:var(--uat-blocked-fill)}
 #shiny-notification-panel,#shiny-notification-panel .shiny-notification{pointer-events:none}
 #shiny-notification-panel .shiny-notification-close{pointer-events:auto}
-@media (max-width:600px){#shiny-notification-panel{width:100%;max-width:none;padding:0 8px 8px}
+/* phones: span the screen with an 8px margin; the doubled ID matches bslib's own rule (450px wide) */
+@media (max-width:600px){#shiny-notification-panel#shiny-notification-panel{left:8px;right:8px;bottom:8px;width:auto;max-width:none;padding:0}
  #shiny-notification-panel .shiny-notification{font-size:.82rem;padding:.45rem 1.6rem .45rem .7rem;margin-top:6px}}
+.uat-nw{white-space:nowrap}
+.uat-page table.dataTable .uat-area-col{min-width:7.5rem}
+/* the defect Status cell opens its editor on a double-click anywhere in it: DataTables ignores a
+   double-click whose target is not the cell itself, so the pill inside lets the pointer through */
+.uat-page #defects td.uat-edit{cursor:text}
+.uat-page #defects td.uat-edit .uat-pill{pointer-events:none}
+.uat-page #tests tbody tr:focus-visible{outline:2px solid var(--uat-accent);outline-offset:-2px}
+.uat-swipe{display:none;font-size:.82rem;color:var(--uat-muted);margin:0 0 .45rem}
+.uat-defect-note{font-size:.84rem;color:var(--uat-muted);margin-top:.35rem;line-height:1.4}
+@media (max-width:600px){.uat-swipe{display:block}.uat-wide{display:none}.uat-changes{flex-basis:100%}}
 "
 
 # ---- browser side: the CSV download, and buttons that carry the test or defect they act on ------
@@ -216,6 +244,30 @@ $(document).on('click', '[data-uat-jump]', function (e) {
   Shiny.setInputValue('jump', this.getAttribute('data-uat-jump'), {priority: 'event'});
   var c = document.getElementById('uat-selected');
   if (c) { var r = c.getBoundingClientRect(); if (r.top < 0 || r.top > window.innerHeight - 80) c.scrollIntoView({behavior: 'smooth', block: 'start'}); }
+});
+// keyboard: Tab reaches each test row; Enter or Space opens it, as a click does (DataTables
+// selects a row on mousedown)
+$(document).on('keydown', '#tests tbody tr[tabindex]', function (e) {
+  if (e.key !== 'Enter' && e.key !== ' ') return;
+  e.preventDefault();
+  if (!$(this).hasClass('selected')) $(this).trigger('mousedown');
+});
+// one column: a row opens the Selected test card just below the table; bring it into view
+$(document).on('mousedown', '#tests tbody tr', function () {
+  if (!window.matchMedia || !window.matchMedia('(max-width: 991.98px)').matches) return;
+  setTimeout(function () {
+    var c = document.getElementById('uat-selected');
+    if (c && c.getBoundingClientRect().top > window.innerHeight - 120) c.scrollIntoView({behavior: 'smooth', block: 'start'});
+  }, 350);
+});
+// phones: start with the Start here guide closed, so the KPIs and the gate are near the top
+$(function () {
+  if (!window.matchMedia || !window.matchMedia('(max-width: 600px)').matches) return;
+  var c = document.querySelector('#guide .accordion-collapse.show');
+  if (!c) return;
+  c.classList.remove('show');
+  var b = document.querySelector('#guide .accordion-button');
+  if (b) { b.classList.add('collapsed'); b.setAttribute('aria-expanded', 'false'); }
 });
 "
 
@@ -256,8 +308,11 @@ ui <- page_fluid(
           span(class = "uat-sub", "Operations data only, no participant data")),
       div(class = "uat-actions",
           span(class = "uat-changes", textOutput("changes", inline = TRUE)),
-          actionButton("dl_tests", "Download results (CSV)", icon = icon("download"), class = "btn-sm uat-btn"),
-          actionButton("reset", "Reset to seed", icon = icon("rotate-left"), class = "btn-sm uat-btn"),
+          # on phones the labels shorten (the .uat-wide words hide) so the three controls share a row
+          actionButton("dl_tests", tagList("Download", span(class = "uat-wide", " results"), " (CSV)"),
+                       icon = icon("download"), class = "btn-sm uat-btn", title = "Download the test results as a CSV file"),
+          actionButton("reset", tagList("Reset", span(class = "uat-wide", " to seed")),
+                       icon = icon("rotate-left"), class = "btn-sm uat-btn", title = "Reset to the seed data"),
           input_dark_mode(id = "mode"))),
 
   accordion(
@@ -282,9 +337,11 @@ ui <- page_fluid(
         div(h3("Try this"),
             tags$ol(
               tags$li("RAND-04 failed and its critical defect DEF-01 is open. In the", tags$b("Selected test"),
-                      "card, mark it Pass and close DEF-01."),
-              tags$li("In the gate, click COH-03 and DEF-03 to fix the other blockers, then add a draft test for",
-                      "URS-SUP-005: the gate turns READY."),
+                      "card, record the retest as Pass, then close DEF-01. A defect closes only after its",
+                      "test passes."),
+              tags$li("Work down the gate: each ID opens that test. Retest SUP-03 before closing DEF-03, run",
+                      "the five tests not run yet, then add a draft test for URS-SUP-005 and run it too.",
+                      "With every blocker cleared, the gate turns READY."),
               tags$li("Download the results as a CSV, or Reset to seed.")))))),
 
   div(class = "uat-kpis",
@@ -293,7 +350,7 @@ ui <- page_fluid(
       value_box("Passed", textOutput("v_pass", inline = TRUE),
                 div(class = "uat-kpi-note", textOutput("v_pass_note", inline = TRUE)), class = "tone-pass"),
       value_box("Failed", textOutput("v_fail", inline = TRUE),
-                div(class = "uat-kpi-note", textOutput("v_fail_note", inline = TRUE)), class = "tone-fail"),
+                div(class = "uat-kpi-note", uiOutput("v_fail_note", inline = TRUE)), class = "tone-fail"),
       value_box("Open defects", textOutput("v_def", inline = TRUE),
                 div(class = "uat-kpi-note", textOutput("v_def_note", inline = TRUE)), class = "tone-def"),
       value_box("Requirements traced", textOutput("v_cov", inline = TRUE),
@@ -302,21 +359,26 @@ ui <- page_fluid(
   layout_columns(
     col_widths = breakpoints(sm = 12, lg = c(8, 4)), fill = FALSE, class = "uat-row",
     div(class = "uat-stack",
-        card(fill = FALSE, card_header("Test scripts", span(class = "uat-hint", "Click a row to open it in the Selected test card")),
+        card(class = "uat-c-tests", fill = FALSE,
+             card_header("Test scripts", span(class = "uat-hint", "Click a row (or Tab to it and press Enter) to open it")),
+             p(class = "uat-swipe", "Swipe the table sideways for the title, priority, area and requirement."),
              DTOutput("tests", fill = FALSE)),
-        card(fill = FALSE, card_header("Execution by test area", span(class = "uat-hint", "Redraws when you mark a test")),
+        card(class = "uat-c-plot", fill = FALSE,
+             card_header("Execution by test area", span(class = "uat-hint", "Redraws when you record a result")),
              plotOutput("plot", height = "auto"),
              card_footer("One bar per test area, colored by test status; the label counts the passing scripts."))),
     div(class = "uat-stack",
-        card(fill = FALSE, card_header("Go-live sign-off gate", span(class = "uat-hint", "Click an ID to open it")),
+        card(class = "uat-c-gate", fill = FALSE,
+             card_header("Go-live sign-off gate", span(class = "uat-hint", "Click an ID to open it")),
              uiOutput("gate")),
-        card(id = "uat-selected", fill = FALSE, card_header("Selected test"), uiOutput("detail")))),
+        card(id = "uat-selected", class = "uat-c-sel", fill = FALSE, card_header("Selected test"), uiOutput("detail")))),
 
   card(class = "uat-row", fill = FALSE,
        card_header("Defect log", span(class = "uat-hint", "Double-click a Status cell to edit it")),
        DTOutput("defects", fill = FALSE),
        card_footer("Type Open or Closed, then press Enter or click elsewhere; or use the button in the Selected test card.",
-                   "Open critical and major defects block the gate; a test ID opens that test."))
+                   "A defect closes only after the test it was found in passes a retest. Open critical and major",
+                   "defects block the gate; a test ID opens that test."))
 )
 
 server <- function(input, output, session) {
@@ -342,26 +404,69 @@ server <- function(input, output, session) {
   note <- function(msg, type = "message") showNotification(msg, type = type, duration = 5, id = "uat-note")
   show_tests   <- function() replaceData(tproxy, rv$tests[, TEST_COLS], resetPaging = FALSE, rownames = FALSE, clearSelection = "none")
   show_defects <- function() replaceData(dproxy, rv$defects[, DEFECT_COLS], resetPaging = FALSE, rownames = FALSE, clearSelection = "none")
-  select_test  <- function(id) {
+
+  # Select a test and page the table to it, so the highlighted row and the Selected test card
+  # always agree. The page comes from the table's row list (input$tests_rows_all: data rows in the
+  # current order and search). That list is out of date right after rows are added or removed,
+  # and lacks a row that a search hides (the search is then cleared, with a note), so in those
+  # cases the table is paged once it reports a row list that holds the row (two updates at most).
+  pending_row <- reactiveVal(NULL)
+  page_to <- function(i) {
+    pos <- match(i, isolate(input$tests_rows_all))
+    if (is.na(pos)) return(FALSE)
+    selectPage(tproxy, (pos - 1) %/% PAGE_LEN + 1)
+    TRUE
+  }
+  clear_search <- function(why) {
+    q <- isolate(input$tests_search)
+    if (!length(q) || !nzchar(q)) return(FALSE)
+    updateSearch(tproxy, keywords = list(global = "", columns = NULL))
+    showNotification(sprintf("Cleared the search \u201c%s\u201d %s.", q, why), duration = 5, id = "uat-search")
+    TRUE
+  }
+  select_test <- function(id, rows_changed = FALSE) {
     i <- match(id, rv$tests$TestID)
     if (is.na(i)) return(invisible(FALSE))
     selectRows(tproxy, i)
-    pos <- match(i, input$tests_rows_all)   # position in the table's current order and search
-    if (!is.na(pos)) selectPage(tproxy, (pos - 1) %/% PAGE_LEN + 1)
+    if (rows_changed) clear_search(paste("to show", id))   # the new row list must hold the row
+    wait <- rows_changed || (!page_to(i) && clear_search(paste("to show", id)))
+    pending_row(if (wait) list(row = i, left = 2L) else NULL)
     invisible(TRUE)
   }
+  observeEvent(input$tests_rows_all, {
+    p <- pending_row()
+    if (is.null(p)) return()
+    pending_row(if (!page_to(p$row) && p$left > 1L) list(row = p$row, left = p$left - 1L) else NULL)
+  }, ignoreInit = TRUE)
+
   set_test <- function(id, status) {
     i <- match(id, rv$tests$TestID)
     if (is.na(i) || !status %in% STATUSES || identical(rv$tests$Status[i], status)) return(invisible(FALSE))
     old <- rv$tests$Status[i]
     rv$tests$Status[i] <- status
     show_tests()
-    note(sprintf("%s: %s to %s. %s", id, old, status, gate_text(gate())))
+    # what the new result means for the test's defects, then where the gate stands
+    b <- blockers()
+    r <- which(rv$defects$FoundInTest == id & rv$defects$Status == "Open")
+    nxt <- if (status == "Pass" && length(r)) sprintf("It passed its retest, so %s can now be closed.", and_list(rv$defects$DefectID[r]))
+      else if (id %in% b$unretested$FoundInTest)
+        sprintf("%s is closed, so its fix no longer counts as retested.", and_list(b$unretested$DefectID[b$unretested$FoundInTest == id]))
+      else if (id %in% b$untracked$TestID) "A failing test needs an open defect, and none is logged for it."
+    note(paste(c(sprintf("%s: %s to %s.", id, old, status), nxt, gate_text(gate())), collapse = " "))
     invisible(TRUE)
   }
   set_defect <- function(id, to) {
     r <- match(id, rv$defects$DefectID)
     if (is.na(r)) return(invisible(FALSE))
+    if (identical(to, "Closed") && !identical(rv$defects$Status[r], "Closed")) {
+      cc <- uat_can_close(rv$tests, rv$defects, id)
+      if (!cc$ok) {
+        show_defects()   # puts back the display after a typed edit
+        note(sprintf("%s stays Open: a defect closes only after the test it was found in passes a retest, and %s is %s. Mark %s Pass first.",
+                     id, cc$test, if (is.na(cc$status)) "not in the test table" else cc$status, cc$test), type = "warning")
+        return(invisible(FALSE))
+      }
+    }
     if (!identical(rv$defects$Status[r], to)) {
       rv$defects$Status[r] <- to
       note(sprintf("%s is now %s. %s", id, to, gate_text(gate())))
@@ -371,8 +476,9 @@ server <- function(input, output, session) {
   }
 
   observeEvent(input$reset, {
+    rows_changed <- nrow(rv$tests) != nrow(seed$tests)
     rv$tests <- seed$tests; rv$defects <- seed$defects; rv$trace <- seed$trace
-    show_tests(); show_defects(); select_test(DEFAULT_TEST)
+    show_tests(); show_defects(); select_test(DEFAULT_TEST, rows_changed = rows_changed)
     note(sprintf("Back to the seed data: %s and %s. %s", n_of(nrow(seed$tests), "test script"),
                  n_of(nrow(seed$defects), "defect"), gate_text(gate())))
   })
@@ -395,16 +501,20 @@ server <- function(input, output, session) {
     s <- summ(); run <- s$pass + s$fail
     if (run == 0) "None executed yet" else sprintf("%d%% of the %d executed", s$pass_rate, run)
   })
-  output$v_fail_note <- renderText({
+  output$v_fail_note <- renderUI({   # the IDs never break at their hyphen
     ids <- rv$tests$TestID[rv$tests$Status == "Fail"]
-    if (!length(ids)) "None failing" else if (length(ids) > 3) paste(and_list(ids[1:3]), "and others") else and_list(ids)
+    if (!length(ids)) return("None failing")
+    if (length(ids) > 3) return(tagList(and_ids(ids[1:3], last = ", "), sprintf(" and %d more", length(ids) - 3)))
+    and_ids(ids)
   })
   output$v_def_note <- renderText({
     n <- gate()$open_cm
-    if (summ()$open_def == 0) "All closed" else if (n == 0) "None critical or major" else paste(n, "critical or major")
+    if (summ()$open_def == 0) "All closed" else if (n == 0) "Minor only: fix or waive" else paste(n, "critical or major")
   })
   output$v_cov_note <- renderText({
-    s <- summ(); sprintf("%d of %d have a test", s$traced, s$n_urs)
+    s <- summ()
+    if (s$traced == s$n_urs && s$req_run == s$n_urs) sprintf("All %d have a test, all tested", s$n_urs)
+    else sprintf("%d of %d have a test; %d tested", s$traced, s$n_urs, s$req_run)
   })
 
   # ---- test-script table (select a row) ----
@@ -414,20 +524,26 @@ server <- function(input, output, session) {
       datatable(
         d, rownames = FALSE, class = "table table-hover table-sm",
         selection = list(mode = "single", selected = match(DEFAULT_TEST, d$TestID), target = "row"),
-        colnames = c("ID", "Area", "Requirement", "Title", "Priority", "Status", "Defect"),
+        colnames = TEST_NAMES,
         options = list(
           pageLength = PAGE_LEN, dom = "<'uat-dt-top'f>t<'uat-dt-foot'ip>", scrollX = TRUE, autoWidth = FALSE,
+          # each row is a Tab stop; Enter or Space opens it (UAT_JS). One statement per line, with
+          # the closing brace on its own line: formatStyle() below inserts its code before that line
+          rowCallback = JS("function (row, data) {",
+                           "  $(row).attr({tabindex: 0, title: 'Open ' + data[0] + ' in the Selected test card'});",
+                           "}"),
           language = list(
-            search = "", searchPlaceholder = "Search tests (ID, area, title, status)",
+            search = "", searchPlaceholder = "Search tests (ID, status, title, area)",
             zeroRecords = "No test script matches this search. Clear the search box to see all of them.",
             emptyTable = "No test scripts are loaded. Reset to seed to load the 29 seed scripts.",
             info = "Test scripts _START_ to _END_ of _TOTAL_", infoEmpty = "No test scripts",
             infoFiltered = "(searched in _MAX_)"),
-          columnDefs = list(
+          columnDefs = list(   # ID, Status, Title, Priority, Area, Requirement, Defect
             list(targets = 0, className = "uat-id"),
-            list(targets = c(2, 4, 6), className = "dt-nowrap"),
-            list(targets = 3, className = "uat-title-col"),
-            list(targets = 5, render = PILL_JS, className = "dt-nowrap")))) |>
+            list(targets = 1, render = PILL_JS, className = "dt-nowrap"),
+            list(targets = 2, className = "uat-title-col"),
+            list(targets = 4, className = "uat-area-col"),
+            list(targets = c(3, 5, 6), className = "dt-nowrap")))) |>
         formatStyle("Priority", fontWeight = styleEqual("Critical", "700"))
     })
   }), server = TRUE)
@@ -437,33 +553,55 @@ server <- function(input, output, session) {
     i <- selected()
     if (is.na(i) || i > nrow(rv$tests))
       return(empty_state(paste("No test is selected. Click a row in the Test scripts table, or an ID in the gate,",
-                               "to see its steps, mark it Pass, Fail or Blocked, and close its defect.")))
+                               "to see its steps, record its result and close its defect.")))
     t <- rv$tests[i, ]
-    crit_note <- if (t$Priority == "Critical") {
-      if (t$Status == "Pass") div(class = "uat-callout ok", "Critical test, passing: it meets the gate's first criterion.")
-      else div(class = "uat-callout", "Critical test, not passing: the gate stays blocked until it passes.")
-    }
-    defect <- if (!is.na(t$LinkedDefect) && nzchar(t$LinkedDefect)) {
-      r <- match(t$LinkedDefect, rv$defects$DefectID)
-      if (is.na(r)) div(class = "uat-sub", sprintf("Linked defect %s is not in the defect log.", t$LinkedDefect))
-      else {
-        d <- rv$defects[r, ]
-        to <- if (d$Status == "Open") "Closed" else "Open"
-        div(class = "uat-defect",
-            div(class = "uat-defect-head", tags$b(d$DefectID), pill(d$Severity), pill(d$Status)),
-            div(d$Description),
-            tags$button(type = "button", class = paste("btn btn-sm", if (to == "Closed") "btn-primary" else "uat-btn"),
-                        `data-uat-defect` = d$DefectID, `data-uat-to` = to,
-                        if (to == "Closed") sprintf("Close %s", d$DefectID) else sprintf("Reopen %s", d$DefectID)))
+    b <- blockers()
+    # one callout: what this test still needs for the gate (or that it meets it)
+    callout <- if (t$Priority == "Critical" && t$Status == "Pass")
+      div(class = "uat-callout ok", "Critical test, passing: it meets the gate's first criterion.")
+    else if (t$Priority == "Critical")
+      div(class = "uat-callout", "Critical test, not passing: the gate stays blocked until it passes.")
+    else if (!t$Status %in% RUN_STATUSES)
+      div(class = "uat-callout", sprintf("%s: the gate stays blocked until every test has been run (Pass or Fail).",
+                                         if (t$Status == "Not Run") "Not run yet" else t$Status))
+    else if (t$TestID %in% b$untracked$TestID)
+      div(class = "uat-callout", paste("Failing, with no open defect logged: a failure needs one before go-live.",
+                                       "This demo cannot raise new defects, so retest it and record Pass to clear the block."))
+    # the defects found in this test (or linked to it), each with what can be done with it now
+    linked <- if (is.na(t$LinkedDefect)) "" else t$LinkedDefect
+    rows <- which(rv$defects$FoundInTest == t$TestID | rv$defects$DefectID == linked)
+    defect_box <- function(r) {
+      d <- rv$defects[r, ]
+      st <- defect_test_status(rv$tests, d)
+      if (d$Status == "Open") {
+        cc <- uat_can_close(rv$tests, rv$defects, d$DefectID)
+        action <- tags$button(type = "button", class = "btn btn-sm btn-primary", disabled = if (!cc$ok) NA,
+                              `data-uat-defect` = d$DefectID, `data-uat-to` = "Closed", sprintf("Close %s", d$DefectID))
+        why <- if (!cc$ok) div(class = "uat-defect-note",
+                              if (identical(cc$test, t$TestID)) sprintf("Close it once %s passes its retest: record the result above.", cc$test)
+                              else sprintf("Close it once %s, the test it was found in, passes its retest.", cc$test))
+      } else {
+        action <- tags$button(type = "button", class = "btn btn-sm uat-btn",
+                              `data-uat-defect` = d$DefectID, `data-uat-to` = "Open", sprintf("Reopen %s", d$DefectID))
+        why <- if (d$DefectID %in% b$unretested$DefectID)
+          div(class = "uat-callout", sprintf("Closed, but %s is %s, so the fix no longer counts as retested and the gate is blocked. Retest %s, or reopen %s.",
+                                             d$FoundInTest, if (is.na(st)) "not in the test table" else st, d$FoundInTest, d$DefectID))
       }
-    } else div(class = "uat-sub", "No defect is linked to this test.")
+      div(class = "uat-defect",
+          div(class = "uat-defect-head", tags$b(d$DefectID), pill(d$Severity), pill(d$Status)),
+          div(d$Description),
+          why, action)
+    }
+    defects <- if (length(rows)) div(class = "uat-stack-sm", lapply(rows, defect_box))
+      else if (nzchar(linked)) div(class = "uat-sub", sprintf("Linked defect %s is not in the defect log.", linked))
+      else div(class = "uat-sub", "No defect is logged for this test.")
     div(class = "uat-detail",
         div(class = "uat-detail-head", span(class = "uat-detail-id", t$TestID), pill(t$Status)),
         div(class = "uat-detail-title", t$TestTitle),
-        div(class = "uat-detail-meta", sprintf("%s \u00b7 %s \u00b7 %s priority", t$Area, t$RequirementID, t$Priority)),
-        crit_note,
+        div(class = "uat-detail-meta", sprintf("%s · %s · %s priority", t$Area, t$RequirementID, t$Priority)),
+        callout,
         tags$dl(tags$dt("Steps"), tags$dd(t$Steps), tags$dt("Expected"), tags$dd(t$ExpectedResult)),
-        span(class = "uat-label", id = "uat-mark-label", sprintf("Mark %s as", t$TestID)),
+        span(class = "uat-label", id = "uat-mark-label", sprintf("Record the result of %s", t$TestID)),
         div(class = "uat-mark", role = "group", `aria-labelledby` = "uat-mark-label",
             lapply(STATUSES, function(s) {
               on <- identical(s, t$Status)
@@ -471,8 +609,8 @@ server <- function(input, output, session) {
                           `aria-pressed` = if (on) "true" else "false",
                           `data-uat-test` = t$TestID, `data-uat-status` = s, s)
             })),
-        span(class = "uat-label", "Linked defect"),
-        defect)
+        span(class = "uat-label", if (length(rows) > 1) "Defects" else "Defect"),
+        defects)
   }))
   observeEvent(input$test_set, set_test(input$test_set$id, input$test_set$status))
   observeEvent(input$defect_set, set_defect(input$defect_set$id, input$defect_set$to))
@@ -493,7 +631,8 @@ server <- function(input, output, session) {
           language = list(emptyTable = "No defects are logged. Reset to seed to load the 4 seed defects."),
           columnDefs = list(
             list(targets = 0, className = "uat-id"),
-            list(targets = c(1, 2), render = PILL_JS, className = "dt-nowrap"),
+            list(targets = 1, render = PILL_JS, className = "dt-nowrap"),
+            list(targets = 2, render = PILL_JS, className = "dt-nowrap uat-edit"),   # the editable one
             list(targets = 3, render = JUMP_JS, className = "dt-nowrap"))))
     })
   }), server = TRUE)
@@ -511,43 +650,57 @@ server <- function(input, output, session) {
   # ---- gate ----
   output$gate <- renderUI(guard("the sign-off gate", {
     g <- gate(); b <- blockers()
-    n_block <- (g$crit_fail > 0) + (g$open_cm > 0) + (g$trace_gap > 0)
+    n_block <- (!g$tests_ok) + (!g$defects_ok) + (!g$trace_ok)
+    minor <- g$minor_open
     chip <- function(id, label) tags$button(type = "button", class = "uat-chip", `data-uat-jump` = id,
                                             title = sprintf("Open %s in the Selected test card", id), label)
-    crit <- function(ok, title, detail, extra = NULL)
+    chips <- function(lead, items) if (length(items)) tagList(div(class = "uat-crit-detail", lead), div(class = "uat-chips", items))
+    crit <- function(ok, title, met, ...)
       div(class = "uat-crit",
           span(class = if (ok) "uat-mark-ok" else "uat-mark-no", role = "img",
-               `aria-label` = if (ok) "met" else "blocking", if (ok) "\u2713" else "\u2715"),
-          div(div(class = "uat-crit-title", title), div(class = "uat-crit-detail", detail), extra))
+               `aria-label` = if (ok) "met" else "blocking", if (ok) "✓" else "✕"),
+          div(div(class = "uat-crit-title", title), if (ok) div(class = "uat-crit-detail", met), ...))
+    status_of <- function(x) ifelse(is.na(x), "missing", x)
     div(
       div(class = paste("uat-verdict", if (g$go) "go" else "no"),
           span(class = "uat-verdict-title", g$verdict),
           span(class = "uat-verdict-detail",
-               if (g$go) "All three criteria are met. The evidence is ready for a named person to review and sign."
+               if (g$go) paste0("All three criteria are met. The evidence is ready for a named person to review and sign",
+                                if (length(minor)) sprintf(", who must also fix or waive the open minor %s %s with a rationale.",
+                                                           if (length(minor) == 1) "defect" else "defects", and_list(minor)) else ".")
                else sprintf("%d of 3 criteria %s blocking. Fix the items below.", n_block, if (n_block == 1) "is" else "are"))),
-      crit(g$crit_fail == 0, "Every critical test passes",
-           if (g$crit_fail == 0) "All critical tests pass." else paste(n_of(g$crit_fail, "critical test"), "not passing:"),
-           if (g$crit_fail) div(class = "uat-chips", Map(function(id, st) chip(id, sprintf("%s (%s)", id, st)),
-                                                        b$tests$TestID, b$tests$Status))),
-      crit(g$open_cm == 0, "No open critical or major defect",
-           if (g$open_cm == 0) "None open." else paste(n_of(g$open_cm, "open defect"), "(the ID opens the test it was found in):"),
-           if (g$open_cm) div(class = "uat-chips", Map(function(id, sev, test) chip(test, sprintf("%s (%s, %s)", id, sev, test)),
-                                                      b$defects$DefectID, b$defects$Severity, b$defects$FoundInTest))),
-      crit(g$trace_gap == 0, "Every requirement has a test",
-           if (g$trace_gap == 0) "All requirements are traced to a test."
-           else paste(n_of(g$trace_gap, "requirement"), "without a test:"),
-           if (g$trace_gap) div(class = "uat-chips", Map(function(req, desc)
-             tags$button(type = "button", class = "btn btn-sm uat-btn uat-btn-accent", `data-uat-cover` = req,
-                         title = desc, sprintf("Add a draft test for %s", req)),
-             b$gaps$RequirementID, b$gaps$RequirementDescription))),
+      crit(g$tests_ok, "Every critical test passes", "All critical tests pass.",
+           chips(paste(n_of(g$crit_fail, "critical test"), "not passing:"),
+                 Map(function(id, st) chip(id, sprintf("%s (%s)", id, st)), b$tests$TestID, b$tests$Status))),
+      crit(g$defects_ok, "No open critical or major defect, and every fix retested",
+           paste0("None open, and each closed defect's test passes",
+                  if (length(minor)) sprintf(". Open but minor, so not blocking: %s.", and_list(minor)) else "."),
+           chips(paste(n_of(g$open_cm, "open defect"), "(the ID opens the test it was found in):"),
+                 Map(function(id, sev, test) chip(test, sprintf("%s (%s, %s)", id, sev, test)),
+                     b$defects$DefectID, b$defects$Severity, b$defects$FoundInTest)),
+           chips(paste(n_of(g$unretested, "defect"), "closed before its test passed a retest:"),
+                 Map(function(id, test, st) chip(test, sprintf("%s (%s is %s)", id, test, status_of(st))),
+                     b$unretested$DefectID, b$unretested$FoundInTest, b$unretested$TestStatus)),
+           chips(paste(n_of(g$untracked, "failing test"), "with no open defect logged:"),
+                 lapply(b$untracked$TestID, function(id) chip(id, sprintf("%s (Fail)", id))))),
+      crit(g$trace_ok, "Every requirement has a test, and every test has been run",
+           sprintf("All %d requirements are traced to a test, and all %d tests have been run.", nrow(rv$trace), nrow(rv$tests)),
+           chips(paste(n_of(g$trace_gap, "requirement"), "without a test:"),
+                 Map(function(req, desc)
+                   tags$button(type = "button", class = "btn btn-sm uat-btn uat-btn-accent", `data-uat-cover` = req,
+                               title = desc, sprintf("Add a draft test for %s", req)),
+                   b$gaps$RequirementID, b$gaps$RequirementDescription)),
+           chips(paste(n_of(g$not_run, "test"), "not run yet:"),
+                 Map(function(id, st) chip(id, sprintf("%s (%s)", id, st)), b$not_run$TestID, b$not_run$Status))),
       p(class = "uat-fine", "A named tester or biostatistician signs UAT off. The gate packages the evidence; it does not grant approval."))
   }))
   observeEvent(input$cover_gap, {
     res <- uat_cover_gap(rv$tests, rv$trace, input$cover_gap)
     if (is.na(res$test_id)) return()
     rv$tests <- res$tests; rv$trace <- res$trace
-    show_tests(); select_test(res$test_id)
-    note(sprintf("Added draft test %s (Not Run) for %s. %s", res$test_id, input$cover_gap, gate_text(gate())))
+    show_tests(); select_test(res$test_id, rows_changed = TRUE)
+    note(sprintf("Added draft test %s (Not Run) for %s: write its steps, then run it. %s",
+                 res$test_id, input$cover_gap, gate_text(gate())))
   })
 
   # ---- area plot ----

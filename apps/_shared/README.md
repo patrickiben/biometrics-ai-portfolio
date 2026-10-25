@@ -64,10 +64,13 @@ server <- function(input, output, session) {
 ```
 
 - `app_status_ui(computing)` shows a startup card that names what R is computing and counts the
-  panels as they fill, turns on Shiny's busy indicators for every later update, says so when the
-  first results take more than 45 seconds or the connection to R is lost, and styles errors: a
-  panel that fails shows "Could not compute:" with the panel's name, R's message and "This is a bug in
-  the app".
+  panels as they fill. It stays until every visible panel has content (a DataTable counts once it
+  shows rows or its own empty message) or, once R is idle, for at most 5 seconds more, so a table
+  that is still drawing never sits blank without a status; the launch page's status line waits the
+  same way and recounts as each value arrives. It turns on Shiny's busy indicators for every later
+  update, says so when the first results take more than 45 seconds or the connection to R is lost,
+  and styles errors: a panel that fails shows "Could not compute:" with the panel's name, R's
+  message and "This is a bug in the app".
 - `guard(what, expr)` adds what was being computed to an error's message. `req()` and `validate()`
   pass through.
 - `explain_empty(ok, message)` and `empty_state(message)`: an output a visitor can see is never
@@ -84,7 +87,21 @@ server <- function(input, output, session) {
 `screenshot` (`null`, or `src`, `alt`, `width`, `height`, `caption`), `links` (label and `href`
 relative to `apps/<name>/`), `first_load` (`download_mb`, `first_s`, `revisit_s`), and `smoke`:
 `timeout_s`, `outputs` (ids that must have content on first load), `expect` (exact text for some
-of them) and `tabs` (a tab label and the outputs it must fill once clicked).
+of them), `tabs` (a tab label and the outputs it must fill once clicked) and, optionally,
+`interactions`: named step lists done with real mouse and keyboard events in the app, in order, on
+the same page, each with expectations, for example
+
+```json
+{"name": "a double-click on a defect's Status pill opens its editor",
+ "viewport": [390, 844],
+ "steps": [{"dblclick": "#defects tbody tr:nth-child(4) td:nth-child(3) .uat-pill"}],
+ "expect": [{"visible": "#defects tbody tr:nth-child(4) td:nth-child(3) input"}],
+ "after": [{"key": "Escape"}]}
+```
+
+Steps are `click`, `dblclick` (CSS selectors in the app's page), `key`, `type` and `wait` (ms);
+expectations are `visible`, `text` (a selector and its exact text) and `inViewport`. `viewport`
+(optional) sets the window size for that interaction only; `after` cleans up.
 
 ## The smoke test
 
@@ -98,7 +115,8 @@ CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
 It serves the build under `/biometrics-ai-portfolio/` as Pages does, opens each launch page with a
 fresh browser profile and fails unless the page text paints within 3 seconds, the app reaches
 Ready within `timeout_s`, every listed output has content and no panel shows an error, each listed
-tab fills in, and a reload reaches Ready again. `--fault 'REGEX=404'` (or `drop`, `hang`) with
+tab fills in, each listed interaction ends with its expectations met, and a reload reaches Ready
+again. `--fault 'REGEX=404'` (or `drop`, `hang`) with
 `--expect-problem KIND` checks an error state instead, for example
 `--fault 'shinylive-sw\.js$=404' --expect-problem sw-failed`.
 

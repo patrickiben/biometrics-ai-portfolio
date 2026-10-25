@@ -49,7 +49,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 
 **Before you open it:** R starts inside your browser, so the tracker takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. If it does not load, the screenshot below and the [read-only snapshot](uat-dashboard.html) show the same screens.
 
-![The tracker as it opens, on synthetic data.](../screenshots/uat-tracker.png){fig-alt="The UAT tracker as it opens: 29 test scripts, 22 passed, 2 failed, 3 open defects, 97% of requirements traced, the go-live gate NOT ready, the test-script table, execution by test area and the defect log."}
+![The tracker as it opens, on synthetic data.](../screenshots/uat-tracker.png){fig-alt="The UAT tracker as it opens: the Start here guide, five KPI boxes (29 test scripts, 22 passed, 2 failed, 3 open defects, 97% of requirements traced), the test-script table with RAND-04 selected and the go-live gate reading NOT ready."}
 :::
 
 ## What a UAT is, in one picture

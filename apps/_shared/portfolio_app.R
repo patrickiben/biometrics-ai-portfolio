@@ -13,10 +13,11 @@
 #   output$tbl  <- renderDT({ d <- f(); explain_empty(nrow(d) > 0, "No tests match. Clear the filters."); ... })
 #
 # app_status_ui(computing)  A startup card that says what R is computing and counts the panels
-#     filled so far; Shiny's busy indicators (spinners and a pulse) for every later update; a
-#     message if the first results take more than 45 s or the connection to R is lost; and error
-#     cards, so a panel that fails says what failed, shows the message and says it is a bug
-#     instead of going blank.
+#     filled so far, and stays until every visible panel has content (a table counts once it
+#     shows rows) or, once R is idle, for at most 5 s more; Shiny's busy indicators (spinners and
+#     a pulse) for every later update; a message if the first results take more than 45 s or the
+#     connection to R is lost; and error cards, so a panel that fails says what failed, shows the
+#     message and says it is a bug instead of going blank.
 # guard(what, expr)  Wraps a render expression so an error names the computation that failed.
 #     req() and validate() pass through unchanged. A ggplot is drawn after guard() returns, so an
 #     error while drawing it still gets the error card, without the name.
@@ -51,11 +52,19 @@ portfolio_theme <- function(...) {
     "body-bg-dark" = D[["bg"]], "body-color-dark" = D[["text"]], "border-color-dark" = D[["line"]],
     "body-secondary-color-dark" = D[["muted"]], "body-tertiary-bg-dark" = D[["surface2"]],
     "link-color-dark" = D[["accent"]], ...)
+  # .btn-primary takes its colors from --bs-btn-* variables compiled from the light accent, so in
+  # dark mode it is given the site's dark accent with dark text, as on the launch page (launch.css)
   bslib::bs_add_rules(theme, sprintf(paste(
     ".card, .bslib-card { --bs-card-bg: %s; }",
     "[data-bs-theme=dark] .card, [data-bs-theme=dark] .bslib-card { --bs-card-bg: %s; }",
-    "[data-bs-theme=dark] { --bs-primary: %s; --bs-primary-rgb: 125, 181, 255; }"),
-    L[["surface"]], D[["surface"]], D[["accent"]]))
+    "[data-bs-theme=dark] { --bs-primary: %s; --bs-primary-rgb: 125, 181, 255; }",
+    "[data-bs-theme=dark] .btn-primary { --bs-btn-color: %s; --bs-btn-bg: %s; --bs-btn-border-color: %s;",
+    "--bs-btn-hover-color: %s; --bs-btn-hover-bg: #9CC6FF; --bs-btn-hover-border-color: #9CC6FF;",
+    "--bs-btn-active-color: %s; --bs-btn-active-bg: #9CC6FF; --bs-btn-active-border-color: #9CC6FF;",
+    "--bs-btn-disabled-color: %s; --bs-btn-disabled-bg: %s; --bs-btn-disabled-border-color: %s;",
+    "--bs-btn-focus-shadow-rgb: 125, 181, 255; }"),
+    L[["surface"]], D[["surface"]], D[["accent"]],
+    D[["bg"]], D[["accent"]], D[["accent"]], D[["bg"]], D[["bg"]], D[["bg"]], D[["accent"]], D[["accent"]]))
 }
 
 guard <- function(what, expr) {
@@ -126,7 +135,7 @@ PORTFOLIO_STATUS_JS <- "
 (function () {
   if (window.portfolioApp) return;
   var S = window.portfolioApp = { state: 'connecting', connected: false, ready: false, t0: Date.now() };
-  var WATCHDOG_MS = 45000;
+  var WATCHDOG_MS = 45000, GRACE_MS = 5000;
   function card() { return document.getElementById('pf-startup'); }
   function put(sel, txt) { var c = card(), e = c && c.querySelector(sel); if (e) e.textContent = txt; }
   function shown(e) {
@@ -138,6 +147,12 @@ PORTFOLIO_STATUS_JS <- "
     if (e.classList.contains('shiny-output-error')) return true;
     if (e.classList.contains('shiny-plot-output') || e.classList.contains('shiny-image-output')) {
       var i = e.querySelector('img'); return !!(i && i.getAttribute('src'));
+    }
+    // a DataTable counts once it shows rows or its own empty message, not while it is loading
+    // (with scrollX the first table.dataTable is the header's copy, which has no body rows)
+    if (e.querySelector('table.dataTable')) {
+      var td = e.querySelector('table.dataTable tbody td');
+      return !!td && !(td.classList.contains('dataTables_empty') && /^(loading|processing)/i.test((td.textContent || '').trim()));
     }
     return (e.textContent || '').trim().length > 0 || !!e.querySelector('img,svg,canvas,table');
   }
@@ -171,9 +186,15 @@ PORTFOLIO_STATUS_JS <- "
     document.documentElement.setAttribute('data-pf-state', 'problem');
   }
   function check() {
+    if (S.ready) return;
     var k = count();
-    if (!S.ready) put('.pf-startup-count', k.n ? k.done + ' of ' + k.n + ' panels ready' : '');
-    if (S.connected && S.idle && !S.ready && k.busy === 0) finish();
+    put('.pf-startup-count', k.n ? k.done + ' of ' + k.n + ' panels ready' : '');
+    if (!S.connected || !S.idle || k.busy) { S.settled = null; return; }
+    if (k.done >= k.n) { finish(); return; }
+    // R is idle but a panel is still empty: a widget (a table, say) is still drawing, or a panel
+    // is empty by design. Keep the card up while it draws, at most GRACE_MS, then show the app.
+    if (!S.settled) S.settled = Date.now();
+    else if (Date.now() - S.settled > GRACE_MS) finish();
   }
   document.addEventListener('click', function (ev) {
     if (ev.target && ev.target.classList && ev.target.classList.contains('pf-reload')) {

@@ -8,6 +8,9 @@
 //     smoke.expect matches, and no output anywhere shows an error (.shiny-output-error that is not
 //     a validate() message);
 //   - each tab in smoke.tabs, once clicked, fills its listed outputs with no error;
+//   - each step list in smoke.interactions, done with real mouse and keyboard events (optionally at
+//     another window size), ends with every expectation met: an element visible, an element's
+//     exact text, or an element inside the app's viewport;
 //   - a reload (the page now controlled by the service worker) reaches ready again.
 // The lists come from apps/<name>/launch.json. Synthetic data only.
 //
@@ -151,6 +154,75 @@ async function waitReady(page, timeoutS, label) {
   say(`${label}: not ready after ${timeoutS} s`);
   return s;
 }
+// ---- interactions: real mouse and keyboard events in the app's frame --------------------------
+//   {"name": "...", "viewport": [390, 844], "steps": [{"click": "css"}, {"dblclick": "css"},
+//    {"key": "Escape"}, {"type": "text"}, {"wait": 300}], "expect": [{"visible": "css"},
+//    {"text": ["css", "exact text"]}, {"inViewport": "css"}], "after": [steps], "timeout_s": 15}
+const EXPECT = (list) => list.map((x) => {
+  const sel = x.visible || x.inViewport || (x.text && x.text[0]);
+  const e = document.querySelector(sel);
+  const r = e && e.getBoundingClientRect();
+  const shown = !!(r && r.width > 0 && r.height > 0);
+  let ok = shown, got = shown ? "visible" : e ? "not visible" : "missing";
+  if (x.text && e) { got = (e.innerText || e.textContent || "").replace(/\s+/g, " ").trim(); ok = got === x.text[1]; }
+  if (x.inViewport && shown) {
+    got = `left ${Math.round(r.left)}, right ${Math.round(r.right)}, top ${Math.round(r.top)}, bottom ${Math.round(r.bottom)} in ${innerWidth}x${innerHeight}`;
+    ok = r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight;
+  }
+  return { sel, ok, got, want: x.text ? x.text[1] : x.inViewport ? "inside the viewport" : "visible" };
+});
+const idle = (fr) => fr.evaluate(() => !document.documentElement.classList.contains("shiny-busy")).catch(() => false);
+async function settle(fr, ms = 10000) {
+  const end = Date.now() + ms;
+  await sleep(150);
+  while (Date.now() < end && !(await idle(fr))) await sleep(100);
+  await sleep(250);
+}
+async function doSteps(page, fr, steps) {
+  for (const st of steps || []) {
+    if (st.wait) { await sleep(st.wait); continue; }
+    if (st.key) { await page.keyboard.press(st.key); await settle(fr); continue; }
+    if (st.type) { await page.keyboard.type(st.type, { delay: 20 }); await settle(fr); continue; }
+    const sel = st.click || st.dblclick;
+    const h = await fr.$(sel);
+    if (!h) throw new Error(`no element matches ${sel}`);
+    await h.evaluate((e) => e.scrollIntoView({ block: "center" }));
+    await sleep(200);
+    await h.click(st.dblclick ? { count: 2 } : {});
+    await settle(fr);
+  }
+}
+async function runInteraction(page, it, size, shot) {
+  const fr = appFrame(page);
+  if (!fr) return { ok: false, detail: "no app frame" };
+  if (it.viewport) {
+    await page.setViewport({ width: it.viewport[0], height: it.viewport[1] });
+    await page.evaluate(() => document.getElementById("app").scrollIntoView());
+    await sleep(600);
+  }
+  try {
+    await doSteps(page, fr, it.steps);
+    const end = Date.now() + (it.timeout_s || 15) * 1000;
+    let r = [];
+    const seen = {};   // the last observation of each element while it existed (a toast expires)
+    while (Date.now() < end) {
+      r = await fr.evaluate(EXPECT, it.expect || []);
+      r.forEach((x, k) => { if (x.got !== "missing") seen[k] = x.got; });
+      if (r.every((x) => x.ok)) break;
+      await sleep(250);
+    }
+    r.forEach((x, k) => { if (!x.ok && x.got === "missing" && seen[k]) x.got = `${seen[k]} (then it went away)`; });
+    const bad = r.filter((x) => !x.ok);
+    if (shot) await shot().catch(() => {});   // before the clean-up steps and at the interaction's size
+    return { ok: !bad.length, detail: bad.map((x) => `${x.sel}: got "${x.got}", expected ${x.want}`).join("; ") };
+  } catch (e) {
+    return { ok: false, detail: String(e && e.message || e) };
+  } finally {
+    await doSteps(page, fr, it.after).catch(() => {});
+    if (it.viewport) { await page.setViewport(size); await sleep(400); }
+  }
+}
+
 async function waitOutputs(page, ids, timeoutS) {
   const end = Date.now() + timeoutS * 1000;
   let r = null;
@@ -270,6 +342,18 @@ async function checkApp(spec) {
           const stage = await page.$("#app .app-stage");
           if (stage) await stage.screenshot({ path: path.join(SHOTS, `${spec.name}-tab-${tab.tab.replace(/[^A-Za-z0-9]+/g, "_")}.png`) });
         }
+      }
+      // the interactions: real mouse and keyboard events, in order, on the same page
+      for (const it of smoke.interactions || []) {
+        const tt = Date.now();
+        const shot = SHOTS ? async () => {
+          const stage = await page.$("#app .app-stage");
+          if (stage) await stage.screenshot({ path: path.join(SHOTS, `${spec.name}-do-${it.name.replace(/[^A-Za-z0-9]+/g, "_").slice(0, 60)}.png`) });
+        } : null;
+        const r = await runInteraction(page, it, { width: 1440, height: 900 }, shot);
+        if (!r.ok) fail(`interaction "${it.name}": ${r.detail}`);
+        else say(`${spec.name}: interaction "${it.name}" passed in ${((Date.now() - tt) / 1000).toFixed(1)} s`);
+        (res.interactions = res.interactions || []).push({ name: it.name, ok: r.ok, detail: r.detail || "" });
       }
       // a second visit: the service worker now controls the page from the start
       if (RELOAD) {
