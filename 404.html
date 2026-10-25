@@ -5,9 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>Page not found | Patrick Iben</title>
+<meta name="color-scheme" content="dark light">
+<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}if(t==="light"||t==="dark")d.setAttribute("data-theme",t);d.classList.add("js")})(document.documentElement)</script>
 <script>
 /* GitHub Pages serves this page for a missing URL at any depth. When that URL sits inside the
-   project path, point relative links (the stylesheet and the buttons below) at the site root. */
+   project path, point relative links (the stylesheet, the script and the links below) at the site root. */
 (function () {
   var m = location.pathname.match(/^\/biometrics-ai-portfolio\//);
   if (!m && /\.github\.io$/.test(location.hostname)) {
@@ -18,26 +20,40 @@
     b.href = m[0];
     document.head.appendChild(b);
   }
-  document.write('<link rel="stylesheet" href="site.css">');
+  document.write('<link rel="stylesheet" href="site.css"><script src="assets/ui.js" defer><\/script>');
 })();
 </script>
 <noscript><link rel="stylesheet" href="site.css"></noscript>
-<link rel="icon" href="data:,">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M16 0v16H0z%27 fill=%27%233ad7c8%27/%3E%3C/svg%3E">
 </head>
 <body>
+<!-- gen:topbar -->
 <header class="top">
   <div class="wrap">
-    <a class="name" href="index.html">Patrick Iben</a>
+    <a class="name" href="index.html"><span class="mark" aria-hidden="true"></span>Patrick Iben</a>
+    <nav class="nav" id="site-nav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="lifecycle.html">Lifecycle</a>
+      <a href="study/index.html">Worked example</a>
+      <a href="apps.html">Apps</a>
+      <a href="methods.html">Methods</a>
+      <a href="quality.html">Quality and AI use</a>
+      <a href="about.html">About</a>
+    </nav>
+    <span class="bar-facts">Synthetic data only</span>
+    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.6 14.2A8.5 8.5 0 0 1 9.8 3.4a8.5 8.5 0 1 0 10.8 10.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><span class="sr">Dark theme</span></button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
   </div>
 </header>
-<main class="wrap stub">
-  <p class="kicker">Error 404</p>
+<!-- /gen:topbar -->
+<main id="main" class="wrap stub">
+  <p class="eyebrow">Not found</p>
   <h1>That page is not here</h1>
   <p>The link may be old. The site was reorganized in October 2026 and some older pages were retired.</p>
   <p class="actions">
     <a href="index.html">Go to the home page</a>
-    <a href="index.html#lifecycle">Lifecycle snapshot</a>
-    <a href="index.html#start">Start here</a>
+    <a href="lifecycle.html">Lifecycle</a>
+    <a href="apps.html">Apps</a>
   </p>
 </main>
 </body>
