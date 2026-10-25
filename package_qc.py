@@ -235,10 +235,10 @@ if os.path.exists(ledger):
         total = int(json.load(open(ledger)).get('total', 0))
     except Exception:
         total = 0
-    words = {7: 'seven', 8: 'eight', 9: 'nine', 6: 'six'}
+    words = {6: 'six', 7: 'seven', 8: 'eight', 9: 'nine', 10: 'ten'}
     for f in page_files + md_files:
         t = strip_blocks(read(f))
-        for m in re.finditer(r'\b(\d)/(\d) gates?\b|\b(six|seven|eight|nine)[ -](?:named )?gates?\b', t, re.I):
+        for m in re.finditer(r'\b(\d{1,2})/(\d{1,2}) gates?\b|\b(six|seven|eight|nine|ten)[ -](?:named )?gates?\b', t, re.I):
             n = int(m.group(2)) if m.group(2) else {v: k for k, v in words.items()}[m.group(3).lower()]
             if total and n != total:
                 add('Count drift (harness gates)', f'{rel(f)}: says "{m.group(0)}", ledger has {total}')

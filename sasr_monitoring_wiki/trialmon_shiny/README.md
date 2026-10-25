@@ -2,8 +2,9 @@
 
 A Safety Review Committee style console for a synthetic dose-escalation study: a ranked worklist,
 the eDISH plot (click a point to open that participant), QTcF categories, CTCAE lab shifts, adverse
-events by SOC and PT, the DLT tally against an illustrative 3+3 rule, and a study tier of operational
-indicators with a what-if. Every level rolls up worst-of, the QTcF watch level included, so one RED is
+events by SOC and PT, the DLT tally against an illustrative 3+3 rule, a study tier of operational
+indicators with a what-if, and a convention grid that shows whether each potential Hy's Law flag holds
+under every combination of three SAP conventions. Every level rolls up worst-of, the QTcF watch level included, so one RED is
 never averaged away.
 
 **Synthetic data only.** Study CP-101 does not exist. The console flags positions for the medical
@@ -32,8 +33,9 @@ separate step.
 |---|---|
 | `app.R` | The UI and the reactive server. |
 | `R/logic.R` | The screening rules in base R (no Shiny): potential Hy's Law with its timing window, the aminotransferase confirmation flag, eDISH quadrants, the R ratio, QTcF categories, CTCAE v6.0/v5.0 lab grades, the 3+3 rule reference, the study tier and the worst-of roll-up. The Quarto pages, the SRC packet and the tests call the same functions. |
-| `R/gen_data.R` | Writes the synthetic ADaM-shaped CSVs from one seed. |
-| `data/` | `adsl`, `adlb`, `adeg`, `adae`, `cohorts`, `study_kri` (operational indicators) and `notes` (teaching notes). |
+| `R/hyslaw_grid.R` | The Hy's Law convention grid in base R: 12 cells (window 14, 30 or 60 days; ALT or AST, or ALT only; ALP < 2x ULN at the aminotransferase draw, or not applied), the peak-versus-peak reference column and the verdict rule. |
+| `R/gen_data.R` | Writes the synthetic ADaM-shaped CSVs from one seed, plus `labs_long.csv` (no random draws). |
+| `data/` | `adsl`, `adlb`, `adeg`, `adae`, `cohorts`, `study_kri` (operational indicators) and `notes` (teaching notes); `labs_long` (liver tests for seven planted known-answer cases, CP101-901 to -907, used only by the grid) and `narrative_flags` (written by hand: the grid verdict each narrative implies). |
 | `../trialmon_tests/` | testthat tests: rule boundaries, the shipped study, and the server through `shiny::testServer()`. |
 
 ## The rules
@@ -57,6 +59,14 @@ Lab grades          NCI CTCAE v6.0 by default, v5.0 per protocol; creatinine on 
                     exceeds the MTD. BOIN is the model-assisted alternative; not implemented here.
 Roll-up             worst-of at participant (watch included), cohort, study tier and overall.
                     Never an average.
+Convention grid     potential Hy's Law in each of 12 cells: window W in {14, 30, 60} days after the
+                    ALT or AST >= 3x ULN draw (TBL > 2x ULN on day t to t + W, both ends included),
+                    aminotransferase = ALT or AST, or ALT only; ALP < 2x ULN at that draw, or not
+                    applied. Reference column (not a cell): peak AT >= 3x and peak TBL > 2x ULN.
+                    Verdict: Robust (12 of 12); Convention-dependent (names each factor for which two
+                    cells differing only in that factor disagree); Not flagged; Peak-only artifact
+                    (0 of 12 but flagged on peaks). A structured sensitivity analysis of SAP
+                    conventions; the tests fail if a status in data/narrative_flags.csv disagrees.
 ```
 
 The CTCAE v6.0 cut points follow admiral 1.5.0's `atoxgr_criteria_ctcv6`; they were not re-checked

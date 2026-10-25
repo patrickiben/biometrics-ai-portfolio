@@ -87,7 +87,16 @@ sim_adex <- function(adsl, d) {
 }
 
 ## --- ADPC: concentration-time, with BSV + WSV + residual + BLQ --------------
-sim_adpc <- function(adsl, adex, d) {
+## washout_h (optional; NULL by default) is the time in hours from the period-1 dose to the
+## period-2 dose of a crossover. When it is set, each period-2 profile gains the residual of the
+## same participant's period-1 dose, .conc1(t + washout_h) with the stored period-1 dose and CL
+## (linear superposition), added before the proportional residual error. The residual is
+## deterministic, so no random numbers are drawn for it and every other draw is unchanged. A
+## pre-dose sample below the LLOQ is then reported as <LLOQ, like a post-dose one. With
+## washout_h = NULL the code path, the draws and the output are exactly those of earlier versions.
+sim_adpc <- function(adsl, adex, d, washout_h = NULL) {
+ if (!is.null(washout_h))
+  stopifnot(d$model == "CROSSOVER", is.numeric(washout_h), length(washout_h) == 1, washout_h > 0)
  lg <- function(gm, cv) gm * exp(rnorm(length(gm), 0, sqrt(log(1+cv^2))))
  ## participant-level PK (between-participant)
  n <- nrow(adsl)
@@ -96,6 +105,7 @@ sim_adpc <- function(adsl, adex, d) {
  Vi <- setNames(Vi, adsl$USUBJID); Kai <- setNames(Kai, adsl$USUBJID)
  atpt <- ifelse(PK$times==0, "Pre-dose", paste0(PK$times,"h")) # character nominal time label
  rows <- list(); k <- 0
+ p1 <- list() # period-1 dose and CL per participant; filled only when washout_h is set
  for (i in seq_len(nrow(adex))) {
  u <- adex$USUBJID[i]; per <- adex$APERIOD[i]; trt <- adex$TRTA[i]
  dose <- ifelse(adex$AVAL[i] > 0, adex$AVAL[i], 100)
@@ -104,8 +114,15 @@ sim_adpc <- function(adsl, adex, d) {
  teff <- if (identical(trt,"Test")) PK$be_gmr_true * exp(rnorm(1,0,0.05)) else 1
  CLij <- CLi[u] / (teff * wsv) # AUC ∝ 1/CL
  cc <- .conc1(PK$times, dose, CLij, Vi[u], Kai[u]) * PK$conc_scale # scale above LLOQ
+ if (!is.null(washout_h)) { # residual of the period-1 dose (no random draws)
+  if (per == 1) p1[[u]] <- c(dose = unname(dose), CL = unname(CLij))
+  if (per == 2) { q <- p1[[u]]; stopifnot(!is.null(q)) # period 1 precedes period 2 in ADEX
+   cc <- cc + .conc1(PK$times + washout_h, q[["dose"]], q[["CL"]], Vi[u], Kai[u]) * PK$conc_scale }
+ }
  cc <- cc * exp(rnorm(length(cc), 0, PK$prop_err)) # proportional residual
- blq <- cc < PK$lloq & PK$times > 0
+ ## with washout_h set the pre-dose sample can hold a residual, so it is flagged BLQ like any
+ ## other sample (M13A: BLQ counts as 0); unset, the pre-dose zero is reported as before
+ blq <- cc < PK$lloq & (PK$times > 0 | !is.null(washout_h))
  k <- k+1
  rows[[k]] <- data.frame(USUBJID=u, APERIOD=per, APERIODC=paste("Period",per),
  TRTA=trt, PARAMCD="CONC", PARAM="Plasma concentration (ng/mL)",
@@ -118,6 +135,7 @@ sim_adpc <- function(adsl, adex, d) {
 
 ## --- NCA: derive ADPP parameters from ADPC ---------------------------------
 nca_one <- function(t, c) {
+ c[t == 0 & is.na(c)] <- 0 # a pre-dose BLQ counts as 0 (M13A); reached only with washout_h set
  ok <- !is.na(c) & c > 0
  if (sum(ok) < 3) return(NULL)
  cmax <- max(c[ok]); tmax <- t[ok][which.max(c[ok])]
@@ -155,6 +173,35 @@ sim_adpp <- function(adpc, adex) {
  PKFL="Y", stringsAsFactors=FALSE)
  }
  do.call(rbind, out)
+}
+
+## --- optional: ICH M13A pre-dose rule on ADPP (used only when washout_h is set) ----------
+## PDCMXR = pre-dose concentration / Cmax of the same period (period 1 is 0 by construction).
+## A period with PDCMXR > 0.05 is excluded (M13A, single-dose studies). The 2x2 analysis needs
+## both periods, so ANL02FL (bioequivalence analysis flag, "Y" or null as for record-level ADaM
+## flags) is null on every row of that participant, and of any participant without Cmax and
+## AUClast in both periods. PKEXRSN (the reason variable used in study/) names the rule on the
+## excluded period's rows. Not called on the default path, so the default ADPP is unchanged.
+flag_predose_m13a <- function(adpc, adpp, frac = 0.05) {
+ pre <- adpc[adpc$ATPTN == 0, c("USUBJID","APERIOD","AVAL")]
+ pre$AVAL[is.na(pre$AVAL)] <- 0 # a pre-dose BLQ counts as 0
+ cm <- adpp[adpp$PARAMCD == "CMAX", c("USUBJID","APERIOD","TRTA","AVAL")]
+ m <- merge(cm, pre, by = c("USUBJID","APERIOD"), suffixes = c(".cmax",".pre"), sort = FALSE)
+ m$ratio <- m$AVAL.pre / m$AVAL.cmax
+ add <- data.frame(USUBJID=m$USUBJID, APERIOD=m$APERIOD, TRTA=m$TRTA, PARAMCD="PDCMXR",
+  PARAM="Pre-dose concentration / Cmax (ratio)", AVAL=m$ratio, PKFL="Y", stringsAsFactors=FALSE)
+ pp <- rbind(adpp, add)
+ pp <- pp[order(match(pp$USUBJID, unique(adpp$USUBJID)), pp$APERIOD,
+  match(pp$PARAMCD, c(unique(adpp$PARAMCD), "PDCMXR"))), ]
+ rownames(pp) <- NULL
+ xkey <- paste(m$USUBJID, m$APERIOD)[m$ratio > frac]
+ xsubj <- unique(m$USUBJID[m$ratio > frac])
+ both <- names(which(tapply(pp$PARAMCD %in% c("CMAX","AUCLST") & !is.na(pp$AVAL) & pp$AVAL > 0,
+  list(pp$USUBJID), function(v) sum(v)) == 4))
+ pp$ANL02FL <- ifelse(pp$USUBJID %in% both & !pp$USUBJID %in% xsubj, "Y", NA_character_)
+ pp$PKEXRSN <- ifelse(paste(pp$USUBJID, pp$APERIOD) %in% xkey,
+  "PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX", NA_character_)
+ pp
 }
 
 ## --- ADAE: AE incidence per EXPOSURE (period/treatment of onset) ----------------
@@ -249,10 +296,13 @@ sim_adeg <- function(adsl, adex, d) .bds(adsl, adex, data.frame(
  dp=c(0,0,0,0,0), stringsAsFactors=FALSE))
 
 ## --- orchestrate: full synthetic study -------------------------------------
-simulate_study <- function(design = sample_design(), seed = 1L) {
+## washout_h: optional period-1 to period-2 dosing interval in hours (crossover only); see
+## sim_adpc(). NULL, the default, reproduces the committed out/*.csv byte for byte.
+simulate_study <- function(design = sample_design(), seed = 1L, washout_h = NULL) {
  set.seed(seed)
  adsl <- sim_adsl(design); adex <- sim_adex(adsl, design)
- adpc <- sim_adpc(adsl, adex, design); adpp <- sim_adpp(adpc, adex)
+ adpc <- sim_adpc(adsl, adex, design, washout_h = washout_h); adpp <- sim_adpp(adpc, adex)
+ if (!is.null(washout_h)) adpp <- flag_predose_m13a(adpc, adpp)
  adae <- sim_adae(adsl, adex, design)
  advs <- sim_advs(adsl, adex, design); adlb <- sim_adlb(adsl, adex, design); adeg <- sim_adeg(adsl, adex, design)
  if (design$model == "CROSSOVER") { # ADSL period-1 trt must equal ADEX period-1 TRTA

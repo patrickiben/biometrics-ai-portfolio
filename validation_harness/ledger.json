@@ -1,23 +1,23 @@
 {
- "generated": "2026-10-25 10:34 EDT",
+ "generated": "2026-10-25 14:12 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 6,
+ "green": 8,
  "manual": 1,
  "unsigned": 1,
- "total": 8,
+ "total": 10,
  "gates": [
   {
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "487 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "492 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
    "gate": "G2 PK and count convention scans",
    "guards": "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)",
    "status": "green",
-   "evidence": "static scans: geometric-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; drafter number-validation self-test present (5)",
+   "evidence": "static scans: the log-scale geometric-mean pattern appears in 14 files under r_tlf_pseudocode (programs, helpers and documentation alike; the scan needs only one, so it would pass even if no PK program used it); distinct-participant counting in 162 programs; drafter number-validation self-test present (5)",
    "sign_off": "pending"
   },
   {
@@ -59,7 +59,21 @@
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 56 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
+   "evidence": "package_qc.py: 0 issues across 55 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G9 Independent recomputation",
+   "guards": "the sandbox's NCA parameters (ADPP) and printed results (geometric means and CV%, GMR and 90% CI, AE participant counts) match a separately written recomputation from ADPC, ADEX, ADSL and ADAE (same author: a re-derivation, not double programming by a second person)",
+   "status": "green",
+   "evidence": "80 profiles compared; maximum relative difference 4.4e-10 (tolerance 1e-6); 0 of 6 checks failed; engines: base R closed form and lm(); PKNCA 0.12.1 (checks/independent_recompute.R; AUC(0-t) from the predose zero, BLQ as 0)",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G10 Harness sensitivity",
+   "guards": "the harness's own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)",
+   "status": "green",
+   "evidence": "registry of 18 defects frozen at sha256 e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3; last run 2026-10-25: CAUGHT 14, SURVIVED 1, EQUIVALENT 1, NOT APPLICABLE 2; survived (disclosed, not failures): D04 (exp(mean(x)) as the geometric mean in one R PK TLF program); the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
    "sign_off": "pending"
   }
  ]
