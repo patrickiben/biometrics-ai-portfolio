@@ -15,6 +15,11 @@ Page: [`index.html`](index.html).
   treatment; geometric mean ratio and 90% confidence interval), an adverse-event overview counted
   by participant, and vitals, lab and ECG summaries. It then writes `out/*.csv`.
 - `priors.R` holds the design and domain priors as a hard-coded list.
+- `simulate_study(..., washout_h = NULL)`: setting `washout_h` (hours between the two doses)
+  adds each participant's period-1 residual to the period-2 profile by superposition, with no
+  new random draws, and adds the ICH M13A pre-dose ratio `PDCMXR`, `ANL02FL` and `PKEXRSN` to
+  ADPP. Left unset, the output is byte-identical to the committed files. The
+  [residual-carryover study](carryover_oc/index.html) in `carryover_oc/` uses it.
 
 ## Run
 
