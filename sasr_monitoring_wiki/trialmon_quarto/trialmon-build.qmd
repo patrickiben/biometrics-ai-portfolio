@@ -4,11 +4,13 @@ subtitle: "The Shiny console, the screening rules and the tests, every line"
 format:
   html:
     theme:
-      light: [default, _theme-light.scss]
-      dark: [default, _theme-dark.scss]
+      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss, _theme-dark.scss]
+      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss, _theme-light.scss]
     respect-user-color-scheme: true
-    include-in-header: _head.html
-    include-before-body: _topbar.html
+    include-in-header: ../../_partials/_quarto-head-d2.html
+    include-before-body:
+      - ../../_partials/_quarto-skip.html
+      - ../../_partials/_topbar-apps-d2.html
     toc: true
     toc-location: left
     toc-title: On this page

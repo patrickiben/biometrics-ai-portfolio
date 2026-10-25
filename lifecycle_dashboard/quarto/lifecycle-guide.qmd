@@ -4,9 +4,13 @@ subtitle: "A visual, runnable guide to the operational-health console"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
+      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
+      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
+    respect-user-color-scheme: true
+    include-in-header: ../../_partials/_quarto-head-d2.html
+    include-before-body:
+      - ../../_partials/_quarto-skip.html
+      - ../../_partials/_topbar-apps-d2.html
     toc: true
     toc-location: left
     toc-title: On this page
@@ -56,6 +60,8 @@ Operational health of every study from protocol to CSR, on one screen: are miles
 ```{mermaid}
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
+  accTitle: Study lifecycle phases
+  accDescr: Startup, conduct, database lock and reporting in sequence, with their milestones: protocol, SAP and first participant first visit; last participant last visit; database lock; TLFs and the CSR.
   S[Startup] --> C[Conduct] --> L[DB Lock] --> R[Reporting]
   S -.-> M1["Protocol<br/>SAP · FPFV"]
   C -.-> M2[LPLV]
@@ -70,6 +76,8 @@ No black box. Each study gets four operational sub-scores (0-100), blended into 
 ```{mermaid}
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
+  accTitle: Operational risk score
+  accDescr: Timeline, data, TLF and resource scores combine into an overall score, 0.30 T plus 0.28 D plus 0.27 F plus 0.15 R, which maps to red, amber or green bands.
   T["Timeline<br/>overdue + lock pressure"] --> O
   D["Data<br/>queries + clean/SDV"] --> O
   F["TLF<br/>finalized vs pressure"] --> O
@@ -86,15 +94,15 @@ Everything below is rendered from four CSVs, the same files the Shiny app reads:
 
 ```{r kpis, results='asis'}
 box <- function(label, value, col) sprintf(
-  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  '<div style="flex:1 1 120px;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
   col, value, label)
 cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
-cat(box("Active studies", k$n, "#e9edf7"))
-cat(box("At risk", k$at_risk, "#e8657a"))
-cat(box("On watch", k$watch, "#e0a64c"))
-cat(box("Open queries", k$open_q, "#e9edf7"))
-cat(box("Avg deliverables", paste0(k$avg_del,"%"), "#3fd0c9"))
-cat(box("Next DB lock", ifelse(is.na(k$next_dbl_days),"-",paste0(k$next_dbl_days,"d")), "#5b8cff"))
+cat(box("Active studies", k$n, "var(--ink)"))
+cat(box("At risk", k$at_risk, "var(--red)"))
+cat(box("On watch", k$watch, "var(--amber)"))
+cat(box("Open queries", k$open_q, "var(--ink)"))
+cat(box("Avg deliverables", paste0(k$avg_del,"%"), "var(--accent)"))
+cat(box("Next DB lock", ifelse(is.na(k$next_dbl_days),"-",paste0(k$next_dbl_days,"d")), "var(--blue)"))
 cat('</div>')
 ```
 

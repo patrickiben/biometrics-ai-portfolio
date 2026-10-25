@@ -428,6 +428,7 @@ for dep in (1, 2, 3):
     put(f'_partials/_head-d{dep}.html', head_block(dep))
 for dep in (2, 3):
     put(f'_partials/_quarto-head-d{dep}.html', quarto_head())
+put('_partials/_quarto-skip.html', '<a class="skip" href="#quarto-document-content">Skip to content</a>\n')
 
 # ---------------------------------------------------------------------------------------------
 # 6. data: capabilities.json and the readouts
@@ -974,9 +975,14 @@ RENDERED = {
 STALE = []
 if '--rendered' in sys.argv or CHECK:
     for part, pages in RENDERED.items():
-        bar = OUT[part].strip().lower()        # Quarto's HTML writer lowercases attribute names (viewBox)
+        # compare what the bar says and where it links (Quarto's HTML writer reserializes the markup:
+        # attribute case, self-closing SVG tags), not its bytes
+        def sig(s):
+            m = re.search(r'<header class="top">(.*?)</header>', s, re.S)
+            return re.findall(r'<a\b[^>]*?href="([^"]*)"[^>]*?(aria-current="\w+")?[^>]*>(.*?)</a>|class="bar-facts">([^<]*)<', m.group(1), re.S) if m else None
+        bar = sig(OUT[part])
         for p in pages:
-            if exists(p) and bar not in rd(p).lower():
+            if exists(p) and sig(rd(p)) != bar:
                 STALE.append(p)
 
 # ---------------------------------------------------------------------------------------------

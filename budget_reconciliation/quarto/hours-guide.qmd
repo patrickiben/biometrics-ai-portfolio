@@ -4,9 +4,13 @@ subtitle: "A visual, runnable guide, from the biostatistics lens"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
+      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
+      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
+    respect-user-color-scheme: true
+    include-in-header: ../../_partials/_quarto-head-d2.html
+    include-before-body:
+      - ../../_partials/_quarto-skip.html
+      - ../../_partials/_topbar-apps-d2.html
     toc: true
     toc-location: left
     toc-title: On this page
@@ -58,6 +62,8 @@ Under-run slack is the part of your planned effort you are forecast **not** to s
 ```{mermaid}
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
+  accTitle: Find-hours decision tree
+  accDescr: A new ask is covered first from under-run slack, then from contingency, then by deferring or re-sequencing planned work; whatever remains becomes a change order, and the rest is absorbed internally.
   ASK["New ask,<br/>estimate effort"] --> SLACK{"Slack<br/>covers it?"}
   SLACK -->|Yes| REALLOC["Reallocate<br/>under-run slack"]
   SLACK -->|"Partly / No"| CONT{"Contingency<br/>covers rest?"}
@@ -79,6 +85,8 @@ The ledger you see below is a *picture* built from synthetic data. On a real stu
 ```{mermaid}
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
+  accTitle: Where the ledger data come from
+  accDescr: Planned hours from the SOW and budget grid, actual hours from the timesheet system, and percent done and EAC from estimates feed the effort ledger, which rolls up to net findable hours and the change-order process.
   SOW["SOW / budget<br/>grid, CTMS"] -->|Planned| LEDG[("Effort<br/>ledger")]
   TS["Timesheet<br/>system"] -->|Actual| LEDG
   EST["Estimate +<br/>progress"] -->|"% done, EAC"| LEDG
@@ -103,13 +111,13 @@ This is the same logic the Shiny app and the Excel workbook use, rendered here f
 
 ```{r kpis, results='asis'}
 box <- function(label, value, col) sprintf(
-  '<div style="flex:1;min-width:120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:12px 14px;margin:4px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em">%s</div></div>', col, value, label)
+  '<div style="flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:12px 14px;margin:4px"><div style="font-size:26px;font-weight:700;color:%s;font-family:monospace">%s</div><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">%s</div></div>', col, value, label)
 cat('<div style="display:flex;flex-wrap:wrap;gap:2px">')
-cat(box("Planned (h)",       m$planned,     "#e9edf7"))
-cat(box("Spent to date (h)", m$actual,      "#5b8cff"))
-cat(box("Forecast EAC (h)",  m$eac,         "#e0a64c"))
-cat(box("Contingency (h)",   m$contingency, "#3fd0c9"))
-cat(box("Net findable (h)",  m$findable,    "#43c47d"))
+cat(box("Planned (h)",       m$planned,     "var(--ink)"))
+cat(box("Spent to date (h)", m$actual,      "var(--blue)"))
+cat(box("Forecast EAC (h)",  m$eac,         "var(--amber)"))
+cat(box("Contingency (h)",   m$contingency, "var(--accent)"))
+cat(box("Net findable (h)",  m$findable,    "var(--green)"))
 cat('</div>')
 ```
 
@@ -163,14 +171,14 @@ Under-run slack is per-task `max(0, planned − EAC)`. It sums to the portfolio 
 ```{r w45, results='asis'}
 verdict_box <- function(fh) {
   ok <- fh$absorbable
-  bg <- if (ok) "#1e3a28" else "#3a1e24"; bd <- if (ok) "#43c47d" else "#e8657a"
+  bg <- if (ok) "var(--green-soft)" else "var(--red-soft)"; bd <- if (ok) "var(--green)" else "var(--red)"
   cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:10px;padding:14px 16px;max-width:640px">', bg, bd))
   cat(sprintf('<div style="font-size:20px;font-weight:700;margin-bottom:8px">Ask: %d h &rarr; %s</div>', fh$need, fh$verdict))
   row <- function(lbl,val,col) cat(sprintf('<div style="margin:3px 0"><span style="font-family:monospace;color:%s;font-weight:700">%3d h</span> &nbsp;%s</div>', col, val, lbl))
-  row("from under-run slack",         fh$from_slack, "#43c47d")
-  row("from contingency reserve",     fh$from_cont,  "#3fd0c9")
-  row("residual (change order)",      fh$shortfall,  if (fh$shortfall>0) "#e8657a" else "#94a1c0")
-  cat(sprintf('<div style="font-size:11px;color:#94a1c0;margin-top:8px">Contingency left after this ask: %d h.</div></div>', fh$contingency_left))
+  row("from under-run slack",         fh$from_slack, "var(--green)")
+  row("from contingency reserve",     fh$from_cont,  "var(--accent)")
+  row("residual (change order)",      fh$shortfall,  if (fh$shortfall>0) "var(--red)" else "var(--muted)")
+  cat(sprintf('<div style="font-size:12px;color:var(--muted);margin-top:8px">Contingency left after this ask: %d h.</div></div>', fh$contingency_left))
 }
 verdict_box(f45)
 ```

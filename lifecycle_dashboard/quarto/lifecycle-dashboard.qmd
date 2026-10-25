@@ -3,9 +3,13 @@ title: "Study Lifecycle Monitor - Snapshot"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
+      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
+      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
+    respect-user-color-scheme: true
+    include-in-header: ../../_partials/_quarto-head-d2.html
+    include-before-body:
+      - ../../_partials/_quarto-skip.html
+      - ../../_partials/_topbar-apps-d2.html
     embed-resources: true
     page-layout: full
     toc: false
@@ -32,15 +36,15 @@ k  <- lifecycle_kpis(st, d)
 
 ```{r kpis, results='asis'}
 box <- function(label, value, col) sprintf(
-  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  '<div style="flex:1 1 120px;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:14px 16px"><div style="font-size:28px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
   col, value, label)
 cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
-cat(box("Active studies", k$n, "#e9edf7"))
-cat(box("At risk", k$at_risk, "#e8657a"))
-cat(box("On watch", k$watch, "#e0a64c"))
-cat(box("Open queries", k$open_q, "#e9edf7"))
-cat(box("Avg deliverables", paste0(k$avg_del,"%"), "#3fd0c9"))
-cat(box("Next DB lock", ifelse(is.na(k$next_dbl_days),"-",paste0(k$next_dbl_days,"d")), "#5b8cff"))
+cat(box("Active studies", k$n, "var(--ink)"))
+cat(box("At risk", k$at_risk, "var(--red)"))
+cat(box("On watch", k$watch, "var(--amber)"))
+cat(box("Open queries", k$open_q, "var(--ink)"))
+cat(box("Avg deliverables", paste0(k$avg_del,"%"), "var(--accent)"))
+cat(box("Next DB lock", ifelse(is.na(k$next_dbl_days),"-",paste0(k$next_dbl_days,"d")), "var(--blue)"))
 cat('</div>')
 ```
 
@@ -71,8 +75,8 @@ ggplot(hl, aes(dim, id, fill=value)) +
 ```{r signals, results='asis'}
 sg <- lifecycle_signals(st, d)
 for (j in seq_len(min(8, nrow(sg)))) {
-  r <- sg[j, ]; col <- if (r$sev == "red") "#e8657a" else "#e0a64c"
-  cat(sprintf('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350"><div style="flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px"></div><div><div style="font-size:13px;color:#e9edf7"><b>%s</b> - %s</div><div style="font-size:12px;color:#94a1c0">%s</div></div></div>', col, r$who, r$title, r$msg))
+  r <- sg[j, ]; col <- if (r$sev == "red") "var(--red)" else "var(--amber)"
+  cat(sprintf('<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid var(--line)"><div style="flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px"></div><div><div style="font-size:13px;color:var(--ink)"><b>%s</b> - %s</div><div style="font-size:12px;color:var(--muted)">%s</div></div></div>', col, r$who, r$title, r$msg))
 }
 ```
 :::
