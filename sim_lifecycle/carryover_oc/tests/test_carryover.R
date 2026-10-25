@@ -7,8 +7,11 @@
 #
 # T1 superposition | T2 NCA by hand (+ PKNCA if installed) | T3 2x2 estimator = lm() |
 # T4 KA3 exact closed form | T5 KA2 symmetry | T6 KA1 adequate washout | T7 NC1 and NC2 |
-# T8 M13A floor of 12 | T9 KA4 cross-implementation (judge A's Python check) |
-# T10 G1 invariance of sim_lifecycle/simulate_adam.R with washout_h unset.
+# T8 M13A floor of 12 and the 5% threshold on hand-built profiles | T9 KA4 cross-implementation
+# (judge A's Python check, including the kept fraction) | T10 G1 invariance of
+# sim_lifecycle/simulate_adam.R with washout_h unset | T11 arm wiring (every arm recomputed from
+# its definition, subtraction against the oracle, exclusions recounted by sequence) | T12 MCSE
+# formulas and replicate sizing.
 # Writes out/known_answer_checks.csv (the page's pass table) and out/known_answer_details.csv,
 # then stops with an error if any check fails. Rows marked INFO compare against numbers from
 # the unvalidated pilot; they are reported, not enforced.
@@ -29,7 +32,7 @@ check <- function(test, name, criterion, observed, ok, info = FALSE) {
   invisible(ok)
 }
 detail <- function(test, ...) DETAILS[[length(DETAILS) + 1]] <<- data.frame(test = test, ..., stringsAsFactors = FALSE)
-fmt <- function(x, d = 3) formatC(x, format = "g", digits = d)
+fmt <- function(x, d = 3) trimws(formatC(x, format = "g", digits = d))
 
 set <- oc_settings(); configs <- oc_configs(set); cells <- oc_cells()
 streams <- oc_streams(nrow(cells))
@@ -56,9 +59,12 @@ for (disp in c("mono", "biexp")) {
     g0 <- g_W + prof$amt2 * dv
     prop <- a_W * exp(-outer(k, tt)) + g0 * ka / (ka - k) * (exp(-outer(k, tt)) - exp(-outer(ka, tt)))
     e2 <- max(abs(y2 - prop))
-  } else e2 <- 0
-  check("T1", sprintf("superposition (%s)", disp), "period-2 profile minus own-dose profile equals c_i1(t + W), and equals state propagation, within 1e-12",
-        sprintf("max abs difference %s (analytic), %s (state propagation)", fmt(e1), fmt(e2)), e1 < 1e-12 && e2 < 1e-12)
+    check("T1", "superposition (mono)", "period-2 profile minus own-dose profile equals c_i1(t + W), and the period-2 profile equals state propagation of the gut and central amounts, within 1e-12",
+          sprintf("max abs difference %s (analytic), %s (state propagation)", fmt(e1), fmt(e2)), e1 < 1e-12 && e2 < 1e-12)
+  } else {                # the slow phase is a misspecification term with no compartment form here
+    check("T1", "superposition (biexp)", "period-2 profile minus own-dose profile equals c_i1(t + W) within 1e-12 (state propagation: not applicable, biexponential)",
+          sprintf("max abs difference %s (analytic); state propagation not applicable (biexponential)", fmt(e1)), e1 < 1e-12)
+  }
 }
 
 ## ---- T2 NCA on hand-checked profiles (+ PKNCA cross-check if installed) --------------------
@@ -161,6 +167,7 @@ for (disp in c("mono", "biexp")) {
 ## ---- T6 KA1 adequate washout and T7 negative controls (500 replicates) --------------------
 use_stream(streams[[cell_of(1.25, "mono")]]); pop <- draw_population(500, set)
 xc <- run_cell(pop, 1.25, "mono", configs["base"], OC_WASHOUTS, lloq, adequate = TRUE, set, keep_studies = TRUE)
+pop6 <- pop                                     # reused by T11
 x <- xc$results; ad <- x[x$washout == "adequate" & x$endpoint %in% c("AUC", "CMAX"), ]
 dz <- c(); for (ep in c("AUC", "CMAX")) {
   a <- ad[ad$endpoint == ep, ]; a0 <- a[a$arm == "A0", ]
@@ -205,18 +212,61 @@ ok8 <- !r11$evaluable && !r11$be && is.na(r11$est) && r12$evaluable && r13$evalu
 check("T8", "M13A floor", "11 evaluable participants: not evaluable and not BE; 12 and 13: evaluable; 12 in one sequence and 0 in the other: not evaluable",
       sprintf("11: %s; 12: %s; 13: %s; empty sequence: %s", r11$evaluable, r12$evaluable, r13$evaluable, re$evaluable), ok8)
 
+## The 5% threshold, with the expected decisions written out here rather than read from
+## oc_settings(). (i) The rule at the boundary: pre-dose 0.98, 1.00 and 1.02 against a Cmax of 20
+## (4.9%, exactly 5.0% and 5.1%); only 5.1% is excluded, because the rule is "above 5%".
+yb <- rbind(c(0.98, 20, 5), c(1, 20, 5), c(1.02, 20, 5))
+eb <- m13a_exclude(yb, nca_matrix(yb, c(0, 1, 2))$cmax, set)
+## (ii) The rule as analyze_washout() applies it, on hand-built profiles: identical participants
+## (k, ka fixed, no noise) carry the same residual into period 2; each period-2 own-dose profile
+## is scaled so that the pre-dose level is 4.9% or 5.1% of that period's Cmax, and the period-1
+## profile is set to 2 or 0.5 times the period-2 Cmax. Against the period-1 Cmax the ratios
+## would be about 2.5% or 10%, so a wrong denominator changes the decisions.
+hb <- local({
+  n <- set$n; tt <- set$times; J <- length(tt)
+  pop <- list(R = 1L, n = n, m = n, rep = rep(1L, n), seq = rep(1:2, each = n / 2),
+              k = rep(log(2) / set$t_half, n), ka = rep(set$ka, n), F = rep(1, n), w1 = rep(1, n), w2 = rep(1, n),
+              e1 = matrix(0, n, J), e2 = matrix(0, n, J))
+  prof <- list(times = tt, amt1 = rep(1, n), amt2 = rep(1, n), disposition = "mono")
+  W <- 5 * set$t_half
+  shape <- own_conc(tt, rep(1, n), pop$k, pop$ka, "mono", set)
+  resid <- residual_profile(pop, prof, W, set)
+  ratio <- rep(c(0.049, 0.051), length.out = n)                     # pre-dose / own-period Cmax
+  a <- vapply(seq_len(n), function(i) uniroot(function(s) max(s * shape[i, ] + resid[i, ]) - resid[i, 1] / ratio[i],
+                                               c(0, 1e3), tol = 1e-15)$root, 0)
+  prof$c2 <- a * shape
+  cm2 <- apply(prof$c2 + resid, 1, max)
+  f1 <- rep(rep(c(2, 0.5), each = n / 4), 2)                        # period-1 Cmax / period-2 Cmax
+  prof$c1 <- (f1 * cm2 / apply(shape, 1, max)) * shape
+  n1 <- nca_matrix(prof$c1, tt); n2own <- nca_matrix(prof$c2, tt)
+  r <- analyze_washout(pop, prof, prof$c1, prof$c2, n1, n2own, W, list(times = tt, assay = FALSE), lloq, set)
+  list(excl = r$excl, want = ratio > 0.05, own = r$y2[, 1] / apply(r$y2, 1, max), p1 = r$y2[, 1] / n1$cmax,
+       n_tr = sum(r$excl[pop$seq == 1]), n_rt = sum(r$excl[pop$seq == 2]))
+})
+ok8b <- identical(eb, c(FALSE, FALSE, TRUE)) && identical(hb$excl, hb$want) && max(abs(hb$own - rep(c(0.049, 0.051), 12))) < 1e-12
+check("T8", "M13A 5% threshold", "pre-dose at 4.9%, exactly 5.0% and 5.1% of Cmax: only 5.1% excluded; through analyze_washout() on 24 hand-built profiles (4.9% or 5.1% of the period's own Cmax, period-1 Cmax 2 or 0.5 times the period-2 Cmax): exactly the 5.1% participants excluded",
+      sprintf("boundary decisions %s; hand-built: %d of %d decisions as expected (%d excluded, %d TR and %d RT; own-period ratios %.4f and %.4f; against the period-1 Cmax they would be %.4f to %.4f)",
+              paste(eb, collapse = ", "), sum(hb$excl == hb$want), length(hb$want), sum(hb$excl), hb$n_tr, hb$n_rt,
+              min(hb$own), max(hb$own), min(hb$p1), max(hb$p1)), ok8b)
+
 ## ---- T9 KA4 cross-implementation against judge A's Python check -----------------------------
 ## Judge A (numpy, seed 2026, 2,000 replicates per line, theta = 1.25, W = 120 h, base settings)
 ## drops replicates that are not evaluable, so its rates are conditional on evaluable studies;
 ## the comparison uses the same definition (be_rate_eval). Values from checks.py part (A).
+## "kept" is the mean share of participants kept by the rule among evaluable studies; checks.py
+## does not print its MCSE, so it is taken equal to R's (same design and replicate count).
 judge <- data.frame(arm = c("A0", "A2s", "A1", "A2"),
                     bias = c(-0.000213, -0.005428, -0.010829, -0.006020), bias_mcse = c(0.000976, 0.001207, 0.000938, 0.001232),
                     cr = c(0.055500, 0.057543, 0.082500, 0.062307), cr_mcse = c(0.005120, 0.005302, 0.006152, 0.005485),
                     kept = c(1, 0.6655, 1, 0.6656))
 use_stream(streams[[cell_of(1.25, "mono")]]); pop <- draw_population(2000, set)
-x <- run_cell(pop, 1.25, "mono", configs["base"], 5, lloq, adequate = FALSE, set)$results
-x <- x[x$endpoint == "AUC", ]
-zz <- c()
+xk <- run_cell(pop, 1.25, "mono", configs["base"], 5, lloq, adequate = FALSE, set, keep_studies = TRUE)
+x <- xk$results[xk$results$endpoint == "AUC", ]
+s5 <- xk$studies[["base 5"]]
+kept_study <- 1 - rowMeans(matrix(s5$excl, pop$R, pop$n, byrow = TRUE))
+kp <- mc_mean(ifelse(s5$arms$A2$AUC$evaluable, kept_study, NA))
+zk <- abs(kp[["est"]] - judge$kept[judge$arm %in% c("A2s", "A2")]) / (sqrt(2) * kp[["mcse"]])
+zz <- zk
 for (i in seq_len(nrow(judge))) {
   a <- x[x$arm == judge$arm[i], ]
   zb <- abs(a$bias - judge$bias[i]) / sqrt(a$bias_mcse^2 + judge$bias_mcse[i]^2)
@@ -226,22 +276,24 @@ for (i in seq_len(nrow(judge))) {
          cr_R = a$be_rate_eval, cr_R_mcse = a$be_rate_eval_mcse, cr_judge = judge$cr[i], z_bias = zb, z_cr = zc)
 }
 a2 <- x[x$arm == "A2", ]
-check("T9", "KA4 cross-implementation", "A0, A2s, A1 and A2 bias and consumer risk (theta 1.25, 5 mean t1/2) within 3 combined MCSE of judge A's Python check",
-      sprintf("max |R - Python| / combined MCSE %.2f over %d comparisons; R bias A2s %.4f, A2 %.4f, A1 %.4f; consumer risk A2 %.3f, A1 %.3f, A0 %.3f (Python: %.4f, %.4f, %.4f; %.3f, %.3f, %.3f)",
+detail("T9", arm = "A2 and A2s", kept_R = kp[["est"]], kept_R_mcse = kp[["mcse"]], kept_judge_A2 = judge$kept[4], kept_judge_A2s = judge$kept[2])
+check("T9", "KA4 cross-implementation", "A0, A2s, A1 and A2 bias and consumer risk, and the share of participants the rule keeps in evaluable studies (theta 1.25, 5 mean t1/2), within 3 combined MCSE of judge A's Python check",
+      sprintf("max |R - Python| / combined MCSE %.2f over %d comparisons; R bias A2s %.4f, A2 %.4f, A1 %.4f; consumer risk A2 %.3f, A1 %.3f, A0 %.3f; kept %.4f (MCSE %.4f) (Python: %.4f, %.4f, %.4f; %.3f, %.3f, %.3f; kept %.4f and %.4f)",
               max(zz), length(zz), x$bias[x$arm == "A2s"], a2$bias, x$bias[x$arm == "A1"], a2$be_rate_eval,
-              x$be_rate_eval[x$arm == "A1"], x$be_rate_eval[x$arm == "A0"], judge$bias[2], judge$bias[4], judge$bias[3],
-              judge$cr[4], judge$cr[3], judge$cr[1]), max(zz) <= 3)
+              x$be_rate_eval[x$arm == "A1"], x$be_rate_eval[x$arm == "A0"], kp[["est"]], kp[["mcse"]], judge$bias[2], judge$bias[4], judge$bias[3],
+              judge$cr[4], judge$cr[3], judge$cr[1], judge$kept[2], judge$kept[4]), max(zz) <= 3)
 
 ## ---- misspecification and the pilot's expected pattern (reported, not enforced) -------------
 use_stream(streams[[cell_of(1.25, "biexp")]]); pop <- draw_population(2000, set)
 xb <- run_cell(pop, 1.25, "biexp", configs["base"], c(2, 3), lloq, adequate = FALSE, set, keep_studies = TRUE)
 for (w in c("2", "3")) {
   s <- xb$studies[[paste("base", w)]]
-  dlt <- mc_mean(s$arms$A3$AUC$be - s$arms$A0$AUC$be)
+  dlt <- mc_mean(s$arms$A3$AUC$be - s$arms$A0$AUC$be); dlo <- mc_mean(s$arms$A3o$AUC$be - s$arms$A0$AUC$be)
   check("INFO", sprintf("misspecification, W = %s t1/2", w),
-        "biexponential disposition: A3 consumer risk exceeds A0's at short washouts (the pilot reported 0.069 at 3 mean t1/2)",
-        sprintf("A3 %.4f vs A0 %.4f; paired difference %+.4f (MCSE %.4f)",
-                mean(s$arms$A3$AUC$be), mean(s$arms$A0$AUC$be), dlt[["est"]], dlt[["mcse"]]), NA, info = TRUE)
+        "biexponential disposition: subtraction's consumer risk exceeds A0's at short washouts (the pilot, which subtracted with the true k as A3o does, reported 0.069 at 3 mean t1/2)",
+        sprintf("A3o (true k, as the pilot) %.4f, paired difference from A0 %+.4f (MCSE %.4f); A3 (lambda_z from period 1) %.4f, paired difference %+.4f (MCSE %.4f); A0 %.4f",
+                mean(s$arms$A3o$AUC$be), dlo[["est"]], dlo[["mcse"]], mean(s$arms$A3$AUC$be), dlt[["est"]], dlt[["mcse"]],
+                mean(s$arms$A0$AUC$be)), NA, info = TRUE)
 }
 
 ## ---- T10 G1 invariance of sim_lifecycle/simulate_adam.R ---------------------------------------
@@ -296,6 +348,84 @@ check("T10", "washout_h = 48 demonstration", "no new random draws (the other six
               sum(other), p1same, nca1_same, sum(pre1$AVALC == "<LLOQ"), nrow(pre1), lloq_g, sum(q2), nrow(pre2), sum(!q2),
               length(xs), flag_ok, if (conf_ok) "PASS" else "FAIL"),
       all(other) && p1same && nca1_same && blq_ok && flag_ok && conf_ok && all(c("ANL02FL", "PKEXRSN") %in% names(pp)))
+
+## ---- T11 arm wiring ----------------------------------------------------------------------
+## Every arm of the T6 run (theta 1.25, monoexponential, base configuration, 500 replicates, every
+## washout and the KA1 control) is recomputed outside analyze_washout() from its definition: the
+## exclusion decision from the returned period-2 profiles with 0.05 written here, then be_2x2() on
+## the endpoints that arm is defined to use. Subtraction is then compared with the oracle, and the
+## exclusions are recounted by sequence, with the sequence read from the product each participant
+## received in period 1. Tolerance for A3: lambda_z is fitted to the period-1 points at 36, 48
+## and 72 h, which still carry a trace of the absorption phase, exp(-(ka - k) 36 h); that moves
+## the log GMR by up to about 1e-9 at 2 half-lives, so A3 is held to 1e-8 and A3o (true k) to 1e-10.
+tt <- set$times; prof6 <- true_profiles(pop6, 1.25, tt, "mono", set)
+n1 <- nca_matrix(prof6$c1, tt); n2own <- nca_matrix(prof6$c2, tt); all_in <- rep(TRUE, pop6$m)
+rec <- function(n2, keep) list(AUC = be_2x2(log(n1$auclast), log(n2$auclast), pop6$seq, keep, pop6$n, set),
+                               CMAX = be_2x2(log(n1$cmax), log(n2$cmax), pop6$seq, keep, pop6$n, set))
+dif <- function(a, b) if (!identical(is.na(a), is.na(b))) Inf else max(c(0, abs(a - b)), na.rm = TRUE)
+seq_tr <- function(prof, pop, theta) abs(prof$amt1 / (pop$F * pop$w1) - theta) < 1e-12   # period 1 was the test product
+by_seq <- function(excl, tr, rep) cbind(tr = tapply(excl & tr, rep, sum) / tapply(tr, rep, sum),
+                                        rt = tapply(excl & !tr, rep, sum) / tapply(!tr, rep, sum))
+is_tr <- seq_tr(prof6, pop6, 1.25)
+w_rec <- 0; be_same <- TRUE; excl_same <- TRUE; w_a3 <- 0; w_a3o <- 0; be_flip <- 0; min_sep <- Inf; w_seq <- 0
+for (wn in names(xc$studies)) {
+  s <- xc$studies[[wn]]; y2 <- s$y2
+  ex <- y2[, 1] > 0.05 * apply(y2, 1, max)
+  excl_same <- excl_same && identical(s$excl, ex)
+  n2 <- nca_matrix(y2, tt)
+  ref <- list(A0 = rec(n2own, all_in), A1 = rec(n2, all_in), A2 = rec(n2, !ex), A2s = rec(n2own, !ex),
+              A3 = rec(nca_matrix(subtract_residual(y2, tt, n1$lambda_z), tt), all_in),
+              A3o = rec(nca_matrix(subtract_residual(y2, tt, pop6$k), tt), all_in))
+  for (a in names(ref)) for (ep in c("AUC", "CMAX")) {
+    for (v in c("est", "lo", "hi")) w_rec <- max(w_rec, dif(s$arms[[a]][[ep]][[v]], ref[[a]][[ep]][[v]]))
+    be_same <- be_same && identical(s$arms[[a]][[ep]]$be, ref[[a]][[ep]]$be)
+  }
+  for (ep in c("AUC", "CMAX")) {
+    A <- s$arms
+    for (v in c("est", "lo", "hi")) { w_a3 <- max(w_a3, dif(A$A3[[ep]][[v]], A$A0[[ep]][[v]])); w_a3o <- max(w_a3o, dif(A$A3o[[ep]][[v]], A$A0[[ep]][[v]])) }
+    be_flip <- be_flip + sum(A$A3[[ep]]$be != A$A0[[ep]]$be) + sum(A$A3o[[ep]]$be != A$A0[[ep]]$be)
+    ev <- A$A2[[ep]]$evaluable
+    if (any(ev)) min_sep <- min(min_sep, abs(A$A2[[ep]]$est - A$A2s[[ep]]$est)[ev])
+  }
+  bs <- by_seq(s$excl, is_tr, pop6$rep)
+  r6 <- xc$results[xc$results$arm == "A2" & xc$results$endpoint == "AUC" & xc$results$washout == sub("^base ", "", wn), ]
+  w_seq <- max(w_seq, abs(mean(bs[, "tr"]) - r6$excl_frac_tr), abs(mean(bs[, "rt"]) - r6$excl_frac_rt))
+  if (wn == "base 5") d125 <- mc_mean(bs[, "tr"] - bs[, "rt"])
+}
+check("T11", "arms recomputed from their definitions", "for every washout: the exclusion decision equals pre-dose > 0.05 x the period-2 profile's own maximum; A0, A1, A2, A2s, A3 and A3o estimates, CI limits and BE decisions (AUC(0-t) and Cmax) equal be_2x2() on the endpoints each arm is defined to use, within 1e-12; A2 and A2s differ in every study evaluable under the rule (the residual is positive)",
+      sprintf("exclusions identical: %s; max abs difference %s; BE decisions identical: %s; smallest |A2 - A2s| in an evaluable study %s (%d washouts)",
+              excl_same, fmt(w_rec), be_same, fmt(min_sep), length(xc$studies)),
+      excl_same && w_rec <= 1e-12 && be_same && min_sep > 1e-12)
+check("T11", "subtraction against the oracle", "monoexponential disposition, no assay error: A3 estimate and CI limits within 1e-8 of A0 (lambda_z from period 1) and A3o within 1e-10 (true k), every washout, AUC(0-t) and Cmax, with the same BE decision in every study",
+      sprintf("max abs difference A3 - A0 %s, A3o - A0 %s; BE decisions that differ: %d", fmt(w_a3), fmt(w_a3o), be_flip),
+      w_a3 <= 1e-8 && w_a3o <= 1e-10 && be_flip == 0)
+use_stream(streams[[cell_of(0.80, "mono")]]); pop8 <- draw_population(500, set)
+x8 <- run_cell(pop8, 0.80, "mono", configs["base"], 5, lloq, adequate = FALSE, set, keep_studies = TRUE)
+bs8 <- by_seq(x8$studies[["base 5"]]$excl, seq_tr(true_profiles(pop8, 0.80, tt, "mono", set), pop8, 0.80), pop8$rep)
+r8 <- x8$results[x8$results$arm == "A2" & x8$results$endpoint == "AUC", ]
+w_seq <- max(w_seq, abs(mean(bs8[, "tr"]) - r8$excl_frac_tr), abs(mean(bs8[, "rt"]) - r8$excl_frac_rt))
+d080 <- mc_mean(bs8[, "rt"] - bs8[, "tr"])
+check("T11", "exclusions by sequence", "exclusion shares by sequence equal a recount with the sequence read from the period-1 product, within 1e-12 (every washout at a true GMR of 1.25, and 5 half-lives at 0.80); at 5 half-lives the sequence whose period-2 product gives lower exposure loses more participants: TR at a true GMR of 1.25 and RT at 0.80, each by more than 3 MCSE",
+      sprintf("max abs difference %s; TR - RT at 1.25: %+.3f (MCSE %.3f); RT - TR at 0.80: %+.3f (MCSE %.3f)",
+              fmt(w_seq), d125[["est"]], d125[["mcse"]], d080[["est"]], d080[["mcse"]]),
+      w_seq <= 1e-12 && d125[["est"]] > 3 * d125[["mcse"]] && d080[["est"]] > 3 * d080[["mcse"]])
+
+## ---- T12 MCSE formulas and replicate sizing ---------------------------------------------
+## Hand-computed values: a rate of 0.05 in 100 studies has MCSE sqrt(0.05 x 0.95 / 100) =
+## 0.0217945; the mean of 1..10 has MCSE sd(1:10) / sqrt(10) = 0.9574271; the grid's 2,000
+## replicates come from a target MCSE of 0.005 at a rate of 0.05 (1,900, rounded up to 500s).
+## The delta-method MCSE of a share is 0 when the part is an exact multiple of the total, and it
+## agrees with a bootstrap of 2,000 synthetic study pairs within 10%.
+r1 <- mc_rate(c(rep(TRUE, 5), rep(FALSE, 95))); m1 <- mc_mean(1:10)
+use_stream(streams[[7]]); tot <- rnorm(2000, -0.005, 0.03); part <- 0.8 * tot + rnorm(2000, 0, 0.01)
+sh <- mc_share(part, tot); sh0 <- mc_share(0.8 * tot, tot)
+bs <- replicate(2000, { j <- sample.int(2000, replace = TRUE); mean(part[j]) / mean(tot[j]) })
+e12 <- max(abs(r1[["est"]] - 0.05), abs(r1[["mcse"]] - 0.0217945), abs(m1[["mcse"]] - 0.9574271), abs(mcse_rate(0.05, 2000) - 0.0048734))
+check("T12", "MCSE formulas and replicate sizing", "rate and mean MCSEs equal hand-computed values within 1e-7; reps_for_mcse(0.05, 0.005) = 2,000 (MCSE 0.0049); share MCSE 0 for an exact multiple and within 10% of a bootstrap",
+      sprintf("max abs difference %s; replicates %d; share %.4f with MCSE %.4f against bootstrap SD %.4f; exact multiple: share %.4f, MCSE %s",
+              fmt(e12), reps_for_mcse(0.05, 0.005), sh[["est"]], sh[["mcse"]], sd(bs), sh0[["est"]], fmt(sh0[["mcse"]])),
+      e12 < 1e-7 && reps_for_mcse(0.05, 0.005) == 2000L && abs(sh0[["est"]] - 0.8) < 1e-12 && sh0[["mcse"]] < 1e-12 &&
+        abs(sh[["mcse"]] / sd(bs) - 1) < 0.10)
 
 ## ---- write the pass table and stop on any failure -----------------------------------------
 tab <- do.call(rbind, CHECKS)
