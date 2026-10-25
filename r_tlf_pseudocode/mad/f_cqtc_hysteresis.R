@@ -60,7 +60,7 @@ ttl <- tfl_titles(num = "14.3.6.4", type = "Figure",
    text = "Mean (+/-SE) ddQTcF versus Mean Plasma Concentration in Time Order (Hysteresis Loop) by Dose and Profile Day",
    pop  = "C-QTc Analysis Set",
    foot = paste("ddQTcF = change from baseline in QTcF minus the time-matched placebo mean on the same day (placebo pooled).",
-                "Points = means at each nominal time over the dosing interval, joined in time order (arrows); bars = +/-1 SE;",
+                "Points = means at each nominal time over the dosing interval, joined in time order (arrows); bars = +/-1 SE across active participants (the placebo mean's own variance is not included);",
                 "dotted segment closes the path back to predose (the trough at steady state).",
                 "A counterclockwise loop suggests the effect lags concentration; Table 14.3.6.5 gives the test.",
                 "Descriptive only."))

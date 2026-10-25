@@ -3,7 +3,8 @@
 * TITLE     : Assessment of Delay between Concentration and ddQTcF before the
 *             C-QTc Analysis: Mean Signed Loop Area on Direct-Effect Model
 *             Residuals, by Dose
-* POPULATION: C-QTc Analysis Set (PKFL='Y' and SAFFL='Y'), active doses
+* POPULATION: C-QTc Analysis Set (PKFL='Y' and SAFFL='Y'), active doses;
+*             placebo participants (pooled) for the time-matched placebo mean
 * INPUT     : ADEG (PARAMCD='QTCF'; CHG on Day 1, AVAL on Day -1, ATPTN),
 *             ADPC (PARAMCD='CONC'; AVAL, AFRLT actual time, ATPTN)
 * NOTE      : PSEUDOCODE. The prespecified hysteresis check (SAP text: see
@@ -19,15 +20,21 @@
 *                participant's Cmax.
 *             4. A_i = 0.5 * sum_j (x_j r_(j+1) - x_(j+1) r_j), closed path
 *                (index m+1 = 1); A_i > 0 = counterclockwise = effect lags.
-*             5. Test mean(A_i) by participant-level sign flips in PROC IML:
-*                exact (all 2**n sign vectors) when n <= 20, otherwise 9,999
-*                random sign vectors, p = (1 + #{T* >= T}) / (9,999 + 1).
-*                One- and two-sided.
-*             6. Report beside it: A-bar with a t-based 95% CI, the tmax gap
-*                (median time of peak ddQTcF minus median tmax; and the peak of
-*                the mean profile minus median tmax) and the Day -1 pseudo-loop
-*                check (Day -1 QTcF, centered and corrected the same way, paired
-*                with Day 1 x). Rows: each active dose, then all active doses.
+*             5. Every A_i shares the placebo-mean noise, so the test adds it
+*                (PROC IML): h_k = signed area of placebo participant k's CHG
+*                minus the placebo mean, against the mean x of the row's active
+*                participants at each nominal time. t = mean(A) / SE,
+*                SE**2 = var(A)/n + var(h)/n_pbo, Welch-Satterthwaite df;
+*                one- and two-sided p, and the 95% CI from the same SE and df.
+*                (A one-sample sign-flip test of the A_i ignores the shared term
+*                and rejects too often. Use it only if each participant's ddQTcF
+*                is corrected by their own placebo period: signflip_test() in
+*                cqtc_hysteresis/R/area.R.)
+*             6. Report beside it: the tmax gap (median time of peak ddQTcF
+*                minus median tmax; and the peak of the mean profile minus
+*                median tmax) and the Day -1 pseudo-loop check (Day -1 QTcF,
+*                centered and corrected the same way, paired with Day 1 x, and
+*                tested the same way). Rows: each active dose, then all active.
 *             A significant result prompts an effect-compartment model; it does
 *             not replace the C-QTc analysis. Twin of the R program.
 ******************************************************************************/
@@ -36,8 +43,6 @@
 %designvars(design=SAD);               /* -> TRTVAR=TRT01A, TRTNVAR=TRT01AN  */
 
 %let FORM  = LINEAR;     /* prespecified f: LINEAR, or EMAX if the SAP linearity check selects it */
-%let SEED  = 20261025;   /* SAP-specified seed for the random sign vectors (n > 20)               */
-%let NSIGN = 9999;       /* random sign vectors when n > 20                                        */
 
 /*--- Day 1 dQTcF and the time-matched placebo mean ---------------------------*/
 data eg;
@@ -57,6 +62,11 @@ proc sql;
            on e.USUBJID = c.USUBJID and e.ATPTN = c.ATPTN
     where e.&TRTNVAR > 0
     order by USUBJID, AFRLT;                       /* time order = actual time   */
+  create table _pdev as                            /* placebo deviations from their mean */
+    select e.USUBJID, e.ATPTN, e.CHG - p.pbo as dev
+    from eg as e inner join _pbo as p on e.ATPTN = p.ATPTN
+    where e.&TRTNVAR = 0
+    order by USUBJID, ATPTN;
 quit;
 
 /*--- Day -1: centered QTcF, placebo-corrected the same way as Day 1 ----------*/
@@ -71,6 +81,11 @@ proc sql;
     select a.USUBJID, a.ATPTN, a.qc - b.pqc as dm1
     from _d1 as a inner join _d1p as b on a.ATPTN = b.ATPTN
     where a.dose > 0;
+  create table _pdev1 as
+    select a.USUBJID, a.ATPTN, a.qc - b.pqc as dev
+    from _d1 as a inner join _d1p as b on a.ATPTN = b.ATPTN
+    where a.dose = 0
+    order by USUBJID, ATPTN;
 quit;
 
 /*--- prespecified direct-effect model, no time factor, all active doses ------*/
@@ -138,46 +153,69 @@ run;
 data _profall; set _profall; dose=9999; run;       /* 9999 = all active doses     */
 data _prof; set _prof _profall; run;
 
-/*--- sign-flip test, CI and summaries by dose and pooled (PROC IML) ------------*/
+/*--- mean x of each row's active participants by nominal time (9999 = all) -----*/
+proc means data=_r2 nway noprint;
+  class dose ATPTN; var x; output out=_xb(drop=_type_ _freq_) mean=xm;
+run;
+proc means data=_r2 nway noprint;
+  class ATPTN; var x; output out=_xball(drop=_type_ _freq_) mean=xm;
+run;
+data _xball; set _xball; dose=9999; run;
+data _xb; set _xb _xball; run;
+
+/*--- placebo participants' areas against each row's mean x (h: Day 1, h1: Day -1) */
+%macro pboarea(in=, out=, var=);
+  proc sql;
+    create table _ph as
+      select x.dose, p.USUBJID, p.ATPTN, x.xm, p.dev
+      from &in as p inner join _xb as x on p.ATPTN = x.ATPTN
+      order by dose, USUBJID, ATPTN;               /* nominal-time order          */
+  quit;
+  data &out(keep=dose USUBJID &var);
+    set _ph;  by dose USUBJID;
+    retain x1 v1 xp vp &var;
+    if first.USUBJID then do; x1=xm; v1=dev; &var=0; end;
+    else &var = &var + 0.5*(xp*dev - xm*vp);
+    xp=xm; vp=dev;
+    if last.USUBJID then do; &var = &var + 0.5*(xm*v1 - x1*dev); output; end;
+  run;
+%mend pboarea;
+%pboarea(in=_pdev,  out=_harea,  var=h);
+%pboarea(in=_pdev1, out=_harea1, var=h1);
+
+/*--- placebo-adjusted t-test, CI and summaries by dose and pooled (PROC IML) ---*/
 proc iml;
-  start signflip(A) global(nsign, seed);
-    n = nrow(A);  T0 = A[:];  tol = 1e-10 * abs(A)[:];
-    if n <= 20 then do;                            /* exact: all 2**n signed sums */
-      s = {0};
-      do i = 1 to n;  s = (s + A[i]) // (s - A[i]);  end;
-      Ts = s / n;
-      p1 = (Ts >= T0 - tol)[:];  p2 = (abs(Ts) >= abs(T0) - tol)[:];
-    end;
-    else do;
-      call randseed(seed);
-      S = j(nsign, n);  call randgen(S, "Bernoulli", 0.5);  S = 2*S - 1;
-      Ts = S * A / n;
-      p1 = (1 + sum(Ts >= T0 - tol)) / (nsign + 1);
-      p2 = (1 + sum(abs(Ts) >= abs(T0) - tol)) / (nsign + 1);
-    end;
-    return (p1 || p2);
+  start pbot(A, h);                                /* t-test of mean(A); SE adds the placebo part */
+    n = nrow(A);  np = nrow(h);
+    va = ssq(A - A[:]) / (n - 1) / n;  vh = ssq(h - h[:]) / (np - 1) / np;
+    se = sqrt(va + vh);
+    df = (va + vh)##2 / (va##2 / (n - 1) + vh##2 / (np - 1));   /* Welch-Satterthwaite */
+    t0 = A[:] / se;  q = quantile("T", 0.975, df);
+    return (A[:] || (A[:] - q*se) || (A[:] + q*se) || (1 - probt(t0, df)) ||
+            (2 * (1 - probt(abs(t0), df))));      /* est lcl ucl p1 p2           */
   finish;
-  nsign = &NSIGN;  seed = &SEED;
-  use _part;  read all var {dose A Adm1 tmax tpeak} into M;  close _part;
-  use _prof;  read all var {dose ATPTN mdd} into P;  close _prof;
+  use _part;    read all var {dose A Adm1 tmax tpeak} into M;  close _part;
+  use _prof;    read all var {dose ATPTN mdd} into P;          close _prof;
+  use _harea;   read all var {dose h} into H;                  close _harea;
+  use _harea1;  read all var {dose h1} into H1;                close _harea1;
   doses = unique(M[,1]) || 9999;                   /* each active dose, then all  */
-  R = j(ncol(doses), 11, .);
+  R = j(ncol(doses), 12, .);
   do k = 1 to ncol(doses);
     if doses[k] = 9999 then idx = 1:nrow(M);  else idx = loc(M[,1] = doses[k]);
     A = M[idx, 2];  n = nrow(A);
-    half = quantile("T", 0.975, n - 1) * std(A) / sqrt(n);
-    p = signflip(A);
+    h = H[loc(H[,1] = doses[k]), 2];
+    t = pbot(A, h);
     pr = P[loc(P[,1] = doses[k]), ];
     tmaxmed = median(M[idx, 4]);
     a1 = M[idx, 3];  ok = loc(a1 ^= .);               /* Day -1 evaluable participants */
-    if ncol(ok) > 1 then do;  a1 = a1[ok];  pd = signflip(a1);  end;
-    else do;  a1 = {.};  pd = {. .};  end;
-    R[k, ] = doses[k] || n || A[:] || (A[:] - half) || (A[:] + half) || p ||
+    if ncol(ok) > 1 then do;  a1 = a1[ok];  t1 = pbot(a1, H1[loc(H1[,1] = doses[k]), 2]);  end;
+    else do;  a1 = {.};  t1 = j(1, 5, .);  end;
+    R[k, ] = doses[k] || n || nrow(h) || t ||
              (median(M[idx, 5]) - tmaxmed) ||               /* tmax gap, individual   */
              (pr[pr[,3][<:>], 2] - tmaxmed) ||              /* tmax gap, mean profile */
-             a1[:] || pd[2];
+             a1[:] || t1[5];
   end;
-  create _hyst from R[colname={"dose" "n" "abar" "lcl" "ucl" "p1" "p2"
+  create _hyst from R[colname={"dose" "n" "npbo" "abar" "lcl" "ucl" "p1" "p2"
                                 "gap_ind" "gap_mean" "abar_dm1" "p2_dm1"}];
   append from R;  close _hyst;
 quit;
@@ -201,12 +239,13 @@ run;
 %tfltitle(num=14.3.5.5, type=Table,
    text=%str(Assessment of Delay between Concentration and ddQTcF: Mean Signed Loop Area on Direct-Effect Model Residuals, by Dose),
    pop=C-QTc Analysis Set,
-   foot=%str(Area = signed area of each participant's closed path of (concentration / participant Cmax, residual ddQTcF) in time order; positive = counterclockwise = effect lags concentration. Residuals from the prespecified direct-effect model (no time factor, participant random intercept) fitted to all active doses. p: participant-level sign-flip test, exact for n <= 20, otherwise 9,999 random sign vectors. tmax gap: median time of peak ddQTcF (individual) or time of peak mean ddQTcF (mean profile) minus median tmax; > 1 h is flagged in the SAP. Day -1: Day -1 time-matched QTcF, centered and placebo-corrected as on Day 1, paired with Day 1 concentrations; no drug, so any area reflects timing alone. NE = not evaluable. A significant result prompts an effect-compartment model; it does not replace the C-QTc analysis.));
+   foot=%str(Area = signed area of the closed path of each participant (concentration / participant Cmax, residual ddQTcF) in time order; positive = counterclockwise = effect lags concentration. Residuals from the prespecified direct-effect model (no time factor, participant random intercept) fitted to all active doses. CI and p: t-test of the mean area whose standard error adds the variance of the time-matched placebo mean shared by the ddQTcF of every active participant (the signed area of each placebo participant about the placebo mean, against the mean scaled concentration profile of the active participants), Welch-Satterthwaite degrees of freedom. tmax gap: median time of peak ddQTcF (individual) or time of peak mean ddQTcF (mean profile) minus median tmax; > 1 h is flagged in the SAP. Day -1: Day -1 time-matched QTcF, centered and placebo-corrected as on Day 1, paired with Day 1 concentrations and tested the same way; no drug, so any area reflects timing alone. NE = not evaluable. A significant result prompts an effect-compartment model; it does not replace the C-QTc analysis.));
 proc report data=_disp nowd split='|';
-  columns dose dosec n abarci p1c p2c gapi gapm dm1c fc;
+  columns dose dosec n npbo abarci p1c p2c gapi gapm dm1c fc;
   define dose   / order noprint;
   define dosec  / display 'Dose' width=20 flow;
   define n      / display 'n';
+  define npbo   / display 'n|Placebo';
   define abarci / display 'Mean Area, ms|(95% CI)';
   define p1c    / display 'p|One-sided';
   define p2c    / display 'p|Two-sided';

@@ -72,7 +72,7 @@ run;
 %tfltitle(num=14.3.5.4, type=Figure,
    text=%str(Mean (+/-SE) ddQTcF versus Mean Plasma Concentration in Time Order (Hysteresis Loop) by Dose),
    pop=C-QTc Analysis Set,
-   foot=%str(ddQTcF = change from baseline in QTcF minus the time-matched placebo mean (placebo pooled). Points = means at each nominal post-dose time, joined in time order (arrows); bars = +/-1 SE; dotted segment closes the path from the last time back to predose. A counterclockwise loop suggests the effect lags concentration; Table 14.3.5.5 gives the test. Descriptive only.));
+   foot=%str(ddQTcF = change from baseline in QTcF minus the time-matched placebo mean (placebo pooled). Points = means at each nominal post-dose time, joined in time order (arrows); bars = +/-1 SE across active participants (excludes the variance of the placebo mean itself); dotted segment closes the path from the last time back to predose. A counterclockwise loop suggests the effect lags concentration; Table 14.3.5.5 gives the test. Descriptive only.));
 proc sgpanel data=_plot;
   panelby trt / novarname uniscale=row sort=data;  /* one panel per dose, ascending */
   refline 0 / axis=y lineattrs=(color=gray);

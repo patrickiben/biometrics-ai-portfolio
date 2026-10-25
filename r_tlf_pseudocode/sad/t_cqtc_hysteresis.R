@@ -3,7 +3,8 @@
 # TITLE     : Assessment of Delay between Concentration and ddQTcF before the
 #             C-QTc Analysis: Mean Signed Loop Area on Direct-Effect Model
 #             Residuals, by Dose
-# POPULATION: C-QTc Analysis Set (PKFL == "Y" and SAFFL == "Y"), active doses
+# POPULATION: C-QTc Analysis Set (PKFL == "Y" and SAFFL == "Y"), active doses;
+#             placebo participants (pooled) for the time-matched placebo mean
 # INPUT     : ADEG (PARAMCD == "QTCF"; CHG on Day 1, AVAL on Day -1, ATPTN),
 #             ADPC (PARAMCD == "CONC"; AVAL, AFRLT actual time, ATPTN)
 # NOTE      : PSEUDOCODE. The prespecified hysteresis check (SAP text: see
@@ -18,14 +19,21 @@
 #             3. r = ddQTcF - f-hat(C) - b-hat_i; x = C / participant's Cmax.
 #             4. A_i = 0.5 * sum_j (x_j r_(j+1) - x_(j+1) r_j), closed path
 #                (index m+1 = 1); A_i > 0 = counterclockwise = effect lags.
-#             5. Test mean(A_i) by participant-level sign flips: exact (all 2^n
-#                sign vectors) when n <= 20, otherwise 9,999 random sign vectors,
-#                p = (1 + #{T* >= T}) / (9,999 + 1). One- and two-sided.
-#             6. Report beside it: A-bar with a t-based 95% CI, the tmax gap
-#                (median time of peak ddQTcF minus median tmax; and the peak of
-#                the mean profile minus median tmax) and the Day -1 pseudo-loop
-#                check (Day -1 QTcF, centered and corrected the same way, paired
-#                with Day 1 x). Rows: each active dose, then all active doses.
+#             5. Every A_i shares the placebo-mean noise, so the test adds it:
+#                h_k = signed area of placebo participant k's CHG minus the
+#                placebo mean, against the mean x of the row's active
+#                participants at each nominal time. t = mean(A) / SE,
+#                SE^2 = var(A)/n + var(h)/n_pbo, Welch-Satterthwaite df;
+#                one- and two-sided p, and the 95% CI from the same SE and df.
+#                (A one-sample sign-flip test of the A_i ignores the shared term
+#                and rejects too often. Use it only if each participant's ddQTcF
+#                is corrected by their own placebo period: signflip_test() in
+#                cqtc_hysteresis/R/area.R.)
+#             6. Report beside it: the tmax gap (median time of peak ddQTcF
+#                minus median tmax; and the peak of the mean profile minus
+#                median tmax) and the Day -1 pseudo-loop check (Day -1 QTcF,
+#                centered and corrected the same way, paired with Day 1 x, and
+#                tested the same way). Rows: each active dose, then all active.
 #             A significant result prompts an effect-compartment model; it does
 #             not replace the C-QTc analysis. Mirrors cqtc_hysteresis/R/area.R.
 ################################################################################
@@ -35,24 +43,24 @@ dv  <- design_vars("SAD")                       # TRT01A = dose level; TRT01AN =
 
 PCCD  <- "CONC"     # parent analyte PARAMCD in ADPC
 FORM  <- "LINEAR"   # prespecified f: "LINEAR", or "EMAX" if the SAP linearity check selects it
-SEED  <- 20261025   # SAP-specified seed for the random sign vectors (n > 20)
-NSIGN <- 9999       # random sign vectors when n > 20
 
 ## ---- helpers (as in cqtc_hysteresis/R/area.R) ---------------------------------
 loop_area <- function(x, y) {                     # closed-path shoelace area
   j <- c(seq_along(x)[-1], 1L)
   0.5 * sum(x * y[j] - x[j] * y)
 }
-signflip <- function(A) {                         # participant-level sign-flip test of mean(A)
-  n <- length(A); T0 <- mean(A); tol <- 1e-10 * mean(abs(A))
-  if (n <= 20) {                                  # exact: all 2^n signed sums
-    s <- 0; for (a in A) s <- c(s + a, s - a); Ts <- s / n
-    c(p1 = mean(Ts >= T0 - tol), p2 = mean(abs(Ts) >= abs(T0) - tol))
-  } else {
-    set.seed(SEED)
-    Ts <- drop(matrix(sample(c(-1, 1), NSIGN * n, replace = TRUE), NSIGN, n) %*% A) / n
-    c(p1 = (1 + sum(Ts >= T0 - tol)) / (NSIGN + 1), p2 = (1 + sum(abs(Ts) >= abs(T0) - tol)) / (NSIGN + 1))
-  }
+pbo_t <- function(A, h) {                         # t-test of mean(A); SE adds the placebo-mean part
+  va <- var(A) / length(A); vh <- var(h) / length(h); se <- sqrt(va + vh)
+  df <- (va + vh)^2 / (va^2 / (length(A) - 1) + vh^2 / (length(h) - 1))   # Welch-Satterthwaite
+  t0 <- mean(A) / se
+  c(est = mean(A), lcl = mean(A) - qt(0.975, df) * se, ucl = mean(A) + qt(0.975, df) * se,
+    p1 = pt(t0, df, lower.tail = FALSE), p2 = 2 * pt(-abs(t0), df))
+}
+## placebo participants' areas: deviation from the placebo mean (dev) against the mean
+## x of the row's active participants at each nominal time (xm), in nominal-time order
+pbo_areas <- function(xbar, pd) {
+  pd %>% inner_join(xbar, by = "ATPTN") %>% arrange(USUBJID, ATPTN) %>%
+    group_by(USUBJID) %>% summarise(h = loop_area(xm, dev), .groups = "drop") %>% pull(h)
 }
 
 ## ---- Day 1: ddQTcF with time-matched concentrations ------------------------------
@@ -60,6 +68,8 @@ eg <- adam$adeg %>%
   filter(SAFFL == "Y", ANL01FL == "Y", PARAMCD == "QTCF", ADY == 1, !is.na(CHG)) %>%
   transmute(USUBJID, trt = .data[[dv$trtvar]], dose = .data[[dv$trtnvar]], ATPTN, CHG)
 pbo <- eg %>% filter(dose == 0) %>% group_by(ATPTN) %>% summarise(pbo = mean(CHG), .groups = "drop")
+pdev <- eg %>% filter(dose == 0) %>% inner_join(pbo, by = "ATPTN") %>%
+  transmute(USUBJID, ATPTN, dev = CHG - pbo)       # placebo deviations from their mean
 pc  <- adam$adpc %>%
   filter(PKFL == "Y", PARAMCD == PCCD, !is.na(AVAL)) %>%
   transmute(USUBJID, ATPTN, AFRLT, conc = AVAL)
@@ -67,6 +77,7 @@ cq <- eg %>% filter(dose > 0) %>%
   inner_join(pbo, by = "ATPTN") %>%
   mutate(ddqtcf = CHG - pbo) %>%
   inner_join(pc, by = c("USUBJID", "ATPTN")) %>%
+  group_by(USUBJID) %>% mutate(x = conc / max(conc)) %>% ungroup() %>%
   arrange(USUBJID, AFRLT)                         # time order = actual time
 
 ## ---- Day -1: centered QTcF, corrected the same way as Day 1 ----------------------
@@ -74,9 +85,10 @@ d1 <- adam$adeg %>%
   filter(SAFFL == "Y", PARAMCD == "QTCF", ADY == -1, !is.na(AVAL)) %>%
   group_by(USUBJID) %>% mutate(qc = AVAL - mean(AVAL)) %>% ungroup() %>%
   transmute(USUBJID, dose = .data[[dv$trtnvar]], ATPTN, qc)
-d1 <- d1 %>% filter(dose > 0) %>%
-  inner_join(d1 %>% filter(dose == 0) %>% group_by(ATPTN) %>% summarise(pqc = mean(qc), .groups = "drop"),
-             by = "ATPTN") %>%
+pqc <- d1 %>% filter(dose == 0) %>% group_by(ATPTN) %>% summarise(pqc = mean(qc), .groups = "drop")
+pdev1 <- d1 %>% filter(dose == 0) %>% inner_join(pqc, by = "ATPTN") %>%
+  transmute(USUBJID, ATPTN, dev = qc - pqc)
+d1 <- d1 %>% filter(dose > 0) %>% inner_join(pqc, by = "ATPTN") %>%
   transmute(USUBJID, ATPTN, dm1 = qc - pqc)
 
 ## ---- prespecified direct-effect model, no time factor, all active doses ----------
@@ -94,36 +106,36 @@ part <- cq %>%
   left_join(d1, by = c("USUBJID", "ATPTN")) %>%
   group_by(USUBJID, trt, dose) %>%
   summarise(m      = n(),
-            A      = loop_area(conc / max(conc), resid),
-            A_dm1  = if (all(!is.na(dm1))) loop_area(conc / max(conc), dm1) else NA_real_,
+            A      = loop_area(x, resid),
+            A_dm1  = if (all(!is.na(dm1))) loop_area(x, dm1) else NA_real_,
             tmax   = ATPTN[which.max(conc)],
             tpeak  = ATPTN[which.max(ddqtcf)],
             .groups = "drop")
-## the mean ddQTcF profile per dose, for the mean-profile tmax gap
-prof <- cq %>% group_by(dose, ATPTN) %>% summarise(mdd = mean(ddqtcf), .groups = "drop")
 
-summ <- function(d, pr, label) {
-  ci <- mean(d$A) + c(-1, 1) * qt(0.975, nrow(d) - 1) * sd(d$A) / sqrt(nrow(d))
-  p  <- signflip(d$A)
-  a1 <- d$A_dm1[!is.na(d$A_dm1)]
+## one row: d = participants, rc = their records in cq
+summ <- function(d, rc, label) {
+  xbar <- rc %>% group_by(ATPTN) %>% summarise(xm = mean(x), .groups = "drop")
+  pr   <- rc %>% group_by(ATPTN) %>% summarise(mdd = mean(ddqtcf), .groups = "drop")
+  p    <- pbo_t(d$A, pbo_areas(xbar, pdev))
+  a1   <- d$A_dm1[!is.na(d$A_dm1)]
   tibble(
     `Dose`                       = label,
     `n`                          = as.character(n_distinct(d$USUBJID)),
-    `Mean area, ms (95% CI)`     = sprintf("%.2f (%.2f, %.2f)", mean(d$A), ci[1], ci[2]),
+    `n placebo`                  = as.character(n_distinct(pdev$USUBJID)),
+    `Mean area, ms (95% CI)`     = sprintf("%.2f (%.2f, %.2f)", p[["est"]], p[["lcl"]], p[["ucl"]]),
     `p one-sided`                = sprintf("%.4f", p[["p1"]]),
     `p two-sided`                = sprintf("%.4f", p[["p2"]]),
     `tmax gap, h (individual)`   = sprintf("%.1f", median(d$tpeak) - median(d$tmax)),
     `tmax gap, h (mean profile)` = sprintf("%.1f", pr$ATPTN[which.max(pr$mdd)] - median(d$tmax)),
     `Day -1 mean area, ms (p two-sided)` =
-      if (length(a1) > 1) sprintf("%.2f (%.4f)", mean(a1), signflip(a1)[["p2"]]) else "NE",
+      if (length(a1) > 1) sprintf("%.2f (%.4f)", mean(a1), pbo_t(a1, pbo_areas(xbar, pdev1))[["p2"]]) else "NE",
     `Model for f`                = if (FORM == "LINEAR") "Linear" else "Emax")
 }
 doses <- sort(unique(part$dose))
 tab <- bind_rows(
-  lapply(doses, function(dd) summ(part %>% filter(dose == dd), prof %>% filter(dose == dd),
+  lapply(doses, function(dd) summ(part %>% filter(dose == dd), cq %>% filter(dose == dd),
                                   as.character(part$trt[part$dose == dd][1]))),
-  ## pooled profile for the all-doses row: mean over participants of all active doses
-  summ(part, cq %>% group_by(ATPTN) %>% summarise(mdd = mean(ddqtcf), .groups = "drop"), "All active doses"))
+  summ(part, cq, "All active doses"))
 
 ttl <- tfl_titles(num = "14.3.5.5", type = "Table",
    text = "Assessment of Delay between Concentration and ddQTcF: Mean Signed Loop Area on Direct-Effect Model Residuals, by Dose",
@@ -132,9 +144,11 @@ ttl <- tfl_titles(num = "14.3.5.5", type = "Table",
      "Area = signed area of each participant's closed path of (concentration / participant Cmax, residual ddQTcF) in time order;",
      "positive = counterclockwise = effect lags concentration. Residuals from the prespecified direct-effect model",
      "(no time factor, participant random intercept) fitted to all active doses.",
-     "p: participant-level sign-flip test, exact for n <= 20, otherwise 9,999 random sign vectors.",
+     "CI and p: t-test of the mean area whose standard error adds the variance of the time-matched placebo mean that every",
+     "active participant's ddQTcF shares (each placebo participant's signed area, about the placebo mean, against the",
+     "active participants' mean scaled concentration profile), Welch-Satterthwaite degrees of freedom.",
      "tmax gap: median time of peak ddQTcF (individual) or time of peak mean ddQTcF (mean profile) minus median tmax; > 1 h is flagged in the SAP.",
-     "Day -1: Day -1 time-matched QTcF, centered and placebo-corrected as on Day 1, paired with Day 1 concentrations; no drug, so any area reflects timing alone.",
+     "Day -1: Day -1 time-matched QTcF, centered and placebo-corrected as on Day 1, paired with Day 1 concentrations and tested the same way; no drug, so any area reflects timing alone.",
      "NE = not evaluable. A significant result prompts an effect-compartment model; it does not replace the C-QTc analysis."))
 
 print(tab)

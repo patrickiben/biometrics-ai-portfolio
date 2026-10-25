@@ -80,7 +80,7 @@ proc sort data=_plot; by ADY dose; run;            /* panel order: day, then dos
 %tfltitle(num=14.3.6.4, type=Figure,
    text=%str(Mean (+/-SE) ddQTcF versus Mean Plasma Concentration in Time Order (Hysteresis Loop) by Dose and Profile Day),
    pop=C-QTc Analysis Set,
-   foot=%str(ddQTcF = change from baseline in QTcF minus the time-matched placebo mean on the same day (placebo pooled). Points = means at each nominal time over the dosing interval, joined in time order (arrows); bars = +/-1 SE; dotted segment closes the path back to predose (the trough at steady state). A counterclockwise loop suggests the effect lags concentration; Table 14.3.6.5 gives the test. Descriptive only.));
+   foot=%str(ddQTcF = change from baseline in QTcF minus the time-matched placebo mean on the same day (placebo pooled). Points = means at each nominal time over the dosing interval, joined in time order (arrows); bars = +/-1 SE across active participants (excludes the variance of the placebo mean itself); dotted segment closes the path back to predose (the trough at steady state). A counterclockwise loop suggests the effect lags concentration; Table 14.3.6.5 gives the test. Descriptive only.));
 proc sgpanel data=_plot;
   panelby day trt / layout=lattice novarname uniscale=row sort=data;  /* rows = days, columns = doses */
   refline 0 / axis=y lineattrs=(color=gray);
