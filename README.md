@@ -104,7 +104,9 @@ executed here.
 ## Package check
 
 `python3 package_qc.py` checks local links (HTML and Markdown), retired content, empty link cards,
-navigation and this README's inventory, terminology, framing and count drift. GitHub Actions runs it
+navigation and this README's inventory, terminology, framing and count drift. It also reads the text
+of every published spreadsheet, Word file, slide deck, PDF (with `pdftotext`) and JSON file for the
+same framing, terminology and spelling checks. GitHub Actions runs it
 on every push and pull request. Add `--external` to also request each external link once. It checks
 the package, not the statistics.
 

@@ -7,6 +7,7 @@ Run:  python3 package_qc.py [package_root] [--external]
   --external   also request every external http(s) link once (no custom headers) and
                report failures as warnings; off by default so CI does not depend on the
                network.
+  --all        list every finding (the report otherwise shows 30 per category).
 Exit code 0 if clean, 1 if any issue is found. Writes package_qc_report.md next to this
 file (the report is a generated artifact and is not committed).
 
@@ -23,8 +24,12 @@ What it checks
   7. Retired framing: the old program brand and employer-only phrases.
   8. Count drift: the TLF library size and the validation-harness gate count.
   9. Style: no em dash in the core pages (home, 404, redirect stubs, README).
+ 10. Documents: the visible text of every published .xlsx, .docx, .pptx, .pdf and .json file
+     gets the framing (7) and terminology (6) checks plus a British-spelling check; em dashes are
+     issues in the documents listed in STYLE_DOCS and warnings elsewhere. PDFs need pdftotext
+     (poppler-utils); without it they are reported as not scanned.
 """
-import glob, html, json, os, re, sys
+import glob, html, json, os, re, shutil, subprocess, sys, zipfile
 from urllib.parse import unquote
 
 ARGS = [a for a in sys.argv[1:] if not a.startswith('--')]
@@ -44,10 +49,19 @@ RETIRED_FRAMING = re.compile(
     r'New biostatistician\? Start here|SVC-BIOSTAT|work laptop|\bper SOP\b|cross-validated SAS|'
     r'Cross.validated SAS|Tested concept: Base SAS|double-programmed SAS you can read|'
     r'no new approval gate|ship this now|layer AI on top when|streamlit\.app|htmlpreview\.github\.io|'
-    r'Cloud Claude|API \+ BAA|Max seat|account lead', re.I)
-TRIAL_SUBJ = re.compile(r'\b(\d+\s+subjects?|per subject|each subject|subject-level|number of subjects|'
+    r'Cloud Claude|API \+ BAA|Max seat|account lead|\bClaude\b|\bBAA\b|Copilot|\bin-house\b|'
+    r'hybrid[- ]AI (strategy|governance|policy|routing)|internal hybrid|AI[- ]governance (lead|owner|SOP)', re.I)
+TRIAL_SUBJ = re.compile(r'\b(\d+\s+subjects?|per[- ]subject|each subject|subject[- ]level|number of subjects|'
+                        r'intra-?subject|inter-?subject|subject (?:data|profiles?)|'
                         r'subjects?\s+(were|was|are|is|enrolled|randomi|received|dosed|discontinued|completed|withdrew|per)|'
                         r'the\s+subject\s+(was|is|received|had|enrolled|completed|randomi))\b', re.I)
+BRITISH = re.compile(r'\b(?:re-?)?(?:modell(?:ing|ed|er|ers)|licence[sd]?|organis(?:e|ed|es|ing|ations?)|optimis\w*|'
+                     r'colour\w*|behaviour\w*|favour\w*|centre[sd]?|analys(?:e|ed|ing)|randomis\w*|harmonis\w*|summaris\w*|'
+                     r'minimis\w*|prioritis\w*|standardis\w*|categoris\w*|characteris(?:e|ed|es|ing)|utilis\w*|recognis\w*|'
+                     r'judgement|programmes?|catalogue[sd]?|labell(?:ed|ing)|artefacts?|visualis\w*|normalis\w*|finalis\w*)\b', re.I)
+DOC_EXTS = ('.xlsx', '.docx', '.pptx', '.pdf', '.json')
+# documents rewritten for the new framing: em dashes there are issues, elsewhere warnings
+STYLE_DOCS = ('biostat_pipeline/',)
 EM_DASH = re.compile(r'—|&mdash;|&#8212;|&#x2014;', re.I)
 HREF = re.compile(r'(?:href|src)\s*=\s*"([^"]+)"')
 MD_LINK = re.compile(r'(?<!!)\[[^\]]*\]\(([^)\s]+)\)')
@@ -231,6 +245,72 @@ for p in CORE_PAGES:
         if EM_DASH.search(line):
             add('Style: em dash in a core page', f'{p}:{i}')
 
+# 10. documents: Office files, PDFs and JSON ----------------------------------------------
+OFFICE_PARTS = ('xl/sharedStrings', 'xl/worksheets/sheet', 'word/document', 'word/header', 'word/footer',
+                'word/footnotes', 'ppt/slides/slide', 'ppt/notesSlides/')
+PDFTOTEXT = shutil.which('pdftotext')
+
+
+def doc_text(p):
+    """visible text of an Office file, PDF or JSON file, one paragraph/row/cell per line; None if unreadable here"""
+    ext = os.path.splitext(p)[1].lower()
+    if ext == '.json':
+        out = []
+
+        def strings(o):
+            if isinstance(o, str):
+                out.append(o)
+            elif isinstance(o, dict):
+                for v in o.values():
+                    strings(v)
+            elif isinstance(o, list):
+                for v in o:
+                    strings(v)
+        try:
+            strings(json.load(open(p, encoding='utf-8')))
+        except Exception:
+            return None
+        return '\n'.join(out)
+    if ext in ('.xlsx', '.docx', '.pptx'):
+        try:
+            z = zipfile.ZipFile(p)
+        except Exception:
+            return None
+        out = []
+        for n in sorted(z.namelist()):
+            if n.endswith('.xml') and (n.startswith(OFFICE_PARTS) or n == 'docProps/core.xml'):
+                x = z.read(n).decode('utf-8', 'ignore')
+                x = re.sub(r'</(?:a:p|w:p|row|si|c|dc:title|dc:subject|dc:description|cp:keywords)>', '\n', x)
+                out.append(html.unescape(re.sub(r'<[^>]+>', '', x)))
+        return '\n'.join(out)
+    if ext == '.pdf':
+        if not PDFTOTEXT:
+            return None
+        r = subprocess.run([PDFTOTEXT, '-enc', 'UTF-8', p, '-'], capture_output=True, text=True)
+        return r.stdout if r.returncode == 0 else None
+    return None
+
+
+for f in walk(*DOC_EXTS):
+    if rel(f) == 'validation_harness/ledger.json':   # generated from the checks themselves
+        continue
+    t = doc_text(f)
+    if t is None:
+        warn('Document not scanned (unreadable here; PDFs need pdftotext)', rel(f))
+        continue
+    for i, line in enumerate(t.splitlines(), 1):
+        low = line.lower()
+        m = RETIRED_FRAMING.search(line)
+        if m:
+            add('Retired framing or employer phrase', f'{rel(f)} (text line {i}): "{m.group(0)}"')
+        if TRIAL_SUBJ.search(line) and 'usubjid' not in low and 'subjid' not in low:
+            add("Terminology: 'subject' (use participant)", f'{rel(f)} (text line {i})')
+        m = BRITISH.search(line)
+        if m:
+            add('Style: British spelling in a document', f'{rel(f)} (text line {i}): "{m.group(0)}"')
+        if EM_DASH.search(line):
+            (add if rel(f).startswith(STYLE_DOCS) else warn)('Style: em dash in a document', f'{rel(f)} (text line {i})')
+
 # optional: external links --------------------------------------------------------------------
 if CHECK_EXTERNAL:
     import urllib.request
@@ -249,7 +329,7 @@ total_issues = sum(len(v) for v in issues.values())
 lines = ['# Package QC report', '',
          f'_Scanned {len(page_files)} HTML pages and {len(md_files)} Markdown files under `{rel(ROOT) or "."}`: '
          f'**{total_issues} issue(s)**' + (f', {sum(len(v) for v in warnings.values())} warning(s)' if warnings else '') + '._', '']
-CAP = 30
+CAP = 10 ** 6 if '--all' in sys.argv else 30
 for title, group in (('', issues), ('Warning: ', warnings)):
     for cat in sorted(group):
         lines.append(f'### {title}{cat} ({len(group[cat])})')
