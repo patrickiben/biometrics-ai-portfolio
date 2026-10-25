@@ -19,7 +19,8 @@ stopifnot(requireNamespace("r2rtf", quietly = TRUE))    # formatters::export_as_
 tdir <- sp("04_analysis", "tlf")
 dir.create(tdir, showWarnings = FALSE)
 FOOT_SYN <- "Synthetic data; not a regulatory deliverable."
-prov <- "Program: study/04_analysis/03_tlf.R; data cut-off 2026-05-29 (synthetic)."
+prov <- sprintf("Program: study/04_analysis/03_tlf.R; data cut-off %s (synthetic).", STUDY$cutoff)
+prov_be <- sprintf("Program: study/04_analysis/02_be.R and 03_tlf.R; data cut-off %s (synthetic).", STUDY$cutoff)
 TRT_LEV <- c("Test", "Reference")
 f1 <- function(x, d) formatC(x, format = "f", digits = d)
 ## rtables HTML; the attribute stops Quarto from re-parsing the table when the report embeds it
@@ -56,7 +57,7 @@ lyt_ae <- basic_table(title = "Table 14.3.1.1 Overview of Treatment-Emergent Adv
                       subtitles = c("Safety set", "Study SIMBE01 (synthetic)"),
                       main_footer = c("TEAE = adverse event with onset on or after the first dose, assigned to the treatment taken most recently before onset.",
                                       "Each participant counts once per row; N = participants dosed with that treatment.",
-                                      "No total column: in a crossover a participant contributes to both columns. MedDRA v29.1 (synthetic coding).", FOOT_SYN),
+                                      paste0("No total column: in a crossover a participant contributes to both columns. ", STUDY$dict_meddra, "."), FOOT_SYN),
                       prov_footer = prov, show_colcounts = TRUE) %>%
   split_cols_by("TRTA") %>%
   summarize_num_patients(var = "USUBJID", .stats = c("unique", "nonunique"),
@@ -139,7 +140,7 @@ subtitles(t_be) <- c("Bioequivalence set", "Study SIMBE01 (synthetic)")
 main_footer(t_be) <- c("General linear model on ln(parameter): sequence, participant(sequence), period, formulation (fixed effects; ICH M13A).",
                        "Adjusted geometric mean = exp(least-squares mean). Ratio and 90% CI back-transformed from the T - R difference; decision on unrounded limits.",
                        "Within-participant CV% = 100*sqrt(exp(MSE) - 1).", FOOT_SYN)
-prov_footer(t_be) <- "Program: study/04_analysis/02_be.R and 03_tlf.R; data cut-off 2026-05-29 (synthetic)."
+prov_footer(t_be) <- prov_be
 
 ## --- T 14.4.3.2 ANOVA effects ---------------------------------------------------------------------
 an_show <- be_anova %>% filter(PARAMCD %in% c("CMAX", "AUCLST")) %>% transmute(
@@ -154,7 +155,7 @@ subtitles(t_an) <- c("Bioequivalence set", "Study SIMBE01 (synthetic)")
 main_footer(t_an) <- c("Sequence is tested against participant(sequence); the other effects against the residual mean square.",
                        "Sequence and participant(sequence) sums of squares are sequential; period and formulation are adjusted for all other terms.",
                        "No test for carry-over (ICH M13A).", FOOT_SYN)
-prov_footer(t_an) <- "Program: study/04_analysis/02_be.R and 03_tlf.R; data cut-off 2026-05-29 (synthetic)."
+prov_footer(t_an) <- prov_be
 
 TLF <- list(
   t_14_1_2   = list(tt = t_dm,   title = "Table 14.1.2 Demographics", pop = "Safety set"),
@@ -175,7 +176,7 @@ for (id in names(TLF)) {
                  md(sprintf("Files: [%s.rtf](%s.rtf) (RTF from `formatters::export_as_rtf()`), [%s.csv](%s.csv) (the displayed cells). Program: `study/04_analysis/03_tlf.R`.", id, id, id, id)))
   write_text(page_html(title = TLF[[id]]$title, kicker = "Stage 4: analysis (executed output)", h1 = TLF[[id]]$title,
                        description = paste(TLF[[id]]$title, "for the synthetic study SIMBE01, produced with rtables/tern."),
-                       labels = lab("tools", "Executed: rtables 0.6.17 / tern 0.9.13"), body = body, depth = 2),
+                       labels = lab("tools", sprintf("Executed: rtables %s / tern %s", pkg_version("rtables"), pkg_version("tern"))), body = body, depth = 2),
              file.path(tdir, paste0(id, ".html")))
 }
 

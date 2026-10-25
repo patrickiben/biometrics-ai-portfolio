@@ -3695,7 +3695,7 @@
       "Name": "Adverse event dictionary",
       "Data Type": "text",
       "Dictionary": "MEDDRA",
-      "Version": "29.1 (synthetic coding)"
+      "Version": "28.1 (synthetic coding)"
     }
   ],
   "Methods": [

@@ -279,7 +279,8 @@ stopifnot(all(na.omit(unique(variables$Method)) %in% methods$ID), all(na.omit(un
 
 study_sheet <- tibble::tibble(Attribute = c("StudyName", "StudyDescription", "ProtocolName", "Note"),
                               Value = c(STUDY$studyid, STUDY$title, STUDY$studyid, SYNTHETIC_NOTE))
-dictionaries <- tibble::tibble(ID = "MEDDRA", Name = "Adverse event dictionary", `Data Type` = "text", Dictionary = "MEDDRA", Version = "29.1 (synthetic coding)")
+dictionaries <- tibble::tibble(ID = "MEDDRA", Name = "Adverse event dictionary", `Data Type` = "text", Dictionary = "MEDDRA",
+                               Version = paste(STUDY$meddra_version, "(synthetic coding)"))
 empty_vl <- tibble::tibble(Order = integer(), Dataset = character(), Variable = character(), `Where Clause` = character(),
                            Description = character(), `Data Type` = character(), Length = integer(), `Significant Digits` = integer(),
                            Format = character(), Mandatory = character(), Codelist = character(), Origin = character(),

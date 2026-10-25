@@ -131,7 +131,7 @@ md(
 "",
 "## 6 Safety",
 "",
-"Treatment-emergent adverse events (onset on or after the first dose) are assigned to the treatment taken most recently before onset. Each participant counts once per row; the denominator is the number of participants exposed to that treatment. Coding: MedDRA (version set at study start; this example uses the label MedDRA v29.1 for synthetic coding).",
+sprintf("Treatment-emergent adverse events (onset on or after the first dose) are assigned to the treatment taken most recently before onset. Each participant counts once per row; the denominator is the number of participants exposed to that treatment. Coding: MedDRA, version set at study start: %s, the version current when this synthetic study started.", STUDY$dict_meddra),
 "",
 "## 7 Outputs",
 "",
@@ -180,7 +180,7 @@ anv <- data.frame(Parameter = "Cmax / AUC(0-t)", Effect = c("Sequence", "Partici
 shells <- paste0(
   md("Planned layouts with placeholders (x). Titles, populations and footnotes match the executed outputs in the analysis stage. Every output carries the footnote: \"Synthetic data; not a regulatory deliverable.\""),
   shell("14.1.2", "Demographic and Baseline Characteristics", "Safety set", demo, "Percentages use the number of participants in the column."),
-  shell("14.3.1.1", "Overview of Treatment-Emergent Adverse Events", "Safety set", aeo, "Counted by treatment at onset; each participant counts once per row; N = participants dosed with that treatment. No total column: in a crossover a participant contributes to both columns. MedDRA v29.1 (synthetic coding)."),
+  shell("14.3.1.1", "Overview of Treatment-Emergent Adverse Events", "Safety set", aeo, paste0("Counted by treatment at onset; each participant counts once per row; N = participants dosed with that treatment. No total column: in a crossover a participant contributes to both columns. ", STUDY$dict_meddra, ".")),
   shell("14.4.1.1", "Summary of Plasma SIMDRUG Concentrations (ng/mL) by Nominal Time", "PK concentration set", conc, "BLQ (below 0.50 ng/mL) set to 0 (ICH M13A); n BLQ in parentheses. Periods excluded under the SAP rules are not summarized."),
   shell("14.4.4.1", "Summary of Plasma SIMDRUG PK Parameters", "PK parameter set", ppar, "Actual sampling times. AUC by linear-up/log-down. Geometric CV% = 100*sqrt(exp(s^2) - 1). Periods excluded under the SAP rules are not summarized."),
   shell("14.4.3.1", "Bioequivalence Analysis: Ratio of Geometric Means (Test/Reference) and 90% CI", "Bioequivalence set", bes, "GLM on ln(parameter): sequence, participant(sequence), period, formulation. Decision on unrounded limits."),

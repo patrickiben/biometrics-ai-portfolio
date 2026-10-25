@@ -31,10 +31,17 @@ STUDY <- list(
   washout_d = 14L,              # days between the two single doses (Day 1 and Day 15)
   lloq      = 0.50,             # ng/mL
   cutoff    = "2026-05-29",     # synthetic database lock, used as a fixed date everywhere
-  dict_meddra = "MedDRA v29.1 (synthetic coding)",
+  ## MedDRA: the version current when the synthetic study started (consent from Feb 2026,
+  ## first dose 2026-03-02), per the SAP rule "version set at study start". v28.1 is the
+  ## September 2025 release; v29.1 (September 2026) came out after this study's lock.
+  ## Every output that names the dictionary reads these two values.
+  meddra_version = "28.1",
+  dict_meddra = "MedDRA v28.1 (synthetic coding)",
   sequences = c("TR", "RT"),
   trt_levels = c("Test", "Reference")
 )
+
+stopifnot(grepl(STUDY$meddra_version, STUDY$dict_meddra, fixed = TRUE))
 
 ## Package version as CRAN and renv.lock write it ("1.5-7"); utils::packageVersion()
 ## normalizes the dash to a dot ("1.5.7"), so displayed versions use the DESCRIPTION string.
