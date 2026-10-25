@@ -60,8 +60,7 @@ you replace them with a read-only export from the validated safety database / AD
 Every line of the screening logic. `trialmon_load()` reads the three CSVs;
 `score_participants()` attaches the eDISH AND-gate and the QTcF tier to each participant;
 `dlt_state()` rolls DLTs up per cohort for the 3+3 ladder; `trialmon_worklist()` builds
-the ranked flag list; `trialmon_status()` and `trialmon_kpis()` summarise the whole
-portfolio. Nothing here depends on Shiny, so you can test it in a plain console.
+the ranked flag list; `trialmon_status()` and `trialmon_kpis()` summarize the whole portfolio. Nothing here depends on Shiny, so you can test it in a plain console.
 
 ```{r logic, code=readLines("../trialmon_shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
