@@ -5,17 +5,24 @@
 # Run:  Rscript R/gen_data.R   (writes ../data/*.csv relative to shiny/)
 #
 # The portfolio is internally consistent, so no panel contradicts another:
+# - the phases follow the database lock: in Startup and Conduct the lock is months
+#   ahead; DB Lock is the phase in which the lock is prepared, so the last participant
+#   is out and the lock is days ahead; Reporting comes after the lock;
+# - a locked database has no open queries and is fully cleaned and source-verified,
+#   and its query trend is 0 from the lock week on;
+# - final TLFs exist only after the lock; before it, the programmed and QC'd TLFs are
+#   dry runs, and the Reporting deliverables have not started;
 # - each study's query trend ends on its open-query count (the snapshot week) and
-#   follows its phase: rising in Startup and Conduct, burning down in DB Lock and
-#   Reporting;
+#   follows its phase: rising in Startup and Conduct, burning down toward the lock in
+#   DB Lock;
 # - the TLFs milestone is done only when every planned TLF is finalized, and the CSR
 #   only after the TLFs; a past-due milestone that is not done is "risk" (overdue);
 # - the deliverables register fills in phase order: Startup and Conduct follow the
 #   study's progress, Analysis follows TLF programming and Reporting follows TLF
 #   finalization;
 # - days_to_dbl is the DB lock milestone's date minus the snapshot date.
-# The random draws are taken in the same order as in earlier versions, so the
-# studies' inputs (and so the risk scores) stay the same.
+# The random draws are taken in the same order as in earlier versions, and every rule
+# above is applied after them, so the draws behind each study stay the same.
 # ---------------------------------------------------------------------------
 gen_portfolio <- function(out_dir = "data", today = as.Date("2026-06-21"), seed = 20260621L) {
   set.seed(seed)
@@ -83,14 +90,36 @@ gen_portfolio <- function(out_dir = "data", today = as.Date("2026-06-21"), seed 
   ms_all <- do.call(rbind, milestones)
 
   # force CP-108 to be clearly AT RISK so the red state + signals are exercised: in Reporting,
-  # TLF production far behind, double programming low
+  # TLF production far behind, double programming low, discrepancies piling up
   k <- studies$id == "CP-108"
   studies$phase[k] <- "Reporting"
   studies$tlf_programmed[k] <- round(studies$tlf_planned[k]*0.45)
   studies$tlf_qcd[k] <- round(studies$tlf_planned[k]*0.22)
-  studies$tlf_finalized[k] <- round(studies$tlf_planned[k]*0.10)
-  studies$dbl_prog_pct[k] <- 42L; studies$discrep[k] <- 16L
-  studies$open_queries[k] <- 7L; studies$clean_pct[k] <- 0.91; studies$sdv_pct[k] <- 0.86
+  studies$tlf_finalized[k] <- round(studies$tlf_planned[k]*0.07)
+  studies$dbl_prog_pct[k] <- 25L; studies$discrep[k] <- 18L
+
+  # Reporting comes after the lock: every milestone up to the DB lock is done
+  for (id in studies$id[studies$phase == "Reporting"]) {
+    m <- ms_all$study_id == id & ms_all$milestone %in% ms_keys[1:5]
+    ms_all$status[m] <- "done"
+  }
+  # DB Lock is the phase in which the lock is prepared, so the lock is ahead. The DB Lock studies
+  # lock 8 and 16 days after the snapshot (so the lock-at-risk signal shows both severities):
+  # each one's whole schedule moves so its lock lands there, every milestone before the lock is
+  # done, and the lock and the reports after it are ahead.
+  lock_in <- rep_len(c(8L, 16L), sum(studies$phase == "DB Lock"))
+  for (j in seq_along(lock_in)) {
+    m <- ms_all$study_id == studies$id[studies$phase == "DB Lock"][j]
+    dates <- as.Date(ms_all$date[m]); dates <- dates + as.integer((today + lock_in[j]) - dates[5])
+    ms_all$date[m] <- as.character(dates)
+    ms_all$status[m] <- c(rep("done", 4), vapply(5:7, function(x) status_for(dates[x], FALSE), ""))
+  }
+  # A locked database has no open queries and is fully cleaned and source-verified. Final TLFs
+  # come only after the lock: before it, the programmed and QC'd TLFs are dry runs.
+  locked_id <- ms_all$study_id[ms_all$milestone == "DBL" & ms_all$status == "done"]
+  lk <- studies$id %in% locked_id
+  studies$open_queries[lk] <- 0L; studies$clean_pct[lk] <- 1; studies$sdv_pct[lk] <- 1
+  studies$tlf_finalized[!lk] <- 0
 
   # TLFs are done only when every planned TLF is finalized; the CSR only after the TLFs
   for (r in seq_len(nrow(studies))) {
@@ -102,24 +131,29 @@ gen_portfolio <- function(out_dir = "data", today = as.Date("2026-06-21"), seed 
     studies$days_to_dbl[r] <- as.integer(as.Date(ms_all$date[m & ms_all$milestone == "DBL"]) - today)
   }
 
-  # query trend: 8 weeks ending on the snapshot week, whose value is the study's open queries
+  # query trend: 8 weeks ending on the snapshot week, whose value is the study's open queries;
+  # from a locked study's lock week on, the trend is 0
+  week_end <- today - 7 * (8 - 1:8)
   qtrends <- lapply(seq_len(nrow(studies)), function(r) {
     s <- studies[r, ]; st <- steps[[s$id]]; q <- numeric(8); q[8] <- s$open_queries
-    for (t in 8:2) q[t - 1] <- switch(s$phase,
+    dbl <- ms_all$study_id == s$id & ms_all$milestone == "DBL"
+    lock <- if (ms_all$status[dbl] == "done") as.Date(ms_all$date[dbl]) else as.Date(NA)
+    for (t in 8:2) q[t - 1] <- if (!is.na(lock) && week_end[t - 1] >= lock) 0 else switch(s$phase,
       "Startup"   = s$open_queries * (t - 1) / 8,       # queries start with the first participants
       "Conduct"   = max(0, q[t] - st[t]),               # a random walk that drifts upward
-      "DB Lock"   = q[t] + abs(st[t]),                  # burning down toward the lock
-      "Reporting" = q[t] * 1.25)                        # the last queries closing, 20% a week
+      "DB Lock"   = q[t] + abs(st[t]),                  # burning down toward the lock, which is ahead
+      "Reporting" = q[t] + 5)                           # the last queries closing before the lock
     data.frame(study_id = s$id, week = 1:8, open_queries = as.integer(round(q)), stringsAsFactors = FALSE)
   })
 
-  # deliverables register, 4 phase buckets that fill in order
+  # deliverables register, 4 phase buckets that fill in order; Reporting starts after the lock
   dtot <- c(Startup = 14, Conduct = 26, Analysis = 34, Reporting = 20)
   deliverables <- lapply(seq_len(nrow(studies)), function(r) {
     s <- studies[r, ]; prog <- progress[[s$id]]
     csr_done <- ms_all$status[ms_all$study_id == s$id & ms_all$milestone == "CSR"] == "done"
     frac <- c(prog / .15, (prog - .15) / .45, s$tlf_programmed / s$tlf_planned,
               s$tlf_finalized / s$tlf_planned) + noise[[s$id]]
+    if (!s$id %in% locked_id) frac[4] <- 0
     if (csr_done) frac[4] <- 1
     data.frame(study_id = s$id, phase = names(dtot),
                done = as.integer(round(dtot * pmin(1, pmax(0, frac)))), total = as.integer(dtot),

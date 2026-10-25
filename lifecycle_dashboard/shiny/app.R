@@ -37,7 +37,9 @@ SEV_WORD <- c(red = "Red", amber = "Amber")
 day_fmt  <- function(x) sub("^0", "", format(as.Date(x), "%d %b %Y"))
 lock_fmt <- function(days) if (is.na(days)) "-" else if (days > 0) sprintf("in %d d", days) else
   if (days == 0) "today" else sprintf("%d d ago", -days)
-study_label <- function(s) sprintf("%s \u00b7 %s \u00b7 %s", s$id, s$phase, sub(" study$", "", s$name))
+# the picker shows the id and the design (the phase is in the heatmap), so the label fits the sidebar
+study_label <- function(s) sprintf("%s \u00b7 %s", s$id, sub(" study$", "", s$name))
+DIM_SHORT <- c(Timeline = "Time", Data = "Data", TLF = "TLF", Resource = "Res.")   # heatmap headers on a phone
 STUDY_CHOICES <- local({
   s <- seed$studies[order(seed$studies$id), ]
   stats::setNames(s$id, vapply(seq_len(nrow(s)), function(j) study_label(s[j, ]), ""))
@@ -115,7 +117,7 @@ body{font-size:.95rem}
 .lc-key li{display:flex;gap:.45rem;align-items:baseline}
 .lc-phone-only{display:none;font-weight:600}@media (max-width:575.98px){.lc-phone-only{display:block}}.lc-key .lc-chip{flex:0 0 4.4rem;text-align:center}
 .bslib-sidebar-layout>.sidebar>.sidebar-content{gap:.55rem}
-#study{font-size:.9rem}
+#study{font-size:.85rem}
 .lc-kpi .value-box-title{font-size:.85rem;font-weight:600;margin-bottom:.1rem;color:var(--bs-secondary-color)}
 .lc-kpi .value-box-value{font-size:1.9rem;font-weight:700;line-height:1.15;margin-bottom:.1rem}
 .bslib-value-box.lc-kpi>.card-body{padding:0}
@@ -163,11 +165,29 @@ body{font-size:.95rem}
 .lc-table{--bs-table-bg:transparent;--bs-table-color:var(--bs-body-color);font-size:.85rem;font-variant-numeric:tabular-nums;margin:0}
 .lc-table th{font-size:.8rem;color:var(--bs-secondary-color);font-weight:600;white-space:nowrap}
 .lc-table tbody th{color:inherit}.lc-table td{white-space:nowrap}
-.lc-table td,.lc-table th{padding:.35rem .5rem;vertical-align:middle}
+.lc-table td,.lc-table th{padding:.35rem .42rem;vertical-align:middle}
 .lc-table td.n{text-align:right}
 .lc-table tr.is-selected td,.lc-table tr.is-selected th{background:var(--lc-soft)}
 .lc-table td.is-whatif{color:var(--lc-what);font-weight:700}
+.lc-heat .lc-short{display:none}
+@media (max-width:575.98px){
+ .lc-heat{border-spacing:2px}
+ .lc-heat th,.lc-heat td{padding:.2rem .22rem;font-size:.82rem}
+ .lc-heat td{min-width:2.1rem}
+ .lc-heat thead th{font-size:.72rem}
+ .lc-heat .lc-long{display:none}.lc-heat .lc-short{display:inline}
+ .lc-heat abbr{text-decoration:none}
+ .lc-heat .lc-word{font-size:.64rem}
+ .lc-heat tbody th .lc-chip{display:block;width:max-content;margin:.15rem 0 0!important}
+}
 .lc-scroll{overflow-x:auto}
+.lc-scroll:focus-visible{outline:2px solid var(--bs-primary);outline-offset:2px}
+.lc-scroll-box{position:relative}
+.lc-scroll-box::after{content:'';position:absolute;top:0;right:0;bottom:0;width:2rem;pointer-events:none;opacity:0;
+ transition:opacity .15s;background:linear-gradient(to right,transparent,var(--lc-surface) 80%)}
+.lc-scroll-wrap.is-clipped:not(.at-end) .lc-scroll-box::after{opacity:1}
+.lc-scroll-hint{display:none;font-size:.78rem;color:var(--bs-secondary-color);margin:.35rem 0 0}
+.lc-scroll-wrap.is-clipped .lc-scroll-hint{display:block}
 .lc-side-head{font-weight:700;font-size:.9rem;margin:.25rem 0 .2rem}
 .lc-whatif{font-size:.83rem;line-height:1.4;border-radius:6px;padding:.45rem .6rem;border:1px dashed var(--bs-border-color);color:var(--bs-secondary-color)}
 .lc-whatif.on{border:1px solid var(--lc-what);color:var(--bs-body-color);background:var(--lc-what-bg)}
@@ -190,7 +210,33 @@ $(document).on('click', '[data-study]', function (ev) {
     if (sel.value !== id) $(sel).val(id).trigger('change');
   } else Shiny.setInputValue('pick', id, { priority: 'event' });
 });
+// A table wider than its card scrolls sideways: say so, with a fade at the clipped edge and a
+// line under the table, and make the scroll area reachable from the keyboard.
+function lcClip() {
+  [].forEach.call(document.querySelectorAll('.lc-scroll-wrap'), function (w) {
+    var s = w.querySelector('.lc-scroll'); if (!s) return;
+    var clipped = s.scrollWidth > s.clientWidth + 1;
+    w.classList.toggle('is-clipped', clipped);
+    w.classList.toggle('at-end', !clipped || s.scrollLeft + s.clientWidth >= s.scrollWidth - 1);
+    if (clipped) s.setAttribute('tabindex', '0'); else s.removeAttribute('tabindex');
+  });
+}
+$(document).on('shiny:value', function () { setTimeout(lcClip, 0); }).on('shiny:idle', lcClip);
+$(window).on('resize load', lcClip);
+document.addEventListener('scroll', function (e) {
+  if (e.target.classList && e.target.classList.contains('lc-scroll')) lcClip();
+}, true);
+$(function () {
+  if (!window.ResizeObserver) return;
+  var ro = new ResizeObserver(function () { lcClip(); });
+  [].forEach.call(document.querySelectorAll('.lc-scroll'), function (s) { ro.observe(s); });
+});
 "
+# a table that scrolls sideways when it is wider than its card, with a visible cue when it does
+scroll_wrap <- function(label, ...) div(
+  class = "lc-scroll-wrap",
+  div(class = "lc-scroll-box", div(class = "lc-scroll", role = "region", `aria-label` = label, ...)),
+  p(class = "lc-scroll-hint", "Scroll the table sideways to see every column →"))
 
 kpi_box <- function(title, id, tone = "") value_box(
   title = title, value = textOutput(id, inline = TRUE),
@@ -216,7 +262,7 @@ start_here <- accordion(
       div(tags$h2("Try this"),
           tags$ol(
             tags$li("Click CP-107: its TLFs and CSR are overdue with 44% of TLFs final."),
-            tags$li("Pick CP-103 and drag Open queries to 120: it turns amber, On watch goes to 4."),
+            tags$li("Pick CP-103 and drag Open queries to 120: it turns amber, On watch goes to 4 and its backlog signal turns red."),
             tags$li("For CP-108, raise Double-programmed % to 80: At risk drops to 0. Reset to data undoes it.")),
           p(class = "lc-phone-only", "On a narrow screen, the arrow button at the top left opens the study picker and the what-if sliders.")))))
 
@@ -230,7 +276,7 @@ ui <- page_sidebar(
   theme = bs_theme(version = 5),   # precompiled; the site's tokens come from SITE_CSS below
   fillable = FALSE,
   sidebar = sidebar(
-    width = 290, id = "controls",
+    width = 300, id = "controls",   # wide enough for the longest study label in the picker
     # on a phone the controls sit behind the toggle at the top left, so the guidance comes first
     open = list(desktop = "open", mobile = "closed"),
     selectInput("study", "Selected study", choices = STUDY_CHOICES, selected = OPEN_ID, selectize = FALSE),
@@ -266,7 +312,7 @@ ui <- page_sidebar(
     col_widths = breakpoints(sm = 12, lg = c(7, 5)), class = "mb-3",
     card(card_header(div("Portfolio risk heatmap",
                          span(class = "lc-sub", "Scores 0 to 100, higher is riskier. Click a row to open that study."))),
-         card_body(uiOutput("heat"),
+         card_body(scroll_wrap("Risk heatmap", uiOutput("heat")),
                    div(class = "lc-legend",
                        span(span(class = "lc-swatch green"), "0 to 33 on track"),
                        span(span(class = "lc-swatch amber"), "34 to 66 watch"),
@@ -287,17 +333,16 @@ ui <- page_sidebar(
             plotOutput("milestones", height = "280px", fill = FALSE),
             p(class = "lc-note", "FPFV first participant's first visit, LPLV last participant's last visit,",
               "DBL database lock, TLFs tables, listings and figures, CSR clinical study report.",
-              "The dashed line is the snapshot date.")),
+              "The dashed line is the snapshot date; each milestone's date is on the right.")),
         div(div(class = "lc-h3", "TLF production funnel"), uiOutput("funnel"),
             div(class = "lc-h3 mt-3", "Deliverables register"), uiOutput("deliv"))
       ),
       div(class = "lc-h3 mt-3", "Open-query trend, last 8 weeks"),
       plotOutput("trend", height = "230px", fill = FALSE),
-      p(class = "lc-note", "The portfolio total and the selected study. The last week is the snapshot week;",
-        "a what-if on open queries shows as an open circle there."))),
+      uiOutput("trend_note"))),
   card(card_header(div("Study inputs behind the scores",
                        span(class = "lc-sub", "One row per study, as loaded; a what-if value shows in purple. Click a study to select it."))),
-       card_body(div(class = "lc-scroll", uiOutput("inputs"))))
+       card_body(scroll_wrap("Study inputs table", uiOutput("inputs"))))
 )
 
 plot_theme <- function(dark) {
@@ -419,7 +464,9 @@ server <- function(input, output, session) {
     tags$table(
       class = "lc-heat", `aria-label` = "Risk scores by study and dimension",
       tags$thead(tags$tr(tags$th(scope = "col", "Study"),
-                         lapply(SCORE_DIMS, function(dm) tags$th(scope = "col", dm)),
+                         lapply(SCORE_DIMS, function(dm) tags$th(
+                           scope = "col", span(class = "lc-long", dm),
+                           span(class = "lc-short", tags$abbr(title = dm, DIM_SHORT[[dm]])))),
                          tags$th(scope = "col", "Overall"))),
       tags$tbody(lapply(seq_len(nrow(x)), function(j) {
         s <- x[j, ]
@@ -487,15 +534,20 @@ server <- function(input, output, session) {
       m$milestone <- factor(m$milestone, levels = rev(MS_ORDER))
       m$date <- as.Date(m$date)
       m$status <- factor(m$status, levels = names(STATUS_LABEL))
+      # each milestone's date sits on the right-hand axis, in line with its row, so no date label
+      # can run into the snapshot line or past the edge of a narrow plot
+      day <- stats::setNames(sub("^0", "", format(m$date, "%d %b")), as.character(m$milestone))
       p <- ggplot(m, aes(date, milestone))
       if (!is.na(AS_OF)) p <- p + geom_vline(xintercept = AS_OF, linetype = "dashed", colour = pc$muted, linewidth = 0.5)
       p + geom_point(aes(colour = status, shape = status), size = 3.8, stroke = 1.2, show.legend = TRUE) +
-        geom_text(aes(label = sub("^0", "", format(date, "%d %b"))), hjust = -0.3, size = 4.1, colour = pc$muted) +
         scale_colour_manual(values = STATUS_COLORS[[if (d) "dark" else "light"]], labels = STATUS_LABEL, drop = FALSE) +
         scale_shape_manual(values = STATUS_SHAPE, labels = STATUS_LABEL, drop = FALSE) +
-        scale_x_date(date_labels = "%b %Y", expand = expansion(mult = c(0.05, 0.22))) +
+        scale_y_discrete(sec.axis = dup_axis(labels = function(b) unname(day[names(b) %||% as.character(b)]))) +
+        scale_x_date(date_labels = "%b %Y", expand = expansion(mult = c(0.06, 0.06)),
+                     guide = guide_axis(check.overlap = TRUE)) +
         labs(x = NULL, y = NULL) + plot_theme(d) +
-        theme(panel.grid.major.y = element_blank(), axis.text.y = element_text(colour = pc$text, size = 12)) +
+        theme(panel.grid.major.y = element_blank(), axis.text.y.left = element_text(colour = pc$text, size = 12),
+              axis.text.y.right = element_text(colour = pc$muted, size = 11.5, hjust = 0)) +
         guides(colour = guide_legend(nrow = 2, byrow = TRUE), shape = guide_legend(nrow = 2, byrow = TRUE))
     })
   }, bg = "transparent", alt = reactive(sprintf("Milestone track for %s", sel())))
@@ -504,11 +556,16 @@ server <- function(input, output, session) {
     s <- cur()
     explain_empty(isTRUE(s$tlf_planned > 0), sprintf("%s has no TLFs planned yet, so there is no production funnel.", s$id))
     n <- c(Planned = s$tlf_planned, Programmed = s$tlf_programmed, `QC'd` = s$tlf_qcd, Finalized = s$tlf_finalized)
-    div(class = "lc-bars", lapply(names(n), function(k) tagList(
-      span(k),
-      div(class = "lc-bar", role = "img", `aria-label` = sprintf("%s: %d of %d", k, n[[k]], n[[1]]),
-          span(style = sprintf("width:%.0f%%", max(1, 100 * n[[k]] / n[[1]])))),
-      span(class = "lc-num", if (k == "Planned") sprintf("%d", n[[k]]) else sprintf("%d (%d%%)", n[[k]], round(100 * n[[k]] / n[[1]]))))))
+    tagList(
+      div(class = "lc-bars", lapply(names(n), function(k) tagList(
+        span(k),
+        div(class = "lc-bar", role = "img", `aria-label` = sprintf("%s: %d of %d", k, n[[k]], n[[1]]),
+            span(style = sprintf("width:%.0f%%", max(1, 100 * n[[k]] / n[[1]])))),
+        span(class = "lc-num", if (k == "Planned") sprintf("%d", n[[k]]) else sprintf("%d (%d%%)", n[[k]], round(100 * n[[k]] / n[[1]])))))),
+      p(class = "lc-note", if (isTRUE(s$locked))
+        "The database is locked, so the TLFs are run on the final data; Finalized counts the signed-off ones."
+        else sprintf("Final TLFs come after the database lock (%s); until then the programmed and QC'd TLFs are dry runs, and the TLF score counts the QC'd ones.",
+                     sub("^DB lock ", "", lock_words(s$days_to_dbl)))))
   }))
   output$deliv <- renderUI(guard("the deliverables register", {
     x <- seed$deliverables[seed$deliverables$study_id == sel(), ]
@@ -519,8 +576,9 @@ server <- function(input, output, session) {
         div(class = "lc-bar", role = "img", `aria-label` = sprintf("%s: %d of %d done", x$phase[j], x$done[j], x$total[j]),
             span(class = "green", style = sprintf("width:%.0f%%", max(1, 100 * x$done[j] / x$total[j])))),
         span(class = "lc-num", sprintf("%d of %d", x$done[j], x$total[j]))))),
-      p(class = "lc-note", sprintf("%d%% of %d deliverables done. Analysis follows TLF programming and Reporting follows finalization.",
-                                   deliverables_pct(data_now(), sel()), sum(x$total))))
+      p(class = "lc-note", sprintf("%d%% of %d deliverables done. Analysis follows TLF programming and Reporting follows finalization%s.",
+                                   deliverables_pct(data_now(), sel()), sum(x$total),
+                                   if (isTRUE(cur()$locked)) "" else ", so it starts after the database lock")))
   }))
 
   output$trend <- renderPlot({
@@ -544,44 +602,84 @@ server <- function(input, output, session) {
       wi <- wi[wi$series %in% ends$series, ]
       wi <- wi[wi$open_queries != ends$open_queries[match(wi$series, ends$series)], ]
       ends$label <- sprintf("%s %d", ends$series, ends$open_queries)
-      # keep each what-if label clear of the end labels: move it up when the values are close
-      gap <- 0.09 * max(c(lines$open_queries, wi$open_queries, 1))
-      wi$label_y <- vapply(wi$open_queries, function(v) {
-        near <- ends$open_queries[abs(ends$open_queries - v) < gap]
-        if (length(near)) max(near) + gap else v }, numeric(1))
+      wi$label <- sprintf("what-if %d", wi$open_queries)
+      # The end labels sit right of the last week when the plot has room for them, with the right
+      # margin sized to the longest label; on a narrow plot (a phone) the legend carries the same
+      # words instead, so no label is ever cut at the edge.
+      width <- session$clientData$output_trend_width
+      narrow <- length(width) == 1 && is.numeric(width) && width < 560
       p <- ggplot(lines, aes(week, open_queries, colour = series)) +
-        geom_line(linewidth = 1.1) + geom_point(size = 2.2) +
-        geom_text(data = ends, aes(label = label), hjust = -0.12, size = 4, show.legend = FALSE)
-      if (nrow(wi)) p <- p +
-        geom_point(data = wi, shape = 21, size = 3.4, stroke = 1.3, fill = NA, show.legend = FALSE) +
-        geom_text(data = wi, aes(y = label_y, label = sprintf("what-if %d", open_queries)), hjust = -0.3,
-                  size = 3.6, show.legend = FALSE)
-      p + scale_colour_manual(values = cols) +
-        scale_x_continuous(breaks = wk, labels = if (is.null(when)) wk else sub("^0", "", format(when, "%d %b")),
-                           expand = expansion(mult = c(0.02, 0.12)), guide = guide_axis(check.overlap = TRUE)) +
-        scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0, 0.12))) +
+        geom_line(linewidth = 1.1) + geom_point(size = 2.2)
+      if (nrow(wi)) p <- p + geom_point(data = wi, shape = 21, size = 3.4, stroke = 1.3, fill = NA, show.legend = FALSE)
+      if (narrow) {
+        key <- stats::setNames(ends$label, as.character(ends$series))
+        for (j in seq_len(nrow(wi))) key[[as.character(wi$series[j])]] <- paste0(key[[as.character(wi$series[j])]], ", ", wi$label[j])
+        right <- 0.07   # room for the last week's date under the axis
+        p <- p + scale_colour_manual(values = cols, labels = key) + guides(colour = guide_legend(ncol = 1))
+      } else {
+        # keep each what-if label clear of the end labels: when an end label is close, put the
+        # what-if label on the same side of it as the what-if circle
+        gap <- 0.09 * max(c(lines$open_queries, wi$open_queries, 1))
+        wi$label_y <- vapply(wi$open_queries, function(v) {
+          near <- ends$open_queries[abs(ends$open_queries - v) < gap]
+          if (!length(near)) v else if (v >= mean(near)) max(near) + gap else max(0, min(near) - gap) }, numeric(1))
+        p <- p + geom_text(data = ends, aes(label = label), hjust = -0.12, size = 4, show.legend = FALSE)
+        if (nrow(wi)) p <- p + geom_text(data = wi, aes(y = label_y, label = label), hjust = -0.3, size = 3.6, show.legend = FALSE)
+        # about 6.3 px a character at size 4 and 5.7 at 3.6, plus the offset; the plot area is the
+        # output's width less the y axis
+        need <- max(nchar(ends$label) * 6.3 * 1.12, if (nrow(wi)) nchar(wi$label) * 5.7 * 1.3 else 0) + 8
+        panel <- if (length(width) == 1 && is.numeric(width)) max(300, width - 70) else 760
+        right <- need / max(panel - need, 1)
+        p <- p + scale_colour_manual(values = cols)
+      }
+      p + scale_x_continuous(breaks = wk, labels = if (is.null(when)) wk else sub("^0", "", format(when, "%d %b")),
+                             expand = expansion(mult = c(0.02, right)), guide = guide_axis(check.overlap = TRUE)) +
+        # a little room under 0, so a study at 0 open queries shows its line and its whole label
+        scale_y_continuous(limits = c(0, NA), expand = expansion(mult = c(0.06, 0.12))) +
         labs(x = if (is.null(when)) "Week" else "Week ending", y = "Open queries") +
-        plot_theme(d) + theme(legend.position = "none", panel.grid.major.x = element_blank())
+        plot_theme(d) + theme(legend.position = if (narrow) "bottom" else "none", panel.grid.major.x = element_blank())
     })
   }, bg = "transparent", alt = reactive(sprintf("Open-query trend for the portfolio and %s over 8 weeks", sel())))
+
+  output$trend_note <- renderUI(guard("the trend note", {
+    s <- cur()
+    dbl <- seed$milestones$date[seed$milestones$study_id == s$id & seed$milestones$milestone == "DBL"]
+    lock <- if (length(dbl)) as.Date(dbl[1]) else as.Date(NA)
+    first <- if (is.na(AS_OF)) as.Date(NA) else AS_OF - 7 * (max(seed$query_trend$week, 1) - 1)
+    why <- if (is.na(lock)) NULL
+      else if (isTRUE(s$locked) && !is.na(first) && lock <= first)
+        sprintf("%s locked its database on %s, before these weeks, so it has no open queries.", s$id, day_fmt(lock))
+      else if (isTRUE(s$locked))
+        sprintf("%s locked its database on %s; from that week on it has no open queries.", s$id, day_fmt(lock))
+      else if (s$days_to_dbl > 0)
+        sprintf("%s locks its database on %s, %d days after the snapshot, once its open queries are closed.",
+                s$id, day_fmt(lock), s$days_to_dbl)
+      else sprintf("%s's database lock was due on %s and is not done.", s$id, day_fmt(lock))
+    p(class = "lc-note", "The portfolio total and the selected study. The last week is the snapshot week;",
+      "a what-if on open queries shows as an open circle there.", why)
+  }))
 
   # ---- the inputs table ----
   output$inputs <- renderUI(guard("the study inputs", {
     x <- rv$studies[order(rv$studies$id), ]; sc <- st(); ed <- edits()
     pct <- function(v) sprintf("%d%%", round(100 * v))
+    # the owner is in the selected study's header; this table lists what the scores are made of
+    head <- list("Study", "Phase", "DB lock", span(title = "Open queries", "Queries"), "Clean", "SDV",
+                 tags$abbr(title = "QC'd dry runs before the lock, finalized TLFs after it", "TLFs"),
+                 tags$abbr(title = "Double-programmed", "Dbl prog."), tags$abbr(title = "Open discrepancies", "Discrep."),
+                 span(title = "Milestones overdue", "Overdue"), "Overall")
     tags$table(
       class = "table table-sm lc-table",
-      tags$thead(tags$tr(lapply(c("Study", "Phase", "Owner", "DB lock", "Open queries", "Clean", "SDV",
-                                  "TLFs final", "Double-prog.", "Discrep.", "Overdue", "Overall"),
-                                function(h) tags$th(scope = "col", h)))),
+      tags$thead(tags$tr(lapply(head, function(h) tags$th(scope = "col", h)))),
       tags$tbody(lapply(seq_len(nrow(x)), function(j) {
         s <- x[j, ]; o <- sc[sc$id == s$id, ]; e <- ed[[s$id]] %||% character()
         tags$tr(class = if (s$id == sel()) "is-selected",
                 tags$th(scope = "row", tags$button(type = "button", class = "lc-pick", `data-study` = s$id, s$id)),
-                tags$td(s$phase), tags$td(s$owner), tags$td(lock_fmt(s$days_to_dbl)),
+                tags$td(s$phase), tags$td(lock_fmt(s$days_to_dbl)),
                 tags$td(class = paste("n", if ("open_queries" %in% e) "is-whatif"), s$open_queries),
                 tags$td(class = "n", pct(s$clean_pct)), tags$td(class = "n", pct(s$sdv_pct)),
-                tags$td(class = "n", sprintf("%d of %d", s$tlf_finalized, s$tlf_planned)),
+                tags$td(class = "n", if (isTRUE(o$locked)) sprintf("%d/%d final", s$tlf_finalized, s$tlf_planned)
+                                     else sprintf("%d/%d QC'd", s$tlf_qcd, s$tlf_planned)),
                 tags$td(class = paste("n", if ("dbl_prog_pct" %in% e) "is-whatif"), sprintf("%d%%", s$dbl_prog_pct)),
                 tags$td(class = "n", s$discrep), tags$td(class = "n", o$overdue),
                 tags$td(chip(o$rag, sprintf("%d %s", o$overall, RAG_WORD[[o$rag]]))))

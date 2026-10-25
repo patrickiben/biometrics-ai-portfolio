@@ -84,7 +84,9 @@ server <- function(input, output, session) {
 `screenshot` (`null`, or `src`, `alt`, `width`, `height`, `caption`), `links` (label and `href`
 relative to `apps/<name>/`), `first_load` (`download_mb`, `first_s`, `revisit_s`), and `smoke`:
 `timeout_s`, `outputs` (ids that must have content on first load), `expect` (exact text for some
-of them) and `tabs` (a tab label and the outputs it must fill once clicked).
+of them), `fit` (optional: a CSS selector and a window width at which that element must fit its box
+without sideways scrolling, for example a table at phone width) and `tabs` (a tab label and the
+outputs it must fill once clicked).
 
 ## The smoke test
 
@@ -97,8 +99,9 @@ CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
 
 It serves the build under `/biometrics-ai-portfolio/` as Pages does, opens each launch page with a
 fresh browser profile and fails unless the page text paints within 3 seconds, the app reaches
-Ready within `timeout_s`, every listed output has content and no panel shows an error, each listed
-tab fills in, and a reload reaches Ready again. `--fault 'REGEX=404'` (or `drop`, `hang`) with
+Ready within `timeout_s`, every listed output has content and no panel shows an error, each element
+listed in `fit` fits its box at its window width, each listed tab fills in, and a reload reaches
+Ready again. `--fault 'REGEX=404'` (or `drop`, `hang`) with
 `--expect-problem KIND` checks an error state instead, for example
 `--fault 'shinylive-sw\.js$=404' --expect-problem sw-failed`.
 

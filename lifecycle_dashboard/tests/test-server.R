@@ -43,29 +43,35 @@ shiny::testServer(app, {
   # every panel has content on first load
   stopifnot(
     "KPI values" = identical(c(output$k_n, output$k_risk, output$k_watch, output$k_q, output$k_del, output$k_dbl),
-                             c("8", "1", "3", "148", "48%", "33 days")),
-    "KPI lines name the studies" = output$k_risk_sub == "CP-108" && output$k_watch_sub == "CP-107, CP-106, CP-105" &&
-      output$k_dbl_sub == "CP-103 on 24 Jul 2026",
+                             c("8", "1", "3", "135", "46%", "8 days")),
+    "KPI lines name the studies" = output$k_risk_sub == "CP-108" && output$k_watch_sub == "CP-107, CP-105, CP-106" &&
+      output$k_dbl_sub == "CP-105 on 29 Jun 2026",
     "the heatmap has a row per study, CP-108 selected" =
       lengths(regmatches(html_of(output$heat), gregexpr("<tr class=\"is-selected\"|<tr data-study", html_of(output$heat)))) == 8 &&
       grepl('class="is-selected" data-study="CP-108"', html_of(output$heat), fixed = TRUE),
     "signals are listed" = grepl("TLF production behind", html_of(output$signals), fixed = TRUE),
-    "the signals header counts them" = grepl("^11 signals: 5 red, 6 amber", output$signals_hdr),
+    "the signals header counts them" = grepl("^13 signals: 5 red, 8 amber", output$signals_hdr),
+    "the lock-at-risk signal shows both severities" =
+      identical(sort(sg()$sev[sg()$title == "DB lock at risk"]), c("amber", "red")),
     "the detail header names the study and its status" =
       grepl("CP-108", html_of(output$detail_hdr), fixed = TRUE) && grepl("Overall 67", html_of(output$detail_hdr), fixed = TRUE),
-    "the score breakdown shows the weighted parts" = grepl("26.7 + 2.8 + 26.7 + 10.8", html_of(output$breakdown), fixed = TRUE),
-    "the TLF funnel" = grepl("7 (10%)", html_of(output$funnel), fixed = TRUE),
+    "the score breakdown shows the weighted parts" = grepl("26.7 + 0.0 + 27.0 + 12.9", html_of(output$breakdown), fixed = TRUE),
+    "the breakdown explains a locked study's timeline" =
+      grepl("DB locked 70 days ago; next report: TLFs, 40 days overdue (+45)", html_of(output$breakdown), fixed = TRUE),
+    "the TLF funnel" = grepl("5 (7%)", html_of(output$funnel), fixed = TRUE),
     "the deliverables register agrees with the funnel" = grepl("1 of 20", html_of(output$deliv), fixed = TRUE) &&
       grepl("59% of 94", html_of(output$deliv), fixed = TRUE),
     "the inputs table" = lengths(regmatches(html_of(output$inputs), gregexpr("<tr", html_of(output$inputs)))) == 9,
     "no what-if at startup" = grepl("No what-if", html_of(output$whatif_state), fixed = TRUE),
+    "the trend note explains a locked study's zero line" =
+      grepl("CP-108 locked its database on 12 Apr 2026, before these weeks", html_of(output$trend_note), fixed = TRUE),
     "the milestone track draws" = plot_ok(output$milestones),
     "the query trend draws" = plot_ok(output$trend)
   )
   # a what-if moves the score and says so everywhere; reset restores the data
   session$setInputs(openq = 150)
   stopifnot("what-if raises portfolio open queries" = kpi()$open_q == k0$open_q - s0$open_queries + 150,
-            "the sidebar lists the what-if" = grepl("CP-108 open queries 7 \u2192 150", html_of(output$whatif_state), fixed = TRUE),
+            "the sidebar lists the what-if" = grepl("CP-108 open queries 0 \u2192 150", html_of(output$whatif_state), fixed = TRUE),
             "the heatmap marks the study" = grepl("What-if", html_of(output$heat), fixed = TRUE),
             "the KPI line says so" = grepl("(with what-if)", output$k_q_sub, fixed = TRUE),
             "the trend still draws" = plot_ok(output$trend))
@@ -77,8 +83,15 @@ shiny::testServer(app, {
   # the guidance: CP-103 at 120 open queries turns amber, On watch 3 -> 4
   session$setInputs(study = "CP-103", openq = 42, dblprog = 41)
   stopifnot("switching study leaves the data as loaded" = identical(rv$studies, seed$studies))
+  stopifnot("CP-103's trend note gives its lock" =
+              grepl("CP-103 locks its database on 24 Jul 2026, 33 days after the snapshot", html_of(output$trend_note), fixed = TRUE),
+            "before the lock the funnel says the TLFs are dry runs" = grepl("dry runs", html_of(output$funnel), fixed = TRUE))
   session$setInputs(openq = 120)
-  stopifnot("On watch goes to 4" = output$k_watch == "4", "CP-103 amber" = st()$rag[st()$id == "CP-103"] == "amber")
+  stopifnot("On watch goes to 4" = output$k_watch == "4", "CP-103 amber" = st()$rag[st()$id == "CP-103"] == "amber",
+            "its backlog signal follows the what-if and turns red" =
+              identical(sg()$sev[sg()$who == "CP-103" & sg()$title == "Query backlog rising"], "red") &&
+              grepl("^13 signals: 6 red, 7 amber", output$signals_hdr),
+            "the trend still draws" = plot_ok(output$trend))
   # A slider moved right after a study switch, before the browser has applied the sliders' new
   # values, must not write the previous study's values into the new one.
   session$setInputs(reset = 1)
@@ -136,7 +149,7 @@ unlink(dirname(tmp), recursive = TRUE)
 tmp <- app_copy(function(dd) {
   rd <- function(f) utils::read.csv(file.path(dd, f), stringsAsFactors = FALSE)
   wr <- function(x, f) utils::write.csv(x, file.path(dd, f), row.names = FALSE)
-  s <- rd("studies.csv"); s$phase <- "Conduct"; s$days_to_dbl <- 90L; wr(s, "studies.csv")
+  s <- rd("studies.csv"); s$phase <- "Conduct"; s$days_to_dbl <- 90L; s$open_queries <- 5L; wr(s, "studies.csv")
   m <- rd("milestones.csv"); m$status <- "done"; wr(m[m$study_id != "CP-108", ], "milestones.csv")
   q <- rd("query_trend.csv"); q$open_queries <- 5L; wr(q[q$study_id != "CP-108", ], "query_trend.csv")
   dl <- rd("deliverables.csv"); wr(dl[dl$study_id != "CP-108", ], "deliverables.csv")
