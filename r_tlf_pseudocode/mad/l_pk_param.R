@@ -57,7 +57,7 @@ ttl <- tfl_titles(num = "16.2.11.2", type = "Listing",
                 "Units per analysis dataset. Participants grouped by dose cohort (TRT01A).",
                 "MAD: Day 1 = single-dose parameters; Day N = steady-state parameters",
                 "(AUCtau, Cmax,ss, Cmin,ss, Ctrough, CL/F,ss, PTF) + accumulation ratios (Rac).",
-                "AUCinf shown only when %AUCextrap acceptable per SOP."))
+                "AUCinf shown only when %AUCextrap acceptable per the study's SOPs."))
 
 ## render: blocks by dose cohort -> participant (page break), rows = dosing day,
 ##         columns = parameters above. listings::create_listing(...) or gt::gt(wide)

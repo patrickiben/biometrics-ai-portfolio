@@ -5,7 +5,7 @@
 # INPUT     : ADPC (PARAMCD = analyte concentration; ATPTN nominal sampling time)
 # NOTE      : PSEUDOCODE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max
 #             per dose cohort x nominal time. Geometric stats on the LOG scale
-#             (pkstats). BLQ handled per SOP (count + rule), excluded from geo
+#             (pkstats). BLQ handled per the study's SOPs (count + rule), excluded from geo
 #             stats (x > 0). SAD = parallel cohorts: column = TRT01A = dose level
 #             (one treatment / participant, single dose -> no accumulation). Placebo
 #             often pooled across cohorts. Descriptive only -- no inferential test.
@@ -20,7 +20,7 @@ pc <- adam$adpc %>%
   mutate(blq = (AVAL <= 0 | toupper(coalesce(AVALC, "")) == "BLQ"))
 by <- c(dv$trtvar, "PARAM", "ATPTN", "ATPT")            # dose cohort x analyte x nominal time
 
-## --- BLQ accounting (reported separately; per SOP first/middle/last rule) ---
+## --- BLQ accounting (reported separately; per the study's SOPs first/middle/last rule) ---
 blq_n <- pc %>% group_by(across(all_of(by))) %>%
   summarise(n_total = n_distinct(USUBJID),
             n_blq   = sum(blq), .groups = "drop")

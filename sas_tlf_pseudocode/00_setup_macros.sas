@@ -7,7 +7,7 @@
 *             ADIS, ADEX). CDISC ADaM IG-conformant.
 * CONVENTION: All population flags, treatment, period and analysis variables
 *             come from ADaM (no re-derivation in TLF code). Reported numbers
-*             come from validated ADaM + this code; double-program per SOP.
+*             come from validated ADaM + this code; double-program per the study's SOPs.
 ******************************************************************************/
 
 /*--- environment ---------------------------------------------------------*/

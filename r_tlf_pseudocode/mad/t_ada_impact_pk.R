@@ -22,7 +22,7 @@
 #             model (slope beta with 90% CI vs the 0.80/1.25 critical region)
 #             shows whether the steady-state exposure-dose slope is perturbed by
 #             ADA. Descriptive only (subgroup n typically small); no formal
-#             ADA x exposure test. Reported PK = validated PK tool per SOP.
+#             ADA x exposure test. Reported PK = validated PK tool per the study's SOPs.
 ################################################################################
 source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
@@ -76,7 +76,7 @@ tab <- gx %>%
 ## Report slope beta + 90% CI vs the critical region betaL/betaH from the dose
 ## ratio r = max/min dose (0.80/1.25 acceptance bounds). Flags whether ADA
 ## perturbs the steady-state exposure-dose relationship. Descriptive support;
-## reported model = validated PK tool per SOP.
+## reported model = validated PK tool per the study's SOPs.
 dp_by_ada <- pp %>%
   filter(pgroup == "Steady-state exposure", dose > 0, AVAL > 0) %>%
   group_by(PARAMCD, PARAM, ADA) %>%

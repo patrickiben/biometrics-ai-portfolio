@@ -11,7 +11,7 @@
 #             ADPD, ADIS, ADEX), CDISC ADaM-conformant.
 # CONVENTION: All population flags, treatment, period and analysis variables
 #             come from ADaM (no re-derivation). Reported numbers come from
-#             validated tools (Phoenix WinNonlin, Pinnacle 21, EDC) per SOP;
+#             validated systems per the study's SOPs (Pinnacle 21 checks conformance only);
 #             nothing here originates a reported number.
 ################################################################################
 

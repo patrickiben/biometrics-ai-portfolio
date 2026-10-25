@@ -66,7 +66,7 @@
     table.t th{background:#eef0f3 !important} table.t th,table.t td{border-color:#dde !important}
     .wnum{background:#caa24a !important;color:#241500 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .ways,#skb,#try>p,#try>h2+p,.skb-reset,.copybtn,.tools,footer,.checklist li::before,.checklist li::after{display:none !important}
-    #try>h2::after{content:" (interactive — omitted in print)";font-size:12px;color:#777;font-weight:400}
+    #try>h2::after{content:" (interactive: omitted in print)";font-size:12px;color:#777;font-weight:400}
     .shot,.wstep,.glance .g,table.t,.note,.warn{break-inside:avoid}
     .badge{color:#333 !important;background:#eee !important;border-color:#ccc !important}
     h2{break-after:avoid}
@@ -75,14 +75,14 @@
 </style></head><body><div class="wrap">
 
 <header class="hero">
-  <div class="home"><a href="../START_HERE.html">&larr; Program home</a></div>
+  <div class="home"><a href="../index.html">&larr; Home</a></div>
   <h1>R TLF Pseudocode Library <span class="badge">217 TLF SCRIPTS</span></h1>
-  <p class="sub">ADaM-based R pseudocode for every Table, Listing, and Figure in an early-phase clinical-pharmacology study &mdash; a complete separate set per study design, on the pharmaverse stack (<code>dplyr</code>/<code>tidyr</code>/<code>rtables</code>/<code>ggplot2</code>/<code>emmeans</code>/<code>lme4</code>).</p>
+  <p class="sub">ADaM-based R pseudocode for every Table, Listing, and Figure in an early-phase clinical-pharmacology study: a complete separate set per study design, written with <code>dplyr</code>, <code>tidyr</code>, <code>rtables</code>, <code>ggplot2</code>, <code>emmeans</code> and <code>lme4</code>.</p>
 </header>
 
-<div class="warn"><strong>Status &mdash; illustrative pseudocode / skeleton, NOT validated production software.</strong> These scripts show derivation and layout logic for spec writing and double-programming. Every reported number comes only from validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, EDC) per SOP &mdash; nothing here originates a reported value, and no number is ever produced by an LLM.</div>
+<div class="warn"><strong>Status: pseudocode, parse-checked only.</strong> Every script parses under R 4.6.0; none has yet been run on data, and this is not validated production software. The scripts show derivation and layout logic for specification writing and double programming. Nothing here originates a reported value, and no number is produced by an LLM. In a study, reported numbers come from validated, double-programmed SAS/R TLF programs on ADaM; NCA from Phoenix WinNonlin (version per ADRG, currently 8.8) or PKNCA; CDISC conformance is checked with Pinnacle 21 (FDA engine 2304.3), which produces no reported numbers.</div>
 
-<p>R twin of <code>../sas_tlf_pseudocode/</code>. The higher-level <strong>pharmaverse</strong> path (<code>admiral</code> for ADaM, <code>tern</code> for pre-built TLF layouts) is the production route; this library shows the underlying logic explicitly. R runs laptop-only per SOP.</p>
+<p>R twin of <code>../sas_tlf_pseudocode/</code>. It does not use the pharmaverse production packages (<code>admiral</code> 1.5.0 for ADaM; <code>tern</code> 0.9.13 with <code>rtables</code> 0.6.17 for TLF layouts); it shows the underlying logic explicitly.</p>
 
 <div class="ways">
   <a href="#run">▶ Run it</a>
@@ -93,7 +93,7 @@
   <a href="#browse">💻 Browse the code</a>
 </div>
 
-<div class="note"><strong>Before you start, you'll need:</strong> <strong>R&nbsp;4.2+</strong> (with <code>Rscript</code> on your <code>PATH</code>) &nbsp;·&nbsp; the pharmaverse-style packages each script <code>library()</code>s &mdash; <code>dplyr</code>, <code>tidyr</code>, <code>stringr</code>, <code>purrr</code>, <code>tibble</code>, <code>rtables</code>, <code>ggplot2</code>, <code>emmeans</code>, <code>lme4</code>, <code>broom</code>, <code>broom.mixed</code> (plus <code>haven</code> to read <code>.xpt</code>/<code>.sas7bdat</code> ADaM) &nbsp;·&nbsp; read access to your study's <strong>ADaM</strong> datasets (ADSL, ADAE, ADLB, ADVS, ADEG, ADPC, ADPP, ADPD, ADIS, ADEX), CDISC-conformant &nbsp;·&nbsp; about <strong>5 minutes</strong> to point one script at your data. No internet needed once the packages are installed. <span class="mini">These are <strong>illustrative pseudocode skeletons</strong>: <code>setup()</code> defaults to placeholder paths (<code>/data/adam</code>) and assumes ADaM frames are loaded as tibbles &mdash; you wire in your real read step before a script produces output.</span></div>
+<div class="note"><strong>Before you start, you'll need:</strong> <strong>R&nbsp;4.4.0 or later</strong> (parse-checked on R 4.6.0; <code>Rscript</code> on your <code>PATH</code>) &nbsp;·&nbsp; the packages each script loads with <code>library()</code> (<code>dplyr</code>, <code>tidyr</code>, <code>stringr</code>, <code>purrr</code>, <code>tibble</code>, <code>rtables</code>, <code>ggplot2</code>, <code>emmeans</code>, <code>lme4</code>, <code>broom</code>, <code>broom.mixed</code>, plus <code>haven</code> to read <code>.xpt</code>/<code>.sas7bdat</code> ADaM) &nbsp;·&nbsp; read access to your study's <strong>ADaM</strong> datasets (ADSL, ADAE, ADLB, ADVS, ADEG, ADPC, ADPP, ADPD, ADIS, ADEX), CDISC-conformant &nbsp;·&nbsp; about <strong>5 minutes</strong> to point one script at your data. No internet needed once the packages are installed. <span class="mini">These are <strong>illustrative pseudocode skeletons</strong>: <code>setup()</code> defaults to placeholder paths (<code>/data/adam</code>) and assumes ADaM frames are loaded as tibbles; you wire in your real read step before a script produces output.</span></div>
 
 <h2 id="run">Run it</h2>
 <p>Each script <code>source()</code>s <code>00_setup_helpers.R</code> (it expects to be run with the design folder as the working directory, e.g. <code>parallel/</code>), calls <code>setup()</code>, gets <code>dv &lt;- design_vars("&lt;DESIGN&gt;")</code>, then builds one TLF. <strong>Install the packages once</strong>, then <code>Rscript</code> a program.</p>
@@ -102,31 +102,31 @@
 <p><strong>① Install the packages once</strong> (CRAN; needs internet for this step only):</p>
 <pre><code>Rscript -e 'install.packages(c("dplyr","tidyr","stringr","purrr","tibble","rtables","ggplot2","emmeans","lme4","broom","broom.mixed","haven"))'</code></pre>
 
-<p><strong>② Run a program</strong> &mdash; <code>cd</code> into the design folder first so the relative <code>source("../00_setup_helpers.R")</code> resolves, then:</p>
+<p><strong>② Run a program</strong>: <code>cd</code> into the design folder first so the relative <code>source("../00_setup_helpers.R")</code> resolves, then:</p>
 <pre><code>cd parallel
 Rscript t_demographics.R</code></pre>
 
-<p><strong>Quick-start checklist</strong> &mdash; click each as you finish it:</p>
+<p><strong>Quick-start checklist</strong>: click each as you finish it:</p>
 <ul class="checklist" id="qsc">
-  <li><span>Confirm <code>Rscript --version</code> works (R 4.2+ on your <code>PATH</code>)</span></li>
+  <li><span>Confirm <code>Rscript --version</code> works (R 4.4.0 or later on your <code>PATH</code>)</span></li>
   <li><span>Install the packages once (the <code>install.packages(...)</code> line above)</span></li>
   <li><span>Edit <code>setup()</code> / the read step so it loads <em>your</em> ADaM (e.g. <code>haven::read_xpt</code>) instead of the placeholder paths</span></li>
   <li><span>Pick the right design folder (<code>parallel/</code>, <code>crossover/</code>, <code>single_sequence/</code>, <code>sad/</code>, <code>mad/</code>) and the TLF script you need</span></li>
   <li><span><code>cd</code> into that design folder, then <code>Rscript &lt;script&gt;.R</code></span></li>
-  <li><span>Compare the output against the validated tool &mdash; this is pseudocode, never the reported source</span></li>
+  <li><span>Compare the output against the validated tool: this is pseudocode, never the reported source</span></li>
 </ul>
 <div class="tools">
   <button type="button" onclick="window.print()">🖨 Print / save as PDF</button>
   <button type="button" id="qscReset">↺ Reset checklist</button>
 </div>
 
-<div class="note"><strong>Parse-only sanity check.</strong> Every script in the library parses under <code>Rscript</code> as shipped. To confirm a script is syntactically intact without touching data, parse it without executing:
+<div class="note"><strong>Parse-only sanity check.</strong> Every script in the library parses under <code>Rscript</code> (checked with R 4.6.0 on 2026-10-24). To confirm a script is syntactically intact without touching data, parse it without executing:
 <pre><code>Rscript -e 'invisible(parse("parallel/t_demographics.R")); cat("parses OK\n")'</code></pre></div>
 
 <h2 id="stack">Stack</h2>
 <p><code>dplyr</code>/<code>tidyr</code>/<code>purrr</code> (derivation) &middot; <code>rtables</code> (regulatory table layout) &middot; <code>ggplot2</code> (figures) &middot; <code>emmeans</code> + <code>lme4</code>/<code>nlme</code> (mixed models / BE) &middot; <code>broom</code>/<code>broom.mixed</code> (tidy model output).</p>
 
-<h2 id="designs">Designs (one folder each &mdash; full set per design)</h2>
+<h2 id="designs">Designs (one folder each: full set per design)</h2>
 <table class="t">
   <thead><tr><th>Folder</th><th>Design</th><th>Key analysis differences</th></tr></thead>
   <tbody>
@@ -155,13 +155,13 @@ Rscript t_demographics.R</code></pre>
 <h3>Disposition / Demographics / Exposure (ADSL, ADEX, ADCM, ADMH)</h3>
 <p><code>t_disposition</code> &middot; <code>t_demographics</code> &middot; <code>t_baseline_characteristics</code> &middot; <code>t_exposure</code> &middot; <code>t_protocol_deviations</code> &middot; <code>t_prior_con_meds</code> &middot; <code>t_medical_history</code> &middot; <code>l_disposition</code></p>
 
-<h3>Safety &mdash; AE (ADAE)</h3>
+<h3>Safety: AE (ADAE)</h3>
 <p><code>t_ae_overview</code> &middot; <code>t_ae_by_soc_pt</code> &middot; <code>t_ae_by_severity</code> &middot; <code>t_ae_by_relationship</code> &middot; <code>t_ae_sae_death_withdrawal</code> &middot; <code>l_ae</code> &middot; <code>l_sae_death</code></p>
 
-<h3>Safety &mdash; Labs (ADLB)</h3>
+<h3>Safety: Labs (ADLB)</h3>
 <p><code>t_lab_summary</code> &middot; <code>t_lab_shift</code> &middot; <code>t_lab_marked_abnormal</code> &middot; <code>f_lab_lft_scatter</code> &middot; <code>f_lab_change</code> &middot; <code>l_lab_abnormal</code></p>
 
-<h3>Safety &mdash; Vitals / ECG (ADVS, ADEG)</h3>
+<h3>Safety: Vitals / ECG (ADVS, ADEG)</h3>
 <p><code>t_vitals_summary</code> &middot; <code>f_vitals_change</code> &middot; <code>l_vitals</code> &middot; <code>t_ecg_summary</code> &middot; <code>t_ecg_qtc_categorical</code> &middot; <code>f_qtc_change</code> &middot; <code>l_ecg</code></p>
 
 <h3>PK (ADPC, ADPP)</h3>
@@ -178,22 +178,22 @@ Rscript t_demographics.R</code></pre>
 
 <h3>House rules baked in (the same correctness lessons as the SAS twin)</h3>
 <ul>
-  <li><strong>Geometric PK stats on the log scale</strong>: <code>geomean = exp(mean(log(x)))</code>, <code>geocv = 100*sqrt(exp(var(log(x)))-1)</code> &mdash; never <code>exp(mean(raw))</code>.</li>
+  <li><strong>Geometric PK stats on the log scale</strong>: <code>geomean = exp(mean(log(x)))</code>, <code>geocv = 100*sqrt(exp(var(log(x)))-1)</code>, never <code>exp(mean(raw))</code>.</li>
   <li><strong>Tmax = Median (Min, Max) only.</strong></li>
   <li><strong>Safety/AE counts = distinct participants</strong> (<code>n_distinct(USUBJID)</code>), not event rows; <code>%</code> denominator = population N per column from <code>bign()</code>.</li>
   <li><strong>Per-period denominators come from a period-bearing source</strong> (ADEX/ADIS/ADPD), NOT one-row-per-participant ADSL.</li>
   <li><strong>Single-sequence participant-level tables key on <code>dv$seqvar</code>/<code>dv$seqvarn</code></strong>; period tables use <code>dv$byperiod</code>.</li>
   <li><strong>Lab "worst" category = furthest from NORMAL</strong>, with missing-limit guards (<code>!is.na(A1HI)</code> etc.).</li>
-  <li><strong>No "eDISH" / "Hy's Law" terminology</strong> &mdash; neutral liver-safety scatter ("Max ALT vs Total Bilirubin, &times;ULN").</li>
+  <li><strong>No "eDISH" / "Hy's Law" terminology</strong>: neutral liver-safety scatter ("Max ALT vs Total Bilirubin, &times;ULN").</li>
 </ul>
 
 <h2>ADaM variables relied on (no re-derivation)</h2>
 <p>Treatment <code>TRT01A/TRT01AN</code> (parallel) &middot; <code>TRTA/TRTAN</code>+<code>APERIOD/APERIODC</code>+<code>TRTSEQP/TRTSEQPN</code> (crossover/seq); populations <code>SAFFL/PKFL/ITTFL</code>; analysis <code>PARAMCD/AVAL/CHG/PCHG/BASE/AVISIT/ATPTN/ANRIND/BNRIND/A1HI/A1LO/R2ULN</code>; AE <code>TRTEMFL/AESOC/AEDECOD/AESEVN/AREL/AESER/AESDTH/AEACN</code>; PK <code>ADPC AVAL=conc</code>, <code>ADPP PARAMCD=Cmax/Tmax/AUClast/AUCinf/CL/Vz/Rac</code>.</p>
 
 <h2>Status</h2>
-<p>Complete: <strong>217 TLF scripts</strong> across all five design folders + <code>00_setup_helpers.R</code>. Built mirroring the SAS twin with all its QC fixes pre-applied, then re-QC'd (6 family reviewers &rarr; per-finding verification: 24 findings, <strong>14 confirmed P0/P1 fixed</strong>, 0 false-positives), then a deterministic sweep. <strong>All 218 scripts parse under <code>Rscript</code></strong>, <code>design_vars()</code> matches every folder, geometric PK stats compute on the log scale, AE/safety counts are distinct participants, single-sequence participant-level tables key on <code>dv$seqvar</code>, period tables denominate from a period-bearing source, exposure uses ADaM <code>AVAL</code>/<code>TRTDURD</code>/<code>NDOSES</code> (no <code>*DTC</code> arithmetic), and the library is free of <code>eDISH</code>/<code>Hy's Law</code> terminology.</p>
+<p>Complete: <strong>217 TLF scripts</strong> across all five design folders + <code>00_setup_helpers.R</code>. Generated with AI assistance to mirror the SAS twin, then reviewed by an AI-agent panel (six reviewers by program family, then per-finding verification: 24 findings, <strong>14 confirmed P0/P1 issues fixed</strong>), then a deterministic sweep. Human sign-off is pending (see the <a href="../validation_harness/index.html">validation ledger</a>). <strong>All 218 scripts parse under <code>Rscript</code> (R 4.6.0); none has been run on data</strong>, so these checks are static: <code>design_vars()</code> matches every folder, geometric PK stats compute on the log scale, AE/safety counts are distinct participants, single-sequence participant-level tables key on <code>dv$seqvar</code>, period tables denominate from a period-bearing source, exposure uses ADaM <code>AVAL</code>/<code>TRTDURD</code>/<code>NDOSES</code> (no <code>*DTC</code> arithmetic), and the library is free of <code>eDISH</code>/<code>Hy's Law</code> terminology.</p>
 
-<div class="note">Pseudocode for spec / double-programming. Reported numbers still come from validated tools per SOP; an LLM never sources a number.</div>
+<div class="note">Pseudocode for specification and double programming. Reported numbers come from validated, double-programmed programs per the study&rsquo;s SOPs; an LLM never sources a number.</div>
 
 <h2 id="trouble">Troubleshooting</h2>
 <table class="t">
@@ -201,17 +201,17 @@ Rscript t_demographics.R</code></pre>
   <tbody>
     <tr>
       <td><code>Error in library(rtables) : there is no package called 'rtables'</code> (or <code>dplyr</code>, <code>emmeans</code>, <code>lme4</code>&hellip;)</td>
-      <td>The pharmaverse packages each script <code>library()</code>s aren't installed in this R library.</td>
+      <td>The packages each script loads with <code>library()</code> aren't installed in this R library.</td>
       <td>Run the <code>install.packages(...)</code> line in <a href="#run">Run it</a> once. Needs internet for that step. Confirm with <code>Rscript -e 'library(rtables)'</code>.</td>
     </tr>
     <tr>
       <td><code>cannot open file '../00_setup_helpers.R': No such file or directory</code></td>
       <td>You ran the script from the wrong directory; the <code>source("../00_setup_helpers.R")</code> path is relative to the design folder.</td>
-      <td><code>cd</code> into the design folder (<code>parallel/</code>, <code>crossover/</code>, etc.) first, then <code>Rscript &lt;script&gt;.R</code> &mdash; so <code>../</code> points back at the shared helper.</td>
+      <td><code>cd</code> into the design folder (<code>parallel/</code>, <code>crossover/</code>, etc.) first, then <code>Rscript &lt;script&gt;.R</code>, so <code>../</code> points back at the shared helper.</td>
     </tr>
     <tr>
       <td><code>object 'adam' not found</code> / <code>object 'adsl' not found</code></td>
-      <td>These are pseudocode skeletons: <code>setup()</code> uses placeholder paths and assumes the ADaM frames are already loaded as tibbles &mdash; nothing actually reads your data yet.</td>
+      <td>These are pseudocode skeletons: <code>setup()</code> uses placeholder paths and assumes the ADaM frames are already loaded as tibbles; nothing actually reads your data yet.</td>
       <td>Wire in your real read step (e.g. <code>adsl &lt;- haven::read_xpt(file.path(env$adam,"adsl.xpt"))</code>) and point <code>adam</code>/<code>out</code> at your study's ADaM and output paths before expecting output.</td>
     </tr>
     <tr>
@@ -231,13 +231,13 @@ Rscript t_demographics.R</code></pre>
     </tr>
     <tr>
       <td><code>boundary (singular) fit</code> warning from <code>t_be_anova</code> (crossover / single-seq)</td>
-      <td><code>lmer</code> can't estimate a random effect (too few sequences/periods or a near-degenerate design) &mdash; expected on small or illustrative data.</td>
+      <td><code>lmer</code> can't estimate a random effect (too few sequences/periods or a near-degenerate design): expected on small or illustrative data.</td>
       <td>It's a warning, not a failure. On real BE data confirm the model spec against the SAP; the reported GMR + 90% CI still comes from the validated tool, not this skeleton.</td>
     </tr>
     <tr>
       <td>Numbers from a script land in a regulatory deliverable</td>
-      <td>This library is illustrative pseudocode for spec writing / double-programming &mdash; it is not validated and never the reported source.</td>
-      <td>Reported and regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, EDC) per SOP. An LLM never sources a number.</td>
+      <td>This library is illustrative pseudocode for spec writing / double-programming: it is not validated and never the reported source.</td>
+      <td>In a study, reported numbers come from validated, double-programmed SAS/R TLF programs on ADaM; NCA from Phoenix WinNonlin (version per ADRG, currently 8.8) or PKNCA; CDISC conformance is checked with Pinnacle 21 (FDA engine 2304.3), which produces no reported numbers. An LLM never sources a number.</td>
     </tr>
   </tbody>
 </table>
@@ -249,7 +249,7 @@ Rscript t_demographics.R</code></pre>
   <a href="00_setup_helpers.R"><code>00_setup_helpers.R</code><span class="d">setup() &middot; design_vars() &middot; bign() helpers</span></a>
 </div>
 
-<h3>parallel/ &mdash; Parallel-group <span class="badge">42 SCRIPTS</span></h3>
+<h3>parallel/: Parallel-group <span class="badge">42 SCRIPTS</span></h3>
 <div class="files">
   <a href="parallel/t_disposition.R"><code>t_disposition.R</code></a>
   <a href="parallel/t_demographics.R"><code>t_demographics.R</code></a>
@@ -295,7 +295,7 @@ Rscript t_demographics.R</code></pre>
   <a href="parallel/l_ada.R"><code>l_ada.R</code></a>
 </div>
 
-<h3>crossover/ &mdash; Crossover (2&times;2, Williams) <span class="badge">44 SCRIPTS</span></h3>
+<h3>crossover/: Crossover (2&times;2, Williams) <span class="badge">44 SCRIPTS</span></h3>
 <div class="files">
   <a href="crossover/t_disposition.R"><code>t_disposition.R</code></a>
   <a href="crossover/t_demographics.R"><code>t_demographics.R</code></a>
@@ -343,7 +343,7 @@ Rscript t_demographics.R</code></pre>
   <a href="crossover/l_ada.R"><code>l_ada.R</code></a>
 </div>
 
-<h3>single_sequence/ &mdash; Single-/fixed-sequence (DDI) <span class="badge">44 SCRIPTS</span></h3>
+<h3>single_sequence/: Single-/fixed-sequence (DDI) <span class="badge">44 SCRIPTS</span></h3>
 <div class="files">
   <a href="single_sequence/t_disposition.R"><code>t_disposition.R</code></a>
   <a href="single_sequence/t_demographics.R"><code>t_demographics.R</code></a>
@@ -391,7 +391,7 @@ Rscript t_demographics.R</code></pre>
   <a href="single_sequence/l_ada.R"><code>l_ada.R</code></a>
 </div>
 
-<h3>sad/ &mdash; Single Ascending Dose <span class="badge">43 SCRIPTS</span></h3>
+<h3>sad/: Single Ascending Dose <span class="badge">43 SCRIPTS</span></h3>
 <div class="files">
   <a href="sad/t_disposition.R"><code>t_disposition.R</code></a>
   <a href="sad/t_demographics.R"><code>t_demographics.R</code></a>
@@ -438,7 +438,7 @@ Rscript t_demographics.R</code></pre>
   <a href="sad/l_ada.R"><code>l_ada.R</code></a>
 </div>
 
-<h3>mad/ &mdash; Multiple Ascending Dose <span class="badge">44 SCRIPTS</span></h3>
+<h3>mad/: Multiple Ascending Dose <span class="badge">44 SCRIPTS</span></h3>
 <div class="files">
   <a href="mad/t_disposition.R"><code>t_disposition.R</code></a>
   <a href="mad/t_demographics.R"><code>t_demographics.R</code></a>
@@ -487,7 +487,7 @@ Rscript t_demographics.R</code></pre>
 </div>
 
 <footer>
-  R TLF Pseudocode Library &mdash; 218 R scripts (217 TLF + <code>00_setup_helpers.R</code>) across parallel / crossover / single_sequence / sad / mad. Pharmaverse-style pseudocode for spec writing and double-programming; not validated software. Reported numbers come only from validated tools per SOP &mdash; never from an LLM. Participant-level analysis throughout.
+  R TLF Pseudocode Library: 218 R scripts (217 TLF + <code>00_setup_helpers.R</code>) across parallel / crossover / single_sequence / sad / mad. Pseudocode for specification writing and double programming; parse-checked, not executed, not validated. Reported numbers come from validated systems, never from an LLM. Participant-level analysis throughout. <a href="../index.html">&larr; Home</a>
 </footer>
 
 </div>
