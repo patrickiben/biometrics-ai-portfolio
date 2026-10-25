@@ -5,7 +5,7 @@
 # a ranked worklist, the eDISH plot (click a point to open that participant), QTcF
 # categories, CTCAE lab shifts, adverse events by SOC and PT, the DLT tally against an
 # illustrative 3+3 rule, and a study tier of operational indicators with a what-if.
-# Every level rolls up worst-of. The console flags; the medical monitor and the
+# Every level rolls up worst-of, watch included. The console flags; the medical monitor and the
 # committee decide, and it never makes a dose-escalation decision.
 #
 # Shinylive-ready: all data sit in data/, the packages are shiny, bslib, DT and ggplot2,
@@ -36,7 +36,7 @@ SEV_CSS <- "
 [data-bs-theme=dark] .sev-watch{color:#9cc3ea}[data-bs-theme=dark] .sev-GREEN{color:#8fd8a8}
 .packet dt{font-weight:600;margin-top:.4rem}.packet dd{margin:0}
 .foot{font-size:.85rem;color:var(--bs-secondary-color)}
-.tm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:.5rem;margin:.5rem 0 .9rem}
+.tm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:.5rem;margin:.5rem 0 .9rem}
 .tm-kpi{border:1px solid var(--bs-border-color);border-radius:.5rem;padding:.45rem .75rem;background:var(--bs-body-bg)}
 .tm-kpi .k{font-size:.8rem;color:var(--bs-secondary-color);line-height:1.2}
 .tm-kpi .v{font-size:1.35rem;font-weight:700;line-height:1.4}"
@@ -67,13 +67,14 @@ ui <- page_sidebar(
   p(class = "small mb-2",
     "Synthetic study CP-101: a first-in-human multiple ascending dose study at the Cohort 4 (120 mg) data cut. ",
     "The console flags positions for the medical monitor and the Safety Review Committee; it does not adjudicate ",
-    "DLTs or Hy's Law cases and makes no dose-escalation decision. Every tier rolls up worst-of."),
+    "DLTs or Hy's Law cases and makes no dose-escalation decision. Every tier rolls up worst-of, watch included."),
   div(class = "tm-kpis",
     kpi("Overall (worst-of)", uiOutput("v_overall", inline = TRUE)),
     kpi("Participants and cohorts", uiOutput("v_part", inline = TRUE)),
     kpi("Study tier", uiOutput("v_study", inline = TRUE)),
     kpi("RED flags", textOutput("v_red", inline = TRUE)),
     kpi("AMBER flags", textOutput("v_amber", inline = TRUE)),
+    kpi("Watch", textOutput("v_watch", inline = TRUE)),
     kpi("Dosed participants", textOutput("v_n", inline = TRUE))
   ),
   navset_card_tab(
@@ -154,6 +155,7 @@ server <- function(input, output, session) {
   output$v_study <- renderUI(sev_span(roll()$study))
   output$v_red <- renderText(roll()$red)
   output$v_amber <- renderText(roll()$amber)
+  output$v_watch <- renderText(roll()$watch)
   output$v_n <- renderText(nrow(tm$adsl))
 
   output$worklist <- renderDT({

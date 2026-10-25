@@ -32,6 +32,7 @@ test_that("opening the app with its initial inputs changes no indicator", {
     expect_identical(study(), S0)
     expect_equal(roll()$overall, "RED")
     expect_equal(roll()$study, "AMBER")
+    expect_equal(roll()$watch, 2)
   })
 })
 

@@ -29,7 +29,8 @@
 #     AMBER > 480 or change > 30; watch > 450.
 #   Lab grades: NCI CTCAE v6.0 by default, v5.0 when the protocol says so (ctcae_grade()).
 #   DLT tally against 3+3, shown only as an illustrative rule reference (tpt_state()).
-#   Roll-up: worst-of at every level (participant, cohort, study tier, overall). Never an average.
+#   Roll-up: worst-of at every level (participant, cohort, study tier, overall), watch included.
+#     Never an average.
 # ---------------------------------------------------------------------------
 
 SEV_LEVELS <- c("GREEN", "watch", "AMBER", "RED")
@@ -419,9 +420,11 @@ trialmon_worklist <- function(tm, settings = trialmon_settings(), study = NULL) 
         "repeat ALT, AST, ALP and TBL within 48 to 72 hours")
   }
   q <- qtc_screen(tm$adeg)
-  for (j in which(q$sev %in% c("RED", "AMBER"))) add("Participant", q$USUBJID[j], q$sev[j], "QTcF (ICH E14 categories)",
+  qrule <- c(RED = "QTcF > 500 ms or change > 60 ms", AMBER = "QTcF > 480 ms or change > 30 ms",
+             watch = "QTcF > 450 ms (watch)")
+  for (j in which(q$sev %in% names(qrule))) add("Participant", q$USUBJID[j], q$sev[j], "QTcF (ICH E14 categories)",
       sprintf("%d ms on Day %d (baseline %d; change %d ms)", q$max_qtcf[j], q$max_day[j], q$base[j], q$max_chg[j]),
-      if (q$sev[j] == "RED") "QTcF > 500 ms or change > 60 ms" else "QTcF > 480 ms or change > 30 ms")
+      qrule[[q$sev[j]]])
   g <- lab_grades(tm$adlb, settings$ctcae)
   g <- g[g$PARAMCD %in% c("CREAT", "HGB", "NEUT", "PLAT") & !is.na(g$WGRADE) & g$WGRADE >= 3 & g$WGRADE > g$BGRADE, ]
   for (j in seq_len(nrow(g))) add("Participant", g$USUBJID[j], if (g$WGRADE[j] >= 4) "RED" else "AMBER",
@@ -448,20 +451,21 @@ trialmon_worklist <- function(tm, settings = trialmon_settings(), study = NULL) 
 # worst-of per participant (for the roster, the eDISH colors and the packet)
 participant_status <- function(tm, settings = trialmon_settings()) {
   wl <- trialmon_worklist(tm, settings)
-  q <- qtc_screen(tm$adeg)
   ids <- tm$adsl$USUBJID
   data.frame(USUBJID = ids, status = vapply(ids, function(i)
-    worst(c(wl$sev[wl$tier == "Participant" & wl$id == i], q$sev[q$USUBJID == i])), character(1)),
+    worst(wl$sev[wl$tier == "Participant" & wl$id == i]), character(1)),
     stringsAsFactors = FALSE, row.names = NULL)
 }
 
-# tiers and overall status: the worst level present wins, so one RED is never diluted
+# tiers and overall status: the worst level present wins, so one RED is never diluted, and a
+# participant at watch keeps the participant tier off GREEN
 trialmon_rollup <- function(tm, settings = trialmon_settings(), study = NULL) {
   wl <- trialmon_worklist(tm, settings, study)
   part <- worst(wl$sev[wl$tier %in% c("Participant", "Cohort")])
   stdy <- worst(wl$sev[wl$tier == "Study"])
   list(participant = part, study = stdy, overall = worst(c(part, stdy)),
-       red = sum(wl$sev == "RED"), amber = sum(wl$sev == "AMBER"), worklist = wl)
+       red = sum(wl$sev == "RED"), amber = sum(wl$sev == "AMBER"), watch = sum(wl$sev == "watch"),
+       worklist = wl)
 }
 
 trialmon_kpis <- function(tm) {

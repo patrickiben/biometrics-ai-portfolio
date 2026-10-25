@@ -51,6 +51,9 @@ test_that("QTcF screens: CP101-018 RED, CP101-006 AMBER, CP101-011 and -012 watc
   expect_equal(unname(s[c("CP101-018", "CP101-006", "CP101-011", "CP101-012")]), c("RED", "AMBER", "watch", "watch"))
   expect_equal(sum(q$gt500), 1)
   expect_equal(sum(q$base450), 2)
+  w <- wl[wl$sev == "watch", ]                       # watch is a worklist row, so it reaches the roll-up
+  expect_equal(sort(w$id), c("CP101-011", "CP101-012"))
+  expect_true(all(w$rule == "QTcF > 450 ms (watch)"))
 })
 
 test_that("DLT tally: C3 is 1 of 6, C4 is 1 of 6 with CP101-018 pending adjudication", {
@@ -101,7 +104,9 @@ test_that("the study tier carries the former risk console's indicators, with no 
 test_that("overall status and tiers", {
   r <- trialmon_rollup(TM)
   expect_equal(c(r$participant, r$study, r$overall), c("RED", "AMBER", "RED"))
+  expect_equal(c(r$red, r$amber, r$watch), c(sum(wl$sev == "RED"), sum(wl$sev == "AMBER"), 2))
   expect_equal(wl$sev[1], "RED")
+  expect_equal(tail(wl$sev, 2), c("watch", "watch"))
   expect_true(all(diff(sev_rank(wl$sev)) <= 0))     # ranked RED first
 })
 
