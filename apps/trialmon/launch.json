@@ -1,14 +1,16 @@
 {
   "source": "sasr_monitoring_wiki/trialmon_shiny",
   "title": "TRIALMON safety review console",
-  "summary": "A one-screen safety review of a synthetic first-in-human multiple ascending dose study, CP-101, at its Cohort 4 (120 mg) data cut with 18 dosed participants. Participant, cohort and study-level flags roll up worst-of into one ranked worklist, beside an eDISH liver plot, QTcF categories, CTCAE lab shifts, adverse events by system organ class, a DLT tally against an illustrative 3+3 rule and a study tier with a what-if. The console flags positions for the medical monitor and the Safety Review Committee; it does not adjudicate cases or make a dose-escalation decision.",
+  "summary": "A one-screen safety review of a synthetic first-in-human multiple ascending dose study, CP-101, at its Cohort 4 (120 mg) data cut with 18 dosed participants. Participant, cohort and study-level flags roll up worst-of into one ranked worklist, beside an eDISH liver plot, QTcF categories, CTCAE lab shifts, adverse events by system organ class, a DLT tally against an illustrative 3+3 rule and a study tier with a what-if. A Start here card inside the app says what each color means. The console flags positions for the medical monitor and the Safety Review Committee; it does not adjudicate cases or make a dose-escalation decision.",
   "try": [
-    "Click a Participant row in the worklist to open that participant's packet in the sidebar.",
-    "Open Liver (eDISH) and click a point in the upper-right quadrant to see whether the timing makes it a potential Hy's Law case.",
-    "Switch Lab grading between NCI CTCAE v6.0 and v5.0 and watch the lab shifts and the flag counts change.",
-    "On Study tier, set an indicator to RED: the overall level re-rolls worst-of, and Reset to the feed undoes it."
+    "Click a Participant row in the worklist: the sidebar opens that participant's packet.",
+    "Open Liver (eDISH) and click the point in the shaded upper-right box, CP101-014: its liver tests by study day show why it is a potential Hy's Law case.",
+    "Switch Lab grading to v5.0 in the sidebar: CP101-013's neutrophil count becomes grade 3 and the AMBER count rises from 7 to 8.",
+    "On Study tier, set an indicator to RED: the study tier re-rolls worst-of to RED, and Reset to the feed undoes it."
   ],
-  "screenshot": null,
+  "screenshot": {"src": "trialmon-app.webp", "width": 1408, "height": 830,
+                 "alt": "The TRIALMON console in light mode: the Start here card with the meaning of RED, AMBER, watch and GREEN, seven value boxes (overall RED, participants and cohorts RED, study tier AMBER, 5 RED and 7 AMBER flags, 2 watch, 18 dosed participants) and the top of the ranked worklist, with the participant packet for CP101-014 in the sidebar.",
+                 "caption": "The console as it opens: the Start here card, the worst-of value boxes and the ranked worklist. Synthetic data."},
   "links": [
     {"label": "About TRIALMON", "href": "../../sasr_monitoring_wiki/index.html"},
     {"label": "Read-only snapshot", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html"},
@@ -17,8 +19,8 @@
   "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
   "smoke": {
     "timeout_s": 150,
-    "outputs": ["v_overall", "v_part", "v_study", "v_red", "v_amber", "v_watch", "v_n", "worklist", "packet"],
-    "expect": {"v_overall": "RED", "v_study": "AMBER", "v_n": "18"},
+    "outputs": ["v_overall", "v_part", "v_study", "v_red", "v_amber", "v_watch", "v_n", "worklist", "packet", "window_note"],
+    "expect": {"v_overall": "RED", "v_part": "RED", "v_study": "AMBER", "v_red": "5", "v_amber": "7", "v_watch": "2", "v_n": "18"},
     "tabs": [
       {"tab": "Liver (eDISH)", "outputs": ["edish", "traj", "liver_tbl"]},
       {"tab": "Convention grid", "outputs": ["grid_tbl", "grid_note"]},

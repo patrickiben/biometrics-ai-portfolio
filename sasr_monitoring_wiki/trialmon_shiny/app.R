@@ -6,25 +6,39 @@
 # categories, CTCAE lab shifts, adverse events by SOC and PT, the DLT tally against an
 # illustrative 3+3 rule, a study tier of operational indicators with a what-if, and a
 # convention grid that shows whether each potential Hy's Law flag holds under every
-# combination of three SAP conventions. Every level rolls up worst-of, watch included. The console flags; the medical monitor and the
-# committee decide, and it never makes a dose-escalation decision.
+# combination of three SAP conventions. Every level rolls up worst-of, watch included. The
+# console flags; the medical monitor and the committee decide, and it never makes a
+# dose-escalation decision.
 #
-# Shinylive-ready: all data sit in data/, the packages are shiny, bslib, DT and ggplot2,
-# and the CSV download is built in the browser (a Blob), not by a downloadHandler.
+# Shinylive-ready: all data sit in data/, the packages are shiny, bslib and DT (the plots are
+# base graphics), and the CSV download is built in the browser (a Blob), not by a
+# downloadHandler. The look comes from the site's color tokens on the precompiled Bootstrap
+# theme (R/app_view.R), so the browser compiles no Sass. Results that never change while the
+# app runs are computed once at startup; on a fast laptop all of app.R's own computation takes
+# about 0.3 s in the browser, and the rest of the start is R and its packages loading.
 # Run:  shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 # ===========================================================================
-suppressPackageStartupMessages({ library(shiny); library(bslib); library(DT); library(ggplot2) })
+suppressPackageStartupMessages({ library(shiny); library(bslib); library(DT) })
 source(if (file.exists("portfolio_app.R")) "portfolio_app.R" else "../../apps/_shared/portfolio_app.R")  # status, error cards
 warm_up_graphics()   # in the browser, load the plot fonts while the launch page still shows its status
 source("R/logic.R")
 source("R/hyslaw_grid.R")
+source("R/app_view.R")
 if (!file.exists("data/adsl.csv") || !file.exists("data/labs_long.csv")) { source("R/gen_data.R"); gen_trialmon("data") }
 tm <- trialmon_load("data")
 HL <- hyslaw_load("data")                               # planted grid cases + narrative assertions
 GRID0 <- hyslaw_app_grid(tm, HL)
+GRID_CHECK <- hyslaw_check_narrative(GRID0, HL$flags)
 STUDY0 <- study_signals(tm)
 KRI0 <- STUDY0$ID[STUDY0$LEVEL != "GREEN"][1]          # first firing indicator opens selected
 LEVELS <- c("GREEN", "AMBER", "RED")
+# results that depend on no input: computed once here, not in every reactive that needs them
+QTC <- qtc_screen(tm$adeg)
+DLT <- dlt_state(tm)
+AE <- ae_soc_pt(tm)
+DOSED <- DLT[DLT$N > 0, ]
+COHORT_TEXT <- sprintf("%d cohorts, %g to %g mg", nrow(DOSED), min(DOSED$DOSEMG), max(DOSED$DOSEMG))
+WINDOW_DEFAULT <- 30
 E6R3 <- paste("ICH E6(R3) (Step 4 6 Jan 2025; EU effective 23 Jul 2025; FDA final guidance Sep 2025);",
               "Annex 2 Step 4 3 Jun 2026 (CHMP 25 Jun 2026, EU effective 15 Jan 2027; FDA: draft guidance Dec 2024, not final)")
 
@@ -37,39 +51,12 @@ Shiny.addCustomMessageHandler('trialmon-download', function(m) {
   setTimeout(function () { URL.revokeObjectURL(url); a.remove(); }, 1000);
 });"
 
-SEV_CSS <- "
-.sev{font-weight:700;white-space:nowrap}
-.sev-RED{color:#b42318}.sev-AMBER{color:#8a5300}.sev-watch{color:#2f5f8a}.sev-GREEN{color:#1d6b3a}
-[data-bs-theme=dark] .sev-RED{color:#ff9b8f}[data-bs-theme=dark] .sev-AMBER{color:#f3c169}
-[data-bs-theme=dark] .sev-watch{color:#9cc3ea}[data-bs-theme=dark] .sev-GREEN{color:#8fd8a8}
-[data-bs-theme=dark] .btn-outline-primary{--bs-btn-color:#9cc3ea;--bs-btn-border-color:#9cc3ea;--bs-btn-hover-color:#12171d;
- --bs-btn-hover-bg:#9cc3ea;--bs-btn-hover-border-color:#9cc3ea;--bs-btn-active-color:#12171d;--bs-btn-active-bg:#9cc3ea;
- --bs-btn-active-border-color:#9cc3ea;--bs-btn-focus-shadow-rgb:156,195,234}
-[data-bs-theme=dark] .btn-outline-secondary{--bs-btn-color:#c9d1d9;--bs-btn-border-color:#8b949e;--bs-btn-hover-color:#12171d;
- --bs-btn-hover-bg:#c9d1d9;--bs-btn-hover-border-color:#c9d1d9;--bs-btn-active-color:#12171d;--bs-btn-active-bg:#c9d1d9;
- --bs-btn-active-border-color:#c9d1d9;--bs-btn-focus-shadow-rgb:201,209,217}
-.packet dt{font-weight:600;margin-top:.4rem}.packet dd{margin:0}
-.foot{font-size:.85rem;color:var(--bs-secondary-color)}
-.tm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:.5rem;margin:.5rem 0 .9rem}
-.tm-kpi{border:1px solid var(--bs-border-color);border-radius:.5rem;padding:.45rem .75rem;background:var(--bs-body-bg)}
-.tm-kpi .k{font-size:.8rem;color:var(--bs-secondary-color);line-height:1.2}
-.tm-kpi .v{font-size:1.35rem;font-weight:700;line-height:1.4}
-#grid_tbl{overflow-x:auto;flex:0 0 auto!important;height:auto!important}
-#grid_tbl td:nth-child(-n+2),#grid_tbl td:nth-child(16),#grid_tbl thead tr:last-child th{white-space:nowrap}
-#grid_tbl td:nth-child(17),#grid_tbl td:nth-child(18){min-width:12rem}
-#grid_tbl thead th[rowspan]{vertical-align:bottom}#grid_tbl th.tm-ref{min-width:8.5rem}
-table.dataTable td.tm-ref,table.dataTable th.tm-ref{border-left:3px solid #8a5300!important;font-style:italic}
-[data-bs-theme=dark] table.dataTable td.tm-ref,[data-bs-theme=dark] table.dataTable th.tm-ref{border-left-color:#f3c169!important}"
-
-sev_span <- function(s) span(class = paste0("sev sev-", s), s)
-kpi <- function(label, value) div(class = "tm-kpi", div(class = "k", label), div(class = "v", value))
-
 ui <- page_sidebar(
   title = div(class = "d-flex flex-wrap align-items-center gap-2 w-100",
               span("TRIALMON: safety review console"),
               span(class = "badge text-bg-warning", "synthetic data"),
               div(class = "ms-auto", input_dark_mode(id = "mode"))),
-  theme = bs_theme(version = 5, primary = "#0757BF"),
+  theme = bs_theme(version = 5),                        # precompiled; the site colors come from tm_css()
   fillable = FALSE,
   sidebar = sidebar(
     width = 340,
@@ -81,49 +68,57 @@ ui <- page_sidebar(
                  selected = "6.0"),
     p(class = "foot", sprintf(paste("This setting re-derives lab grades only. AE grades stay as the investigator",
                                     "recorded them (NCI CTCAE v%s in these data)."), trialmon_settings()$ae_ctcae)),
-    numericInput("window", "Potential Hy's Law: days after the AT elevation", value = 30, min = 1, max = 90),
+    numericInput("window", "Potential Hy's Law: days after the AT elevation", value = WINDOW_DEFAULT, min = 1, max = 90),
+    p(class = "foot", textOutput("window_note", inline = TRUE)),
     checkboxInput("alp", "Also require ALP < 2x ULN (an SAP convention)", value = FALSE),
     textInput("meddra", "MedDRA version (label)", value = "29.1")
   ),
-  tags$head(tags$link(rel = "icon", href = "data:,"), tags$script(HTML(DOWNLOAD_JS)), tags$style(HTML(SEV_CSS))),
+  tags$head(tags$link(rel = "icon", href = "data:,"), tags$script(HTML(DOWNLOAD_JS)), tags$style(HTML(tm_css()))),
   app_status_ui("the worst-of safety roll-up, the ranked worklist and the participant packet"),
-  p(class = "small mb-2",
-    "Synthetic study CP-101: a first-in-human multiple ascending dose study at the Cohort 4 (120 mg) data cut. ",
-    "The console flags positions for the medical monitor and the Safety Review Committee; it does not adjudicate ",
-    "DLTs or Hy's Law cases and makes no dose-escalation decision. Every tier rolls up worst-of, watch included."),
+  start_here_ui(nrow(tm$adsl), COHORT_TEXT),
   div(class = "tm-kpis",
-    kpi("Overall (worst-of)", uiOutput("v_overall", inline = TRUE)),
-    kpi("Participants and cohorts", uiOutput("v_part", inline = TRUE)),
-    kpi("Study tier", uiOutput("v_study", inline = TRUE)),
-    kpi("RED flags", textOutput("v_red", inline = TRUE)),
-    kpi("AMBER flags", textOutput("v_amber", inline = TRUE)),
-    kpi("Watch", textOutput("v_watch", inline = TRUE)),
-    kpi("Dosed participants", textOutput("v_n", inline = TRUE))
+    kpi("Overall (worst-of)", uiOutput("v_overall", inline = TRUE), "worst of both tiers"),
+    kpi("Participants and cohorts", uiOutput("v_part", inline = TRUE), "worst participant or cohort flag"),
+    kpi("Study tier", uiOutput("v_study", inline = TRUE), "worst study indicator"),
+    kpi("RED flags", textOutput("v_red", inline = TRUE), "worklist rows", "RED"),
+    kpi("AMBER flags", textOutput("v_amber", inline = TRUE), "worklist rows", "AMBER"),
+    kpi("Watch", textOutput("v_watch", inline = TRUE), "worklist rows", "watch"),
+    kpi("Dosed participants", textOutput("v_n", inline = TRUE), COHORT_TEXT)
   ),
   navset_card_tab(
     id = "tabs",
     nav_panel("Worklist",
-      div(class = "d-flex flex-wrap gap-2 align-items-center mb-2",
-          actionButton("dl", "Download the worklist (CSV)", class = "btn-sm btn-outline-primary"),
-          span(class = "foot", "Ranked RED, then AMBER, then watch. The file is built in your browser and labeled synthetic.")),
-      DTOutput("worklist")),
+      div(class = "d-flex flex-wrap gap-2 align-items-center justify-content-between mb-1",
+          p(class = "tm-hint mb-0", HTML(paste0("<strong>Click a Participant row</strong> to open that participant's packet ",
+            "in the sidebar<span class=\"d-sm-none\"> (on a phone, after the tabs)</span>. Ranked RED, then AMBER, then watch."))),
+          actionButton("dl", "Download the worklist (CSV)", class = "btn-sm btn-outline-primary")),
+      DTOutput("worklist", fill = FALSE),
+      p(class = "foot mt-2", "The CSV file is built in your browser; its first column labels every row synthetic.")),
     nav_panel("Liver (eDISH)",
-      plotOutput("edish", height = "420px", click = "edish_click"),
+      layout_columns(
+        col_widths = breakpoints(sm = 12, lg = c(7, 5)),
+        div(plotOutput("edish", height = "430px", click = "edish_click"),
+            p(class = "tm-plot-note", tags$strong("Click a point"), " to open that participant; the ringed point is the ",
+              "participant in the sidebar. Shaded box: ALT or AST >= 3x ULN and TBL > 2x ULN on peak values.")),
+        div(plotOutput("traj", height = "300px"),
+            p(class = "tm-plot-note", "ALT, AST, ALP and TBL by study day for the participant in the sidebar, as ",
+              "multiples of ULN. Pick another participant in the sidebar or on the eDISH plot."))),
       p(class = "foot", "Peak post-baseline ALT or AST against peak total bilirubin (TBL), as multiples of ULN, log scales. ",
         "Peaks need not be concurrent: a point in the upper-right quadrant is a potential Hy's Law case only when ",
         "TBL > 2x ULN came on or after an aminotransferase elevation (ALT or AST >= 3x ULN) within the window. ",
-        "Every such draw opens its own window. The axes widen so that no participant falls off. Click a point to open it."),
-      plotOutput("traj", height = "260px"),
-      DTOutput("liver_tbl")),
+        "Every such draw opens its own window. The axes widen so that no participant falls off."),
+      DTOutput("liver_tbl", fill = FALSE)),
     nav_panel("Convention grid",
       p(class = "small", HYS_GRID_LABEL),
-      DTOutput("grid_tbl"),
+      p(class = "tm-hint", "One row per participant, one column per combination; ", tags$strong("scroll the table sideways"),
+        " for the verdict, what the narrative states and whether the two agree."),
+      DTOutput("grid_tbl", fill = FALSE),
       uiOutput("grid_note")),
     nav_panel("QTcF",
       tableOutput("qtc_cat"),
       p(class = "foot", "Categorical analysis per ICH E14 and the E14/S7B Q&As: maximum post-baseline QTcF > 450, > 480 and ",
         "> 500 ms; maximum change from baseline > 30 and > 60 ms. Categories are cumulative."),
-      DTOutput("qtc_tbl")),
+      DTOutput("qtc_tbl", fill = FALSE)),
     nav_panel("Labs (CTCAE)",
       tableOutput("shift"),
       uiOutput("shift_note")),
@@ -132,9 +127,10 @@ ui <- page_sidebar(
       uiOutput("ae_note")),
     nav_panel("Dose escalation",
       tableOutput("dlt_tbl"),
-      plotOutput("ladder", height = "260px"),
+      plotOutput("ladder", height = "300px"),
       p(class = "foot", "3+3 appears only as an illustrative rule reference: 0 of 3 or 1 of 6 is escalation-eligible, ",
         "1 of 3 means expand to 6, and 2 or more DLTs mean the dose exceeds the MTD (which needs 6 treated). ",
+        "A cohort with a DLT pending adjudication takes the worse of its two possible outcomes. ",
         "Model-assisted designs such as BOIN (FDA fit-for-purpose determination, December 2021) are the current ",
         "alternative; this demo does not implement them. The committee adjudicates DLTs and decides.")),
     nav_panel("Study tier",
@@ -147,52 +143,61 @@ ui <- page_sidebar(
           radioButtons("kri_level", "Level (what-if)", choices = LEVELS, inline = TRUE,
                        selected = STUDY0$LEVEL[STUDY0$ID == KRI0]),
           actionButton("kri_reset", "Reset to the feed", class = "btn-sm btn-outline-secondary mb-3")),
-      DTOutput("study_tbl"),
+      DTOutput("study_tbl", fill = FALSE),
       p(class = "foot mt-2", paste0("Guidance: ", E6R3, ".")))
-  )
+  ),
+  p(class = "tm-footer", "Synthetic data only: study CP-101 and every participant in it are invented. TRIALMON flags ",
+    "positions for a human reviewer; in a real study the numbers a committee relies on come from validated programs.")
 )
 
 server <- function(input, output, session) {
-  settings <- reactive({
+  win <- reactive({
     w <- input$window
-    if (is.null(w) || is.na(w) || w < 1) w <- 30
-    trialmon_settings(if (is.null(input$ctcae)) "6.0" else input$ctcae, w, isTRUE(input$alp),
+    ok <- !is.null(w) && length(w) == 1 && !is.na(w) && w >= 1 && w <= 90
+    list(value = if (ok) as.numeric(w) else WINDOW_DEFAULT, ok = ok)
+  })
+  settings <- reactive({
+    trialmon_settings(if (is.null(input$ctcae)) "6.0" else input$ctcae, win()$value, isTRUE(input$alp),
                       if (is.null(input$meddra) || !nzchar(input$meddra)) "29.1" else input$meddra)
   })
   study <- reactiveVal(STUDY0)
   roll <- reactive(trialmon_rollup(tm, settings(), study()))
   liver <- reactive(hys_screen(tm$adlb, settings()$hys_window, settings()$alp_convention))
   pstat <- reactive({
-    wl <- roll()$worklist; q <- qtc_screen(tm$adeg)
+    wl <- roll()$worklist
     vapply(tm$adsl$USUBJID, function(i) worst(c(wl$sev[wl$tier == "Participant" & wl$id == i],
-                                                q$sev[q$USUBJID == i])), character(1))
+                                                QTC$sev[QTC$USUBJID == i])), character(1))
   })
+  pid <- reactive(if (!is.null(input$pid) && input$pid %in% tm$adsl$USUBJID) input$pid else NA_character_)
   dark <- reactive(identical(input$mode, "dark"))
-  gtheme <- reactive({
-    fg <- if (dark()) "#E6EAEE" else "#18212B"; grid <- if (dark()) "#323C47" else "#D5DBE1"
-    theme_minimal(base_size = 12) + theme(
-      text = element_text(colour = fg), axis.text = element_text(colour = fg),
-      panel.grid = element_line(colour = grid), legend.position = "top",
-      plot.background = element_rect(fill = "transparent", colour = NA),
-      panel.background = element_rect(fill = "transparent", colour = NA))
-  })
-  pal <- reactive(if (dark()) c(GREEN = "#8fd8a8", watch = "#9cc3ea", AMBER = "#f3c169", RED = "#ff9b8f")
-                  else c(GREEN = "#1d6b3a", watch = "#2f5f8a", AMBER = "#a86400", RED = "#b42318"))
+  pal <- reactive(tm_palette(dark()))
 
-  output$v_overall <- renderUI(sev_span(roll()$overall))
-  output$v_part <- renderUI(sev_span(roll()$participant))
-  output$v_study <- renderUI(sev_span(roll()$study))
-  output$v_red <- renderText(roll()$red)
-  output$v_amber <- renderText(roll()$amber)
-  output$v_watch <- renderText(roll()$watch)
+  output$window_note <- renderText({
+    if (win()$ok) sprintf("In use: TBL within %g days of the AT elevation.", win()$value)
+    else sprintf("Enter a number of days from 1 to 90; until then the default of %d days is used.", WINDOW_DEFAULT)
+  })
+
+  output$v_overall <- renderUI(guard("the overall level", sev_span(roll()$overall)))
+  output$v_part <- renderUI(guard("the participant and cohort tier", sev_span(roll()$participant)))
+  output$v_study <- renderUI(guard("the study tier", sev_span(roll()$study)))
+  output$v_red <- renderText(guard("the RED count", roll()$red))
+  output$v_amber <- renderText(guard("the AMBER count", roll()$amber))
+  output$v_watch <- renderText(guard("the watch count", roll()$watch))
   output$v_n <- renderText(nrow(tm$adsl))
 
-  output$worklist <- renderDT({
+  output$worklist <- renderDT(guard("the worklist", {
     wl <- roll()$worklist
-    datatable(wl, rownames = FALSE, selection = "single",
-              colnames = c("Tier", "Participant, cohort or indicator", "Level", "Screen", "Value", "Rule"),
-              options = list(pageLength = 15, dom = "tp", scrollX = TRUE))
-  })
+    explain_empty(nrow(wl) > 0, paste("No participant, cohort or study indicator is flagged under these settings, so",
+                                      "every level is GREEN. Change an SAP setting, or set a study indicator on Study tier."))
+    d <- data.frame(Tier = tm_esc(wl$tier), ID = tm_esc(wl$id), Level = sev_html(wl$sev),
+                    `Screen and rule` = sprintf('<span class="tm-check">%s</span><span class="tm-rule">%s</span>',
+                                                tm_esc(wl$check), tm_esc(wl$rule)),
+                    Finding = tm_esc(wl$value), check.names = FALSE)
+    datatable(d, rownames = FALSE, selection = "single", escape = FALSE, class = "compact stripe hover",
+              options = list(pageLength = 15, dom = "tp", scrollX = TRUE, ordering = FALSE,
+                             columnDefs = list(list(width = "6rem", targets = c(0, 2)), list(width = "7.5rem", targets = 1),
+                                               list(width = "30%", targets = 3))))
+  }))
   observeEvent(input$worklist_rows_selected, {
     r <- roll()$worklist[input$worklist_rows_selected, ]
     if (nrow(r) && r$tier == "Participant") updateSelectInput(session, "pid", selected = r$id)
@@ -207,50 +212,39 @@ server <- function(input, output, session) {
     session$sendCustomMessage("trialmon-download", p)
   })
 
-  output$edish <- renderPlot({
+  output$edish <- renderPlot(guard("the eDISH plot", {
     h <- liver()
-    h$screen <- factor(ifelse(h$hys, "Potential Hy's Law", ifelse(!is.na(h$at3x_day), "AT > 3x ULN: confirm", "No hepatic flag")),
-                       levels = c("Potential Hy's Law", "AT > 3x ULN: confirm", "No hepatic flag"))
-    lab <- h[h$peak_at >= 2.5 | h$peak_tbl > 1.5, ]
-    lim <- edish_limits(h)
-    ggplot(h, aes(peak_at, peak_tbl, colour = screen)) +
-      annotate("rect", xmin = 3, xmax = Inf, ymin = 2, ymax = Inf, alpha = .10, fill = pal()[["RED"]]) +
-      geom_vline(xintercept = 3, linetype = 2, colour = pal()[["AMBER"]]) +
-      geom_hline(yintercept = 2, linetype = 2, colour = pal()[["AMBER"]]) +
-      geom_point(size = 3.2) +
-      geom_text(data = lab, aes(label = USUBJID), vjust = -1, size = 3.4, show.legend = FALSE) +
-      annotate("text", x = .95 * lim$x[2], y = lim$y[2], label = "upper right: check timing", hjust = 1, size = 3.4, colour = pal()[["RED"]]) +
-      annotate("text", x = .95 * lim$x[2], y = 1.1 * lim$y[1], label = "lower right: AT >= 3x, TBL <= 2x", hjust = 1, size = 3.4, colour = pal()[["AMBER"]]) +
-      scale_x_log10(limits = lim$x) + scale_y_log10(limits = lim$y) +
-      scale_colour_manual(values = setNames(pal()[c("RED", "AMBER", "GREEN")], levels(h$screen)), drop = FALSE,
-                          name = "Hepatic screen") +
-      labs(x = "Peak ALT or AST (x ULN, log scale)", y = "Peak total bilirubin (x ULN, log scale)") + gtheme()
-  }, bg = "transparent", res = 96)
+    explain_empty(nrow(h) > 0, "No participant has post-baseline liver tests, so there is nothing to plot.")
+    tm_plot_edish(h, edish_limits(h), pal(), pid())
+  }), bg = "transparent", res = 96)
   observeEvent(input$edish_click, {
     np <- nearPoints(liver(), input$edish_click, xvar = "peak_at", yvar = "peak_tbl", maxpoints = 1)
     if (nrow(np)) updateSelectInput(session, "pid", selected = np$USUBJID[1])
   })
-  output$traj <- renderPlot({
-    d <- liver_trajectory(tm, input$pid)
-    ggplot(d, aes(ADY, xuln, colour = test)) +
-      geom_hline(yintercept = c(2, 3), linetype = 3, colour = pal()[["AMBER"]]) +
-      geom_line(linewidth = .9) + geom_point(size = 2) +
-      scale_colour_manual(values = c(ALT = "#c0392b", AST = "#d98a1a", ALP = "#6b7c8f", TBL = "#2f6fb5")) +
-      labs(x = "Study day", y = "x ULN", colour = NULL, title = paste(input$pid, "liver tests by study day")) + gtheme()
-  }, bg = "transparent", res = 96)
-  output$liver_tbl <- renderDT({
+  output$traj <- renderPlot(guard("the liver trajectory", {
+    explain_empty(!is.na(pid()), "Pick a participant in the sidebar to see their liver tests by study day.")
+    d <- liver_trajectory(tm, pid())
+    explain_empty(nrow(d) > 0, sprintf("%s has no ALT, AST, ALP or TBL results in this data cut.", pid()))
+    tm_plot_traj(d, pid(), pal())
+  }), bg = "transparent", res = 96)
+  output$liver_tbl <- renderDT(guard("the liver table", {
     h <- liver()
     h <- h[h$peak_at >= 3 | h$peak_tbl > 2 | h$sev != "GREEN", ]
-    d <- data.frame(Participant = h$USUBJID, Level = h$sev, `Peak AT` = round(h$peak_at, 1),
-                    `Peak TBL` = round(h$peak_tbl, 1), `AT >= 3x ULN (day)` = h$at3_day,
-                    `ALP at that draw` = round(h$alp_at3, 1), `R ratio` = round(h$r_at3, 1), Pattern = h$pattern,
-                    `TBL > 2x on day` = h$tbl_day, `Potential Hy's Law` = ifelse(h$hys, "Yes", "No"),
-                    Quadrant = h$quadrant, `First repeat (days)` = h$repeat_gap, check.names = FALSE)
-    datatable(d, rownames = FALSE, options = list(dom = "t", scrollX = TRUE))
-  })
+    explain_empty(nrow(h) > 0, paste("No participant reached ALT or AST >= 3x ULN or TBL > 2x ULN, and none has a",
+                                     "hepatic flag, so this table is empty. The eDISH plot above still shows everyone."))
+    h <- h[order(-sev_rank(h$sev), h$USUBJID), ]
+    d <- data.frame(Participant = h$USUBJID, Level = sev_html(h$sev), `Peak AT` = round(h$peak_at, 1),
+                    `Peak TBL` = round(h$peak_tbl, 1), `AT >= 3x (day)` = h$at3_day,
+                    `ALP then` = round(h$alp_at3, 1), `R ratio` = round(h$r_at3, 1), Pattern = h$pattern,
+                    `TBL > 2x (day)` = h$tbl_day, `Potential Hy's Law` = ifelse(h$hys, "Yes", "No"),
+                    Quadrant = h$quadrant, `First repeat (days later)` = h$repeat_gap, check.names = FALSE)
+    datatable(d, rownames = FALSE, escape = -2, selection = "none", class = "compact stripe",
+              caption = "Participants with a liver finding: peaks as x ULN; days are study days.",
+              options = list(dom = "t", scrollX = TRUE, ordering = FALSE))
+  }))
 
-  output$grid_tbl <- renderDT({
-    g <- GRID0; chk <- hyslaw_check_narrative(g, HL$flags)
+  output$grid_tbl <- renderDT(guard("the convention grid", {
+    g <- GRID0; chk <- GRID_CHECK
     asserted <- chk$ASSERTED[match(g$USUBJID, chk$USUBJID)]
     agree <- chk$AGREE[match(g$USUBJID, chk$USUBJID)]
     d <- data.frame(Participant = g$USUBJID, Source = g$SOURCE, g[HYS_GRID$code], `Peak vs peak` = g$REF,
@@ -267,12 +261,12 @@ server <- function(input, output, session) {
                function(x) tags$th(rowspan = 2, x))),
       tags$tr(lapply(rep(leaf, 3), tags$th))))
     refcol <- which(names(d) == "Peak vs peak") - 1
-    dt <- datatable(d, container = head2, rownames = FALSE, selection = "none",
+    dt <- datatable(d, container = head2, rownames = FALSE, selection = "none", class = "compact stripe",
               options = list(dom = "t", ordering = FALSE, pageLength = 50, autoWidth = FALSE,
                              columnDefs = list(list(className = "tm-ref", targets = refcol),
                                                list(className = "dt-center", targets = seq(2, refcol)))))
     formatStyle(dt, c(HYS_GRID$code, "Peak vs peak"), fontWeight = styleEqual(1, "700"))
-  }, server = FALSE)                                    # ten rows: sent whole to the browser
+  }), server = FALSE)                                   # ten rows: sent whole to the browser
   output$grid_note <- renderUI({
     s <- settings(); w <- s$hys_window
     col <- if (w %in% c(14, 30, 60)) sprintf("the column \"Window %g days, %s\"", w,
@@ -289,8 +283,8 @@ server <- function(input, output, session) {
       "the tests fail if any disagrees with the computed verdict."))
   })
 
-  output$qtc_cat <- renderTable({
-    q <- qtc_screen(tm$adeg); q$COHORT <- tm$adsl$COHORT[match(q$USUBJID, tm$adsl$USUBJID)]
+  output$qtc_cat <- renderTable(guard("the QTcF categories", {
+    q <- QTC; q$COHORT <- tm$adsl$COHORT[match(q$USUBJID, tm$adsl$USUBJID)]
     cats <- c(`QTcF > 450 ms` = "gt450", `QTcF > 480 ms` = "gt480", `QTcF > 500 ms` = "gt500",
               `Change > 30 ms` = "chg30", `Change > 60 ms` = "chg60", `Baseline > 450 ms` = "base450")
     grp <- c(split(q, q$COHORT), list(Total = q))
@@ -299,51 +293,51 @@ server <- function(input, output, session) {
       n <- sum(grp[[g]][[cc]]); sprintf("%d (%.0f%%)", n, 100 * n / nrow(grp[[g]]))
     }, character(1))
     out
-  }, striped = TRUE, spacing = "s")
-  output$qtc_tbl <- renderDT({
-    q <- qtc_screen(tm$adeg); q <- q[q$sev != "GREEN", ]
-    datatable(data.frame(Participant = q$USUBJID, Level = q$sev, Baseline = q$base, `Max QTcF` = q$max_qtcf,
-                         Day = q$max_day, `Max change` = q$max_chg, check.names = FALSE),
-              rownames = FALSE, options = list(dom = "t"))
-  })
+  }), striped = TRUE, hover = TRUE, spacing = "s")
+  output$qtc_tbl <- renderDT(guard("the QTcF listing", {
+    q <- QTC[QTC$sev != "GREEN", ]
+    explain_empty(nrow(q) > 0, "No participant's QTcF went above 450 ms or rose more than 30 ms from baseline.")
+    q <- q[order(-sev_rank(q$sev), q$USUBJID), ]
+    datatable(data.frame(Participant = q$USUBJID, Level = sev_html(q$sev), `Baseline (ms)` = q$base,
+                         `Max QTcF (ms)` = q$max_qtcf, `On day` = q$max_day, `Max change (ms)` = q$max_chg,
+                         check.names = FALSE),
+              rownames = FALSE, escape = -2, selection = "none", class = "compact stripe",
+              caption = "Participants above a QTcF category, worst first.", options = list(dom = "t", ordering = FALSE))
+  }))
 
-  output$shift <- renderTable({
+  output$shift <- renderTable(guard("the lab shift table", {
     s <- lab_shift(tm$adlb, settings()$ctcae)
     data.frame(Test = s$TERM, `Baseline grade` = s$BGRADE, N = s$N, `Worst 0` = s$G0, `1` = s$G1, `2` = s$G2,
                `3` = s$G3, `4` = s$G4, check.names = FALSE)
-  }, striped = TRUE, spacing = "s", digits = 0)
+  }), striped = TRUE, hover = TRUE, spacing = "s", digits = 0)
   output$shift_note <- renderUI(p(class = "foot", sprintf(paste0(
-    "Shift from baseline grade to worst post-baseline grade, participants. Lab grades: NCI CTCAE v%s. ",
+    "Shift from baseline grade (rows) to worst post-baseline grade (columns 0 to 4), participants. Lab grades: NCI CTCAE v%s. ",
     "Creatinine is graded on x ULN and fold over baseline (v5.0: the worse of the two; v6.0: fold over baseline ",
     "only when the baseline is below the LLN), never on mg/dL alone."), settings()$ctcae)))
 
-  output$ae_tbl <- renderTable({
-    a <- ae_soc_pt(tm); N <- attr(a, "N")
-    lab <- ifelse(a$PT == "", a$SOC, paste0("   ", a$PT))
+  output$ae_tbl <- renderTable(guard("the adverse event table", {
+    a <- AE; N <- attr(a, "N")
+    explain_empty(nrow(a) > 1, "No treatment-emergent adverse events are recorded in this data cut.")
+    lab <- ifelse(a$PT == "", sprintf('<span class="tm-soc">%s</span>', tm_esc(a$SOC)),
+                  sprintf('<span class="tm-pt">%s</span>', tm_esc(a$PT)))
     out <- data.frame(`SOC / Preferred term` = lab, check.names = FALSE)
     for (g in names(N)) out[[sprintf("%s (N=%d)", g, N[[g]])]] <- sprintf("%d (%.0f%%)", a[[g]], 100 * a[[g]] / N[[g]])
     out
-  }, striped = TRUE, spacing = "s")
+  }), striped = TRUE, hover = TRUE, spacing = "s", sanitize.text.function = function(x) x)
   output$ae_note <- renderUI(p(class = "foot", sprintf(paste0(
     "Treatment-emergent AEs, participants counted once per row; N = dosed participants. Coded with MedDRA v%s ",
     "(primary SOC). AE grades as recorded by the investigator (NCI CTCAE v%s); the lab-grade setting ",
     "(now v%s) re-derives lab grades only and does not change a recorded AE grade."),
     settings()$meddra, settings()$ae_ctcae, settings()$ctcae)))
 
-  output$dlt_tbl <- renderTable({
-    d <- dlt_state(tm)
-    data.frame(Cohort = d$COHORT, `Dose (mg)` = d$DOSEMG, Status = d$STATUS, Dosed = d$N, `DLT-evaluable` = d$EVALUABLE,
-               `Confirmed DLTs` = d$DLT, Pending = d$PENDING, `Rule reference (3+3, illustrative)` = d$text,
-               check.names = FALSE)
-  }, striped = TRUE, spacing = "s", digits = 0)
-  output$ladder <- renderPlot({
-    d <- dlt_state(tm); d <- d[d$N > 0, ]; d$COHORT <- factor(d$COHORT, levels = d$COHORT)
-    ggplot(d, aes(COHORT, DOSEMG, fill = sev)) + geom_col(width = .65) +
-      geom_text(aes(label = sprintf("%d of %d%s", DLT, EVALUABLE, ifelse(PENDING > 0, sprintf(" (+%d pending)", PENDING), ""))),
-                vjust = -.4, colour = if (dark()) "#E6EAEE" else "#18212B") +
-      scale_fill_manual(values = pal(), name = NULL) + scale_y_continuous(expand = expansion(mult = c(0, .15))) +
-      labs(x = NULL, y = "Dose (mg)") + gtheme()
-  }, bg = "transparent", res = 96)
+  output$dlt_tbl <- renderTable(guard("the DLT table", {
+    d <- DLT
+    tm_table(data.frame(Cohort = d$COHORT, `Dose (mg)` = d$DOSEMG, Status = d$STATUS, Dosed = d$N,
+                        `DLT-evaluable` = d$EVALUABLE, `Confirmed DLTs` = d$DLT, Pending = d$PENDING,
+                        Level = ifelse(d$N > 0, sev_html(d$sev), ""), `Rule reference (3+3, illustrative)` = d$text,
+                        check.names = FALSE), html = "Level")
+  }), striped = TRUE, hover = TRUE, spacing = "s", digits = 0, sanitize.text.function = function(x) x)
+  output$ladder <- renderPlot(guard("the dose ladder", tm_plot_ladder(DLT, pal())), bg = "transparent", res = 96)
 
   # study tier what-if. The radio starts on the selected indicator's level and its observer
   # ignores the initial value, so opening the app never rewrites an indicator (no flicker).
@@ -358,38 +352,45 @@ server <- function(input, output, session) {
     study(STUDY0)
     updateRadioButtons(session, "kri_level", selected = STUDY0$LEVEL[STUDY0$ID == input$kri])
   })
-  output$study_tbl <- renderDT({
-    s <- study(); s$CHANGED <- ifelse(s$LEVEL != STUDY0$LEVEL, "what-if", "")
-    datatable(s[, c("ID", "INDICATOR", "VALUE", "UNIT", "LEVEL", "CHANGED", "RULE", "DETAIL", "SOURCE")],
-              rownames = FALSE, colnames = c("ID", "Indicator", "Value", "Unit", "Level", "", "Rule", "Detail", "Source"),
-              options = list(dom = "t", scrollX = TRUE))
-  })
+  output$study_tbl <- renderDT(guard("the study tier", {
+    s <- study()
+    lvl <- paste0(sev_html(s$LEVEL), ifelse(s$LEVEL != STUDY0$LEVEL,
+                  sprintf('<span class="tm-whatif" title="feed: %s">what-if</span>', STUDY0$LEVEL), ""))
+    d <- data.frame(ID = s$ID, Indicator = s$INDICATOR, Value = s$VALUE, Unit = s$UNIT, Level = lvl,
+                    Rule = s$RULE, Detail = s$DETAIL, Source = s$SOURCE, check.names = FALSE)
+    datatable(d, rownames = FALSE, escape = -5, selection = "none", class = "compact stripe",
+              options = list(dom = "t", scrollX = TRUE, pageLength = 50, ordering = FALSE))
+  }))
 
-  output$packet <- renderUI({
-    id <- input$pid; s <- tm$adsl[tm$adsl$USUBJID == id, ]
-    h <- liver()[liver()$USUBJID == id, ]; q <- qtc_screen(tm$adeg); q <- q[q$USUBJID == id, ]
+  output$packet <- renderUI(guard("the participant packet", {
+    id <- pid()
+    if (is.na(id)) return(empty_state("Pick a participant above to see their packet: disposition, DLT, liver, QTcF, lab grades and AEs."))
+    s <- tm$adsl[tm$adsl$USUBJID == id, ]
+    h <- liver()[liver()$USUBJID == id, ]; q <- QTC[QTC$USUBJID == id, ]
     g <- lab_grades(tm$adlb[tm$adlb$USUBJID == id, ], settings()$ctcae); g <- g[!is.na(g$WGRADE) & g$WGRADE >= 2, ]
     ae <- tm$adae[tm$adae$USUBJID == id, ]; nt <- tm$notes$NOTE[tm$notes$USUBJID == id]
-    hep <- if (h$hys) sprintf("Potential Hy's Law: AT %.1fx ULN on Day %d, TBL %.1fx ULN on Day %d", h$at3_value, h$at3_day, h$tbl_at_hit, h$tbl_day)
+    hep <- if (!nrow(h)) "no post-baseline liver tests"
+      else if (h$hys) sprintf("Potential Hy's Law: AT %.1fx ULN on Day %d, TBL %.1fx ULN on Day %d", h$at3_value, h$at3_day, h$tbl_at_hit, h$tbl_day)
       else if (!is.na(h$at3x_day)) sprintf("AT %.1fx ULN on Day %d: confirm (repeat within 48 to 72 h); TBL peak %.1fx", h$at3x_value, h$at3x_day, h$peak_tbl)
       else sprintf("Peak AT %.1fx, TBL %.1fx ULN: no hepatic flag", h$peak_at, h$peak_tbl)
     div(class = "packet small",
-      div(class = "fw-bold", sprintf("%s: %s, %g mg", id, s$COHORT, s$DOSEMG), " ", sev_span(pstat()[[id]])),
+      div(class = "packet-head", sprintf("%s: %s, %g mg ", id, s$COHORT, s$DOSEMG), sev_span(pstat()[[id]])),
       tags$dl(
         tags$dt("Disposition"), tags$dd(sprintf("Treatment %s%s; study %s", tolower(s$EOTSTT),
           if (!is.na(s$DCTREAS) && nzchar(s$DCTREAS)) paste0(" (", tolower(s$DCTREAS), ")") else "", tolower(s$EOSSTT))),
         tags$dt("DLT"), tags$dd(if (s$DLTADJ == "Pending") paste("Pending adjudication:", s$DLTDESC)
                                 else if (s$DLTFL == "Y") s$DLTDESC else "No DLT"),
-        tags$dt("Liver"), tags$dd(hep, if (!is.na(h$r_at3)) sprintf(" (R %.1f, %s)", h$r_at3, h$pattern)),
-        tags$dt("QTcF"), tags$dd(sprintf("max %d ms (baseline %d, change %d): ", q$max_qtcf, q$base, q$max_chg), sev_span(q$sev)),
+        tags$dt("Liver"), tags$dd(hep, if (nrow(h) && !is.na(h$r_at3)) sprintf(" (R %.1f, %s)", h$r_at3, h$pattern)),
+        tags$dt("QTcF"), tags$dd(if (nrow(q)) list(sprintf("max %d ms (baseline %d, change %d) ", q$max_qtcf, q$base, q$max_chg), sev_span(q$sev))
+                                 else "no post-baseline ECG"),
         tags$dt(sprintf("Lab grades 2 or higher (CTCAE v%s)", settings()$ctcae)),
         tags$dd(if (nrow(g)) paste(sprintf("%s G%d", g$TERM, g$WGRADE), collapse = "; ") else "none"),
         tags$dt(sprintf("Adverse events (%d)", nrow(ae))),
         tags$dd(if (nrow(ae)) paste(sprintf("%s G%d%s", ae$AEDECOD, ae$AETOXGR, ifelse(ae$AESER == "Y", " (serious)", "")),
                                     collapse = "; ") else "none")),
-      if (length(nt)) p(class = "fst-italic mb-0", "Synthetic teaching note: ", nt)
+      if (length(nt)) p(class = "note", "Synthetic teaching note: ", nt)
     )
-  })
+  }))
 }
 
 shinyApp(ui, server)
