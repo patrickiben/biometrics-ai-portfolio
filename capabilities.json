@@ -520,7 +520,7 @@
   },
   {
    "id": "study-1",
-   "title": "Worked example, stage 1: sample size and randomization",
+   "title": "Sample size and randomization",
    "href": "study/index.html#stage1",
    "section": "example",
    "stages": [],
@@ -550,7 +550,7 @@
   },
   {
    "id": "study-2",
-   "title": "Worked example, stage 2: SAP and mock shells",
+   "title": "SAP and mock shells",
    "href": "study/index.html#stage2",
    "section": "example",
    "stages": [],
@@ -580,7 +580,7 @@
   },
   {
    "id": "study-3",
-   "title": "Worked example, stage 3: ADaM, specification and XPT",
+   "title": "ADaM, specification and XPT",
    "href": "study/index.html#stage3",
    "section": "example",
    "stages": [],
@@ -610,7 +610,7 @@
   },
   {
    "id": "study-4",
-   "title": "Worked example, stage 4: NCA, bioequivalence and TLFs",
+   "title": "NCA, bioequivalence and TLFs",
    "href": "study/index.html#stage4",
    "section": "example",
    "stages": [],
@@ -640,7 +640,7 @@
   },
   {
    "id": "study-5",
-   "title": "Worked example, stage 5: QC by a second method",
+   "title": "QC by a second method",
    "href": "study/index.html#stage5",
    "section": "example",
    "stages": [],
@@ -670,7 +670,7 @@
   },
   {
    "id": "study-6",
-   "title": "Worked example, stage 6: CSR text, checked against the outputs",
+   "title": "CSR text, checked against the outputs",
    "href": "study/index.html#stage6",
    "section": "example",
    "stages": [],

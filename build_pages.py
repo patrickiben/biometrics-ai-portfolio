@@ -707,7 +707,7 @@ def status_strip():
         r.append(readout('In your browser', f'{len(verified)} apps', esc(runtime_breakdown(verified)), f'First checked {esc(dates[0])}', 'apps.html'))
     else:
         r.append(readout('Apps', 'Run locally', 'In R and Python, with run notes and network disclosures', 'See the Apps page', 'apps.html', 'sm'))
-    r.append(readout('QC harness', f'<span class="c-green">{LEDGER.get("green")}</span> of {LEDGER.get("total")} <span class="u">gates green</span>',
+    r.append(readout('Harness gates', f'<span class="c-green">{LEDGER.get("green")}</span> of {LEDGER.get("total")} <span class="u">green</span>',
                      f'{LEDGER.get("manual")} manual record · <span class="c-amber">{LEDGER.get("unsigned")} awaiting sign-off</span> · '
                      + ('<span class="c-amber">no gate signed yet</span>' if not signed else f'{len(signed)} signed'),
                      f'Ledger {esc(LEDGER_DATE)}', 'validation_harness/index.html'))
@@ -736,7 +736,7 @@ def stage_card(s):
     arrow = ' ↗' if ext else ''
     link = f'<a href="{esc(sg["href"])}"{rel}>{esc(sg["text"])}</a>{arrow}{note}'
     return (f'<article class="card card--stage"{seg_style([l["k"] for l in s["labels"]])}>'
-            f'<div class="top-row"><h3><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</h3>{th}</div>'
+            f'<div class="top-row"><h3><span class="num">{s["n"]:02d}</span><a href="lifecycle.html#{s["id"]}">{esc(s["name"])}</a></h3>{th}</div>'
             f'<p class="labs">{"".join(lab(l) for l in s["labels"])}</p>'
             f'<p class="strong"><span class="k">Strongest here</span>{link}</p>'
             f'<a class="all" href="lifecycle.html#{s["id"]}">All {esc(s["name"])} work</a></article>')
@@ -906,9 +906,9 @@ def lifecycle_page():
         secs.append(f'<section class="stage-sec" id="{s["id"]}" data-item data-stages="{s["id"]}" data-labels="{kinds}" aria-labelledby="{s["id"]}-h">'
                     f'<div><h2 id="{s["id"]}-h"><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</h2>'
                     f'<p class="labs">{"".join(lab(l) for l in s["labels"])}</p>'
-                    f'<h3>Experience (from the resume)</h3><p>{s["experience"]}</p>'
-                    f'<h3>On this site</h3><p>{s["on_site_html"]}</p></div>'
-                    f'<div class="mods"><h3>Modules</h3>{mods}</div></section>')
+                    f'<h3 class="sub">Experience (from the resume)</h3><p>{s["experience"]}</p>'
+                    f'<h3 class="sub">On this site</h3><p>{s["on_site_html"]}</p></div>'
+                    f'<div class="mods"><h3 class="sub">Modules</h3>{mods}</div></section>')
     main = ('<section class="page-head"><p class="eyebrow">Lifecycle</p><h1>Across the trial lifecycle</h1>'
             '<p class="lede">Each stage pairs what the resume supports with what this site can show today. Labels are deliberately narrow:</p>'
             + legend() + '</section>'
@@ -937,8 +937,8 @@ def group_page(key, title, h1, lede, desc, section, run_local):
                     + disc + f'<div class="mod-list">{cards}</div></section>')
     n = sum(len(g['modules']) for g in groups)
     main = (f'<section class="page-head"><p class="eyebrow">{esc(title)}</p><h1>{esc(h1)}</h1><p class="lede">{lede}</p>'
-            f'<nav class="crumbs" aria-label="On this page"><ol>{nav}</ol></nav></section>'
-            f'<div class="filter" data-filter="#{key}-list" data-noun="modules" role="search" aria-label="Filter the {key}">'
+            f'<nav class="jump" aria-label="On this page"><ol>{nav}</ol></nav></section>'
+            f'<div class="filter filter--sticky" data-filter="#{key}-list" data-noun="modules" role="search" aria-label="Filter the {key}">'
             f'<div class="group"><label for="f-q">Search</label><input id="f-q" type="search" placeholder="Press / to search" autocomplete="off"></div>'
             '<span class="count" role="status" aria-live="polite"></span></div>'
             f'<div id="{key}-list">' + ''.join(secs) + '</div>')
