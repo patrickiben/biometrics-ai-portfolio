@@ -60,11 +60,13 @@ whole design: *code owns the data, Smartsheet owns the alerts.*
 
 `../_demo/` runs this **exact** library end-to-end against a local stand-in of the Smartsheet
 REST API, so you can watch the real HTTP calls, the idempotent upsert, the attach, and the
-allowlist guard actually happen:
+allowlist guard actually happen. Run it from `smartsheet_sasr/` (the folder above this one), because
+the demo sources `macro_library/ss_companion.R` from there:
 
 ```
-node ../_demo/ss_mock_api.js &                                   # representative Smartsheet API (localhost)
-SMARTSHEET_TOKEN=demo CP101_TRACKER_ID=5500 Rscript ../_demo/ss_run_demo.R
+cd smartsheet_sasr
+node _demo/ss_mock_api.js &                                      # representative Smartsheet API (localhost)
+SMARTSHEET_TOKEN=demo CP101_TRACKER_ID=5500 Rscript _demo/ss_run_demo.R
 ```
 
 Or, with no terminal at all, open **`../CP101_Tracker_Demo.html`** (the interactive tracker). The captured
