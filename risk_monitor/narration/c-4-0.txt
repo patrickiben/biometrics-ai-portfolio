@@ -1,1 +1,0 @@
-The participant tier is the most sensitive, so it runs entirely on-device, with zero egress.

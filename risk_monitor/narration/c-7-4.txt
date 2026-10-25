@@ -1,1 +1,0 @@
-The A-I flags, aggregates, triages, and drafts the alert — it never makes the safety or termination call.
