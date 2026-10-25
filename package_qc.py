@@ -93,7 +93,7 @@ def strip_blocks(t):
 
 
 html_files = walk('.html')
-md_files = walk('.md')
+md_files = [f for f in walk('.md') if os.path.basename(f) != 'package_qc_report.md']
 page_files = [f for f in html_files if not os.path.basename(f).startswith('_')]
 externals = set()
 

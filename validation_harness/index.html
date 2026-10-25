@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trial-Management Validation Harness — Evidence Ledger</title>
+<title>Trial-Management Validation Harness: Evidence Ledger</title>
 <style>
   :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--red:#e8657a;--r:12px;--mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
   *{box-sizing:border-box} html{scroll-behavior:smooth}
@@ -25,6 +25,8 @@
   .badge.red{color:var(--red);background:rgba(232,101,122,.12);border:1px solid rgba(232,101,122,.4)}
   .badge .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle}
   .badge.green .dot{background:var(--green)} .badge.red .dot{background:var(--red)}
+  .gate.manual{border-left:4px solid var(--gold)}
+  .badge.manual{color:var(--gold);background:rgba(224,166,76,.12);border:1px solid rgba(224,166,76,.4)} .badge.manual .dot{background:var(--gold)}
   .guards{font-size:13.4px;color:var(--ink);margin:8px 0 6px}
   .guards .k{color:var(--gold);font-family:var(--mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.08em}
   .evid{font-family:var(--mono);font-size:12px;color:var(--mut);background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:8px 11px;margin-top:6px}
@@ -36,18 +38,18 @@
 <body>
 <div class="wrap">
   <header class="hero">
-    <div class="home"><a href="../Biostatistics.html">&larr; Biostatistics</a> &middot; <a href="../START_HERE.html">full library</a> &middot; <a href="README.md">harness spec</a></div>
+    <div class="home"><a href="../index.html">&larr; Home</a> &middot; <a href="README.md">harness spec</a></div>
     <h1>Trial‑Management Validation Harness <span style="font-size:13px;color:var(--mut);font-weight:400">· evidence ledger</span></h1>
-    <p class="sub">Eight named gates that make a clinical‑biometrics deliverable <em>delivery‑confident</em> before it informs a decision. The checks are <strong>runnable and dogfooded</strong> — they execute against this repo's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <a href="README.md">Full spec &rarr;</a></p>
+    <p class="sub">Eight gates for a clinical‑biometrics deliverable, run against this repository's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <strong>Most checks are structural</strong> (inventories, pattern scans, counts); G1 re-runs the synthetic study; <strong>G5 is a manual record</strong>, not computed; <strong>SAS is never executed</strong> (no license). No gate has a human sign-off yet. <a href="README.md">Full spec &rarr;</a></p>
     <div class="meta" id="meta">Loading ledger…</div>
   </header>
 
   <div class="principle"><b>One rigor apparatus, ported.</b> This is the trial‑management sibling of a
     pre‑submission validation harness for computational research: reproducibility · numeric‑provenance ·
     integrity · robustness · adversarial review · reporting standard · AI‑use. The organizing principle is
-    the split you see in every row below &mdash; <b>automate detection and re‑execution; reserve the final
-    decision for the qualified biostatistician.</b> Every "Evidence" cell is machine‑produced; every
-    "Sign‑off" is not.</div>
+    the split you see in every row below: <b>automate detection and re‑execution; reserve the final
+    decision for the qualified biostatistician.</b> Every evidence cell except G5's is produced by the
+    script; every sign-off is human, and none has been given yet.</div>
 
   <div id="gates"></div>
 
@@ -60,30 +62,85 @@
 </div>
 
 <script id="ledger" type="application/json">
-{"generated":"2026-07-06","r_version":"R 4.6.0","green":8,"total":8,"gates":[
- {"gate":"G1 Reproducibility & environment","guards":"every number is regenerable from code + frozen inputs","status":"green","evidence":"453 R programs parse (0 fail); the synthetic study re-runs bit-STABLE from seed 2026 (base R, seeded design sampling)"},
- {"gate":"G2 Numeric-provenance","guards":"no reported number is produced by an LLM","status":"green","evidence":"geometric-mean-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; the narrative drafter's number-validation self-test is present"},
- {"gate":"G3 Data conformance & integrity","guards":"the analysis data is CDISC-conformant, intact, and PHI-free","status":"green","evidence":"ADaM conformance PASS (checks/conformance.R: domains, USUBJID referential integrity, PARAMCD well-formed, TRT01A×TRTSEQP); 0 trial-sense 'subject'; 0 PHI/PII"},
- {"gate":"G4 Double-programming parity (SAS↔R)","guards":"the two independent implementations agree","status":"green","evidence":"217 SAS / 217 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse"},
- {"gate":"G5 Adversarial QC panel","guards":"no skeptical reader can break the deliverable","status":"green","evidence":"multi-lens fix→adversarial-verify panel applied; 51 P0/P1 parity findings resolved. The 6 previously-pending twin-pairs were independently re-verified: 5 confirmed, 1 (sad/t_lab_marked_abnormal denominator) found and fixed. No open items."},
- {"gate":"G6 Regulatory & reporting standard","guards":"CDISC / ICH / Part-11 structure is met","status":"green","evidence":"0 TLF-number collisions; 0 out-of-scope eDISH/Hy's-Law terms in programs; ICH E14 QTc reference lines present in the QTc figures"},
- {"gate":"G7 AI-use governance & accountability","guards":"AI is disclosed and bounded; a human signs","status":"green","evidence":"0 forbidden/experimental terms; 0 PHI; frozen-model + human-gate discipline documented across the on-prem SLM wiki pages"},
- {"gate":"G8 Package & GUI consistency","guards":"the package is navigable, linked, and internally consistent","status":"green","evidence":"package_qc.py: 0 issues across the package's HTML — no broken links, no deliverable missing from the navigation, no orphaned pages, no terminology or count drift. Catches outdated/inconsistent GUIs across the WHOLE package, not just the pseudocode."}
-]}
+{
+ "generated": "2026-10-24 22:11 EDT",
+ "r_version": "R version 4.6.0 (2026-04-24)",
+ "green": 6,
+ "manual": 1,
+ "total": 8,
+ "gates": [
+  {
+   "gate": "G1 Reproducibility & environment",
+   "guards": "every number is regenerable from code + frozen inputs",
+   "status": "green",
+   "evidence": "469 R programs parse (0 fail); synthetic study re-runs bit-STABLE from seed 2026 (base R)",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G2 Numeric-provenance",
+   "guards": "no reported number is produced by an LLM",
+   "status": "green",
+   "evidence": "static scans: geometric-on-log-scale in 14 PK programs; distinct-participant counting in 162 programs; drafter number-validation self-test present (5)",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G3 Data structure & integrity",
+   "guards": "the analysis data passes the custom structural checks (not Pinnacle 21 or CDISC CORE), is intact, and PHI-free",
+   "status": "green",
+   "evidence": "custom structural checks PASS (checks/conformance.R; not Pinnacle 21 or CDISC CORE); 0 trial-sense 'subject' in programs; 0 PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G4 SAS/R twin structural parity",
+   "guards": "the SAS and R twins line up program for program (structure only)",
+   "status": "green",
+   "evidence": "217 SAS / 217 R twin programs; 0 twin TLF-number mismatches; 0 within-design number collisions; all R parse. Structural only: SAS is not executed (no license), so no outputs are compared, and the R twins were written to mirror the SAS",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G5 Adversarial QC panel",
+   "guards": "no skeptical reader can break the deliverable",
+   "status": "manual",
+   "evidence": "manual record, not computed here: an AI-agent review panel reported 51 P0/P1 parity findings resolved; 6 previously-pending twin pairs re-verified by the panel (5 confirmed, 1 sad/t_lab_marked_abnormal denominator gap found and fixed). Human review of these findings is not yet recorded",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G6 Reporting conventions",
+   "guards": "TLF numbering, scope and ICH E14 conventions hold (pattern checks, not a regulatory review)",
+   "status": "red",
+   "evidence": "0 TLF-number collisions; 0 out-of-scope eDISH/Hy's terms in programs; ICH E14 categorical thresholds (>450/480/500 ms, change >30/60 ms) in 10/10 QTc tables; QTc change figures: 4/10 draw the +10 ms mean-effect line and 6/10 draw 30/60 ms lines (one convention must apply to all)",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G7 AI-use governance & accountability",
+   "guards": "AI is disclosed and bounded; a human signs",
+   "status": "green",
+   "evidence": "0 experimental/non-standard method labels in analysis programs; 0 PHI hits; frozen-model + human-gate discipline documented in 7 tlf_interpret files",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G8 Package & GUI consistency",
+   "guards": "the package is navigable, linked, and internally consistent",
+   "status": "green",
+   "evidence": "package_qc.py: 0 issues across 41 HTML pages (broken links, deliverables missing from the nav, orphaned pages, terminology drift, count drift)",
+   "sign_off": "pending"
+  }
+ ]
+}
 </script>
 <script>
 (function(){
   function render(L){
     document.getElementById("meta").innerHTML =
-      "Generated "+L.generated+" · "+L.r_version+" · <b>"+L.green+"/"+L.total+" gates green</b> · dogfooded on this repo";
+      "Generated "+L.generated+" · "+L.r_version+" · <b>"+L.green+" of "+(L.total-(L.manual||0))+" automated gates green</b>"+(L.manual?" · "+L.manual+" manual record":"")+" · human sign-off pending";
     document.getElementById("gates").innerHTML = L.gates.map(function(g){
-      var s=g.status==="green"?"green":"red";
+      var s=(g.status==="green"||g.status==="manual")?g.status:"red";
       return '<div class="gate '+s+'"><div class="gh"><span class="gid">'+g.gate.split(" ")[0]+'</span>'+
         '<span class="gt">'+g.gate.replace(/^G\d+ /,"")+'</span>'+
-        '<span class="badge '+s+'"><span class="dot"></span>'+(s==="green"?"green":"red")+'</span></div>'+
+        '<span class="badge '+s+'"><span class="dot"></span>'+s+'</span></div>'+
         '<div class="guards"><span class="k">guards&nbsp;</span>'+g.guards+'</div>'+
         '<div class="evid">'+g.evidence+'</div>'+
-        '<div class="sign"><span class="box">☐</span> human sign-off pending &mdash; a named biostatistician reviews and signs</div></div>';
+        '<div class="sign"><span class="box">☐</span> human sign-off pending: a named biostatistician reviews and signs</div></div>';
     }).join("");
   }
   var embedded = JSON.parse(document.getElementById("ledger").textContent);
