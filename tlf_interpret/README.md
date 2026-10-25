@@ -83,9 +83,11 @@ preferred (no port, no process to manage).
 - **Deterministic decoding.** `temperature = 0`, fixed `seed` → reproducible drafts; logged in the
   audit record alongside the model digest and a hash of the prompt and facts.
 - **Validators are not the model.** The numeric-consistency check (regex-extract every number from
-  the draft; each must match a facts value within tolerance) is the core safety control: it makes a
-  hallucinated statistic *structurally impossible to pass silently*. The claim guard flags
-  efficacy/causal/"well tolerated"-style language for mandatory human judgment.
+  the draft; each must match a facts value within tolerance) catches invented or altered numbers:
+  every digit in the draft must equal some fact value. It does not check which quantity a number is
+  attached to, or numbers written as words: with N = 40 and 16 related TEAEs, "Of the 40
+  participants, 16 had a serious adverse event" passes. The human gate is the control. The claim
+  guard flags efficacy/causal/"well tolerated"-style language for mandatory human judgment.
 - **Human gate is mandatory.** Nothing is `APPROVED` without biostatistician sign-off. The Quarto
   doc renders drafts as `DRAFT: biostatistician review required` and shows exactly which facts the
   draft was grounded on, so review is fast and auditable.
@@ -94,8 +96,8 @@ preferred (no port, no process to manage).
 
 ## Honest limits
 - Small local models are *weak writers*; this is **draft-assist + validate**, never autonomous
-  authoring. The guardrails (number-validation + human gate), not the model's competence, are what
-  make it safe.
+  authoring. The controls are the guardrails (number-validation + human gate), not the model's
+  competence.
 - The numeric validator catches *fabricated/altered numbers*; it does not certify the *clinical
   correctness* of the interpretation, that is the reviewer's job (the claim guard only surfaces
   risky phrasings). Two specific boundaries the reviewer must cover: (a) it checks each number
