@@ -1,0 +1,6 @@
+"ID","INDICATOR","CATEGORY","VALUE","UNIT","WORSE","AMBER","RED","DETAIL"
+"SF-RATE","Screen-failure rate","Enrollment",30.8,"%","higher",30,40,"8 of 26 screened did not meet eligibility (plan: 25%)"
+"ENROLL","Enrollment versus plan","Enrollment",-22,"% vs plan","lower",-15,-30,"18 dosed against 23 planned by this date"
+"QRY-AGE","Open queries older than 30 days","Data",14,"queries","higher",10,25,"backlog rising ahead of the C4 data cut"
+"PROTDEV","Important protocol deviations per dosed participant","Compliance",0.11,"per participant","higher",0.2,0.4,"2 important deviations in 18 dosed participants"
+"DATA-LAG","Median days from visit to data entry","Data",2,"days","higher",5,10,"entry within plan"
