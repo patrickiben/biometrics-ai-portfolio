@@ -4,7 +4,11 @@
 # apps that run in the visitor's browser with Shinylive (webR). Used by
 # .github/workflows/pages.yml, and locally to check the site before a merge.
 #
-#   Rscript .github/pages/build_site.R <outdir>     (from the repository root; default _site)
+#   Rscript .github/pages/build_site.R <outdir>     (from the repository root)
+#
+# Locally, <outdir> must be outside the checkout (for example ../portfolio-site), so the build is
+# never committed and package_qc.py and the harness never scan it. Only the Pages workflow
+# (GITHUB_ACTIONS=true) builds into _site/ inside its own checkout on the runner.
 #
 # 1. Copies every file git tracks (or would track), except .git* and the apps/ placeholders,
 #    into <outdir>, so the site matches what the branch build serves today.
@@ -13,7 +17,7 @@
 # 3. Gives each app's wrapper page a title and a data: URI favicon (no /favicon.ico 404).
 # 4. Checks the result and stops on any problem.
 #
-# The export output is never committed (_site/ is git-ignored). Synthetic data only.
+# The build output is never committed. Synthetic data only.
 # ---------------------------------------------------------------------------
 args <- commandArgs(trailingOnly = TRUE)
 out <- if (length(args)) args[[1]] else "_site"
@@ -34,6 +38,13 @@ if (!file.exists(".github/pages/build_site.R")) fail("run this from the reposito
 if (as.character(utils::packageVersion("shinylive")) != SHINYLIVE)
   fail("shinylive ", SHINYLIVE, " is required; found ", as.character(utils::packageVersion("shinylive")))
 if (file.exists(out)) fail(out, " already exists; remove it first so two builds never mix")
+dir.create(out, recursive = TRUE)
+root <- normalizePath(".")
+if (startsWith(paste0(normalizePath(out), "/"), paste0(root, "/")) &&
+    !identical(Sys.getenv("GITHUB_ACTIONS"), "true")) {
+  unlink(out, recursive = TRUE)   # the empty folder made just above
+  fail(out, " is inside the checkout; build outside it, for example ../portfolio-site")
+}
 
 # 1. static site ------------------------------------------------------------
 files <- system2("git", c("-c", "core.quotepath=off", "ls-files", "--cached", "--others", "--exclude-standard"),

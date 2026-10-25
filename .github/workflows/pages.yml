@@ -8,7 +8,7 @@
 # the branch build keeps serving the site as before.
 #
 # Action majors checked against their GitHub releases on 2026-10-25: actions/checkout v7,
-# actions/setup-python v6, r-lib/actions v2, actions/configure-pages v6,
+# actions/setup-python v7, r-lib/actions v2, actions/configure-pages v6,
 # actions/upload-pages-artifact v5, actions/deploy-pages v5.
 name: Pages (static site and Shinylive apps)
 on:
@@ -31,7 +31,7 @@ jobs:
       pages_source: ${{ steps.source.outputs.build_type }}
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
       - name: Install pdftotext (the package check reads the text of published PDFs)
