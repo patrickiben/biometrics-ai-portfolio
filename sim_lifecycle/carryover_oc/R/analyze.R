@@ -112,7 +112,7 @@ summarize_washout <- function(res, pop, theta, set = oc_settings()) {
   rm <- matrix(res$r, R, n, byrow = TRUE)
   cf <- 0.5 * (rowMeans(ifelse(S == 2, log(1 + rm / theta), NA), na.rm = TRUE) -
                rowMeans(ifelse(S == 1, log(1 + rm * theta), NA), na.rm = TRUE))
-  rows <- list()
+  rows <- list(); O <- res$arms$A0
   for (a in names(res$arms)) {
     A <- res$arms[[a]]
     uses_rule <- a %in% c("A2", "A2s")
@@ -120,11 +120,15 @@ summarize_washout <- function(res, pop, theta, set = oc_settings()) {
       if (ep == "AUC_CMAX") {
         be <- A$AUC$be & A$CMAX$be; ev <- A$AUC$evaluable
         b <- c(est = NA, mcse = NA, k = sum(ev)); se_emp <- NA; cv <- c(NA, NA, NA)
+        be0 <- O$AUC$be & O$CMAX$be; dmax <- NA_real_
       } else {
         S2 <- A[[ep]]; be <- S2$be; ev <- S2$evaluable
         b <- mc_mean(S2$est - lt); se_emp <- if (sum(ev) > 1) sd(S2$est, na.rm = TRUE) else NA
         cv <- mc_rate(ifelse(ev, S2$lo <= lt & lt <= S2$hi, NA))
+        d0 <- abs(S2$est - O[[ep]]$est); dmax <- if (any(!is.na(d0))) max(d0, na.rm = TRUE) else NA_real_
+        be0 <- O[[ep]]$be
       }
+      dis <- mean(be != be0); pd <- mc_mean(be - be0)     # paired with the oracle, all studies
       p <- mc_rate(be); pe <- mc_rate(ifelse(ev, be, NA)); ne <- mc_rate(!ev)
       ex <- if (uses_rule) mc_mean(excl_frac) else c(0, 0, R)
       cov_cells <- if (ep == "AUC") list(mc_mean(A$coverage$share_below80), mc_rate(A$coverage$trigger))
@@ -141,6 +145,8 @@ summarize_washout <- function(res, pop, theta, set = oc_settings()) {
         noneval_rate = ne[["est"]], noneval_rate_mcse = ne[["mcse"]],
         auc_cov_below80 = cov_cells[[1]][1], auc_cov_below80_mcse = cov_cells[[1]][2],
         auc_cov_trigger = cov_cells[[2]][1], auc_cov_trigger_mcse = cov_cells[[2]][2],
+        be_rate_diff_a0 = pd[["est"]], be_rate_diff_a0_mcse = pd[["mcse"]],
+        max_abs_diff_a0 = dmax, be_disagree_a0 = dis,
         a3_no_lambda_frac = if (a == "A3") mean(res$a3_nolambda) else NA_real_,
         mean_r = mean(res$r), closed_form_bias = if (ep == "AUC") mean(cf) else NA_real_,
         stringsAsFactors = FALSE)
@@ -149,24 +155,43 @@ summarize_washout <- function(res, pop, theta, set = oc_settings()) {
   do.call(rbind, rows)
 }
 
+## share of the total that one part makes up, mean(part) / mean(total) over paired per-study
+## values, with its delta-method MCSE:
+##   Var(share) = [Var(part) - 2 share Cov(part, total) + share^2 Var(total)] / (k mean(total)^2)
+mc_share <- function(part, total) {
+  ok <- !is.na(part) & !is.na(total); part <- part[ok]; total <- total[ok]; k <- length(total)
+  if (k < 2 || mean(total) == 0) return(c(est = NA_real_, mcse = NA_real_, k = k))
+  mt <- mean(total); sh <- mean(part) / mt
+  v <- (var(part) - 2 * sh * cov(part, total) + sh^2 * var(total)) / (k * mt^2)
+  c(est = sh, mcse = sqrt(max(v, 0)), k = k)
+}
+
 ## rows of oc_bias_decomposition.csv for one washout: A2 - A0 = (A2 - A2s) + (A2s - A0),
-## paired within study (common random numbers). Bias terms use the studies that are
-## evaluable under the rule; BE-rate terms use all studies (not evaluable = not BE).
+## paired within study (common random numbers), and the rule against the naive analysis
+## (A2 - A1, paired). Bias terms use the studies that are evaluable under the rule; BE-rate
+## terms use all studies (not evaluable = not BE). The selection share is
+## (A2s - A0) / (A2 - A0) with its delta-method MCSE.
 decompose_washout <- function(res, pop) {
   rows <- list()
   for (ep in c("AUC", "CMAX")) {
-    e0 <- res$arms$A0[[ep]]; e2 <- res$arms$A2[[ep]]; es <- res$arms$A2s[[ep]]
+    e0 <- res$arms$A0[[ep]]; e1 <- res$arms$A1[[ep]]; e2 <- res$arms$A2[[ep]]; es <- res$arms$A2s[[ep]]
     ev <- e2$evaluable
     t <- mc_mean(ifelse(ev, e2$est - e0$est, NA)); rr <- mc_mean(ifelse(ev, e2$est - es$est, NA))
     s <- mc_mean(ifelse(ev, es$est - e0$est, NA))
+    sh <- mc_share(ifelse(ev, es$est - e0$est, NA), ifelse(ev, e2$est - e0$est, NA))
+    vn <- mc_mean(ifelse(ev, e2$est - e1$est, NA))
     pt <- mc_mean(e2$be - e0$be); pr <- mc_mean(e2$be - es$be); ps <- mc_mean(es$be - e0$be)
+    pn <- mc_mean(e2$be - e1$be)
     rows[[ep]] <- data.frame(endpoint = ep, n_rep = pop$R, n_eval = sum(ev),
       bias_total = t[["est"]], bias_total_mcse = t[["mcse"]],
       bias_retained = rr[["est"]], bias_retained_mcse = rr[["mcse"]],
       bias_selection = s[["est"]], bias_selection_mcse = s[["mcse"]],
+      selection_share = sh[["est"]], selection_share_mcse = sh[["mcse"]],
+      bias_vs_naive = vn[["est"]], bias_vs_naive_mcse = vn[["mcse"]],
       rate_total = pt[["est"]], rate_total_mcse = pt[["mcse"]],
       rate_retained = pr[["est"]], rate_retained_mcse = pr[["mcse"]],
       rate_selection = ps[["est"]], rate_selection_mcse = ps[["mcse"]],
+      rate_vs_naive = pn[["est"]], rate_vs_naive_mcse = pn[["mcse"]],
       stringsAsFactors = FALSE)
   }
   do.call(rbind, rows)
