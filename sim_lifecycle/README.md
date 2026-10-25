@@ -1,28 +1,20 @@
-# Simulated Study Life Cycle — early-phase clin-pharm (synthetic)
+# PK, NCA and bioequivalence sandbox (synthetic)
 
-A self-contained, runnable demo: one synthetic early-phase clinical-pharmacology study
-taken end-to-end through the analysis tools — **synthetic ADaM → PK/NCA → TLF computations** —
-to exercise the whole pipeline on realistically-shaped data.
+One synthetic early-phase clinical pharmacology study, taken through the analysis steps:
+**synthetic ADaM, PK and NCA, then summary computations.** Base R, seeded, runs offline.
+Page: [`index.html`](index.html).
 
-## 100% synthetic
+## What it does
 
-The **design structure** (design-model mix, enrollment-N distribution, healthy-volunteer
-rate, randomization/masking, archetype mix, unit geography) is informed by public
-early-phase **Phase-1 registration patterns on ClinicalTrials.gov**. **All participant-level
-data is simulated** from generic domain priors (typical oral small-molecule PK, healthy-volunteer
-AE incidence) — it is not fit to any specific sponsor, and no real participant-level data is used
-or reproduced. This demonstrates the *tools and the life cycle*, not any real study's outcomes.
-
-## Files
-
-- `simulate_adam.R` — the synthetic ADaM generator (base R; priors baked in). Emits 8
-  ADaM-shaped domains: **ADSL, ADEX, ADPC, ADPP, ADAE, ADVS, ADLB, ADEG**, with a
-  one-compartment oral PK model + NCA, a 2×2 bioequivalence crossover option, and
-  per-period safety domains.
-- `priors.R` — the design + domain priors as a hardcoded list (no external data needed at runtime).
-- `run_lifecycle.R` — driver: samples a design, simulates the study, and runs the
-  demographics / **PK-NCA (geometric mean, log scale)** / **bioequivalence ANOVA (90% CI)** computations.
-- `out/*.csv` — a generated synthetic study (seed 2026): the 8 ADaM domains.
+- `simulate_adam.R` writes eight ADaM-shaped domains: **ADSL, ADEX, ADPC, ADPP, ADAE, ADVS,
+  ADLB, ADEG**. PK comes from a one-compartment oral model; NCA uses the linear trapezoidal
+  rule, a terminal slope fitted to the last three points, and AUC to infinity, CL/F and Vz/F.
+- The design is a 2x2 bioequivalence crossover with per-period safety domains (N = 40, seed 2026).
+- `run_lifecycle.R` prints demographics, geometric means and geometric CV% on the log scale, the
+  bioequivalence analysis (fixed-effects model on log values with participant, period and
+  treatment; geometric mean ratio and 90% confidence interval), an adverse-event overview counted
+  by participant, and vitals, lab and ECG summaries. It then writes `out/*.csv`.
+- `priors.R` holds the design and domain priors as a hard-coded list.
 
 ## Run
 
@@ -30,11 +22,32 @@ or reproduced. This demonstrates the *tools and the life cycle*, not any real st
 Rscript sim_lifecycle/run_lifecycle.R
 ```
 
-Base R only for the generator; deterministic (seeded). The output feeds the SAS/R TLF
-pseudocode libraries in `../sas_tlf_pseudocode` and `../r_tlf_pseudocode`.
+Run from the repository root. Base R only (tested with R 4.6.0). The run regenerates the
+committed `out/*.csv` files byte for byte (checked 2026-10-24); the validation harness G1 gate
+checks the same thing.
 
-## Note on provenance
+## What it is not
 
-The public-registry **calibration corpus** (the ClinicalTrials.gov harvest that informed the
-design-structure priors) is not included in this public repository; the priors it produced are
-baked into `priors.R`, so the generator runs standalone.
+- Not a validated NCA: nominal sampling times and a fixed three-point terminal fit. In a study,
+  NCA comes from a validated system such as Phoenix WinNonlin or a qualified PKNCA setup.
+- Not checked by Pinnacle 21 or CDISC CORE; the domains pass this repository's own structural
+  checks (`validation_harness/checks/conformance.R`).
+- The drafting step (`tlf_interpret/`) is a stub when no language model is installed; only its
+  number check runs.
+- The SAS and R TLF libraries are written against these domain shapes but have not yet been run
+  on these files.
+
+## Synthetic data only
+
+The **design structure** (design mix, enrollment size, healthy-volunteer rate, randomization
+and masking, site geography) follows public Phase 1 registration patterns on ClinicalTrials.gov.
+**All participant-level data is simulated** from generic priors (typical oral small-molecule PK,
+healthy-volunteer adverse-event rates). It is not fitted to any sponsor, and no real participant
+data is used or reproduced.
+
+## Provenance of the calibration targets
+
+The calibration targets printed by the driver (for example Cmax CV 36%) were fitted from 42
+public early-phase registrations harvested from ClinicalTrials.gov. That harvest is not included
+in this repository, so the targets cannot be re-derived here; the priors it produced are written
+into `priors.R`, so the generator runs standalone.

@@ -119,7 +119,7 @@ h3 { font-size: 1.05rem; margin: 0 0 6px; }
 .card h3 { font-size: 1.08rem; }
 .card .meta { margin: 0 0 8px; }
 .card p { color: var(--text); }
-.card .small { color: var(--muted); font-size: .9rem; }
+.small, .card .small { color: var(--muted); font-size: .9rem; }
 .card ul.go { list-style: none; margin: auto 0 0; padding: 8px 0 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
 .card ul.go a { font-weight: 600; }
 
@@ -139,6 +139,20 @@ footer.site h2 { margin-top: 0; }
 .stub { padding: 56px 0; max-width: 40em; }
 .stub h1 { font-size: 1.6rem; margin: 0 0 12px; }
 .stub .actions { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 16px; }
+
+/* module pages that use this stylesheet */
+.page-head { padding: 32px 0 4px; }
+.page-head h1 { margin: 0 0 10px; font-size: clamp(1.6rem, 5vw, 2.2rem); }
+pre { background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px; padding: 12px 14px; overflow-x: auto; font-family: var(--mono); font-size: .84rem; line-height: 1.45; }
+pre code { background: none; padding: 0; font-size: inherit; }
+pre.log { white-space: pre-wrap; overflow-wrap: anywhere; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; margin: 12px 0; }
+.panel > :last-child { margin-bottom: 0; }
+.panel ul { margin: 0; padding-left: 1.2em; }
+.panel li { margin: 0 0 6px; }
+.files { list-style: none; padding: 0; margin: 12px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.files li { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; min-width: 0; }
+.files .d { display: block; color: var(--muted); font-size: .88rem; }
 
 /* narrow screens: the lifecycle table becomes stacked blocks */
 @media (max-width: 720px) {

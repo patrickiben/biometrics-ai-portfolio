@@ -1,70 +1,108 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Study-Lifecycle Sandbox</title>
-<style>
-  :root{--bg:#0b1020;--panel:#141a2c;--panel2:#1b2238;--line:#27314c;--ink:#e9edf7;--mut:#94a1c0;--accent:#5b8cff;--gold:#e0a64c;--teal:#3fd0c9;--green:#43c47d;--r:12px}
-  *{box-sizing:border-box} html{scroll-behavior:smooth}
-  body{margin:0;background:linear-gradient(180deg,#0b1020,#0a0d16 70%);color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif;font-size:15px;line-height:1.62}
-  a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
-  .wrap{max-width:1080px;margin:0 auto;padding:18px 22px 70px}
-  header.hero{padding:24px 0 14px;border-bottom:1px solid var(--line);margin-bottom:14px}
-  .home{color:var(--mut);font-size:12.5px} .home a{color:var(--mut)}
-  h1{font-size:25px;margin:8px 0 6px;font-weight:680}
-  .sub{color:var(--mut);font-size:14.5px;max-width:840px;margin:0}
-  h2{font-size:18px;font-weight:660;margin:26px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--line)}
-  .panel{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;margin:12px 0}
-  .note{border-left:3px solid var(--teal);background:rgba(63,208,201,.06)}
-  code{background:#0e1424;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-size:12.8px;color:#bfe1ff}
-  pre{background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow:auto;font-size:12.8px}
-  ul{padding-left:20px} li{margin:5px 0}
-  .files{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
-  .files a{display:block;background:#0e1424;border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-family:ui-monospace,Menlo,monospace;font-size:12.6px}
-  .files a .d{display:block;color:var(--mut);font-family:"Segoe UI",system-ui;font-size:11.8px;margin-top:2px}
-  .tag{display:inline-block;font-size:11px;color:var(--green);border:1px solid rgba(67,196,125,.4);background:rgba(67,196,125,.1);border-radius:5px;padding:1px 8px;margin-left:6px;vertical-align:middle}
-  @media(max-width:720px){.files{grid-template-columns:1fr}}
-</style></head>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PK, NCA and Bioequivalence Sandbox | Patrick Iben</title>
+<meta name="description" content="One synthetic early-phase crossover study in base R: eight ADaM-shaped domains, a one-compartment PK model, NCA and a bioequivalence analysis with a 90% confidence interval.">
+<link rel="stylesheet" href="../site.css">
+</head>
 <body>
-<div class="wrap">
-  <header class="hero">
-    <div class="home"><a href="../Biostatistics.html">&larr; Biostatistics</a> &middot; <a href="../START_HERE.html">full library</a></div>
-    <h1>Study-Lifecycle Sandbox <span class="tag">runs / synthetic</span></h1>
-    <p class="sub">One synthetic early-phase clinical-pharmacology study, taken end-to-end through the analysis tools &mdash; synthetic ADaM &rarr; PK/NCA &rarr; TLF computations &mdash; to exercise the whole pipeline on realistically-shaped data. Base R; deterministic; runs offline.</p>
-  </header>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../index.html">Home</a>
+      <a href="../index.html#lifecycle">Lifecycle</a>
+      <a href="../index.html#start">Start here</a>
+    </nav>
+  </div>
+</header>
 
-  <h2>What it is</h2>
+<main id="main" class="wrap">
+  <section class="page-head">
+    <p class="kicker">PK and clinical pharmacology</p>
+    <h1>PK, NCA and bioequivalence sandbox</h1>
+    <p class="meta"><span class="lab tools">Runs in base R</span><span class="lab tools">Synthetic data</span></p>
+    <p class="lede">One synthetic early-phase clinical pharmacology study, taken through the analysis steps: synthetic ADaM, PK and NCA, then summary computations. Base R, seeded, runs offline.</p>
+  </section>
+
+  <h2>What it does</h2>
   <div class="panel">
-    A self-contained generator (<code>simulate_adam.R</code>) emits eight ADaM-shaped domains &mdash;
-    <code>ADSL ADEX ADPC ADPP ADAE ADVS ADLB ADEG</code> &mdash; with a one-compartment oral PK model + NCA,
-    a 2&times;2 bioequivalence crossover option, and per-period safety domains. <code>run_lifecycle.R</code> then
-    runs the demographics, the <strong>PK-NCA (geometric mean, log scale)</strong>, and the
-    <strong>bioequivalence ANOVA (90% CI)</strong> computations on the simulated study.
+    <ul>
+      <li>A generator (<code>simulate_adam.R</code>) writes eight ADaM-shaped domains: <code>ADSL ADEX ADPC ADPP ADAE ADVS ADLB ADEG</code>.</li>
+      <li>PK comes from a one-compartment oral model. NCA uses the linear trapezoidal rule for AUC to the last sample, a terminal slope fitted to the last three points, and AUC to infinity, CL/F and Vz/F from that slope.</li>
+      <li>The design is a 2x2 bioequivalence crossover with per-period safety domains (N = 40, seed 2026).</li>
+      <li>The driver (<code>run_lifecycle.R</code>) prints demographics, geometric means and geometric CV% on the log scale, the bioequivalence analysis (a fixed-effects model on log values with participant, period and treatment; geometric mean ratio and 90% confidence interval), an adverse-event overview counted by participant, and vitals, lab and ECG summaries.</li>
+    </ul>
   </div>
 
-  <h2>100% synthetic</h2>
-  <div class="panel note">
-    The <strong>design structure</strong> (design-model mix, enrollment-N distribution, healthy-volunteer rate,
-    randomization/masking, archetype mix, unit geography) is informed by public early-phase
-    <strong>Phase-1 registration patterns on ClinicalTrials.gov</strong>. <strong>All participant-level data is
-    simulated</strong> from generic domain priors (typical oral small-molecule PK, healthy-volunteer AE incidence) &mdash;
-    it is not fit to any specific sponsor, and no real participant-level data is used or reproduced. This demonstrates
-    the <em>tools and the life cycle</em>, not any real study's outcomes. The public-registry calibration corpus that
-    informed the priors is not included here; the priors it produced are baked into <code>priors.R</code>, so the
-    generator runs standalone.
+  <h2>What was executed</h2>
+  <p>Excerpt of the output of <code>Rscript sim_lifecycle/run_lifecycle.R</code> from the repository root, R 4.6.0, run on 2026-10-24. The run rewrote all eight <code>out/*.csv</code> files byte for byte identical to the committed copies.</p>
+<pre class="log"><code>Archetype: BE | model: CROSSOVER | N=40 | site: Miami | healthy: TRUE
+
+[T] Demographics: age 43.8 (7.5) | 22 F / 18 M | weight 73.2 kg | BMI 26.0
+
+[T] PK NCA: geometric mean (Geo CV%) by treatment:
+ CMAX    Test: 104.172 (39.1%) | Reference: 103.085 (37.5%)
+ AUCLST  Test: 1134.764 (25.9%) | Reference: 1126.542 (32.1%)
+ AUCIFO  Test: 1171.363 (27.1%) | Reference: 1167.964 (33.7%)
+
+[T] Bioequivalence (Test vs Reference): GMR and 90% CI:
+ CMAX    GMR 101.1% 90% CI 98.6-103.5% intra-CV 6.4% within 80-125%: YES
+ AUCLST  GMR 100.7% 90% CI 95.9-105.8% intra-CV 13.0% within 80-125%: YES
+
+[T] AE overview (N=40): any TEAE 22 (55.0%), related 16, severe 2, SAE 0
+
+[SLM] interpretation status: FLAGGED (model: medgemma-1.5-4b-it-Q4_K_M: STUB, no model installed)
+[SLM] numeric-consistency: PASS (8 numbers checked)
+
+[T] Vitals: on-treatment SBP mean 119 mmHg | 4.0% of vital readings out of range
+[T/F] Labs: 3 participants ALT>ULN on-treatment (peak ALT/ULN 3.8) | 6.2% labs abnormal
+[T] ECG: on-treatment QTcF mean 412 ms, max 456 ms | 3.8% QTcF > 450 ms
+
+[CALIBRATION CHECK] Monte-Carlo N=400 vs fitted-from-42-studies
+ Cmax CV%  36.5 vs 36
+ AUClast CV%  35.1 vs 33
+ Tmax median   1.0 h vs 1.0 h
+ t1/2 median   8.2 h vs 7.8 h
+ any-AE rate 0.438 vs 0.430</code></pre>
+
+  <h2>What it is not</h2>
+  <div class="panel">
+    <ul>
+      <li>Not a validated NCA. The NCA here is a short base-R implementation on nominal sampling times with a fixed three-point terminal fit. In a study, NCA comes from a validated system such as Phoenix WinNonlin or a qualified PKNCA setup, on actual sampling times.</li>
+      <li>Not checked by Pinnacle 21 or CDISC CORE. The domains pass the repository's own structural checks (domains present, keys intact, well-formed parameter codes, sequence matches treatment).</li>
+      <li>The drafting step is a stub. With no language model installed, <code>tlf_interpret</code> prints a stub draft; only its number check runs.</li>
+      <li>The calibration targets (for example Cmax CV 36%) were fitted from 42 public early-phase registrations on ClinicalTrials.gov. That harvest is not included, so the targets cannot be re-derived from this repository; the resulting priors are written into <code>priors.R</code>.</li>
+      <li>The SAS and R TLF libraries are written against these domain shapes but have not yet been run on these files.</li>
+    </ul>
   </div>
+
+  <h2>Synthetic data only</h2>
+  <p>The design structure (design mix, enrollment size, healthy-volunteer rate, randomization and masking, site geography) follows public Phase 1 registration patterns on ClinicalTrials.gov. All participant-level data is simulated from generic priors for an oral small molecule and healthy-volunteer adverse-event rates. It is not fitted to any sponsor, and no real participant data is used or reproduced.</p>
 
   <h2>Run it</h2>
-  <pre><code>Rscript sim_lifecycle/run_lifecycle.R</code></pre>
+<pre><code>Rscript sim_lifecycle/run_lifecycle.R</code></pre>
+  <p>Run from the repository root. Base R only (tested with R 4.6.0). The drafting step loads <code>tlf_interpret/</code> and falls back to its stub when no model is installed.</p>
 
-  <h2>Source &amp; output</h2>
-  <div class="files">
-    <a href="simulate_adam.R"><code>simulate_adam.R</code><span class="d">synthetic ADaM generator (base R, priors baked in)</span></a>
-    <a href="priors.R"><code>priors.R</code><span class="d">design + domain priors (hardcoded list)</span></a>
-    <a href="run_lifecycle.R"><code>run_lifecycle.R</code><span class="d">driver: simulate &rarr; demographics / PK-NCA / BE-ANOVA</span></a>
-    <a href="out/adsl.csv"><code>out/adsl.csv</code><span class="d">one-record-per-participant (ADSL)</span></a>
-    <a href="out/adpp.csv"><code>out/adpp.csv</code><span class="d">PK parameters (NCA)</span></a>
-    <a href="out/adae.csv"><code>out/adae.csv</code><span class="d">adverse events</span></a>
+  <h2>Source and output</h2>
+  <ul class="files">
+    <li><a href="simulate_adam.R"><code>simulate_adam.R</code></a><span class="d">synthetic ADaM generator (base R, priors built in)</span></li>
+    <li><a href="priors.R"><code>priors.R</code></a><span class="d">design and domain priors</span></li>
+    <li><a href="run_lifecycle.R"><code>run_lifecycle.R</code></a><span class="d">driver: simulate, then demographics, PK/NCA, bioequivalence and safety summaries</span></li>
+    <li><a href="out/adsl.csv"><code>out/adsl.csv</code></a><span class="d">one record per participant</span></li>
+    <li><a href="out/adpp.csv"><code>out/adpp.csv</code></a><span class="d">PK parameters from the NCA</span></li>
+    <li><a href="out/adae.csv"><code>out/adae.csv</code></a><span class="d">adverse events</span></li>
+  </ul>
+  <p class="small">All eight generated domains are in <code>out/</code>.</p>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Synthetic data only. Not real trial data and not a validated deliverable. <a href="../index.html">Back to the home page</a>.</p>
   </div>
-  <p class="sub">Full generated study (seed 2026): the eight <code>out/*.csv</code> ADaM domains. Output feeds the
-    <a href="../sas_tlf_pseudocode/index.html">SAS</a> and <a href="../r_tlf_pseudocode/index.html">R</a> TLF pseudocode libraries.</p>
-</div>
-</body></html>
+</footer>
+</body>
+</html>
