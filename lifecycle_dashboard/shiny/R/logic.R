@@ -17,6 +17,13 @@ lifecycle_load <- function(dir = NULL) {
 
 clamp <- function(x) pmax(0, pmin(100, x))
 
+# The overall score is this weighted blend of the four dimensions (each 0..100, higher = riskier).
+SCORE_WEIGHTS <- c(Timeline = 0.30, Data = 0.28, TLF = 0.27, Resource = 0.15)
+SCORE_DIMS <- names(SCORE_WEIGHTS)
+
+# RAG status of a 0..100 score: above 66 red (at risk), 34 to 66 amber (watch), 33 or less green.
+rag_of <- function(score) ifelse(score > 66, "red", ifelse(score > 33, "amber", "green"))
+
 dbl_pressure <- function(phase, days_to_dbl) {
   if (phase == "Startup") return(0.15)
   d <- days_to_dbl
@@ -33,7 +40,8 @@ score_study <- function(s, overdue) {
                  (1 - s$sdv_pct) * 25) * (0.5 + 0.6 * dblp))
   tlf <- clamp((1 - s$tlf_finalized / s$tlf_planned) * 100 * (0.3 + 0.8 * repp))
   resource <- clamp((1 - s$dbl_prog_pct / 100) * 55 + min(1, s$discrep / 18) * 45 * repp)
-  overall <- clamp(0.30 * timeline + 0.28 * data + 0.27 * tlf + 0.15 * resource)
+  w <- SCORE_WEIGHTS
+  overall <- clamp(w[["Timeline"]] * timeline + w[["Data"]] * data + w[["TLF"]] * tlf + w[["Resource"]] * resource)
   list(Timeline = timeline, Data = data, TLF = tlf, Resource = resource, overall = overall)
 }
 
@@ -49,7 +57,7 @@ score_portfolio <- function(d) {
   st$TLF      <- round(vapply(sc, `[[`, numeric(1), "TLF"))
   st$Resource <- round(vapply(sc, `[[`, numeric(1), "Resource"))
   st$overall  <- round(vapply(sc, `[[`, numeric(1), "overall"))
-  st$rag <- ifelse(st$overall > 66, "red", ifelse(st$overall > 33, "amber", "green"))
+  st$rag <- rag_of(st$overall)
   st[order(-st$overall), ]
 }
 
@@ -96,4 +104,31 @@ lifecycle_signals <- function(st, d) {
   if (!length(sigs)) return(data.frame())
   out <- do.call(rbind, sigs)
   out[order(out$sev != "red"), ]
+}
+
+# The snapshot date of the data: each study's DB lock milestone date minus its days_to_dbl (the
+# most common value, so one inconsistent row cannot move it). NA when the data cannot say.
+lifecycle_as_of <- function(d) {
+  m <- d$milestones[d$milestones$milestone == "DBL", c("study_id", "date")]
+  x <- merge(m, d$studies[, c("id", "days_to_dbl")], by.x = "study_id", by.y = "id")
+  dates <- as.Date(x$date) - x$days_to_dbl
+  dates <- dates[!is.na(dates)]
+  if (!length(dates)) return(as.Date(NA))
+  tab <- table(format(dates))
+  as.Date(names(tab)[which.max(tab)])
+}
+
+# What drives each dimension of one study's score, in words (for the score breakdown).
+score_drivers <- function(s, overdue) {
+  pct <- function(x) sprintf("%d%%", round(100 * x))
+  lock <- if (s$phase == "Startup") sprintf("Startup, DB lock in %d days", s$days_to_dbl)
+          else if (s$days_to_dbl > 0) sprintf("DB lock in %d days", s$days_to_dbl)
+          else sprintf("DB locked %d days ago", -s$days_to_dbl)
+  od <- if (overdue == 1) "1 milestone overdue" else sprintf("%d milestones overdue", overdue)
+  c(Timeline = paste0(od, "; ", lock),
+    Data     = sprintf("%d open queries; %s clean; %s source-verified", s$open_queries,
+                       pct(s$clean_pct), pct(s$sdv_pct)),
+    TLF      = sprintf("%d of %d TLFs finalized (%s), in %s", s$tlf_finalized, s$tlf_planned,
+                       pct(s$tlf_finalized / s$tlf_planned), s$phase),
+    Resource = sprintf("%d%% double-programmed; %d open discrepancies", s$dbl_prog_pct, s$discrep))
 }

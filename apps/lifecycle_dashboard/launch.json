@@ -1,13 +1,15 @@
 {
   "source": "lifecycle_dashboard/shiny",
   "title": "Study Lifecycle Monitor",
-  "summary": "An operational health console for a synthetic portfolio of studies, from protocol to clinical study report: a risk heatmap scored on timeline, data, TLF and resource, ranked early-warning signals, the portfolio's open-query trend, and each study's milestones and TLF production funnel. The scoring is transparent, so a what-if on one study's open queries or double programming moves its risk where you can see it. Study-level operations data only, with no participant data.",
+  "summary": "An operational health console for a synthetic portfolio of eight early-phase studies, from protocol to clinical study report. Each study is scored from 0 to 100 on timeline, data, TLF production and resourcing, and the console shows the portfolio heatmap, ranked early-warning signals, and the selected study's score breakdown, milestone track, TLF funnel, deliverables register and open-query trend. The scoring is transparent, so a what-if on one study's open queries or double programming moves its risk where you can see it. Study-level operations data only, with no participant data.",
   "try": [
-    "Click a row of the heatmap, or pick a study in the sidebar, to open its milestone track and TLF funnel.",
-    "Drag Open queries up for the selected study and watch its Data score, the At risk count and the signals change.",
-    "For a study in DB Lock or Reporting, lower Double-programmed % below 60: a double-programming lag signal appears, and Reset to data undoes the what-if."
+    "Click a study in the heatmap, the signals or the table, for example CP-107, to open its score breakdown, milestones, TLF funnel and deliverables: its TLFs and CSR are overdue with 44% of TLFs final.",
+    "Pick CP-103 and drag Open queries to 120: its Data score rises, it turns amber and On watch goes from 3 to 4, and the trend marks the what-if with an open circle.",
+    "For CP-108, raise Double-programmed % to 80: its Resource score falls, its double-programming lag signal goes and At risk drops to 0. Reset to data undoes every what-if."
   ],
-  "screenshot": null,
+  "screenshot": {"src": "screenshot.webp", "width": 1280, "height": 755,
+                 "alt": "The Study Lifecycle Monitor running in the browser: KPI boxes reading 8 active studies, 1 at risk (CP-108), 3 on watch, 148 open queries, 48% of deliverables done and the next DB lock in 33 days; the portfolio risk heatmap with CP-108 selected; and the ranked early-warning signals, red first.",
+                 "caption": "The app in the browser, scrolled past its Start here card: the KPIs, the risk heatmap with CP-108 selected, and the ranked signals. Synthetic data."},
   "links": [
     {"label": "Guide", "href": "../../lifecycle_dashboard/quarto/lifecycle-guide.html"},
     {"label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
@@ -15,8 +17,11 @@
   "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
   "smoke": {
     "timeout_s": 150,
-    "outputs": ["k_n", "k_risk", "k_watch", "k_q", "k_del", "k_dbl", "heat", "signals", "trend", "detail_hdr", "milestones", "funnel"],
-    "expect": {"k_n": "8", "k_risk": "1", "k_watch": "3", "k_q": "148"},
+    "outputs": ["k_n", "k_n_sub", "k_risk", "k_risk_sub", "k_watch", "k_watch_sub", "k_q", "k_q_sub", "k_del", "k_del_sub",
+                "k_dbl", "k_dbl_sub", "heat", "signals_hdr", "signals", "detail_hdr", "breakdown", "milestones", "funnel",
+                "deliv", "trend", "inputs", "whatif_state"],
+    "expect": {"k_n": "8", "k_risk": "1", "k_watch": "3", "k_q": "148", "k_del": "48%", "k_dbl": "33 days",
+               "k_risk_sub": "CP-108", "k_dbl_sub": "CP-103 on 24 Jul 2026"},
     "tabs": []
   }
 }
