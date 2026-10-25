@@ -30,7 +30,7 @@ shiny::runApp("risk_monitor/shiny")
 
 Select a signal, set its level (green / amber / red), and watch the tier RAG and the
 overall termination-risk index re-color. Use "Reset to feed" to return to the seed
-state. The AI flags and drafts; the SRC / DSMB / medical monitor / PM
+state. The console flags and drafts; the SRC / DSMB / medical monitor / PM
 decide. Synthetic, no PHI, no participant records.
 
 The whole console is two files, shown here in full, nothing elided:

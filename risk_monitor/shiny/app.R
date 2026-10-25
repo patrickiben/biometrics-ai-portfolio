@@ -3,7 +3,7 @@
 #
 # Participant and Study signals roll up to a tier RAG and an overall
 # termination-risk index. Select a signal and change its level to watch the
-# tier and overall risk move - the roll-up is transparent. The AI flags; the
+# tier and overall risk move - the roll-up is transparent. The console flags; the
 # SRC / DSMB / medical monitor / PM decide. Synthetic, no PHI.
 #
 # Run:  shiny::runApp("risk_monitor/shiny")
@@ -20,7 +20,7 @@ ui <- page_sidebar(
   sidebar = sidebar(
     width = 320,
     div(class = "small text-muted",
-        "2 tiers of early-termination risk. The AI flags and drafts; the SRC / DSMB / ",
+        "2 tiers of early-termination risk. The console flags and drafts; the SRC / DSMB / ",
         "medical monitor / PM decide. Synthetic, no PHI, no participant records."),
     selectInput("tier", "Show tier", choices = c("All", TIERS), selected = "All"),
     hr(),

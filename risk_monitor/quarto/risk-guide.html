@@ -5361,7 +5361,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 <i class="callout-icon"></i>
 </div>
 <div class="callout-body-container">
-<p><strong>The rule.</strong> The AI <strong>flags, aggregates, and drafts</strong> the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study. Reported safety numbers come from the validated safety database, never from a model.</p>
+<p><strong>The rule.</strong> The console <strong>flags, aggregates, and drafts</strong> the alert, using fixed rules and no AI model. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study. Reported safety numbers come from the validated safety database, never from a model.</p>
 </div>
 </div>
 </div>
@@ -5384,13 +5384,11 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 <div>
 <pre class="mermaid mermaid-js">%%{init: {&#39;theme&#39;:&#39;base&#39;,&#39;themeVariables&#39;:{&#39;primaryColor&#39;:&#39;#28344f&#39;,&#39;primaryTextColor&#39;:&#39;#eef2fb&#39;,&#39;primaryBorderColor&#39;:&#39;#7d9bd6&#39;,&#39;lineColor&#39;:&#39;#aab8d6&#39;,&#39;clusterBkg&#39;:&#39;#161d33&#39;,&#39;clusterBorder&#39;:&#39;#3a476a&#39;,&#39;tertiaryColor&#39;:&#39;#20406a&#39;,&#39;tertiaryTextColor&#39;:&#39;#eef2fb&#39;,&#39;tertiaryBorderColor&#39;:&#39;#7d9bd6&#39;,&#39;secondaryColor&#39;:&#39;#20406a&#39;,&#39;secondaryTextColor&#39;:&#39;#eef2fb&#39;}}}%%
 flowchart LR
-  SRC[&quot;Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS&quot;] --&gt; RT{&quot;Route by&lt;br/&gt;sensitivity&quot;}
-  RT --&gt;|&quot;safety / PK /&lt;br/&gt;unblinded&quot;| LOC[&quot;On-device model&lt;br/&gt;zero egress&quot;]
-  RT --&gt;|&quot;non-sensitive&lt;br/&gt;ops&quot;| CLD[&quot;Cloud model&lt;br/&gt;de-identified aggregates&quot;]
-  LOC --&gt; ADV[&quot;Advanced engine&lt;br/&gt;(not implemented)&quot;]
-  CLD --&gt; ADV
-  ADV --&gt; SC[&quot;Severity-weighted&lt;br/&gt;roll-up to tier RAG&quot;]
+  SRC[&quot;Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS&quot;] --&gt; FEED[&quot;Signal feed&lt;br/&gt;signals.csv&lt;br/&gt;(synthetic)&quot;]
+  FEED --&gt; SC[&quot;Severity-weighted&lt;br/&gt;roll-up to tier RAG&lt;br/&gt;(fixed rules)&quot;]
+  ADV[&quot;ADV signals&lt;br/&gt;(placeholders,&lt;br/&gt;not implemented)&quot;] -.-&gt; SC
   SC --&gt; ESC[&quot;Alert +&lt;br/&gt;escalation&quot;]
+  ESC --&gt; HUM[&quot;SRC / DSMB /&lt;br/&gt;medical monitor decide&quot;]
 </pre>
 </div>
 <p></p></figure><p></p>
@@ -5745,7 +5743,7 @@ backlog rising ahead of database lock
 </tr>
 </tbody>
 </table>
-<p><em>Synthetic, no PHI. The AI flags; the SRC / DSMB / PM decide.</em></p>
+<p><em>Synthetic, no PHI. The console flags; the SRC / DSMB / PM decide.</em></p>
 <!-- -->
 
 </section>
@@ -6246,7 +6244,7 @@ backlog rising ahead of database lock
 <span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>::: {.callout-important appearance=&quot;simple&quot;}</span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>**The rule.** The AI **flags, aggregates, and drafts** the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study. Reported safety numbers come from the validated safety database, never from a model.</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>**The rule.** The console **flags, aggregates, and drafts** the alert, using fixed rules and no AI model. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study. Reported safety numbers come from the validated safety database, never from a model.</span>
 <span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>::: {.callout-warning appearance=&quot;simple&quot;}</span>
@@ -6258,81 +6256,79 @@ backlog rising ahead of database lock
 <span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
 <span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>%<span class="dt">%</span>{init: {<span class="ot">&#39;</span><span class="ss">theme</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">base</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">themeVariables</span><span class="ot">&#39;</span>:{<span class="ot">&#39;</span><span class="ss">primaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#28344f</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">primaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">primaryBorderColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#7d9bd6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">lineColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#aab8d6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">clusterBkg</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#161d33</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">clusterBorder</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#3a476a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#20406a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryBorderColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#7d9bd6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">secondaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#20406a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">secondaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>}}}%%</span>
 <span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  SRC[&quot;Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS&quot;] --&gt; RT{&quot;Route by&lt;br/&gt;sensitivity&quot;}</span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  RT --&gt;|<span class="ot">&quot;</span><span class="st">safety / PK /&lt;br/&gt;unblinded</span><span class="ot">&quot;</span>| LOC[<span class="ot">&quot;</span><span class="st">On-device model&lt;br/&gt;zero egress</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  RT --&gt;|&quot;non-sensitive&lt;br/&gt;ops&quot;| CLD[&quot;Cloud model&lt;br/&gt;de-identified aggregates&quot;]</span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>  LOC --&gt; ADV[&quot;Advanced engine&lt;br/&gt;(not implemented)&quot;]</span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  CLD --&gt; ADV</span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>  ADV --&gt; SC[<span class="ot">&quot;</span><span class="st">Severity-weighted&lt;br/&gt;roll-up to tier RAG</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>  SC --&gt; ESC[<span class="ot">&quot;</span><span class="st">Alert +&lt;br/&gt;escalation</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>The scoring is transparent - each signal has a level (green/amber/red) and a</span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>weight; a tier is the weighted blend, and the overall index weights the tiers</span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>(participant safety heaviest).</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  SRC[&quot;Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS&quot;] --&gt; FEED[&quot;Signal feed&lt;br/&gt;signals.csv&lt;br/&gt;(synthetic)&quot;]</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  FEED --&gt; SC[&quot;Severity-weighted&lt;br/&gt;roll-up to tier RAG&lt;br/&gt;(fixed rules)&quot;]</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  ADV[&quot;ADV signals&lt;br/&gt;(placeholders,&lt;br/&gt;not implemented)&quot;] -.-&gt; SC</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>  SC --&gt; ESC[<span class="ot">&quot;</span><span class="st">Alert +&lt;br/&gt;escalation</span><span class="ot">&quot;</span>]</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  ESC --&gt; HUM[&quot;SRC / DSMB /&lt;br/&gt;medical monitor decide&quot;]</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>The scoring is transparent - each signal has a level (green/amber/red) and a</span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>weight; a tier is the weighted blend, and the overall index weights the tiers</span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>(participant safety heaviest).</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## The live console - computed from the signal feed {#live}</span></span>
 <span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="fu">## The live console - computed from the signal feed {#live}</span></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>Everything below is computed from one file, the signal feed: <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> (in the <span class="co">[</span><span class="ot">`shiny/data/`</span><span class="co">](../shiny/data/)</span> folder). Edit that CSV (or run the app) and the roll-up, the tiers, and the feed all move.</span>
 <span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a>Everything below is computed from one file, the signal feed: <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> (in the <span class="co">[</span><span class="ot">`shiny/data/`</span><span class="co">](../shiny/data/)</span> folder). Edit that CSV (or run the app) and the roll-up, the tiers, and the feed all move.</span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="in">```{r kpis, results=&#39;asis&#39;}</span></span>
-<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>box <span class="ot">&lt;-</span> <span class="cf">function</span>(label, score, rag) {</span>
-<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>  col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">green=</span><span class="st">&quot;#43c47d&quot;</span>, <span class="at">amber=</span><span class="st">&quot;#e0a64c&quot;</span>, <span class="at">red=</span><span class="st">&quot;#e8657a&quot;</span>)[rag]</span>
-<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px&quot;&gt;&lt;div style=&quot;font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1&quot;&gt;%d · %s&lt;/div&gt;&lt;div style=&quot;font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
-<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a>    col, score, <span class="fu">toupper</span>(rag), label)</span>
-<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px&quot;&gt;&#39;</span>)</span>
-<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">box</span>(<span class="st">&quot;Overall termination risk&quot;</span>, o<span class="sc">$</span>score, o<span class="sc">$</span>rag))</span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> TIERS) { ts <span class="ot">&lt;-</span> o<span class="sc">$</span>tiers[[t]]; <span class="fu">cat</span>(<span class="fu">box</span>(<span class="fu">paste</span>(t, <span class="st">&quot;tier&quot;</span>), ts<span class="sc">$</span>score, ts<span class="sc">$</span>rag)) }</span>
-<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;/div&gt;&#39;</span>)</span>
-<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="in">```{r kpis, results=&#39;asis&#39;}</span></span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>box <span class="ot">&lt;-</span> <span class="cf">function</span>(label, score, rag) {</span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>  col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">green=</span><span class="st">&quot;#43c47d&quot;</span>, <span class="at">amber=</span><span class="st">&quot;#e0a64c&quot;</span>, <span class="at">red=</span><span class="st">&quot;#e8657a&quot;</span>)[rag]</span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px&quot;&gt;&lt;div style=&quot;font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1&quot;&gt;%d · %s&lt;/div&gt;&lt;div style=&quot;font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>    col, score, <span class="fu">toupper</span>(rag), label)</span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px&quot;&gt;&#39;</span>)</span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">box</span>(<span class="st">&quot;Overall termination risk&quot;</span>, o<span class="sc">$</span>score, o<span class="sc">$</span>rag))</span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> TIERS) { ts <span class="ot">&lt;-</span> o<span class="sc">$</span>tiers[[t]]; <span class="fu">cat</span>(<span class="fu">box</span>(<span class="fu">paste</span>(t, <span class="st">&quot;tier&quot;</span>), ts<span class="sc">$</span>score, ts<span class="sc">$</span>rag)) }</span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;/div&gt;&#39;</span>)</span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>::: {.panel-tabset}</span>
 <span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a>::: {.panel-tabset}</span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><span class="fu">### Early-warning feed</span></span>
 <span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="fu">### Early-warning feed</span></span>
-<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="in">```{r feed, results=&#39;asis&#39;}</span></span>
-<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">risk_feed</span>(s)</span>
-<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(f))) {</span>
-<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> f[j, ]; col <span class="ot">&lt;-</span> <span class="cf">if</span> (r<span class="sc">$</span>level <span class="sc">==</span> <span class="st">&quot;red&quot;</span>) <span class="st">&quot;#e8657a&quot;</span> <span class="cf">else</span> <span class="st">&quot;#e0a64c&quot;</span></span>
-<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>  adv <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">as.logical</span>(r<span class="sc">$</span>advanced)) <span class="st">&#39; &lt;span style=&quot;font-size:10px;background:#3a4157;border-radius:4px;padding:1px 5px&quot;&gt;ADV&lt;/span&gt;&#39;</span> <span class="cf">else</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350&quot;&gt;&lt;div style=&quot;flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div style=&quot;font-size:13px;color:#e9edf7&quot;&gt;&lt;b&gt;%s&lt;/b&gt; · &lt;span style=&quot;font-family:ui-monospace,monospace;color:#7fb0ff&quot;&gt;%s&lt;/span&gt; %s%s&lt;/div&gt;&lt;div style=&quot;font-size:12px;color:#94a1c0&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
-<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a>    col, r<span class="sc">$</span>tier, r<span class="sc">$</span>id, r<span class="sc">$</span>signal, adv, r<span class="sc">$</span>detail))</span>
-<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="in">```{r feed, results=&#39;asis&#39;}</span></span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">risk_feed</span>(s)</span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(f))) {</span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> f[j, ]; col <span class="ot">&lt;-</span> <span class="cf">if</span> (r<span class="sc">$</span>level <span class="sc">==</span> <span class="st">&quot;red&quot;</span>) <span class="st">&quot;#e8657a&quot;</span> <span class="cf">else</span> <span class="st">&quot;#e0a64c&quot;</span></span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>  adv <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">as.logical</span>(r<span class="sc">$</span>advanced)) <span class="st">&#39; &lt;span style=&quot;font-size:10px;background:#3a4157;border-radius:4px;padding:1px 5px&quot;&gt;ADV&lt;/span&gt;&#39;</span> <span class="cf">else</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350&quot;&gt;&lt;div style=&quot;flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div style=&quot;font-size:13px;color:#e9edf7&quot;&gt;&lt;b&gt;%s&lt;/b&gt; · &lt;span style=&quot;font-family:ui-monospace,monospace;color:#7fb0ff&quot;&gt;%s&lt;/span&gt; %s%s&lt;/div&gt;&lt;div style=&quot;font-size:12px;color:#94a1c0&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>    col, r<span class="sc">$</span>tier, r<span class="sc">$</span>id, r<span class="sc">$</span>signal, adv, r<span class="sc">$</span>detail))</span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><span class="fu">### All signals</span></span>
 <span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a><span class="fu">### All signals</span></span>
-<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a><span class="in">```{r table}</span></span>
-<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> s[, <span class="fu">c</span>(<span class="st">&quot;tier&quot;</span>,<span class="st">&quot;id&quot;</span>,<span class="st">&quot;signal&quot;</span>,<span class="st">&quot;category&quot;</span>,<span class="st">&quot;engine&quot;</span>,<span class="st">&quot;level&quot;</span>,<span class="st">&quot;weight&quot;</span>)]</span>
-<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(d, <span class="at">col.names=</span><span class="fu">c</span>(<span class="st">&quot;Tier&quot;</span>,<span class="st">&quot;ID&quot;</span>,<span class="st">&quot;Signal&quot;</span>,<span class="st">&quot;Category&quot;</span>,<span class="st">&quot;Engine&quot;</span>,<span class="st">&quot;Level&quot;</span>,<span class="st">&quot;Weight&quot;</span>), <span class="at">row.names=</span><span class="cn">FALSE</span>)</span>
-<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a><span class="in">```{r table}</span></span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> s[, <span class="fu">c</span>(<span class="st">&quot;tier&quot;</span>,<span class="st">&quot;id&quot;</span>,<span class="st">&quot;signal&quot;</span>,<span class="st">&quot;category&quot;</span>,<span class="st">&quot;engine&quot;</span>,<span class="st">&quot;level&quot;</span>,<span class="st">&quot;weight&quot;</span>)]</span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(d, <span class="at">col.names=</span><span class="fu">c</span>(<span class="st">&quot;Tier&quot;</span>,<span class="st">&quot;ID&quot;</span>,<span class="st">&quot;Signal&quot;</span>,<span class="st">&quot;Category&quot;</span>,<span class="st">&quot;Engine&quot;</span>,<span class="st">&quot;Level&quot;</span>,<span class="st">&quot;Weight&quot;</span>), <span class="at">row.names=</span><span class="cn">FALSE</span>)</span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>:::</span>
 <span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run it - and change it {#run}</span></span>
 <span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run it - and change it {#run}</span></span>
-<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;risk_monitor/shiny&quot;</span>)</span>
-<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a><span class="co"># needs: install.packages(c(&quot;shiny&quot;,&quot;bslib&quot;,&quot;DT&quot;))</span></span>
-<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a>Select a signal, set its level, and watch the tier and overall risk re-color. The</span>
-<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">run-and-build page</span><span class="co">](risk-build.html)</span> shows how the console is built from <span class="in">`R/logic.R`</span>.</span>
-<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip appearance=&quot;simple&quot;}</span>
-<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a>**Going live:** the feed file <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> is a representative signal set. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.</span>
-<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;risk_monitor/shiny&quot;</span>)</span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="co"># needs: install.packages(c(&quot;shiny&quot;,&quot;bslib&quot;,&quot;DT&quot;))</span></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>Select a signal, set its level, and watch the tier and overall risk re-color. The</span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">run-and-build page</span><span class="co">](risk-build.html)</span> shows how the console is built from <span class="in">`R/logic.R`</span>.</span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip appearance=&quot;simple&quot;}</span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a>**Going live:** the feed file <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> is a representative signal set. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.</span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## The other formats</span></span>
 <span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="fu">## The other formats</span></span>
-<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> Artifact <span class="pp">|</span></span>
-<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Run <span class="pp">|</span> <span class="co">[</span><span class="ot">Run &amp;amp; build the Shiny app</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
-<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Share (no R) <span class="pp">|</span> <span class="co">[</span><span class="ot">Dashboard</span><span class="co">](risk-dashboard.html)</span> <span class="pp">|</span></span>
-<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Build <span class="pp">|</span> <span class="co">[</span><span class="ot">Run-and-build walkthrough</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
-<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a>*Synthetic, no PHI. The AI flags; the SRC / DSMB / PM decide.*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> Artifact <span class="pp">|</span></span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Run <span class="pp">|</span> <span class="co">[</span><span class="ot">Run &amp;amp; build the Shiny app</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Share (no R) <span class="pp">|</span> <span class="co">[</span><span class="ot">Dashboard</span><span class="co">](risk-dashboard.html)</span> <span class="pp">|</span></span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Build <span class="pp">|</span> <span class="co">[</span><span class="ot">Run-and-build walkthrough</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>*Synthetic, no PHI. The console flags; the SRC / DSMB / PM decide.*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

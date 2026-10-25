@@ -3,7 +3,7 @@
 A runnable 2-tier early-termination-risk console. Participant and Study signals
 roll up to a tier RAG and an overall termination-risk index. Select a
 signal and change its level to watch the tier and overall risk move - the roll-up
-is transparent. The AI flags and drafts; the SRC / DSMB / medical monitor / PM
+is transparent. The console flags and drafts; the SRC / DSMB / medical monitor / PM
 decide. Synthetic, no PHI, no participant records.
 
 ## Run it
@@ -49,4 +49,4 @@ The [visual guide](../quarto/risk-guide.html), the shareable
 [dashboard](../quarto/risk-dashboard.html), and the
 [run-and-build page](../quarto/risk-build.html) are built from this same `R/logic.R`.
 
-*The AI flags; validated tools and humans decide. Reported safety numbers come from the validated safety database, never from a model.*
+*The console flags; validated tools and humans decide. Reported safety numbers come from the validated safety database, never from a model.*

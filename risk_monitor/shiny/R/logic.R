@@ -3,7 +3,7 @@
 # console. Operations-only, synthetic, no PHI, no participant-level data (the
 # "participant tier" holds de-identified signal states, never records).
 #
-# The AI flags; the SRC / DSMB / medical monitor / PM decide.
+# The console flags; the SRC / DSMB / medical monitor / PM decide.
 # Reported safety numbers come from the validated safety database, never here.
 # Signals flagged `advanced` are illustrative placeholders: the optimal-transport
 # and active-inference engine they describe is not implemented here.
