@@ -103,7 +103,7 @@ tab fills in, and a reload reaches Ready again. `--fault 'REGEX=404'` (or `drop`
 `--fault 'shinylive-sw\.js$=404' --expect-problem sw-failed`.
 
 Checked locally on 2026-10-25 (macOS, headless Chrome 155, served from the same machine): all
-three apps passed, ready 7.7 to 8.8 s after opening on a first visit and 7.2 to 8.6 s on a reload,
+three apps passed, ready 7.7 to 8.9 s after opening on a first visit and 7.2 to 8.6 s on a reload,
 page text painted in under 60 ms. With the network throttled to 6 Mbps, the app was ready after
 about 100 s; the 60-second notice appeared, named the step it was on, and cleared by itself. The error states were checked the same way: a service worker script that answers 404, a
 font, font cache, graphics library, `R.wasm` or webR worker that does not download, a missing
