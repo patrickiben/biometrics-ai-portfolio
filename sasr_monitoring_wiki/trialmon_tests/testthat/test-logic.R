@@ -30,7 +30,10 @@ test_that("CP101-014 is a potential Hy's Law case with the timing and ALP shown"
   expect_equal(r$alp_at3, 1.1)
   expect_equal(r$pattern, "mixed")
   expect_true(hys_screen(TM$adlb, alp_convention = TRUE)$hys[h$USUBJID == "CP101-014"])
-  expect_false(hys_screen(TM$adlb, window = 5)$hys[h$USUBJID == "CP101-014"])     # 7 days > 5
+  # each AT elevation opens its own window: with 5 days, the Day 17 repeat (ALT 5.1x) reaches the
+  # Day 22 TBL; with 0 days, ALT 5.6x and TBL 3.1x in the same Day 22 draw still qualify
+  at_day <- function(w) { x <- hys_screen(TM$adlb, window = w); x$at3_day[x$USUBJID == "CP101-014" & x$hys] }
+  expect_equal(c(at_day(30), at_day(5), at_day(0)), c(15, 17, 22))
   expect_true(any(wl$id == "CP101-014" & wl$check == "Potential Hy's Law" & wl$sev == "RED"))
 })
 

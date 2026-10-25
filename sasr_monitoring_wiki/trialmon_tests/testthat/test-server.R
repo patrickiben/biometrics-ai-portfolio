@@ -56,10 +56,13 @@ test_that("SAP settings flow through: CTCAE version, Hy's Law window, ALP conven
     expect_false(any(roll()$worklist$id == "CP101-013"))
     session$setInputs(ctcae = "5.0")
     expect_true(any(roll()$worklist$id == "CP101-013"))      # neutrophils grade 3 under v5.0 only
-    session$setInputs(window = 5)
-    expect_false(liver()$hys[liver()$USUBJID == "CP101-014"])
+    expect_equal(liver()$at3_day[liver()$USUBJID == "CP101-014"], 15)
+    session$setInputs(window = 5)                             # the Day 17 repeat now opens the window
+    expect_equal(liver()$at3_day[liver()$USUBJID == "CP101-014"], 17)
+    expect_true(liver()$hys[liver()$USUBJID == "CP101-014"])
     session$setInputs(window = 30, alp = TRUE)
     expect_true(liver()$hys[liver()$USUBJID == "CP101-014"])
+    expect_match(roll()$worklist$rule[roll()$worklist$check == "Potential Hy's Law"], "ALP < 2x ULN \\(SAP convention\\)")
     session$setInputs(window = NA)                            # a cleared box falls back to 30
     expect_equal(settings()$hys_window, 30)
   })

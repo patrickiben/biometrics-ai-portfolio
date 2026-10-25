@@ -37,6 +37,39 @@ test_that("timing: TBL > 2x ULN must come on or after the AT elevation, within t
   expect_true(hys_screen(at31, window = 31)$hys)
 })
 
+test_that("a second aminotransferase elevation opens its own window", {
+  # ALT 3.2x on Day 4, back to normal, then 4.0x on Day 43 with TBL 2.5x on Day 45: the Day 45 TBL is
+  # 41 days after the first elevation but 2 days after the second, so the case qualifies
+  d <- make_liver(c(4, 15, 43, 45), alt = c(3.2, 1.0, 4.0, 2.5), tbl = c(0.6, 0.6, 1.0, 2.5))
+  h <- hys_screen(d, window = 30)
+  expect_true(h$hys)
+  expect_equal(c(h$at3_day, h$at3_value, h$tbl_day, h$tbl_at_hit), c(43, 4.0, 45, 2.5))
+  expect_equal(h$sev, "RED")
+  expect_false(h$hys_quadrant_only)
+  expect_false(hys_screen(d, window = 1)$hys)                              # 2 days > a 1-day window
+  tm <- TM                                                                 # the same panel in the study
+  liver <- c("ALT", "AST", "ALP", "BILI")
+  tm$adlb <- rbind(tm$adlb[!(tm$adlb$USUBJID == "CP101-001" & tm$adlb$PARAMCD %in% liver), c("USUBJID", "PARAMCD",
+    "AVISIT", "ADY", "AVAL", "ANRLO", "ANRHI", "BASE", "ABLFL")], make_liver(c(4, 15, 43, 45),
+    alt = c(3.2, 1.0, 4.0, 2.5), tbl = c(0.6, 0.6, 1.0, 2.5), id = "CP101-001"))
+  x <- trialmon_worklist(tm)
+  x <- x[x$id == "CP101-001", ]
+  expect_true(any(x$check == "Potential Hy's Law" & x$sev == "RED"))
+  expect_match(x$value[x$check == "Potential Hy's Law"], "AT 4.0x ULN on Day 43; TBL 2.5x ULN on Day 45")
+})
+
+test_that("with the ALP option, each elevation is judged on the ALP in its own draw", {
+  d <- make_liver(c(8, 22, 29), alt = c(3.5, 3.5, 1), alp = c(2.5, 1.2, 1), tbl = c(1, 1, 2.5))
+  h <- hys_screen(d, alp_convention = TRUE)
+  expect_true(h$hys)
+  expect_equal(c(h$at3_day, h$alp_at3, h$tbl_day), c(22, 1.2, 29))       # Day 8 had ALP 2.5x: not that one
+  expect_equal(hys_screen(d)$at3_day, 8)                                   # without the option, Day 8 qualifies
+  d2 <- make_liver(c(8, 22), alt = c(3.5, 1), alp = c(2.5, 1), tbl = c(1, 2.5))
+  h2 <- hys_screen(d2, alp_convention = TRUE)
+  expect_false(h2$hys)
+  expect_equal(c(h2$at3_day, h2$tbl_day), c(8, 22))                       # the timing is still shown
+})
+
 test_that("ALP < 2x ULN applies only as the labeled SAP convention", {
   d <- make_liver(c(15, 22), alt = c(4, 4), alp = c(2, 2), tbl = c(1, 2.5))
   expect_true(hys_screen(d, alp_convention = FALSE)$hys)

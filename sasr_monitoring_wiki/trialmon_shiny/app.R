@@ -210,7 +210,7 @@ server <- function(input, output, session) {
     h <- liver()
     h <- h[h$peak_at >= 3 | h$peak_tbl > 2 | h$sev != "GREEN", ]
     d <- data.frame(Participant = h$USUBJID, Level = h$sev, `Peak AT` = round(h$peak_at, 1),
-                    `Peak TBL` = round(h$peak_tbl, 1), `AT >= 3x from day` = h$at3_day,
+                    `Peak TBL` = round(h$peak_tbl, 1), `AT >= 3x ULN (day)` = h$at3_day,
                     `ALP at that draw` = round(h$alp_at3, 1), `R ratio` = round(h$r_at3, 1), Pattern = h$pattern,
                     `TBL > 2x on day` = h$tbl_day, `Potential Hy's Law` = ifelse(h$hys, "Yes", "No"),
                     Quadrant = h$quadrant, `First repeat (days)` = h$repeat_gap, check.names = FALSE)
@@ -296,7 +296,7 @@ server <- function(input, output, session) {
     h <- liver()[liver()$USUBJID == id, ]; q <- qtc_screen(tm$adeg); q <- q[q$USUBJID == id, ]
     g <- lab_grades(tm$adlb[tm$adlb$USUBJID == id, ], settings()$ctcae); g <- g[!is.na(g$WGRADE) & g$WGRADE >= 2, ]
     ae <- tm$adae[tm$adae$USUBJID == id, ]; nt <- tm$notes$NOTE[tm$notes$USUBJID == id]
-    hep <- if (h$hys) sprintf("Potential Hy's Law: AT >= 3x ULN from Day %d, TBL %.1fx ULN on Day %d", h$at3_day, h$tbl_at_hit, h$tbl_day)
+    hep <- if (h$hys) sprintf("Potential Hy's Law: AT %.1fx ULN on Day %d, TBL %.1fx ULN on Day %d", h$at3_value, h$at3_day, h$tbl_at_hit, h$tbl_day)
       else if (!is.na(h$at3x_day)) sprintf("AT %.1fx ULN on Day %d: confirm (repeat within 48 to 72 h); TBL peak %.1fx", h$at3x_value, h$at3x_day, h$peak_tbl)
       else sprintf("Peak AT %.1fx, TBL %.1fx ULN: no hepatic flag", h$peak_at, h$peak_tbl)
     div(class = "packet small",

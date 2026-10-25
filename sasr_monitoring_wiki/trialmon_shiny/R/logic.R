@@ -8,10 +8,12 @@
 #
 # Rules (one definition, used by the app, the Quarto pages, the SRC packet and the tests):
 #   Potential Hy's Law (FDA, Drug-Induced Liver Injury: Premarketing Clinical Evaluation, July 2009):
-#     ALT or AST >= 3x ULN, AND total bilirubin (TBL) > 2x ULN on or after the day of that
-#     aminotransferase (AT) elevation and within `window` days (30 by default; an SAP convention).
-#     ALP is shown alongside. "ALP < 2x ULN" is applied only when `alp_convention = TRUE`, as a
-#     labeled SAP convention: FDA says only that ALP "should not be substantially elevated".
+#     ALT or AST >= 3x ULN, AND total bilirubin (TBL) > 2x ULN on or after the day of an
+#     aminotransferase (AT) elevation and within `window` days of it (30 by default; an SAP
+#     convention). Every draw with ALT or AST >= 3x ULN opens its own window, so a second elevation
+#     weeks after the first is screened too; the first draw that qualifies is the one reported.
+#     ALP is shown alongside. "ALP < 2x ULN" at that draw is applied only when `alp_convention = TRUE`,
+#     as a labeled SAP convention: FDA says only that ALP "should not be substantially elevated".
 #   AT elevation needing confirmation: ALT or AST > 3x ULN (strictly greater, as in the FDA text)
 #     -> repeat ALT, AST, ALP and TBL within 48 to 72 hours. Not a Hy's Law finding.
 #   FDA (2009) discontinuation considerations that these data can show: ALT or AST > 8x ULN;
@@ -19,8 +21,9 @@
 #     symptoms are not in these data.)
 #   eDISH quadrants: peak post-baseline ALT or AST (x ULN) against peak TBL (x ULN), lines at 3x and
 #     2x. Peaks need not be concurrent, so the upper-right quadrant is a prompt to check timing.
-#   R ratio = (ALT/ULN)/(ALP/ULN) at the first visit where ALT >= 3x ULN:
-#     >= 5 hepatocellular, 2 < R < 5 mixed, <= 2 cholestatic.
+#   R ratio = (ALT/ULN)/(ALP/ULN) at the reported AT elevation draw (the qualifying one for a
+#     potential Hy's Law case, otherwise the first), or at the first draw with ALT >= 3x ULN when
+#     only AST reached 3x in that draw: >= 5 hepatocellular, 2 < R < 5 mixed, <= 2 cholestatic.
 #   QTcF (ICH E14 categorical analysis; E14/S7B Q&As): post-baseline QTcF > 450, > 480, > 500 ms;
 #     change from baseline > 30 and > 60 ms. Screen tiers: RED > 500 or change > 60;
 #     AMBER > 480 or change > 30; watch > 450.
@@ -87,21 +90,28 @@ liver_one <- function(d, window, alp_convention) {
     peak_alt = max(post$ALT, na.rm = TRUE), peak_ast = max(post$AST, na.rm = TRUE),
     peak_at = max(at, na.rm = TRUE), peak_tbl = max(post$BILI, na.rm = TRUE),
     peak_alp = max(post$ALP, na.rm = TRUE),
-    at3_day = NA_real_, alp_at3 = NA_real_, r_at3 = NA_real_, tbl_day = NA_real_, tbl_at_hit = NA_real_,
-    hys = FALSE, hys_quadrant_only = FALSE,
+    at3_day = NA_real_, at3_value = NA_real_, alp_at3 = NA_real_, r_at3 = NA_real_,
+    tbl_day = NA_real_, tbl_at_hit = NA_real_, hys = FALSE, hys_quadrant_only = FALSE,
     at3x_day = NA_real_, at3x_value = NA_real_, repeat_day = NA_real_, repeat_at = NA_real_,
     stop_reason = "")
   i3 <- which(.ge(post$ALT, 3) | .ge(post$AST, 3))
   if (length(i3)) {
-    d3 <- post$ADY[i3[1]]
-    out$at3_day <- d3
-    out$alp_at3 <- post$ALP[i3[1]]
-    ia <- which(.ge(post$ALT, 3))
-    if (length(ia)) out$r_at3 <- post$ALT[ia[1]] / post$ALP[ia[1]]
-    it <- which(post$ADY >= d3 & post$ADY <= d3 + window & .gt(post$BILI, 2))
-    if (length(it)) {
-      out$tbl_day <- post$ADY[it[1]]; out$tbl_at_hit <- post$BILI[it[1]]
-      out$hys <- if (alp_convention) .lt(out$alp_at3, 2) else TRUE
+    # every AT elevation opens its own window: TBL > 2x ULN from that day to `window` days later
+    hits <- lapply(i3, function(i) which(post$ADY >= post$ADY[i] & post$ADY <= post$ADY[i] + window &
+                                         .gt(post$BILI, 2)))
+    has_tbl <- lengths(hits) > 0
+    alp_ok <- if (alp_convention) .lt(post$ALP[i3], 2) else rep(TRUE, length(i3))
+    k <- which(has_tbl & alp_ok)[1]            # the first elevation that qualifies
+    if (is.na(k)) k <- which(has_tbl)[1]       # TBL in a window, but the ALP option excluded it
+    if (is.na(k)) k <- 1                       # no TBL > 2x ULN in any window: the first elevation
+    i <- i3[k]
+    out$at3_day <- post$ADY[i]; out$at3_value <- at[i]; out$alp_at3 <- post$ALP[i]
+    ia <- if (.ge(post$ALT[i], 3)) i else which(.ge(post$ALT, 3))[1]
+    if (!is.na(ia)) out$r_at3 <- post$ALT[ia] / post$ALP[ia]
+    if (has_tbl[k]) {
+      j <- hits[[k]][1]
+      out$tbl_day <- post$ADY[j]; out$tbl_at_hit <- post$BILI[j]
+      out$hys <- alp_ok[k]
     }
   }
   out$hys_quadrant_only <- !out$hys & .ge(out$peak_at, 3) & .gt(out$peak_tbl, 2)
@@ -395,8 +405,9 @@ trialmon_worklist <- function(tm, settings = trialmon_settings(), study = NULL) 
   h <- hys_screen(tm$adlb, settings$hys_window, settings$alp_convention)
   alp_txt <- if (settings$alp_convention) " and ALP < 2x ULN (SAP convention)" else ""
   for (j in which(h$hys)) add("Participant", h$USUBJID[j], "RED", "Potential Hy's Law",
-      sprintf("AT %.1fx ULN from Day %d; TBL %.1fx ULN on Day %d; ALP %.1fx ULN; R %.1f (%s)",
-              h$peak_at[j], h$at3_day[j], h$tbl_at_hit[j], h$tbl_day[j], h$alp_at3[j], h$r_at3[j], h$pattern[j]),
+      sprintf("AT %.1fx ULN on Day %d; TBL %.1fx ULN on Day %d; ALP %.1fx ULN then; R %.1f (%s); peak AT %.1fx ULN",
+              h$at3_value[j], h$at3_day[j], h$tbl_at_hit[j], h$tbl_day[j], h$alp_at3[j], h$r_at3[j], h$pattern[j],
+              h$peak_at[j]),
       sprintf("ALT or AST >= 3x ULN and TBL > 2x ULN on or after it within %g days%s", settings$hys_window, alp_txt))
   for (j in which(nzchar(h$stop_reason))) add("Participant", h$USUBJID[j], "RED",
       "FDA (2009) discontinuation consideration", h$stop_reason[j], "for the investigator and medical monitor")
