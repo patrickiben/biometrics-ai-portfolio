@@ -66,13 +66,13 @@ server <- function(input, output, session) {
   output$v_sae <- renderText(as.character(k$sae))
 
   output$edish <- renderPlot({
-    P$flag <- ifelse(P$hys, "Hy's-Law (RED)", ifelse(P$alt > 3 & P$tbl <= 2, "ALT-only (near-miss)", "within limits"))
+    P$flag <- ifelse(P$hys, "Hy's-Law (RED)", ifelse(P$alt >= 3 & P$tbl <= 2, "ALT-only (near-miss)", "within limits"))
     ggplot(P, aes(alt, tbl, colour = flag)) +
       annotate("rect", xmin=3, xmax=Inf, ymin=2, ymax=Inf, fill="#e8657a", alpha=.08) +
       geom_hline(yintercept=2, linetype=2, colour="#e0a64c") +
       geom_vline(xintercept=3, linetype=2, colour="#e0a64c") +
       geom_point(size=3) +
-      geom_text(data=P[P$hys | P$alt>3, ], aes(label=id), colour="#c5cee4", size=3, vjust=-1) +
+      geom_text(data=P[P$hys | P$alt>=3, ], aes(label=id), colour="#c5cee4", size=3, vjust=-1) +
       scale_x_log10() + scale_y_log10() +
       scale_colour_manual(values=c("Hy's-Law (RED)"="#e8657a","ALT-only (near-miss)"="#e0a64c","within limits"="#43c47d")) +
       labs(x="peak ALT (x ULN, log)", y="peak TBili (x ULN, log)", colour=NULL,

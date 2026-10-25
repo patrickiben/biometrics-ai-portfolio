@@ -29,9 +29,12 @@ shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 The screening rules (illustrative thresholds):
 
 ```
-eDISH / Hy's-Law : (ALT or AST > 3x ULN) AND TBili > 2x ULN            -> RED
+eDISH / Hy's-Law : (ALT or AST >= 3x ULN) AND TBili > 2x ULN           -> RED
+                   R = (ALT/ULN)/(ALP/ULN): >= 5 hepatocellular, 2 < R < 5 mixed, <= 2 cholestatic
 QTcF (ICH E14)   : QTcF > 500 ms or dQTcF > 60 ms -> RED ; > 480/> 30  -> AMBER
-3+3 DLT          : >= 2 adjudicated DLT in an evaluable cohort -> RED ; 1 -> AMBER
+3+3 DLT          : >= 2 adjudicated DLT in a cohort -> RED (MTD exceeded);
+                   1 DLT with fewer than 6 evaluable -> AMBER (expand to 6);
+                   1 of 6 -> GREEN (escalation-eligible; the SRC decides)
 ```
 
 The **AND-gate** is the point: CP101-009 has ALT 4.2x but TBili 1.6x, so it is *not*

@@ -65,7 +65,7 @@ the ranked flag list; `trialmon_status()` and `trialmon_kpis()` summarize the wh
 ```{r logic, code=readLines("../trialmon_shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-Read the eDISH gate: `p$hys <- (p$alt > 3 | p$ast > 3) & p$tbl > 2`. That single line is
+Read the eDISH gate: `p$hys <- (p$alt >= 3 | p$ast >= 3) & p$tbl > 2`. That single line is
 why a high ALT alone does not fire. Bilirubin must be up too. In the synthetic data
 `CP101-009` (ALT 4.2x, TBili 1.6x) stays green because the second half of the `&` is
 false, while `CP101-014` (ALT 5.6x, TBili 3.1x) lands in the RED quadrant. Change that

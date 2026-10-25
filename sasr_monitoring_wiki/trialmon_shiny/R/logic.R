@@ -5,9 +5,13 @@
 # Reported safety numbers come from the validated safety database.
 #
 # Screening rules (illustrative thresholds):
-#   eDISH / Hy's-Law : (ALT or AST > 3x ULN) AND TBili > 2x ULN           -> RED
+#   eDISH / Hy's-Law : (ALT or AST >= 3x ULN) AND TBili > 2x ULN          -> RED
+#                      (FDA DILI guidance, 2009); R = (ALT/ULN)/(ALP/ULN): >= 5 hepatocellular,
+#                      2 < R < 5 mixed, <= 2 cholestatic
 #   QTcF (ICH E14)   : QTcF > 500 ms or dQTcF > 60 ms  -> RED ; >480/>30  -> AMBER
-#   3+3 DLT          : >= 2 adjudicated DLT in an evaluable cohort -> RED ; 1 -> AMBER
+#   3+3 DLT          : >= 2 adjudicated DLT in a cohort -> RED (MTD exceeded at that dose);
+#                      1 DLT with fewer than 6 evaluable -> AMBER (expand the cohort to 6);
+#                      1 of 6 -> GREEN (escalation-eligible; the SRC decides)
 # ---------------------------------------------------------------------------
 
 trialmon_load <- function(dir = NULL) {
@@ -22,11 +26,11 @@ trialmon_load <- function(dir = NULL) {
 qtc_sev <- function(qt, dqt) {
   if (qt > 500 || dqt > 60) "RED" else if (qt > 480 || dqt > 30) "AMBER" else if (qt > 450) "watch" else "GREEN"
 }
-r_pattern <- function(r) if (r >= 5) "hepatocellular" else if (r >= 2) "mixed" else "cholestatic"
+r_pattern <- function(r) if (r >= 5) "hepatocellular" else if (r > 2) "mixed" else "cholestatic"
 
 # Attach screening columns to the participant frame.
 score_participants <- function(p) {
-  p$hys    <- (p$alt > 3 | p$ast > 3) & p$tbl > 2
+  p$hys    <- (p$alt >= 3 | p$ast >= 3) & p$tbl > 2
   p$rratio <- round(p$alt / p$alp, 1)
   p$pattern <- vapply(p$rratio, r_pattern, character(1))
   p$qsev   <- mapply(qtc_sev, p$qt, p$dqt)
@@ -38,7 +42,7 @@ dlt_state <- function(tm) {
   p <- tm$participants
   do.call(rbind, lapply(split(p, p$cohort), function(x) {
     nd <- sum(x$dltfl == "Y"); neval <- sum(x$dlteval == "Y")
-    sev <- if (nd >= 2) "RED" else if (nd == 1) "AMBER" else "GREEN"
+    sev <- if (nd >= 2) "RED" else if (nd == 1 && neval < 6) "AMBER" else "GREEN"
     data.frame(cohort = x$cohort[1], dose_mg = x$dose_mg[1], n = nrow(x),
                dlt = nd, evaluable = neval, sev = sev, stringsAsFactors = FALSE)
   }))
@@ -54,7 +58,7 @@ trialmon_worklist <- function(tm) {
     data.frame(id=id, sev=sev, check=check, value=val, rule=rule, stringsAsFactors=FALSE)
   for (j in which(p$hys)) add(p$id[j], "RED", "eDISH / Hy's-Law screen",
       sprintf("ALT %.1fx & TBili %.1fx (R %.1f %s)", p$alt[j], p$tbl[j], p$rratio[j], p$pattern[j]),
-      "(ALT or AST >3x) AND TBili >2x")
+      "(ALT or AST >=3x) AND TBili >2x")
   for (j in which(p$qsev == "RED")) add(p$id[j], "RED", "QTcF (ICH E14 screen)",
       sprintf("%d ms, d%d", p$qt[j], p$dqt[j]), "QTcF >500 or dQTcF >60 ms")
   for (j in which(p$qsev == "AMBER")) add(p$id[j], "AMBER", "QTcF (ICH E14 screen)",
@@ -62,7 +66,7 @@ trialmon_worklist <- function(tm) {
   ds <- dlt_state(tm)
   for (j in which(ds$sev != "GREEN")) add(paste(ds$cohort[j], "cohort"), ds$sev[j],
       "Adjudicated DLT vs 3+3", sprintf("%d/%d evaluable", ds$dlt[j], ds$evaluable[j]),
-      if (ds$sev[j]=="RED") ">=2 DLT in cohort" else "1 DLT in cohort")
+      if (ds$sev[j]=="RED") ">=2 DLT in cohort (MTD exceeded)" else "1 DLT, fewer than 6 evaluable: expand to 6")
   if (!length(wl)) return(data.frame())
   out <- do.call(rbind, wl); out[order(out$sev != "RED"), ]
 }

@@ -12,6 +12,7 @@
   Validate: validate the threshold logic + scheduling wrapper as study programs; keep
             anything REPORTED independently double-programmed.
   v2 - corrected after a review of the SAS and clinical logic (see README, "Change log").
+  v3 - Oct 2026: Hy's-Law ALT/AST limb is >= 3x ULN (FDA DILI guidance, 2009).
 ====================================================================================*/
 
 %global TM_STUDY TM_RUNID TM_RUNDT TM_OUT TM_LOG TM_STATE TM_RC TM_STATUS TM_FRESH_OK TM_BACKUP;
@@ -135,7 +136,7 @@
 ====================================================================================*/
 
 /* ---- Hy's-Law / eDISH screening flag (CORRECTED) -----------------------------------
-   RED if (ALT or AST > altmult x ULN) AND (TBili > bilmult x ULN).  STRICT '>'.
+   RED if (ALT or AST >= altmult x ULN) AND (TBili > bilmult x ULN), per FDA DILI 2009.
    NEVER downgraded by ALP: a high ALP does NOT exclude Hy's Law. Report the R-ratio
    (ALT/ULN over ALP/ULN) for CONTEXT only - hepatocellular when R>=5.  in: USUBJID +
    peak alt_x ast_x tbl_x alp_x (x-ULN).  Screening flag, NOT a diagnosis.            */
@@ -143,7 +144,7 @@
   data &out;
     set &in;
     length flag $60 sev $6;
-    hy = ((alt_x > &altmult) or (ast_x > &astmult)) and (tbl_x > &bilmult);   /* strict > */
+    hy = ((alt_x >= &altmult) or (ast_x >= &astmult)) and (tbl_x > &bilmult); /* >=3x, >2x */
     if hy then do;
       r_ratio = divide(alt_x, alp_x);                      /* context only - never downgrades */
       length pattern $14; pattern = ifc(r_ratio>=5,"hepatocellular",ifc(r_ratio<=2,"cholestatic","mixed"));

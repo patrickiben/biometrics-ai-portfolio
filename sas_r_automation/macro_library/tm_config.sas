@@ -32,7 +32,7 @@
 %let CFG_MAXAGE = 26;                                /* hours before a feed is flagged stale */
 
 /* --- thresholds (pre-specified from the protocol/SAP) --- */
-%let CFG_ALTM     = 3;       /* Hy's-Law ALT/AST multiple of ULN (strict >)  */
+%let CFG_ALTM     = 3;       /* Hy's-Law ALT/AST multiple of ULN (>=, FDA)   */
 %let CFG_BILM     = 2;       /* Hy's-Law total bilirubin multiple of ULN     */
 %let CFG_DOSEVAR  = COHORT;  /* the DOSE-LEVEL key for the 3+3 DLT tally; set to DOSELVL if cohort != dose level */
 %let CFG_ENROLL_KRI = 0.80;  /* enrollment KRI floor (fraction of plan)      */

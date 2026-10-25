@@ -4,6 +4,7 @@
 # Schedule with cronR / taskscheduleR; pin packages with renv for byte-reproducibility.
 # v2 - corrected after an independent review (strict Hy's-Law, NA-safe gate, %.0f,
 #      lowercase columns, deferred de-dup commit, fail-loud assert/guard).
+# v3 - Oct 2026: Hy's-Law ALT/AST limb is >= 3x ULN (FDA DILI guidance, 2009).
 #
 # Honest: these functions DETECT and EMAIL pre-specified deterministic flags. They do
 # NOT triage or judge. A flag is a prompt for a human; the medical monitor decides.
@@ -52,11 +53,11 @@ tm_freshness <- function(feeds, max_age_h = 26) {
   out
 }
 
-# ---- Hy's-Law / eDISH screening (CORRECTED): RED on ALT/AST>3 AND TBili>2, STRICT '>',
+# ---- Hy's-Law / eDISH screening: RED on ALT/AST>=3 AND TBili>2 (FDA DILI guidance),
 #      NEVER downgraded by ALP. R-ratio (ALT/ULN over ALP/ULN) is context only. --------
 tm_chk_hyslaw <- function(df, altmult = 3, astmult = 3, bilmult = 2) {
   df |>
-    mutate(hy = (alt_x > altmult | ast_x > astmult) & tbl_x > bilmult,
+    mutate(hy = (alt_x >= altmult | ast_x >= astmult) & tbl_x > bilmult,
            r_ratio = alt_x / alp_x,
            pattern = case_when(r_ratio >= 5 ~ "hepatocellular", r_ratio <= 2 ~ "cholestatic", TRUE ~ "mixed")) |>
     filter(hy) |>

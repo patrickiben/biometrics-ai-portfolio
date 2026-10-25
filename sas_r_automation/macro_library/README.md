@@ -97,6 +97,10 @@ schtasks /create /tn "CP101_monitor" /tr "run_monitor.bat" /sc DAILY /st 06:00 /
 - **No PHI in email bodies**: de-identified signal only; record-level detail stays in the attached report on the validated share.
 - **Honest limit.** Deterministic checks only, no triage, narrative, or judgment.
 
+## Change log: v3 (October 2026)
+
+- **Hy's-Law aminotransferase limb:** now `>=` 3×ULN, as FDA's DILI guidance (2009) words it ("3-fold or greater"); total bilirubin stays `>` 2×ULN. The SAS macro, its config comment and the R companion changed together.
+
 ## Change log: v2 (corrected after a review of the SAS and clinical logic)
 
 - **Hy's-Law (clinical, fixed first).** The RED screening flag (ALT or AST **>**3×ULN **and** total bilirubin **>**2×ULN) is now **strict `>`** and is **never downgraded by a high ALP** (a raised ALP does **not** exclude Hy's Law). The R-ratio (ALT/ULN ÷ ALP/ULN) is reported as *context only* (hepatocellular when R≥5). The prior code wrongly demoted a true case to AMBER on ALP≥2×: the single most dangerous bug, removed.
