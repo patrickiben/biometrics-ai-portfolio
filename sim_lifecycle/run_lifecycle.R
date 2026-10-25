@@ -23,8 +23,8 @@ cat(sprintf("\n[T] Demographics: age %.1f (%.1f) | %d F / %d M | weight %.1f kg 
  mean(a$AGE), sd(a$AGE), sum(a$SEX=="F"), sum(a$SEX=="M"), mean(a$WEIGHTBL), mean(a$BMIBL)))
 
 ## --- 3. PK NCA summary (ADPP): geometric, on the log scale ----------------
-## results: the printed results, unrounded, written to out/results_summary.csv in step 7 so the
-## harness (G9) can recompute them independently; the printout rounds them
+## results: the printed results at 10 significant digits (not rounded as in the printout),
+## written to out/results_summary.csv in step 7 so the harness (G9) can recompute them independently
 results <- list()
 keep <- function(section, paramcd, group, stat, value) results[[length(results) + 1]] <<-
  data.frame(SECTION=section, PARAMCD=paramcd, GROUP=group, STAT=stat, VALUE=as.numeric(value), stringsAsFactors=FALSE)
@@ -117,8 +117,8 @@ for (nm in c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg"))
    # Linux libm, which broke the byte-for-byte regeneration check in CI.
    d[dbl] <- lapply(d[dbl], signif, digits = 12)
    write.csv(d, sprintf("sim_lifecycle/out/%s.csv", nm), row.names = FALSE) }
-## the printed results, unrounded (10 significant digits): a ninth file, which G1 does not compare;
-## the harness's independent recomputation (G9) checks it
+## the printed results at 10 significant digits (not rounded as in the printout): a ninth file,
+## which G1 does not compare; the harness's independent recomputation (G9) checks it
 rs <- do.call(rbind, results); rs$VALUE <- signif(rs$VALUE, 10)
 write.csv(rs, "sim_lifecycle/out/results_summary.csv", row.names = FALSE)
 cat("\nSimulated ADaM written to sim_lifecycle/out/ (adsl,adex,adpc,adpp,adae,advs,adlb,adeg)\n")

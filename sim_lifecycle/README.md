@@ -14,8 +14,8 @@ Page: [`index.html`](index.html).
   bioequivalence analysis (fixed-effects model on log values with participant, period and
   treatment; geometric mean ratio and 90% confidence interval), an adverse-event overview counted
   by participant, and vitals, lab and ECG summaries. It then writes `out/*.csv`: the eight domains
-  plus `out/results_summary.csv`, the printed PK, bioequivalence and adverse-event results unrounded
-  (10 significant digits). G1 compares only the eight domains; G9 recomputes the summary independently.
+  plus `out/results_summary.csv`, the printed PK, bioequivalence and adverse-event results at
+  10 significant digits (not rounded as in the printout). G1 compares only the eight domains; G9 recomputes the summary independently.
 - `priors.R` holds the design and domain priors as a hard-coded list.
 
 ## Run
