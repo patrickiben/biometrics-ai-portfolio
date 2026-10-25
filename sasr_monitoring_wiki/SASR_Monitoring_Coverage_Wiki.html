@@ -517,9 +517,9 @@ figure.diagram svg,figure svg{background:var(--surface);border-color:var(--line-
     </figure>
     <h2>Escalation matrix</h2>
     <table class="cat"><thead><tr><th>Color</th><th>Means</th><th>Who acts</th></tr></thead><tbody>
-      <tr><td><b style="color:#46d08a">GREEN</b></td><td>Checks ran, fresh data, nothing tripped</td><td>No action: the digest is the record</td></tr>
-      <tr><td><b style="color:#e6b24c">AMBER</b></td><td>A tier threshold crossed, or a feed is aging</td><td>Covering biostatistician reviews same day</td></tr>
-      <tr><td><b style="color:#ff6a6a">RED</b></td><td>A safety screen tripped, or a feed is dead/stale</td><td>Page &rarr; covering biostatistician loops in the medical monitor, who makes the call</td></tr>
+      <tr><td><b style="color:var(--green)">GREEN</b></td><td>Checks ran, fresh data, nothing tripped</td><td>No action: the digest is the record</td></tr>
+      <tr><td><b style="color:var(--amber)">AMBER</b></td><td>A tier threshold crossed, or a feed is aging</td><td>Covering biostatistician reviews same day</td></tr>
+      <tr><td><b style="color:var(--red)">RED</b></td><td>A safety screen tripped, or a feed is dead/stale</td><td>Page &rarr; covering biostatistician loops in the medical monitor, who makes the call</td></tr>
       <tr><td><b>NO EMAIL</b></td><td>The job didn&rsquo;t run (the worst case)</td><td>The watchdog pages the backup: treat as RED until proven otherwise</td></tr>
     </tbody></table>
     <div class="callout key"><strong>Reportable vs signal-only.</strong> A flag is an internal <em>signal</em> to look: it is not a reportable safety determination. Reportability (expedited SAE, DSUR, etc.) is the medical monitor&rsquo;s and sponsor&rsquo;s decision through the validated process; the automation accelerates <em>awareness</em>, never the regulatory call.</div>
@@ -610,10 +610,10 @@ window.addEventListener('afterprint',sync);sync();
 /* portable reproducibility kit: copy-buttons on code + Print/PDF + print stylesheet (theme-agnostic) */
 (function(){
   var css=''
-   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:#131a26;color:#e7eef9;border:1px solid rgba(52,227,212,.4);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
-   +'.repro-copybtn:hover{opacity:1;background:#1b2535} .repro-copybtn.ok{background:#46d08a;color:#06090f}'
-   +'.repro-print{position:fixed;bottom:16px;right:16px;background:rgba(52,227,212,.1);color:#34e3d4;border:1px solid rgba(52,227,212,.4);border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
-   +'.repro-print:hover{background:rgba(52,227,212,.18)}'
+   +'.repro-copybtn{position:absolute;top:6px;right:6px;background:var(--surface-2);color:var(--ink);border:1px solid var(--control);border-radius:6px;font:600 11px/1 \'Segoe UI\',Arial,sans-serif;padding:4px 9px;cursor:pointer;z-index:5;opacity:.9}'
+   +'.repro-copybtn:hover{opacity:1;background:var(--surface-3)} .repro-copybtn.ok{background:var(--green);color:var(--bg)}'
+   +'.repro-print{position:fixed;bottom:16px;right:16px;background:var(--accent-soft);color:var(--accent-ink);border:1px solid var(--accent);border-radius:22px;font:700 13px \'Segoe UI\',Arial,sans-serif;padding:9px 16px;cursor:pointer;box-shadow:0 2px 12px rgba(0,0,0,.35);z-index:60}'
+   +'.repro-print:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}'
    +'@media print{nav,aside,#side,.sidebar,.skip,.repro-copybtn,.repro-print,[role=\'navigation\']{display:none!important}'
    +' #wrap,#main,main,article,.content,section,body{display:block!important;width:auto!important;max-width:100%!important;margin:0!important;float:none!important}'
    +' *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
@@ -636,10 +636,8 @@ window.addEventListener('afterprint',sync);sync();
 </script>
 <!-- gen:ui -->
 <script>
-/* assets/ui.js: the portfolio console's small behaviors. No network, no dependencies.
-   1 theme toggle (saved under "bp-theme"; Quarto pages kept in step), 2 Menu under 960 px,
-   3 filter on [data-filter] pages, 4 Copy on pre.cmd, 5 details open for print.
-   Copied inline into self-contained pages and Quarto pages by build_pages.py. */
+/* assets/ui.js: theme toggle ("bp-theme"; Quarto kept in step), Menu, the hub filter, Copy, print.
+   No network. build_pages.py copies it inline where a page loads no files. */
 (function () {
   "use strict";
   var d = document, root = d.documentElement, KEY = "bp-theme";
@@ -657,7 +655,6 @@ window.addEventListener('afterprint',sync);sync();
       b.title = dark ? "Switch to light theme" : "Switch to dark theme";
     });
     d.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = dark ? "#0b0f15" : "#f4f6f9"; });
-    /* <picture> sources written for the system setting follow the chosen theme instead */
     d.querySelectorAll('source[media*="prefers-color-scheme"], source[data-media]').forEach(function (s) {
       var q = s.getAttribute("data-media") || s.getAttribute("media"); s.setAttribute("data-media", q);
       s.media = (/dark/.test(q) === dark) ? "all" : "not all";
@@ -680,7 +677,7 @@ window.addEventListener('afterprint',sync);sync();
   window.addEventListener("storage", function (e) { if (e.key === KEY) apply(saved(), false); });
   if (mq && mq.addEventListener) mq.addEventListener("change", function () { if (!saved()) apply(null, false); });
 
-  /* 2 Menu: a disclosure, not a dialog; Escape, a click outside or a link closes it */
+  /* Menu: a disclosure; Escape, a click outside or a link closes it */
   function menu(btn, open) {
     var bar = btn.closest(".top"); if (!bar) return;
     bar.classList.toggle("open", open);
@@ -695,7 +692,7 @@ window.addEventListener('afterprint',sync);sync();
     if (e.target.closest(".top .nav a") || !e.target.closest(".top")) closeMenus(false);
   });
 
-  /* 3 filter: chips (aria-pressed) and a search box; it only hides, never reorders */
+  /* filter: chips and a search box; it only hides, never reorders */
   function filter(box) {
     var scope = d.querySelector(box.getAttribute("data-filter")) || d.body;
     var items = [].slice.call(scope.querySelectorAll("[data-item]"));
@@ -729,7 +726,6 @@ window.addEventListener('afterprint',sync);sync();
     run();
   }
 
-  /* 4 Copy buttons on command blocks */
   function copyButtons() {
     var pres = [].slice.call(d.querySelectorAll("pre.cmd"));
     d.querySelectorAll("pre > code.language-sh").forEach(function (c) { if (pres.indexOf(c.parentNode) < 0) pres.push(c.parentNode); });

@@ -246,6 +246,7 @@ pre code { color: var(--ink); }
 .nav-tabs .nav-link.active { background: var(--surface); color: var(--ink); border-color: var(--line-2) var(--line-2) var(--surface); }
 .nav-tabs { border-bottom-color: var(--line-2); }
 hr { border-color: var(--line); opacity: 1; }
+.btn:focus-visible, .code-tools-button:focus-visible, .nav-link:focus-visible, .sidebar a:focus-visible { outline: 2px solid var(--accent) !important; outline-offset: 2px; box-shadow: none !important; }
 footer.footer, .nav-footer { background: var(--bg-2); color: var(--muted); border-top: 1px solid var(--line-2); }
 @media (max-width: 991.98px) { #quarto-sidebar-toc-left { position: static; max-height: none; } }
 '''

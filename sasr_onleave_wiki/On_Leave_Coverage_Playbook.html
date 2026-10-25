@@ -338,7 +338,7 @@ figure.diagram svg,figure svg{background:var(--surface);border-color:var(--line-
   <text x="600" y="248" fill="#46d08a" font-size="11.5" font-weight="600">Heartbeat written</text>
   <text x="600" y="263" fill="#7e8ca6" font-size="10.5">proves the job ran</text>
 </svg><figcaption><b>The whole loop, deterministic and no-AI.</b> The freshness gate runs <em>first</em>, so a clean green on stale data can never slip through; any RED branches to the urgent tier; and every run writes a heartbeat, so silence is never assumed.</figcaption></figure>
-    <div class="callout warn" style="border-left-color:#34e3d4"><b>Accountability does not go on leave.</b> The automation covers the <em>vigilance and the logistics</em> (running the checks on schedule, paging the right people, packaging the evidence) but it never covers the <em>decision</em>. The covering biostatistician and the medical monitor own every call; this only makes sure the signal reaches them.</div>
+    <div class="callout warn" style="border-left-color:var(--accent)"><b>Accountability does not go on leave.</b> The automation covers the <em>vigilance and the logistics</em> (running the checks on schedule, paging the right people, packaging the evidence) but it never covers the <em>decision</em>. The covering biostatistician and the medical monitor own every call; this only makes sure the signal reaches them.</div>
     <div class="callout tip"><b>Leave is one scenario of five.</b> The rules that keep monitoring alive while one person is away (a service account, a named backup, a heartbeat with an independent watchdog, and &ldquo;no news is never all clear&rdquo;) also cover an <b>unplanned absence</b>, a <b>role handoff or departure</b>, <b>onboarding a new owner</b>, and a standing <b>bus-factor review</b>. See <a href="#scenarios">Five scenarios</a>. To list a study team&rsquo;s recurring jobs and get a coverage matrix, a risk register, per-job checklists and a printable handoff packet, open the <a href="Continuity_Toolkit.html"><b>interactive Continuity Toolkit</b></a>.</div>
     <h2>What this playbook gives you</h2>
     <ol>
@@ -459,9 +459,9 @@ figure.diagram svg,figure svg{background:var(--surface);border-color:var(--line-
     <p>The one page you hand the covering colleague (the <em>covering biostatistician</em>), cc the study lead. <a href="OnLeave_Coverage_Runbook.pdf">Download the full runbook (PDF)</a>.</p>
     <table>
       <tr><th>Status</th><th>Means</th><th>Who does what</th></tr>
-      <tr><td><b style="color:#46C988">GREEN</b></td><td>All checks within limits.</td><td>No action. The heartbeat still confirms the run happened on fresh data.</td></tr>
-      <tr><td><b style="color:#e6b24c">AMBER</b></td><td>An operational/quality KRI crossed.</td><td>The covering biostatistician reviews &amp; acts (e.g. a site action with the PM). Stays in the routine channel.</td></tr>
-      <tr><td><b style="color:#ff6a6a">RED</b></td><td>A safety threshold (DLT/SAE/Hy&rsquo;s-Law/QTcF).</td><td>The covering biostatistician acknowledges &le;30 min, then <b>CONTACTS THE MEDICAL MONITOR</b>. Evidence packet attached.</td></tr>
+      <tr><td><b style="color:var(--green)">GREEN</b></td><td>All checks within limits.</td><td>No action. The heartbeat still confirms the run happened on fresh data.</td></tr>
+      <tr><td><b style="color:var(--amber)">AMBER</b></td><td>An operational/quality KRI crossed.</td><td>The covering biostatistician reviews &amp; acts (e.g. a site action with the PM). Stays in the routine channel.</td></tr>
+      <tr><td><b style="color:var(--red)">RED</b></td><td>A safety threshold (DLT/SAE/Hy&rsquo;s-Law/QTcF).</td><td>The covering biostatistician acknowledges &le;30 min, then <b>CONTACTS THE MEDICAL MONITOR</b>. Evidence packet attached.</td></tr>
     </table>
     <figure class="diagram"><svg viewBox="0 0 900 360" width="100%" xmlns="http://www.w3.org/2000/svg" role="img" font-family="'Segoe UI',Arial,sans-serif">
   <title>Four-rung escalation ladder from all clear to no heartbeat.</title>
@@ -516,15 +516,15 @@ figure.diagram svg,figure svg{background:var(--surface);border-color:var(--line-
     <h2>The risk rules</h2>
     <table>
       <tr><th>Rule</th><th>Severity</th><th>Fix</th></tr>
-      <tr><td>No primary owner</td><td><b style="color:#ff6a6a">RED</b></td><td>Assign one, or retire the job and record that decision.</td></tr>
-      <tr><td>Nobody can run it in this scenario</td><td><b style="color:#ff6a6a">RED</b></td><td>Name a cover now and dry-run the job with them.</td></tr>
-      <tr><td>Single owner (bus factor 1)</td><td><b style="color:#ff6a6a">RED</b> if High, else <b style="color:#e6b24c">AMBER</b></td><td>Name a backup and have them run it once.</td></tr>
-      <tr><td>Runs under a personal login</td><td><b style="color:#ff6a6a">RED</b> if High or if the owner is the one away, else <b style="color:#e6b24c">AMBER</b></td><td>Move it to a service account.</td></tr>
-      <tr><td>Stale: last run older than the cadence allows</td><td><b style="color:#ff6a6a">RED</b> if High, else <b style="color:#e6b24c">AMBER</b></td><td>Confirm it is still scheduled, then rerun on fresh data.</td></tr>
-      <tr><td>Last run FAILED</td><td><b style="color:#ff6a6a">RED</b></td><td>Fix and rerun before any handoff.</td></tr>
-      <tr><td>Covered only by someone who isn&rsquo;t a trained backup</td><td><b style="color:#e6b24c">AMBER</b></td><td>Walkthrough plus a dry run before the start date.</td></tr>
-      <tr><td>No heartbeat or watchdog, or no runbook</td><td><b style="color:#e6b24c">AMBER</b> if High, else INFO</td><td><code>%tm_heartbeat</code> + <code>tm_watchdog.sh</code>; a one-page runbook.</td></tr>
-      <tr><td>One person is the only one who can run 2+ High jobs</td><td><b style="color:#ff6a6a">RED</b> (team-level)</td><td>Spread the backups.</td></tr>
+      <tr><td>No primary owner</td><td><b style="color:var(--red)">RED</b></td><td>Assign one, or retire the job and record that decision.</td></tr>
+      <tr><td>Nobody can run it in this scenario</td><td><b style="color:var(--red)">RED</b></td><td>Name a cover now and dry-run the job with them.</td></tr>
+      <tr><td>Single owner (bus factor 1)</td><td><b style="color:var(--red)">RED</b> if High, else <b style="color:var(--amber)">AMBER</b></td><td>Name a backup and have them run it once.</td></tr>
+      <tr><td>Runs under a personal login</td><td><b style="color:var(--red)">RED</b> if High or if the owner is the one away, else <b style="color:var(--amber)">AMBER</b></td><td>Move it to a service account.</td></tr>
+      <tr><td>Stale: last run older than the cadence allows</td><td><b style="color:var(--red)">RED</b> if High, else <b style="color:var(--amber)">AMBER</b></td><td>Confirm it is still scheduled, then rerun on fresh data.</td></tr>
+      <tr><td>Last run FAILED</td><td><b style="color:var(--red)">RED</b></td><td>Fix and rerun before any handoff.</td></tr>
+      <tr><td>Covered only by someone who isn&rsquo;t a trained backup</td><td><b style="color:var(--amber)">AMBER</b></td><td>Walkthrough plus a dry run before the start date.</td></tr>
+      <tr><td>No heartbeat or watchdog, or no runbook</td><td><b style="color:var(--amber)">AMBER</b> if High, else INFO</td><td><code>%tm_heartbeat</code> + <code>tm_watchdog.sh</code>; a one-page runbook.</td></tr>
+      <tr><td>One person is the only one who can run 2+ High jobs</td><td><b style="color:var(--red)">RED</b> (team-level)</td><td>Spread the backups.</td></tr>
     </table>
     <h2>Refresh last-run status from the heartbeats</h2>
     <pre class="prompt"># jobs.list: one "JOB_ID  heartbeat-path" per line
@@ -552,7 +552,7 @@ DEMO202-REFRESH,2026-10-21,FAILED</pre>
       <li><b>Checklists</b>: one per job, made from the scenario&rsquo;s steps plus that job&rsquo;s own fixes. Ticks are saved.</li>
       <li><b>Handoff packet</b>: print or save as PDF, or download as .html or .md. It has a cover sheet, the GREEN/AMBER/RED key, the risks to close, a coverage summary, and a job sheet with a sign-off line for every job.</li>
     </ol>
-    <figure class="diagram"><img src="example_img/toolkit_matrix.png" alt="The Continuity Toolkit's coverage matrix for the fictional example: eleven jobs down the side, five fictional people across the top, P and B markers for owner and backup, the absent person's column hatched in red, and a 'during scenario' column showing who runs each job, one of them uncovered." style="width:100%;border:1px solid #27344a;border-radius:10px;display:block"><figcaption><b>Coverage matrix, planned-leave scenario, fictional example.</b> One job has no owner, so nobody covers it. The IXRS reconciliation falls to a cover who has never run it.</figcaption></figure>
+    <figure class="diagram"><img src="example_img/toolkit_matrix.png" alt="The Continuity Toolkit's coverage matrix for the fictional example: eleven jobs down the side, five fictional people across the top, P and B markers for owner and backup, the absent person's column hatched in red, and a 'during scenario' column showing who runs each job, one of them uncovered." style="width:100%;border:1px solid var(--line-2);border-radius:10px;display:block"><figcaption><b>Coverage matrix, planned-leave scenario, fictional example.</b> One job has no owner, so nobody covers it. The IXRS reconciliation falls to a cover who has never run it.</figcaption></figure>
     <div class="callout tip"><b>Private by construction.</b> Data stays in your browser (localStorage) and moves only when you export it as JSON. The page loads nothing from any server: no CDN, no fonts, no analytics. A Content-Security-Policy blocks network requests outright. The example is fictional and is labeled as such on every packet it prints.</div>
   <div class="footer">Coverage &amp; continuity &middot; deterministic SAS/R, no AI, no PHI egress &middot; people own every decision &middot; October 2026.</div></section>
 <section id="macros" aria-label="Macro library">
@@ -1341,10 +1341,8 @@ if (sys.nframe() == 0) {
     <p><b>What if a job fails while I&rsquo;m away?</b> The heartbeat and freshness gate make a dead job or a frozen feed <em>announce itself</em>. &ldquo;No news&rdquo; is never &ldquo;good news.&rdquo;</p>
   <div class="footer">Coverage and continuity &middot; deterministic SAS/R, no AI, no PHI egress &middot; the medical monitor &amp; humans decide &middot; illustrative; revised October 2026.</div></section></main></div><script>const secs=[...document.querySelectorAll('section')],links=[...document.querySelectorAll('#side a[data-t]')];function show(id){secs.forEach(s=>{const on=s.id===id;s.classList.toggle('show',on);s.hidden=!on;});links.forEach(a=>{const on=a.dataset.t===id;a.classList.toggle('active',on);if(on)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');});window.scrollTo(0,0);const m=document.getElementById('main');if(m)m.focus({preventScroll:true});try{if(document.readyState==='complete'&&location.hash!=='#'+id)history.replaceState(null,'','#'+id);}catch(e){}}links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();show(a.dataset.t);}));document.querySelectorAll('#main a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{const id=a.getAttribute('href').slice(1);if(document.getElementById(id)){e.preventDefault();show(id);}}));const q=document.getElementById('search');q.addEventListener('input',()=>{const v=q.value.toLowerCase().trim();links.forEach(a=>{const s=document.getElementById(a.dataset.t);a.style.display=(!v||s.textContent.toLowerCase().includes(v))?'block':'none';});});show((location.hash||'#start').slice(1)||'start');window.addEventListener('beforeprint',()=>secs.forEach(s=>s.hidden=false));window.addEventListener('afterprint',()=>show((location.hash||'#start').slice(1)||'start'));</script><!-- gen:ui -->
 <script>
-/* assets/ui.js: the portfolio console's small behaviors. No network, no dependencies.
-   1 theme toggle (saved under "bp-theme"; Quarto pages kept in step), 2 Menu under 960 px,
-   3 filter on [data-filter] pages, 4 Copy on pre.cmd, 5 details open for print.
-   Copied inline into self-contained pages and Quarto pages by build_pages.py. */
+/* assets/ui.js: theme toggle ("bp-theme"; Quarto kept in step), Menu, the hub filter, Copy, print.
+   No network. build_pages.py copies it inline where a page loads no files. */
 (function () {
   "use strict";
   var d = document, root = d.documentElement, KEY = "bp-theme";
@@ -1362,7 +1360,6 @@ if (sys.nframe() == 0) {
       b.title = dark ? "Switch to light theme" : "Switch to dark theme";
     });
     d.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = dark ? "#0b0f15" : "#f4f6f9"; });
-    /* <picture> sources written for the system setting follow the chosen theme instead */
     d.querySelectorAll('source[media*="prefers-color-scheme"], source[data-media]').forEach(function (s) {
       var q = s.getAttribute("data-media") || s.getAttribute("media"); s.setAttribute("data-media", q);
       s.media = (/dark/.test(q) === dark) ? "all" : "not all";
@@ -1385,7 +1382,7 @@ if (sys.nframe() == 0) {
   window.addEventListener("storage", function (e) { if (e.key === KEY) apply(saved(), false); });
   if (mq && mq.addEventListener) mq.addEventListener("change", function () { if (!saved()) apply(null, false); });
 
-  /* 2 Menu: a disclosure, not a dialog; Escape, a click outside or a link closes it */
+  /* Menu: a disclosure; Escape, a click outside or a link closes it */
   function menu(btn, open) {
     var bar = btn.closest(".top"); if (!bar) return;
     bar.classList.toggle("open", open);
@@ -1400,7 +1397,7 @@ if (sys.nframe() == 0) {
     if (e.target.closest(".top .nav a") || !e.target.closest(".top")) closeMenus(false);
   });
 
-  /* 3 filter: chips (aria-pressed) and a search box; it only hides, never reorders */
+  /* filter: chips and a search box; it only hides, never reorders */
   function filter(box) {
     var scope = d.querySelector(box.getAttribute("data-filter")) || d.body;
     var items = [].slice.call(scope.querySelectorAll("[data-item]"));
@@ -1434,7 +1431,6 @@ if (sys.nframe() == 0) {
     run();
   }
 
-  /* 4 Copy buttons on command blocks */
   function copyButtons() {
     var pres = [].slice.call(d.querySelectorAll("pre.cmd"));
     d.querySelectorAll("pre > code.language-sh").forEach(function (c) { if (pres.indexOf(c.parentNode) < 0) pres.push(c.parentNode); });

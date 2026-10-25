@@ -724,10 +724,8 @@ Rscript t_demographics.R</code></pre>
 </script>
 <!-- gen:ui -->
 <script>
-/* assets/ui.js: the portfolio console's small behaviors. No network, no dependencies.
-   1 theme toggle (saved under "bp-theme"; Quarto pages kept in step), 2 Menu under 960 px,
-   3 filter on [data-filter] pages, 4 Copy on pre.cmd, 5 details open for print.
-   Copied inline into self-contained pages and Quarto pages by build_pages.py. */
+/* assets/ui.js: theme toggle ("bp-theme"; Quarto kept in step), Menu, the hub filter, Copy, print.
+   No network. build_pages.py copies it inline where a page loads no files. */
 (function () {
   "use strict";
   var d = document, root = d.documentElement, KEY = "bp-theme";
@@ -745,7 +743,6 @@ Rscript t_demographics.R</code></pre>
       b.title = dark ? "Switch to light theme" : "Switch to dark theme";
     });
     d.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = dark ? "#0b0f15" : "#f4f6f9"; });
-    /* <picture> sources written for the system setting follow the chosen theme instead */
     d.querySelectorAll('source[media*="prefers-color-scheme"], source[data-media]').forEach(function (s) {
       var q = s.getAttribute("data-media") || s.getAttribute("media"); s.setAttribute("data-media", q);
       s.media = (/dark/.test(q) === dark) ? "all" : "not all";
@@ -768,7 +765,7 @@ Rscript t_demographics.R</code></pre>
   window.addEventListener("storage", function (e) { if (e.key === KEY) apply(saved(), false); });
   if (mq && mq.addEventListener) mq.addEventListener("change", function () { if (!saved()) apply(null, false); });
 
-  /* 2 Menu: a disclosure, not a dialog; Escape, a click outside or a link closes it */
+  /* Menu: a disclosure; Escape, a click outside or a link closes it */
   function menu(btn, open) {
     var bar = btn.closest(".top"); if (!bar) return;
     bar.classList.toggle("open", open);
@@ -783,7 +780,7 @@ Rscript t_demographics.R</code></pre>
     if (e.target.closest(".top .nav a") || !e.target.closest(".top")) closeMenus(false);
   });
 
-  /* 3 filter: chips (aria-pressed) and a search box; it only hides, never reorders */
+  /* filter: chips and a search box; it only hides, never reorders */
   function filter(box) {
     var scope = d.querySelector(box.getAttribute("data-filter")) || d.body;
     var items = [].slice.call(scope.querySelectorAll("[data-item]"));
@@ -817,7 +814,6 @@ Rscript t_demographics.R</code></pre>
     run();
   }
 
-  /* 4 Copy buttons on command blocks */
   function copyButtons() {
     var pres = [].slice.call(d.querySelectorAll("pre.cmd"));
     d.querySelectorAll("pre > code.language-sh").forEach(function (c) { if (pres.indexOf(c.parentNode) < 0) pres.push(c.parentNode); });
