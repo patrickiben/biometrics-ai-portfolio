@@ -1,0 +1,19 @@
+{
+  "engine": "PKNCA 0.12.1",
+  "options": {
+    "auc.method": "lin up/log down",
+    "conc.blq": {
+      "first": "keep",
+      "middle": "keep",
+      "last": "keep"
+    },
+    "min.hl.points": 3,
+    "allow.tmax.in.half.life": false,
+    "min.hl.r.squared": 0.9,
+    "max.aucinf.pext": 20
+  },
+  "time": "ARRLT (actual time from the period's dose); pre-dose samples set to time 0",
+  "profiles": 79,
+  "intervals": "0 to Inf, one interval per participant and period",
+  "excluded_values": []
+}

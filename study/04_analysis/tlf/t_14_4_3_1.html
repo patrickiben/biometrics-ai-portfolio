@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Table 14.4.3.1 Bioequivalence result | Patrick Iben</title>
+<meta name="description" content="Table 14.4.3.1 Bioequivalence result for the synthetic study SIMBE01, produced with rtables/tern.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../../site.css">
+<link rel="stylesheet" href="../../study.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../../../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../../../index.html">Home</a>
+      <a href="../../../index.html#lifecycle">Lifecycle</a>
+      <a href="../../index.html">Worked example</a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap">
+  <section class="page-head">
+    <p class="kicker">Stage 4: analysis (executed output)</p>
+    <h1>Table 14.4.3.1 Bioequivalence result</h1>
+    <p class="meta"><span class="lab tools">Executed: rtables 0.6.17 / tern 0.9.13</span></p>
+    <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
+  </section>
+<div class="tlf tblwrap"><div class="rtables-all-parts-block rtables-container">
+  <div class="rtables-titles-block rtables-container">
+    <div class="rtables-main-titles-block rtables-container">
+      <p class="rtables-main-title">Table 14.4.3.1 Bioequivalence Analysis: Ratio of Geometric Means (Test/Reference) and 90% CI</p>
+    </div>
+    <div class="rtables-subtitles-block rtables-container">
+      <p class="rtables-subtitle">Bioequivalence set</p>
+      <p class="rtables-subtitle">Study SIMBE01 (synthetic)</p>
+    </div>
+  </div>
+  <table data-quarto-disable-processing="true" class="table table-condensed table-hover">
+    <tr style="white-space: pre;">
+      <th style="text-align: left; border-bottom: 1px solid black; border-bottom: 1px solid black;"></th>
+      <th style="text-align: center; border-bottom: 1px solid black;">n</th>
+      <th style="text-align: center; border-bottom: 1px solid black;">Adjusted geometric mean, Test</th>
+      <th style="text-align: center; border-bottom: 1px solid black;">Adjusted geometric mean, Reference</th>
+      <th style="text-align: center; border-bottom: 1px solid black;">Ratio T/R (%)</th>
+      <th style="text-align: center; border-bottom: 1px solid black;">90% CI (%)</th>
+      <th style="text-align: center; border-bottom: 1px solid black;">Within-participant CV%</th>
+      <th style="text-align: center; border-bottom: 1px solid black;">Within 80.00 to 125.00%</th>
+    </tr>
+    <tr style="white-space: pre;">
+      <td style="text-align: left;">Cmax (ng/mL)</td>
+      <td style="text-align: center;">38</td>
+      <td style="text-align: center;">103.3</td>
+      <td style="text-align: center;">102.2</td>
+      <td style="text-align: center;">101.07</td>
+      <td style="text-align: center;">98.89, 103.30</td>
+      <td style="text-align: center;">5.6</td>
+      <td style="text-align: center;">Yes</td>
+    </tr>
+    <tr style="white-space: pre;">
+      <td style="text-align: left;">AUC(0-t) (h*ng/mL)</td>
+      <td style="text-align: center;">38</td>
+      <td style="text-align: center;">1204.9</td>
+      <td style="text-align: center;">1161.5</td>
+      <td style="text-align: center;">103.74</td>
+      <td style="text-align: center;">98.38, 109.39</td>
+      <td style="text-align: center;">13.8</td>
+      <td style="text-align: center;">Yes</td>
+    </tr>
+    <tr style="white-space: pre;">
+      <td style="text-align: left;">AUC(0-inf) (h*ng/mL), supportive</td>
+      <td style="text-align: center;">38</td>
+      <td style="text-align: center;">1264.8</td>
+      <td style="text-align: center;">1203.4</td>
+      <td style="text-align: center;">105.10</td>
+      <td style="text-align: center;">99.24, 111.30</td>
+      <td style="text-align: center;">14.9</td>
+      <td style="text-align: center;">Yes</td>
+    </tr>
+    <caption style="caption-side: top;"></caption>
+  </table>
+  <div class="rtables-footers-block rtables-container">
+    <hr class="solid"/>
+    <div class="rtables-main-footers-block rtables-container">
+      <p class="rtables-main-footer">General linear model on ln(parameter): sequence, participant(sequence), period, formulation (fixed effects; ICH M13A).</p>
+      <p class="rtables-main-footer">Adjusted geometric mean = exp(least-squares mean). Ratio and 90% CI back-transformed from the T - R difference; decision on unrounded limits.</p>
+      <p class="rtables-main-footer">Within-participant CV% = 100*sqrt(exp(MSE) - 1).</p>
+      <p class="rtables-main-footer">Synthetic data; not a regulatory deliverable.</p>
+    </div>
+    <br/>
+    <div class="rtables-prov-footers-block rtables-container">
+      <p class="rtables-prov-footer">Program: study/04_analysis/02_be.R and 03_tlf.R; data cut-off 2026-05-29 (synthetic).</p>
+    </div>
+  </div>
+</div></div><p>Files: <a href="t_14_4_3_1.rtf">t_14_4_3_1.rtf</a> (RTF from <code>formatters::export_as_rtf()</code>), <a href="t_14_4_3_1.csv">t_14_4_3_1.csv</a> (the displayed cells). Program: <code>study/04_analysis/03_tlf.R</code>.</p>
+
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Generated by <code>study/run_all.R</code> from code in this repository. Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable. <a href="../../index.html">Back to the worked example</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
