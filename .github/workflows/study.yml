@@ -1,0 +1,52 @@
+# Flagship worked example (study/): regenerate every output from study/run_all.R and fail
+# if a committed output changes. Synthetic data only.
+# Action majors checked against their GitHub releases on 2026-10-25: actions/checkout v7,
+# r-lib/actions v2 (latest tag v2.14.0), quarto-dev/quarto-actions v2, actions/upload-artifact v7.
+name: Flagship worked example
+on:
+  push:
+    paths: ['study/**', 'sim_lifecycle/**', 'tlf_interpret/R/**', '.github/workflows/study.yml']
+  pull_request:
+    paths: ['study/**', 'sim_lifecycle/**', 'tlf_interpret/R/**', '.github/workflows/study.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  study:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.0'          # the version recorded in study/renv.lock
+          use-public-rspm: true       # binary packages from Posit Public Package Manager
+      - uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: '1.10.19'
+      - uses: r-lib/actions/setup-renv@v2
+        with:
+          working-directory: study    # restores the packages pinned in study/renv.lock
+      - name: Regenerate every output of the worked example
+        run: Rscript study/run_all.R
+      - name: Fail if a committed output changed
+        # PNG figures and the rendered report embed font rendering that differs between
+        # macOS and Linux, so they are uploaded below but not compared byte for byte.
+        run: |
+          git status --porcelain -- study ':(exclude)study/**/*.png' ':(exclude)study/04_analysis/report/report.html' > changed.txt
+          if [ -s changed.txt ]; then
+            echo "::error::run_all.R changed committed outputs:"; cat changed.txt
+            git --no-pager diff --stat -- study; exit 1
+          fi
+          echo "All committed outputs regenerate unchanged."
+      - name: sim_lifecycle still regenerates its committed outputs
+        run: |
+          Rscript sim_lifecycle/run_lifecycle.R > /dev/null
+          git diff --exit-code -- sim_lifecycle/out
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: study-figures-and-report
+          path: |
+            study/04_analysis/tlf/*.png
+            study/04_analysis/report/report.html

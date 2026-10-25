@@ -1,0 +1,3 @@
+# renv project infrastructure created by renv::restore()/activate() (CI and local); only renv.lock is committed
+renv/
+.Rprofile
