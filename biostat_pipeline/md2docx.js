@@ -104,7 +104,10 @@ function parse(md) {
 
 const inFile = process.argv[2], outFile = process.argv[3];
 const md = fs.readFileSync(inFile, "utf8");
+const h1 = /^#\s+(.+)$/m.exec(md);
 const doc = new Document({
+  creator: "Patrick Iben",
+  title: h1 ? h1[1].replace(/[*_`]/g, "").trim() : "",
   styles: {
     default: { document: { run: { font: "Calibri", size: 21, color: INK } } },
     paragraphStyles: [

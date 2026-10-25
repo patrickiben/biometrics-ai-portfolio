@@ -222,7 +222,7 @@ function genStudy(i){
     if (prog>0.9 && j<5) s='done';
     return {k:k,d:fmt(d),s:s};
   });
-  // deliverables (echoes the 136-item Protocol->CSR register, scaled)
+  // deliverables (echoes the 132-item Protocol->CSR register, scaled)
   var phs={Startup:[14,prog],Conduct:[26,prog],Analysis:[34,prog],Reporting:[20,prog]};
   var deliv={};
   Object.keys(phs).forEach(function(p,idx){

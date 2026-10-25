@@ -39,7 +39,7 @@ here), **Gap** (no job experience or no worked artifact yet).
 | [`tlf_interpret/`](tlf_interpret/index.html) | Number-grounding check for drafted TLF text | Self-test runs without a model; the language-model step is a stub |
 | [`sasr_onleave_wiki/`](sasr_onleave_wiki/Continuity_Toolkit.html) | Continuity and handoff toolkit, and the coverage playbook | Toolkit runs in the browser; the SAS/R macros are not executed |
 | [`uat_irt/`](uat_irt/quarto/uat-guide.html) | IRT/RTSM acceptance-test library: workbook, Shiny tracker, static guide | Unit tests pass locally; synthetic test data |
-| [`biostat_pipeline/`](biostat_pipeline/EarlyPhase_Biostat_Pipeline.md) | Reference map of 136 Phase 1 biostatistics deliverables (document, register, one-page map) | A reference map, not a track record; the AI-routing overlay is a proposal |
+| [`biostat_pipeline/`](biostat_pipeline/EarlyPhase_Biostat_Pipeline.md) | Reference map of 132 Phase 1 biostatistics deliverables (document, register, one-page map) | A reference map, not a track record; an appendix holds a proposal for AI-assisted drafting under controls |
 | [`sasr_monitoring_wiki/`](sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html) | TRIALMON participant-safety screening demo and the SAS/R monitoring wiki | Under revision: CP101-009 lacks a repeat-testing flag (see the page) |
 | [`risk_monitor/`](risk_monitor/quarto/risk-guide.html) | Two-tier trial early-warning console (Shiny and Quarto) | Under revision: the averaging roll-up dilutes a red signal (see the page) |
 | [`sas_r_automation/`](sas_r_automation/SAS_R_Trial_Monitoring_Automation.html) | Deterministic SAS/R monitoring macro library and wiki | Not executed (no SAS license) |
