@@ -1,0 +1,641 @@
+"USUBJID","APERIOD","TRTA","PARAMCD","PARAM","AVAL","PKFL","ANL02FL","PKEXRSN"
+"CP-SIM-102-001",1,"Test","CMAX","Cmax (ng/mL)",108.813,"Y","Y",NA
+"CP-SIM-102-001",1,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-001",1,"Test","AUCLST","AUClast (h*ng/mL)",935.448125,"Y","Y",NA
+"CP-SIM-102-001",1,"Test","AUCIFO","AUCinf (h*ng/mL)",949.346317436,"Y","Y",NA
+"CP-SIM-102-001",1,"Test","T12","t1/2 (h)",5.92830332428,"Y","Y",NA
+"CP-SIM-102-001",1,"Test","CLFO","CL/F (L/h)",0.105335637968,"Y","Y",NA
+"CP-SIM-102-001",1,"Test","VZFO","Vz/F (L)",0.900907671916,"Y","Y",NA
+"CP-SIM-102-001",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","CMAX","Cmax (ng/mL)",97.942,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","AUCLST","AUClast (h*ng/mL)",1015.68,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1030.41214143,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","T12","t1/2 (h)",5.7659753212,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","CLFO","CL/F (L/h)",0.0970485458969,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","VZFO","Vz/F (L)",0.807302599352,"Y","Y",NA
+"CP-SIM-102-001",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0038390067591,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","CMAX","Cmax (ng/mL)",145.184,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","AUCLST","AUClast (h*ng/mL)",1848.83625,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1895.23918481,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","T12","t1/2 (h)",9.35817964374,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","CLFO","CL/F (L/h)",0.0527637887615,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","VZFO","Vz/F (L)",0.712363878499,"Y","Y",NA
+"CP-SIM-102-002",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","CMAX","Cmax (ng/mL)",149.593,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","AUCLST","AUClast (h*ng/mL)",1499.326125,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1512.39657087,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","T12","t1/2 (h)",7.32396338282,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","CLFO","CL/F (L/h)",0.0661202239717,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","VZFO","Vz/F (L)",0.698642529053,"Y","Y",NA
+"CP-SIM-102-002",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0192656073479,"Y","Y",NA
+"CP-SIM-102-003",1,"Test","CMAX","Cmax (ng/mL)",73.829,"Y",NA,NA
+"CP-SIM-102-003",1,"Test","TMAX","Tmax (h)",1.5,"Y",NA,NA
+"CP-SIM-102-003",1,"Test","AUCLST","AUClast (h*ng/mL)",1203.487875,"Y",NA,NA
+"CP-SIM-102-003",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1278.2934938,"Y",NA,NA
+"CP-SIM-102-003",1,"Test","T12","t1/2 (h)",11.3410550652,"Y",NA,NA
+"CP-SIM-102-003",1,"Test","CLFO","CL/F (L/h)",0.078229295921,"Y",NA,NA
+"CP-SIM-102-003",1,"Test","VZFO","Vz/F (L)",1.27996301166,"Y",NA,NA
+"CP-SIM-102-003",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-003",2,"Reference","CMAX","Cmax (ng/mL)",81.308,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-003",2,"Reference","TMAX","Tmax (h)",1.5,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-003",2,"Reference","AUCLST","AUClast (h*ng/mL)",1285.9565,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-003",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1364.55101915,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-003",2,"Reference","T12","t1/2 (h)",11.2163000521,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-003",2,"Reference","CLFO","CL/F (L/h)",0.0732841781633,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-003",2,"Reference","VZFO","Vz/F (L)",1.18586261967,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-003",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0546317705515,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-004",1,"Reference","CMAX","Cmax (ng/mL)",130.308,"Y","Y",NA
+"CP-SIM-102-004",1,"Reference","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-004",1,"Reference","AUCLST","AUClast (h*ng/mL)",1399.0135,"Y","Y",NA
+"CP-SIM-102-004",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1410.75266742,"Y","Y",NA
+"CP-SIM-102-004",1,"Reference","T12","t1/2 (h)",6.99653550861,"Y","Y",NA
+"CP-SIM-102-004",1,"Reference","CLFO","CL/F (L/h)",0.0708841473844,"Y","Y",NA
+"CP-SIM-102-004",1,"Reference","VZFO","Vz/F (L)",0.715495161895,"Y","Y",NA
+"CP-SIM-102-004",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","CMAX","Cmax (ng/mL)",147.093,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","AUCLST","AUClast (h*ng/mL)",1010.224,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1014.8047825,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","T12","t1/2 (h)",4.75322825665,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","CLFO","CL/F (L/h)",0.0985411201488,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","VZFO","Vz/F (L)",0.675741674884,"Y","Y",NA
+"CP-SIM-102-004",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.00593502070119,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","CMAX","Cmax (ng/mL)",141.89,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","AUCLST","AUClast (h*ng/mL)",1825.524,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1855.19540839,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","T12","t1/2 (h)",8.0088212879,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","CLFO","CL/F (L/h)",0.053902677609,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","VZFO","Vz/F (L)",0.622806993979,"Y","Y",NA
+"CP-SIM-102-005",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","CMAX","Cmax (ng/mL)",153.555,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","AUCLST","AUClast (h*ng/mL)",1877.280625,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1929.06516292,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","T12","t1/2 (h)",9.78846644523,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","CLFO","CL/F (L/h)",0.051838580636,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","VZFO","Vz/F (L)",0.732052616464,"Y","Y",NA
+"CP-SIM-102-005",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0140145224838,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","CMAX","Cmax (ng/mL)",164.438,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","AUCLST","AUClast (h*ng/mL)",1382.660875,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1389.79823111,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","T12","t1/2 (h)",6.01122510495,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","CLFO","CL/F (L/h)",0.0719528905433,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","VZFO","Vz/F (L)",0.62400170431,"Y","Y",NA
+"CP-SIM-102-006",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","CMAX","Cmax (ng/mL)",147.799,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","AUCLST","AUClast (h*ng/mL)",1502.28,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1511.81544239,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","T12","t1/2 (h)",6.17707010248,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","CLFO","CL/F (L/h)",0.0661456400007,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","VZFO","Vz/F (L)",0.589465364235,"Y","Y",NA
+"CP-SIM-102-006",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0061773083715,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","CMAX","Cmax (ng/mL)",60.975,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","AUCLST","AUClast (h*ng/mL)",807.836625,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","AUCIFO","AUCinf (h*ng/mL)",839.569502647,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","T12","t1/2 (h)",10.4890580221,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","CLFO","CL/F (L/h)",0.119108661861,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","VZFO","Vz/F (L)",1.80241325398,"Y","Y",NA
+"CP-SIM-102-007",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","CMAX","Cmax (ng/mL)",52.056,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","AUCLST","AUClast (h*ng/mL)",536.062,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",547.933671239,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","T12","t1/2 (h)",6.49472411038,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","CLFO","CL/F (L/h)",0.182503841704,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","VZFO","Vz/F (L)",1.71004388995,"Y","Y",NA
+"CP-SIM-102-007",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0397264484401,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","CMAX","Cmax (ng/mL)",79.594,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","AUCLST","AUClast (h*ng/mL)",744.774375,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",757.449532774,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","T12","t1/2 (h)",6.04662758022,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","CLFO","CL/F (L/h)",0.132021997075,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","VZFO","Vz/F (L)",1.15168592053,"Y","Y",NA
+"CP-SIM-102-008",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","CMAX","Cmax (ng/mL)",84.519,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","AUCLST","AUClast (h*ng/mL)",894.304375,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","AUCIFO","AUCinf (h*ng/mL)",904.471507953,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","T12","t1/2 (h)",7.44173129934,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","CLFO","CL/F (L/h)",0.110561802247,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","VZFO","Vz/F (L)",1.18700796507,"Y","Y",NA
+"CP-SIM-102-008",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0033365278813,"Y","Y",NA
+"CP-SIM-102-009",1,"Test","CMAX","Cmax (ng/mL)",80.774,"Y",NA,NA
+"CP-SIM-102-009",1,"Test","TMAX","Tmax (h)",0.5,"Y",NA,NA
+"CP-SIM-102-009",1,"Test","AUCLST","AUClast (h*ng/mL)",1434.0985,"Y",NA,NA
+"CP-SIM-102-009",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1576.8890899,"Y",NA,NA
+"CP-SIM-102-009",1,"Test","T12","t1/2 (h)",13.8175198656,"Y",NA,NA
+"CP-SIM-102-009",1,"Test","CLFO","CL/F (L/h)",0.0634160009355,"Y",NA,NA
+"CP-SIM-102-009",1,"Test","VZFO","Vz/F (L)",1.26416420249,"Y",NA,NA
+"CP-SIM-102-009",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-009",2,"Reference","CMAX","Cmax (ng/mL)",93.158,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-009",2,"Reference","TMAX","Tmax (h)",2,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-009",2,"Reference","AUCLST","AUClast (h*ng/mL)",1640.209625,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-009",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1743.10337937,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-009",2,"Reference","T12","t1/2 (h)",11.1770123399,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-009",2,"Reference","CLFO","CL/F (L/h)",0.0573689439097,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-009",2,"Reference","VZFO","Vz/F (L)",0.925075383682,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-009",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0658236544365,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-010",1,"Reference","CMAX","Cmax (ng/mL)",201.881,"Y","Y",NA
+"CP-SIM-102-010",1,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-010",1,"Reference","AUCLST","AUClast (h*ng/mL)",1205.950875,"Y","Y",NA
+"CP-SIM-102-010",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1215.71498095,"Y","Y",NA
+"CP-SIM-102-010",1,"Reference","T12","t1/2 (h)",3.41643740933,"Y","Y",NA
+"CP-SIM-102-010",1,"Reference","CLFO","CL/F (L/h)",0.0822561221727,"Y","Y",NA
+"CP-SIM-102-010",1,"Reference","VZFO","Vz/F (L)",0.405430334017,"Y","Y",NA
+"CP-SIM-102-010",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","CMAX","Cmax (ng/mL)",245.028,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","AUCLST","AUClast (h*ng/mL)",1045.409875,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1049.65572205,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","T12","t1/2 (h)",2.96076148371,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","CLFO","CL/F (L/h)",0.0952693325048,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","VZFO","Vz/F (L)",0.406940658738,"Y","Y",NA
+"CP-SIM-102-010",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",6.12174935109e-05,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","CMAX","Cmax (ng/mL)",114.372,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","AUCLST","AUClast (h*ng/mL)",1304.620875,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1315.94194084,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","T12","t1/2 (h)",6.9382536434,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","CLFO","CL/F (L/h)",0.0759911945172,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","VZFO","Vz/F (L)",0.760655452424,"Y","Y",NA
+"CP-SIM-102-011",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","CMAX","Cmax (ng/mL)",124.465,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","AUCLST","AUClast (h*ng/mL)",1470.57525,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1496.63727861,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","T12","t1/2 (h)",8.27522750773,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","CLFO","CL/F (L/h)",0.0668164567523,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","VZFO","Vz/F (L)",0.797696934206,"Y","Y",NA
+"CP-SIM-102-011",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0099706744868,"Y","Y",NA
+"CP-SIM-102-012",1,"Reference","CMAX","Cmax (ng/mL)",68.926,"Y",NA,NA
+"CP-SIM-102-012",1,"Reference","TMAX","Tmax (h)",1,"Y",NA,NA
+"CP-SIM-102-012",1,"Reference","AUCLST","AUClast (h*ng/mL)",1182.947125,"Y",NA,NA
+"CP-SIM-102-012",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1264.25134711,"Y",NA,NA
+"CP-SIM-102-012",1,"Reference","T12","t1/2 (h)",12.3289854126,"Y",NA,NA
+"CP-SIM-102-012",1,"Reference","CLFO","CL/F (L/h)",0.0790981953303,"Y",NA,NA
+"CP-SIM-102-012",1,"Reference","VZFO","Vz/F (L)",1.40691692001,"Y",NA,NA
+"CP-SIM-102-012",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-012",2,"Test","CMAX","Cmax (ng/mL)",72.724,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-012",2,"Test","TMAX","Tmax (h)",0.5,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-012",2,"Test","AUCLST","AUClast (h*ng/mL)",1262.081125,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-012",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1344.34849621,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-012",2,"Test","T12","t1/2 (h)",11.7598260278,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-012",2,"Test","CLFO","CL/F (L/h)",0.0743854739167,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-012",2,"Test","VZFO","Vz/F (L)",1.26201224904,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-012",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0634316044222,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-013",1,"Test","CMAX","Cmax (ng/mL)",71.372,"Y","Y",NA
+"CP-SIM-102-013",1,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-013",1,"Test","AUCLST","AUClast (h*ng/mL)",954.463625,"Y","Y",NA
+"CP-SIM-102-013",1,"Test","AUCIFO","AUCinf (h*ng/mL)",998.905350504,"Y","Y",NA
+"CP-SIM-102-013",1,"Test","T12","t1/2 (h)",10.5387125325,"Y","Y",NA
+"CP-SIM-102-013",1,"Test","CLFO","CL/F (L/h)",0.100109584907,"Y","Y",NA
+"CP-SIM-102-013",1,"Test","VZFO","Vz/F (L)",1.52208097597,"Y","Y",NA
+"CP-SIM-102-013",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","CMAX","Cmax (ng/mL)",66.268,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","TMAX","Tmax (h)",2,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","AUCLST","AUClast (h*ng/mL)",1106.72325,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1185.56475846,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","T12","t1/2 (h)",12.3639749545,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","CLFO","CL/F (L/h)",0.0843479862964,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","VZFO","Vz/F (L)",1.50455259616,"Y","Y",NA
+"CP-SIM-102-013",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0450896360234,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","CMAX","Cmax (ng/mL)",182.34,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","AUCLST","AUClast (h*ng/mL)",780.0805,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",787.345526143,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","T12","t1/2 (h)",2.3057382729,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","CLFO","CL/F (L/h)",0.127009040732,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","VZFO","Vz/F (L)",0.42249267462,"Y","Y",NA
+"CP-SIM-102-014",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","CMAX","Cmax (ng/mL)",173.805,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","AUCLST","AUClast (h*ng/mL)",1128.776375,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1136.47989921,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","T12","t1/2 (h)",3.24797815423,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","CLFO","CL/F (L/h)",0.0879909975263,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","VZFO","Vz/F (L)",0.412311909721,"Y","Y",NA
+"CP-SIM-102-014",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","CMAX","Cmax (ng/mL)",208.918,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","AUCLST","AUClast (h*ng/mL)",1147.703,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1152.45191922,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","T12","t1/2 (h)",2.94691134373,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","CLFO","CL/F (L/h)",0.0867715158714,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","VZFO","Vz/F (L)",0.368908612204,"Y","Y",NA
+"CP-SIM-102-015",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","CMAX","Cmax (ng/mL)",183.073,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","AUCLST","AUClast (h*ng/mL)",826.293625,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",832.902139575,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","T12","t1/2 (h)",2.28007627934,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","CLFO","CL/F (L/h)",0.120062124046,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","VZFO","Vz/F (L)",0.394938923165,"Y","Y",NA
+"CP-SIM-102-015",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",2.18492076931e-05,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","CMAX","Cmax (ng/mL)",156.401,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","AUCLST","AUClast (h*ng/mL)",954.68025,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",967.183952149,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","T12","t1/2 (h)",3.8062827805,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","CLFO","CL/F (L/h)",0.103392947927,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","VZFO","Vz/F (L)",0.567762242068,"Y","Y",NA
+"CP-SIM-102-016",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","CMAX","Cmax (ng/mL)",151.904,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","AUCLST","AUClast (h*ng/mL)",943.909,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","AUCIFO","AUCinf (h*ng/mL)",956.295885896,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","T12","t1/2 (h)",4.05762525272,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","CLFO","CL/F (L/h)",0.104570145574,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","VZFO","Vz/F (L)",0.61214483051,"Y","Y",NA
+"CP-SIM-102-016",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.000138245207499,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","CMAX","Cmax (ng/mL)",160.673,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","AUCLST","AUClast (h*ng/mL)",1373.73125,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1382.6926003,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","T12","t1/2 (h)",4.83764384498,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","CLFO","CL/F (L/h)",0.0723226550703,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","VZFO","Vz/F (L)",0.504757513217,"Y","Y",NA
+"CP-SIM-102-017",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","CMAX","Cmax (ng/mL)",153.538,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","AUCLST","AUClast (h*ng/mL)",1586.2605,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1592.79227527,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","T12","t1/2 (h)",5.90284434372,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","CLFO","CL/F (L/h)",0.062782825829,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","VZFO","Vz/F (L)",0.534658812329,"Y","Y",NA
+"CP-SIM-102-017",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.00157615704256,"Y","Y",NA
+"CP-SIM-102-018",1,"Reference","CMAX","Cmax (ng/mL)",73.915,"Y",NA,NA
+"CP-SIM-102-018",1,"Reference","TMAX","Tmax (h)",1,"Y",NA,NA
+"CP-SIM-102-018",1,"Reference","AUCLST","AUClast (h*ng/mL)",1272.572125,"Y",NA,NA
+"CP-SIM-102-018",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1384.83605859,"Y",NA,NA
+"CP-SIM-102-018",1,"Reference","T12","t1/2 (h)",12.9692381744,"Y",NA,NA
+"CP-SIM-102-018",1,"Reference","CLFO","CL/F (L/h)",0.0722107135929,"Y",NA,NA
+"CP-SIM-102-018",1,"Reference","VZFO","Vz/F (L)",1.35110979255,"Y",NA,NA
+"CP-SIM-102-018",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-018",2,"Test","CMAX","Cmax (ng/mL)",84.002,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-018",2,"Test","TMAX","Tmax (h)",1.5,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-018",2,"Test","AUCLST","AUClast (h*ng/mL)",1159.9205,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-018",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1189.42883222,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-018",2,"Test","T12","t1/2 (h)",8.74086208517,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-018",2,"Test","CLFO","CL/F (L/h)",0.0840739666732,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-018",2,"Test","VZFO","Vz/F (L)",1.06020621342,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-018",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0519630484988,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",1,"Test","CMAX","Cmax (ng/mL)",84.999,"Y",NA,NA
+"CP-SIM-102-019",1,"Test","TMAX","Tmax (h)",2,"Y",NA,NA
+"CP-SIM-102-019",1,"Test","AUCLST","AUClast (h*ng/mL)",1389.848125,"Y",NA,NA
+"CP-SIM-102-019",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1498.68214409,"Y",NA,NA
+"CP-SIM-102-019",1,"Test","T12","t1/2 (h)",13.0628560141,"Y",NA,NA
+"CP-SIM-102-019",1,"Test","CLFO","CL/F (L/h)",0.0667252895448,"Y",NA,NA
+"CP-SIM-102-019",1,"Test","VZFO","Vz/F (L)",1.25748596297,"Y",NA,NA
+"CP-SIM-102-019",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-019",2,"Reference","CMAX","Cmax (ng/mL)",95.739,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",2,"Reference","TMAX","Tmax (h)",1.5,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",2,"Reference","AUCLST","AUClast (h*ng/mL)",1774.266375,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",2030.5382274,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",2,"Reference","T12","t1/2 (h)",16.0813065314,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",2,"Reference","CLFO","CL/F (L/h)",0.0492480262872,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",2,"Reference","VZFO","Vz/F (L)",1.14257495233,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-019",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0559855440312,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-020",1,"Reference","CMAX","Cmax (ng/mL)",56.158,"Y","Y",NA
+"CP-SIM-102-020",1,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-020",1,"Reference","AUCLST","AUClast (h*ng/mL)",837.9655,"Y","Y",NA
+"CP-SIM-102-020",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",893.300604462,"Y","Y",NA
+"CP-SIM-102-020",1,"Reference","T12","t1/2 (h)",13.0416088554,"Y","Y",NA
+"CP-SIM-102-020",1,"Reference","CLFO","CL/F (L/h)",0.111944399792,"Y","Y",NA
+"CP-SIM-102-020",1,"Reference","VZFO","Vz/F (L)",2.10624109364,"Y","Y",NA
+"CP-SIM-102-020",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","CMAX","Cmax (ng/mL)",57.854,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","AUCLST","AUClast (h*ng/mL)",723.9415,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","AUCIFO","AUCinf (h*ng/mL)",749.095308729,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","T12","t1/2 (h)",9.8615902718,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","CLFO","CL/F (L/h)",0.133494361578,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","VZFO","Vz/F (L)",1.89925997595,"Y","Y",NA
+"CP-SIM-102-020",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0478272893836,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","CMAX","Cmax (ng/mL)",98.156,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","AUCLST","AUClast (h*ng/mL)",841.659375,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","AUCIFO","AUCinf (h*ng/mL)",850.735293079,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","T12","t1/2 (h)",5.34944475104,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","CLFO","CL/F (L/h)",0.117545376116,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","VZFO","Vz/F (L)",0.907170241627,"Y","Y",NA
+"CP-SIM-102-021",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","CMAX","Cmax (ng/mL)",90.17,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","AUCLST","AUClast (h*ng/mL)",769.829125,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",777.87294916,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","T12","t1/2 (h)",5.47696860252,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","CLFO","CL/F (L/h)",0.128555698084,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","VZFO","Vz/F (L)",1.01579511802,"Y","Y",NA
+"CP-SIM-102-021",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0033603193967,"Y","Y",NA
+"CP-SIM-102-022",1,"Reference","CMAX","Cmax (ng/mL)",122.448,"Y",NA,NA
+"CP-SIM-102-022",1,"Reference","TMAX","Tmax (h)",1.5,"Y",NA,NA
+"CP-SIM-102-022",1,"Reference","AUCLST","AUClast (h*ng/mL)",2003.76525,"Y",NA,NA
+"CP-SIM-102-022",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",2121.21812526,"Y",NA,NA
+"CP-SIM-102-022",1,"Reference","T12","t1/2 (h)",11.1462389565,"Y",NA,NA
+"CP-SIM-102-022",1,"Reference","CLFO","CL/F (L/h)",0.0471427237062,"Y",NA,NA
+"CP-SIM-102-022",1,"Reference","VZFO","Vz/F (L)",0.758084398565,"Y",NA,NA
+"CP-SIM-102-022",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-022",2,"Test","CMAX","Cmax (ng/mL)",126.603,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-022",2,"Test","TMAX","Tmax (h)",1.5,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-022",2,"Test","AUCLST","AUClast (h*ng/mL)",2121.441,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-022",2,"Test","AUCIFO","AUCinf (h*ng/mL)",2305.94924446,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-022",2,"Test","T12","t1/2 (h)",14.3520782673,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-022",2,"Test","CLFO","CL/F (L/h)",0.0433660889285,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-022",2,"Test","VZFO","Vz/F (L)",0.897924019461,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-022",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0540113583406,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",1,"Test","CMAX","Cmax (ng/mL)",55.067,"Y",NA,NA
+"CP-SIM-102-023",1,"Test","TMAX","Tmax (h)",1.5,"Y",NA,NA
+"CP-SIM-102-023",1,"Test","AUCLST","AUClast (h*ng/mL)",1125.844,"Y",NA,NA
+"CP-SIM-102-023",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1242.93547959,"Y",NA,NA
+"CP-SIM-102-023",1,"Test","T12","t1/2 (h)",13.7120508438,"Y",NA,NA
+"CP-SIM-102-023",1,"Test","CLFO","CL/F (L/h)",0.0804546990911,"Y",NA,NA
+"CP-SIM-102-023",1,"Test","VZFO","Vz/F (L)",1.59157961758,"Y",NA,NA
+"CP-SIM-102-023",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-023",2,"Reference","CMAX","Cmax (ng/mL)",63.632,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",2,"Reference","TMAX","Tmax (h)",1,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",2,"Reference","AUCLST","AUClast (h*ng/mL)",1307.2735,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1493.91530771,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",2,"Reference","T12","t1/2 (h)",16.2443800592,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",2,"Reference","CLFO","CL/F (L/h)",0.066938198895,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",2,"Reference","VZFO","Vz/F (L)",1.56874264778,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-023",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0886346492331,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-024",1,"Reference","CMAX","Cmax (ng/mL)",77.624,"Y","Y",NA
+"CP-SIM-102-024",1,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-024",1,"Reference","AUCLST","AUClast (h*ng/mL)",978.448,"Y","Y",NA
+"CP-SIM-102-024",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",995.037103437,"Y","Y",NA
+"CP-SIM-102-024",1,"Reference","T12","t1/2 (h)",8.14931982671,"Y","Y",NA
+"CP-SIM-102-024",1,"Reference","CLFO","CL/F (L/h)",0.100498764975,"Y","Y",NA
+"CP-SIM-102-024",1,"Reference","VZFO","Vz/F (L)",1.18156230155,"Y","Y",NA
+"CP-SIM-102-024",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","CMAX","Cmax (ng/mL)",72.598,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","AUCLST","AUClast (h*ng/mL)",1053.1855,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1078.74581617,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","T12","t1/2 (h)",9.05317377896,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","CLFO","CL/F (L/h)",0.0927002436545,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","VZFO","Vz/F (L)",1.2107550008,"Y","Y",NA
+"CP-SIM-102-024",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0250695611449,"Y","Y",NA
+"CP-SIM-102-025",1,"Test","CMAX","Cmax (ng/mL)",75.663,"Y",NA,NA
+"CP-SIM-102-025",1,"Test","TMAX","Tmax (h)",2,"Y",NA,NA
+"CP-SIM-102-025",1,"Test","AUCLST","AUClast (h*ng/mL)",1327.044125,"Y",NA,NA
+"CP-SIM-102-025",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1440.73076242,"Y",NA,NA
+"CP-SIM-102-025",1,"Test","T12","t1/2 (h)",12.6609209819,"Y",NA,NA
+"CP-SIM-102-025",1,"Test","CLFO","CL/F (L/h)",0.0694092210764,"Y",NA,NA
+"CP-SIM-102-025",1,"Test","VZFO","Vz/F (L)",1.26781827599,"Y",NA,NA
+"CP-SIM-102-025",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-025",2,"Reference","CMAX","Cmax (ng/mL)",85.94,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-025",2,"Reference","TMAX","Tmax (h)",1,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-025",2,"Reference","AUCLST","AUClast (h*ng/mL)",1206.9085,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-025",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1232.13040709,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-025",2,"Reference","T12","t1/2 (h)",7.87499720269,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-025",2,"Reference","CLFO","CL/F (L/h)",0.0811602403644,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-025",2,"Reference","VZFO","Vz/F (L)",0.922079298257,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-025",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0751919944147,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",1,"Reference","CMAX","Cmax (ng/mL)",76.104,"Y",NA,NA
+"CP-SIM-102-026",1,"Reference","TMAX","Tmax (h)",1,"Y",NA,NA
+"CP-SIM-102-026",1,"Reference","AUCLST","AUClast (h*ng/mL)",1378.171125,"Y",NA,NA
+"CP-SIM-102-026",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1585.68541614,"Y",NA,NA
+"CP-SIM-102-026",1,"Reference","T12","t1/2 (h)",16.4876141485,"Y",NA,NA
+"CP-SIM-102-026",1,"Reference","CLFO","CL/F (L/h)",0.0630642112124,"Y",NA,NA
+"CP-SIM-102-026",1,"Reference","VZFO","Vz/F (L)",1.50008311396,"Y",NA,NA
+"CP-SIM-102-026",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-026",2,"Test","CMAX","Cmax (ng/mL)",76.544,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",2,"Test","TMAX","Tmax (h)",1.5,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",2,"Test","AUCLST","AUClast (h*ng/mL)",1410.730875,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1549.64765025,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",2,"Test","T12","t1/2 (h)",14.3587490448,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",2,"Test","CLFO","CL/F (L/h)",0.0645307983296,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",2,"Test","VZFO","Vz/F (L)",1.33677459111,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-026",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.10701034699,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-027",1,"Test","CMAX","Cmax (ng/mL)",113.895,"Y","Y",NA
+"CP-SIM-102-027",1,"Test","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-027",1,"Test","AUCLST","AUClast (h*ng/mL)",1546.954875,"Y","Y",NA
+"CP-SIM-102-027",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1594.41256181,"Y","Y",NA
+"CP-SIM-102-027",1,"Test","T12","t1/2 (h)",9.72079249578,"Y","Y",NA
+"CP-SIM-102-027",1,"Test","CLFO","CL/F (L/h)",0.0627190241694,"Y","Y",NA
+"CP-SIM-102-027",1,"Test","VZFO","Vz/F (L)",0.879580320873,"Y","Y",NA
+"CP-SIM-102-027",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","CMAX","Cmax (ng/mL)",121.434,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","AUCLST","AUClast (h*ng/mL)",1511.702625,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1548.89065953,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","T12","t1/2 (h)",8.75272709125,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","CLFO","CL/F (L/h)",0.0645623365244,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","VZFO","Vz/F (L)",0.815261935446,"Y","Y",NA
+"CP-SIM-102-027",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0266976299883,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","CMAX","Cmax (ng/mL)",99.596,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","AUCLST","AUClast (h*ng/mL)",730.539625,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",738.270926924,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","T12","t1/2 (h)",5.21804297049,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","CLFO","CL/F (L/h)",0.135451629413,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","VZFO","Vz/F (L)",1.01968592317,"Y","Y",NA
+"CP-SIM-102-028",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","CMAX","Cmax (ng/mL)",92.615,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","AUCLST","AUClast (h*ng/mL)",762.1895,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","AUCIFO","AUCinf (h*ng/mL)",771.098876285,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","T12","t1/2 (h)",5.7022244254,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","CLFO","CL/F (L/h)",0.129685054765,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","VZFO","Vz/F (L)",1.06686329776,"Y","Y",NA
+"CP-SIM-102-028",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.00269934675808,"Y","Y",NA
+"CP-SIM-102-029",1,"Test","CMAX","Cmax (ng/mL)",71.182,"Y",NA,NA
+"CP-SIM-102-029",1,"Test","TMAX","Tmax (h)",2,"Y",NA,NA
+"CP-SIM-102-029",1,"Test","AUCLST","AUClast (h*ng/mL)",1097.04225,"Y",NA,NA
+"CP-SIM-102-029",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1139.42557834,"Y",NA,NA
+"CP-SIM-102-029",1,"Test","T12","t1/2 (h)",9.65425058866,"Y",NA,NA
+"CP-SIM-102-029",1,"Test","CLFO","CL/F (L/h)",0.0877635204098,"Y",NA,NA
+"CP-SIM-102-029",1,"Test","VZFO","Vz/F (L)",1.22238255069,"Y",NA,NA
+"CP-SIM-102-029",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-029",2,"Reference","CMAX","Cmax (ng/mL)",74.681,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-029",2,"Reference","TMAX","Tmax (h)",1,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-029",2,"Reference","AUCLST","AUClast (h*ng/mL)",1278.174125,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-029",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1408.02945385,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-029",2,"Reference","T12","t1/2 (h)",14.9864893563,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-029",2,"Reference","CLFO","CL/F (L/h)",0.0710212415845,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-029",2,"Reference","VZFO","Vz/F (L)",1.53554556799,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-029",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0536682690376,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-030",1,"Reference","CMAX","Cmax (ng/mL)",184.449,"Y","Y",NA
+"CP-SIM-102-030",1,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-030",1,"Reference","AUCLST","AUClast (h*ng/mL)",724.098375,"Y","Y",NA
+"CP-SIM-102-030",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",728.468103717,"Y","Y",NA
+"CP-SIM-102-030",1,"Reference","T12","t1/2 (h)",2.13751950593,"Y","Y",NA
+"CP-SIM-102-030",1,"Reference","CLFO","CL/F (L/h)",0.137274369996,"Y","Y",NA
+"CP-SIM-102-030",1,"Reference","VZFO","Vz/F (L)",0.423325163487,"Y","Y",NA
+"CP-SIM-102-030",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","CMAX","Cmax (ng/mL)",196.718,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","AUCLST","AUClast (h*ng/mL)",1011.409875,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1015.74494192,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","T12","t1/2 (h)",2.94592099571,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","CLFO","CL/F (L/h)",0.0984499118555,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","VZFO","Vz/F (L)",0.418418584819,"Y","Y",NA
+"CP-SIM-102-030",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","CMAX","Cmax (ng/mL)",107.74,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","AUCLST","AUClast (h*ng/mL)",1500.368625,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1551.91358456,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","T12","t1/2 (h)",9.49209441816,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","CLFO","CL/F (L/h)",0.0644365775227,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","VZFO","Vz/F (L)",0.882407221702,"Y","Y",NA
+"CP-SIM-102-031",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","CMAX","Cmax (ng/mL)",103.118,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","AUCLST","AUClast (h*ng/mL)",1592.206875,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1642.90318656,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","T12","t1/2 (h)",9.85694401769,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","CLFO","CL/F (L/h)",0.0608678592981,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","VZFO","Vz/F (L)",0.86557530407,"Y","Y",NA
+"CP-SIM-102-031",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0351151108439,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","CMAX","Cmax (ng/mL)",117.003,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","AUCLST","AUClast (h*ng/mL)",780.104,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",787.901595576,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","T12","t1/2 (h)",3.48927139379,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","CLFO","CL/F (L/h)",0.126919402831,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","VZFO","Vz/F (L)",0.638906503605,"Y","Y",NA
+"CP-SIM-102-032",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","CMAX","Cmax (ng/mL)",140.064,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","AUCLST","AUClast (h*ng/mL)",797.7235,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","AUCIFO","AUCinf (h*ng/mL)",805.185296812,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","T12","t1/2 (h)",3.45268586267,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","CLFO","CL/F (L/h)",0.124195014981,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","VZFO","Vz/F (L)",0.618636827019,"Y","Y",NA
+"CP-SIM-102-032",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.000121373086589,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","CMAX","Cmax (ng/mL)",117.438,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","AUCLST","AUClast (h*ng/mL)",851.495875,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","AUCIFO","AUCinf (h*ng/mL)",866.94763913,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","T12","t1/2 (h)",4.09573489146,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","CLFO","CL/F (L/h)",0.115347219932,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","VZFO","Vz/F (L)",0.681574774531,"Y","Y",NA
+"CP-SIM-102-033",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","CMAX","Cmax (ng/mL)",118.644,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","AUCLST","AUClast (h*ng/mL)",1128.70075,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1141.03755888,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","T12","t1/2 (h)",5.59269083809,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","CLFO","CL/F (L/h)",0.0876395340555,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","VZFO","Vz/F (L)",0.70712372915,"Y","Y",NA
+"CP-SIM-102-033",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.000278143016082,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","CMAX","Cmax (ng/mL)",152.802,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","AUCLST","AUClast (h*ng/mL)",1240.1465,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1258.94940337,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","T12","t1/2 (h)",5.91610506429,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","CLFO","CL/F (L/h)",0.0794313097352,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","VZFO","Vz/F (L)",0.677956986579,"Y","Y",NA
+"CP-SIM-102-034",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","CMAX","Cmax (ng/mL)",147.653,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","TMAX","Tmax (h)",0.25,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","AUCLST","AUClast (h*ng/mL)",1286.40475,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1291.45528989,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","T12","t1/2 (h)",6.31907488608,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","CLFO","CL/F (L/h)",0.0774320263215,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","VZFO","Vz/F (L)",0.705908913186,"Y","Y",NA
+"CP-SIM-102-034",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.00378590343576,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","CMAX","Cmax (ng/mL)",86.281,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","AUCLST","AUClast (h*ng/mL)",729.898125,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","AUCIFO","AUCinf (h*ng/mL)",737.548920803,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","T12","t1/2 (h)",5.49546895315,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","CLFO","CL/F (L/h)",0.135584226591,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","VZFO","Vz/F (L)",1.07495049921,"Y","Y",NA
+"CP-SIM-102-035",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","CMAX","Cmax (ng/mL)",83.701,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","TMAX","Tmax (h)",0.5,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","AUCLST","AUClast (h*ng/mL)",771.78825,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",780.45559908,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","T12","t1/2 (h)",5.3640612301,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","CLFO","CL/F (L/h)",0.128130287127,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","VZFO","Vz/F (L)",0.99156243415,"Y","Y",NA
+"CP-SIM-102-035",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.00266424534952,"Y","Y",NA
+"CP-SIM-102-036",1,"Reference","CMAX","Cmax (ng/mL)",109.932,"Y",NA,NA
+"CP-SIM-102-036",1,"Reference","TMAX","Tmax (h)",3,"Y",NA,NA
+"CP-SIM-102-036",1,"Reference","AUCLST","AUClast (h*ng/mL)",1618.805375,"Y",NA,NA
+"CP-SIM-102-036",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1709.20281309,"Y",NA,NA
+"CP-SIM-102-036",1,"Reference","T12","t1/2 (h)",11.5927343836,"Y",NA,NA
+"CP-SIM-102-036",1,"Reference","CLFO","CL/F (L/h)",0.058506807521,"Y",NA,NA
+"CP-SIM-102-036",1,"Reference","VZFO","Vz/F (L)",0.978513508022,"Y",NA,NA
+"CP-SIM-102-036",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y",NA,NA
+"CP-SIM-102-036",2,"Test","CMAX","Cmax (ng/mL)",101.434,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-036",2,"Test","TMAX","Tmax (h)",1,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-036",2,"Test","AUCLST","AUClast (h*ng/mL)",1501.959375,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-036",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1540.33326621,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-036",2,"Test","T12","t1/2 (h)",8.38019990484,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-036",2,"Test","CLFO","CL/F (L/h)",0.064921015597,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-036",2,"Test","VZFO","Vz/F (L)",0.784899807698,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-036",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0566279551235,"Y",NA,"PRE-DOSE CONCENTRATION ABOVE 5% OF CMAX"
+"CP-SIM-102-037",1,"Test","CMAX","Cmax (ng/mL)",150.432,"Y","Y",NA
+"CP-SIM-102-037",1,"Test","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-037",1,"Test","AUCLST","AUClast (h*ng/mL)",1425.161875,"Y","Y",NA
+"CP-SIM-102-037",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1431.85597776,"Y","Y",NA
+"CP-SIM-102-037",1,"Test","T12","t1/2 (h)",6.33014795776,"Y","Y",NA
+"CP-SIM-102-037",1,"Test","CLFO","CL/F (L/h)",0.0698394262785,"Y","Y",NA
+"CP-SIM-102-037",1,"Test","VZFO","Vz/F (L)",0.637806679485,"Y","Y",NA
+"CP-SIM-102-037",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","CMAX","Cmax (ng/mL)",136.511,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","AUCLST","AUClast (h*ng/mL)",1199.961375,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1207.7152343,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","T12","t1/2 (h)",4.91276573493,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","CLFO","CL/F (L/h)",0.0828009758921,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","VZFO","Vz/F (L)",0.586862081517,"Y","Y",NA
+"CP-SIM-102-037",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.00535487982653,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","CMAX","Cmax (ng/mL)",81.988,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","TMAX","Tmax (h)",3,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","AUCLST","AUClast (h*ng/mL)",1075.55,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1094.53226828,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","T12","t1/2 (h)",8.47777431721,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","CLFO","CL/F (L/h)",0.0913632269215,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","VZFO","Vz/F (L)",1.11744928127,"Y","Y",NA
+"CP-SIM-102-038",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","CMAX","Cmax (ng/mL)",95.129,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","AUCLST","AUClast (h*ng/mL)",1418.798875,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1494.00932503,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","T12","t1/2 (h)",10.6981143831,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","CLFO","CL/F (L/h)",0.0669339865049,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","VZFO","Vz/F (L)",1.03306695003,"Y","Y",NA
+"CP-SIM-102-038",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0172292360899,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","CMAX","Cmax (ng/mL)",79.045,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","AUCLST","AUClast (h*ng/mL)",1095.5075,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","AUCIFO","AUCinf (h*ng/mL)",1128.59531281,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","T12","t1/2 (h)",9.79279426195,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","CLFO","CL/F (L/h)",0.0886057197516,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","VZFO","Vz/F (L)",1.25182300137,"Y","Y",NA
+"CP-SIM-102-039",1,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","CMAX","Cmax (ng/mL)",87.336,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","TMAX","Tmax (h)",2,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","AUCLST","AUClast (h*ng/mL)",1043.759875,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","AUCIFO","AUCinf (h*ng/mL)",1061.35468001,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","T12","t1/2 (h)",8.49288961489,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","CLFO","CL/F (L/h)",0.0942192104894,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","VZFO","Vz/F (L)",1.15443498398,"Y","Y",NA
+"CP-SIM-102-039",2,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0230031144087,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","CMAX","Cmax (ng/mL)",100.338,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","TMAX","Tmax (h)",1,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","AUCLST","AUClast (h*ng/mL)",1289.031875,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","AUCIFO","AUCinf (h*ng/mL)",1322.7441551,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","T12","t1/2 (h)",8.93255806555,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","CLFO","CL/F (L/h)",0.0756004096595,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","VZFO","Vz/F (L)",0.97425924537,"Y","Y",NA
+"CP-SIM-102-040",1,"Reference","PDCMXR","Pre-dose concentration / Cmax (ratio)",0,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","CMAX","Cmax (ng/mL)",93.693,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","TMAX","Tmax (h)",1.5,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","AUCLST","AUClast (h*ng/mL)",1450.899,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","AUCIFO","AUCinf (h*ng/mL)",1545.26459944,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","T12","t1/2 (h)",11.9447131472,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","CLFO","CL/F (L/h)",0.0647138360875,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","VZFO","Vz/F (L)",1.11518625539,"Y","Y",NA
+"CP-SIM-102-040",2,"Test","PDCMXR","Pre-dose concentration / Cmax (ratio)",0.0335670754485,"Y","Y",NA
