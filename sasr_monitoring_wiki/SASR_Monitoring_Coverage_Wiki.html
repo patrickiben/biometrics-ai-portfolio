@@ -699,7 +699,7 @@ window.addEventListener('afterprint',sync);sync();
     var items = [].slice.call(scope.querySelectorAll("[data-item]"));
     var groups = [].slice.call(scope.querySelectorAll("[data-group]"));
     var q = box.querySelector('input[type="search"]'), out = box.querySelector(".count");
-    var noun = box.getAttribute("data-noun") || "items";
+    var noun = box.getAttribute("data-noun") || "items", empty = scope.querySelector(".f-empty");
     function on(attr) { var b = box.querySelector("button[" + attr + '][aria-pressed="true"]'); return b ? b.getAttribute(attr) : ""; }
     function run() {
       var st = on("data-f-stage"), lb = on("data-f-label"), text = q ? q.value.trim().toLowerCase() : "", n = 0;
@@ -708,10 +708,19 @@ window.addEventListener('afterprint',sync);sync();
                  (!lb || (" " + (el.getAttribute("data-labels") || "") + " ").indexOf(" " + lb + " ") > -1) &&
                  (!text || el.textContent.toLowerCase().indexOf(text) > -1);
         el.hidden = !ok; if (ok) n++;
+        if (ok && text && el.tagName === "DETAILS") el.open = true;   /* a search shows its matches */
       });
       groups.forEach(function (g) { g.hidden = !g.querySelector("[data-item]:not([hidden])"); });
-      if (out) out.textContent = n + " of " + items.length + " " + noun + " shown";
+      if (out) out.textContent = n ? n + " of " + items.length + " " + noun + " shown" : "No " + noun + " match; 0 of " + items.length + " shown";
+      if (empty) empty.hidden = n > 0;
     }
+    function reset() {
+      box.querySelectorAll('button[aria-pressed="true"]').forEach(function (x) { x.setAttribute("aria-pressed", "false"); });
+      if (q) q.value = "";
+      run();
+      if (q) q.focus();
+    }
+    if (empty) empty.addEventListener("click", function (e) { if (e.target.closest("[data-f-reset]")) reset(); });
     box.addEventListener("click", function (e) {
       var b = e.target.closest("button[data-f-stage], button[data-f-label]"); if (!b) return;
       var attr = b.hasAttribute("data-f-stage") ? "data-f-stage" : "data-f-label", was = b.getAttribute("aria-pressed") === "true";
@@ -744,9 +753,29 @@ window.addEventListener('afterprint',sync);sync();
     });
   }
 
+  /* lifecycle stages: disclosures, open by default; on phones all but a linked stage start folded */
+  function stages() {
+    var list = [].slice.call(d.querySelectorAll("details.stage-sec"));
+    if (!list.length) return;
+    function target() { var id = location.hash ? decodeURIComponent(location.hash.slice(1)) : ""; var t = id && d.getElementById(id); return t && t.matches("details.stage-sec") ? t : null; }
+    var t = target();
+    if (window.matchMedia && window.matchMedia("(max-width: 719.98px)").matches) {
+      list.forEach(function (x) { if (x !== t) x.open = false; });
+      if (t) t.scrollIntoView();
+    }
+    window.addEventListener("hashchange", function () { var x = target(); if (x) { x.open = true; x.scrollIntoView(); } });
+    d.querySelectorAll("[data-f-expand]").forEach(function (b) {
+      function label() { var all = list.every(function (x) { return x.open; }); b.textContent = all ? "Fold all stages" : "Open all stages"; }
+      b.addEventListener("click", function () { var all = list.every(function (x) { return x.open; }); list.forEach(function (x) { x.open = !all; }); label(); });
+      list.forEach(function (x) { x.addEventListener("toggle", label); });
+      label();
+    });
+  }
+
   function init() {
     paint();
     if (saved()) quarto(saved());
+    stages();
     d.querySelectorAll("[data-filter]").forEach(filter);
     copyButtons();
   }

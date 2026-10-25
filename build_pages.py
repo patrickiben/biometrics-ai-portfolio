@@ -242,6 +242,11 @@ pre code { color: var(--ink); }
 .card { background: var(--surface); border-color: var(--line-2); }
 .cell-output-display svg, .quarto-figure img, .figure img { border-radius: var(--r-md); }
 .cell-output-display:has(svg[id^="mermaid"]) { padding: 12px; border: 1px solid var(--line-2); border-radius: var(--r-md); background: var(--surface); }
+svg[id^="mermaid"] .cluster rect { fill: var(--surface-2) !important; stroke: var(--line-2) !important; }
+svg[id^="mermaid"] .cluster-label, svg[id^="mermaid"] .cluster-label .nodeLabel, svg[id^="mermaid"] .cluster text { color: var(--muted) !important; fill: var(--muted) !important; }
+svg[id^="mermaid"] .edgeLabel, svg[id^="mermaid"] .edgeLabel p, svg[id^="mermaid"] .labelBkg { background-color: var(--surface) !important; color: var(--text) !important; }
+svg[id^="mermaid"] .edgeLabel rect { fill: var(--surface) !important; }
+.quarto-figure img, .figure img, .cell-output-display img { border: 1px solid var(--line-2); box-shadow: var(--shadow-1); }   /* figures and screenshots read as framed panels in both themes */
 .code-tools-button, .quarto-code-tools-source { color: var(--muted); }
 .nav-tabs .nav-link.active { background: var(--surface); color: var(--ink); border-color: var(--line-2) var(--line-2) var(--surface); }
 .nav-tabs { border-bottom-color: var(--line-2); }
@@ -276,7 +281,8 @@ def r_vec(T):
 THEME_R = f'''# assets/theme/theme.R: shared look for the portfolio's Shiny apps (bslib >= 0.6, Bootstrap 5.3).
 # Generated from assets/theme/tokens.css by build_pages.py; edit the tokens, not this file.
 # Adopt: copy into the app folder (Shinylive apps cannot read files outside it), source("theme.R"),
-# then page_sidebar(theme = bp_theme(), bp_theme_head(), ...). No app uses it yet.
+# then page_sidebar(theme = bp_theme(), bp_theme_head(), ...). No Shiny app uses it yet; the Quarto
+# guides and snapshots source it for figure ink (bp_ggplot_theme, one rendering per theme).
 bp_tokens <- list(
   dark = {r_vec(DARK)},
   light = {r_vec(LIGHT)})
@@ -568,14 +574,22 @@ if total_bytes > 1_100_000:
     fail(f'thumbnails total {total_bytes} bytes, over the 1.1 MB budget')
 
 
-def img(tid, eager=False, priority=False, large=False):
-    t = THUMB.get(tid + '-lg' if large and (tid + '-lg') in THUMB else tid)
+def img(tid, eager=False, priority=False, large=False, depth=0):
+    """A thumbnail; when the manifest has a light capture of the same view (id + "-light"), a <picture>
+    serves it in the light theme (ui.js keeps the <source> in step with the saved theme)."""
+    key = tid + '-lg' if large and (tid + '-lg') in THUMB else tid
+    t = THUMB.get(key)
     if not t:
         return ''
+    u = up(depth)
     attrs = 'loading="eager"' if eager else 'loading="lazy"'
     if priority:
         attrs += ' fetchpriority="high"'
-    return (f'<img src="{t["file"]}" width="{t["width"]}" height="{t["height"]}" alt="{esc(t["alt"])}" {attrs} decoding="async">')
+    tag = (f'<img src="{u}{t["file"]}" width="{t["width"]}" height="{t["height"]}" alt="{esc(t["alt"])}" {attrs} decoding="async">')
+    lt = THUMB.get(key + '-light')
+    if lt:
+        return f'<picture><source srcset="{u}{lt["file"]}" media="(prefers-color-scheme: light)">{tag}</picture>'
+    return tag
 
 
 # ---------------------------------------------------------------------------------------------
@@ -610,8 +624,52 @@ def lab(l):
     return f'<span class="lab {l["k"]}">{esc(l["text"])}</span>'
 
 
-def st(x):
-    return f'<span class="st st-{x["k"]}">{esc(fill(x["text"]))}</span>'
+def labs_dl(labels):
+    """Lifecycle labels as a compact definition list: the label name in its hue, then its qualifier.
+    The words are the label text itself, split at its first colon ("Led: DSMB reports" -> Led | DSMB reports)."""
+    rows = []
+    for l in labels:
+        name, _, q = l['text'].partition(':')
+        rows.append(f'<div class="{l["k"]}"><dt>{esc(name.strip())}</dt><dd>{esc(q.strip())}</dd></div>')
+    return '<dl class="labs-dl">' + ''.join(rows) + '</dl>'
+
+
+def labels_block(labels, always_dl=False):
+    """Several labels with qualifiers read as rows; one label, or bare names, stay as pills."""
+    if not labels:
+        return ''
+    if always_dl or (len(labels) >= 2 and any(':' in l['text'] for l in labels)):
+        return labs_dl(labels)
+    return '<p class="labs">' + ''.join(lab(l) for l in labels) + '</p>'
+
+
+def st(x, text=None, title=None):
+    t = f' title="{esc(title)}"' if title else ''
+    return f'<span class="st st-{x["k"]}"{t}>{esc(fill(x["text"]) if text is None else text)}</span>'
+
+
+EXEC_KINDS = ('runs', 'parse', 'notrun', 'struct', 'manual', 'revision', 'fail')
+
+
+def status_line(m, pills=''):
+    """One execution-status chip per card (the first execution status), the rest as a quiet text line.
+    "Runs: path/to/script.R" shows as "Runs" when the card already links that script by name."""
+    sts = m.get('status', [])
+    primary = next((x for x in sts if x['k'] in EXEC_KINDS), None)
+    chip = ''
+    if primary:
+        mm = re.match(r'(Runs?): (\S+)$', fill(primary['text']))
+        base = mm.group(2).rsplit('/', 1)[-1] if mm else None
+        if mm and any(l['text'] == base or l['href'].endswith(mm.group(2)) for l in m.get('links', [])):
+            chip = st(primary, mm.group(1), fill(primary['text']))
+        else:
+            chip = st(primary)
+    rest = [x for x in sts if x is not primary]
+    aux = ''
+    if rest:
+        aux = '<p class="aux">' + ''.join(f'<span class="ax ax-{x["k"]}">{esc(fill(x["text"]))}</span>' for x in rest) + '</p>'
+    row = f'<p class="chips">{pills}{chip}</p>' if (pills or chip) else ''
+    return row + aux
 
 
 def is_ext(href):
@@ -627,8 +685,12 @@ def go(links):
 
 
 def chips(m):
-    s = ''.join(lab(l) for l in m.get('labels', [])) + ''.join(st(x) for x in m.get('status', []))
-    return f'<p class="chips">{s}</p>' if s else ''
+    """Status line plus labels: simple labels ride in the chip row, labels with qualifiers become rows
+    (placed after the summary by card())."""
+    labels = m.get('labels', [])
+    simple = labels and not (len(labels) >= 2 and any(':' in l['text'] for l in labels))
+    pills = ''.join(lab(l) for l in labels) if simple else ''
+    return status_line(m, pills)
 
 
 def browser_links(m):
@@ -651,10 +713,13 @@ def card(m, cls='card', thumb=True, eager=False, priority=False, large=False, ru
     th = thumb_link(m, href, eager, priority, large) if thumb else ''
     parts = []
     if m.get('eyebrow'):
-        parts.append(f'<p class="eyebrow">{esc(m["eyebrow"])}</p>')
+        parts.append(f'<p class="eyebrow" title="{esc(m["eyebrow"])}">{esc(m["eyebrow"])}</p>')
     parts.append(f'<{heading}>{title_link}</{heading}>')
     parts.append(chips(m))
-    parts.append(f'<p>{esc(m["summary"])}</p>')
+    parts.append(f'<p class="sum">{esc(m["summary"])}</p>')
+    labels = m.get('labels', [])
+    if len(labels) >= 2 and any(':' in l['text'] for l in labels):
+        parts.append(labs_dl(labels))
     if m.get('shots'):
         figs = []
         for s in m['shots']:
@@ -699,15 +764,48 @@ def readout(k, v, s, d, href=None, vcls=''):
     return f'<div class="readout">{inner}</div>'
 
 
+APP_RUNTIME = {'shinylive': 'R Shiny', 'stlite': 'Python', 'javascript': 'JavaScript'}
+
+
+def app_counts():
+    """The apps on the Apps page by language: a module with a browser runtime, or a local Shiny app.
+    The eCRF set counts each of its apps (one screenshot per app)."""
+    c = OrderedDict((v, 0) for v in ('R Shiny', 'Python', 'JavaScript'))
+    builds = 0
+    for g in CAPS['pages']['apps']:
+        for mid in g['modules']:
+            m = PUB[mid]
+            rt = (m.get('browser') or {}).get('runtime')
+            if rt:
+                c[APP_RUNTIME.get(rt, rt)] += len(m.get('shots', [])) or 1
+                builds += rt == 'shinylive'
+            elif 'shiny::runApp' in m.get('run_local', ''):
+                c['R Shiny'] += 1
+    return c, builds
+
+
+def tlf_counts():
+    sas = len([p for d in sorted(os.listdir(os.path.join(ROOT, 'sas_tlf_pseudocode'))) if os.path.isdir(os.path.join(ROOT, 'sas_tlf_pseudocode', d))
+               for p in os.listdir(os.path.join(ROOT, 'sas_tlf_pseudocode', d)) if p.endswith('.sas')])
+    r = len([p for d in sorted(os.listdir(os.path.join(ROOT, 'r_tlf_pseudocode'))) if os.path.isdir(os.path.join(ROOT, 'r_tlf_pseudocode', d))
+             for p in os.listdir(os.path.join(ROOT, 'r_tlf_pseudocode', d)) if p.endswith('.R')])
+    designs = len([d for d in os.listdir(os.path.join(ROOT, 'sas_tlf_pseudocode')) if os.path.isdir(os.path.join(ROOT, 'sas_tlf_pseudocode', d))])
+    return sas, r, designs
+
+
 def status_strip():
     upd = esc(CAPS['updated'])
     r = [readout('Lifecycle', f'{len(STAGES)} <span class="u">stages</span>',
                  f'{led_n} Led in a job · <span class="c-gap">{gap_n} with a stated gap</span>', f'Updated {upd}', 'lifecycle.html')]
+    ac, builds = app_counts()
+    n_apps = sum(ac.values())
+    by_lang = ' · '.join(f'{v} {k}' for k, v in ac.items() if v)
     if verified:
         dates = sorted(m['browser']['verified'] for m in verified)
-        r.append(readout('In your browser', f'{len(verified)} apps', esc(runtime_breakdown(verified)), f'First checked {esc(dates[0])}', 'apps.html'))
+        chk = f'Browser check {esc(dates[0])}'
     else:
-        r.append(readout('Apps', 'Run locally', 'In R and Python, with run notes and network disclosures', 'See the Apps page', 'apps.html', 'sm'))
+        chk = 'Browser check: none yet'
+    r.append(readout('Apps', f'{n_apps} <span class="u">apps</span>', esc(by_lang), chk, 'apps.html'))
     r.append(readout('Harness gates', f'<span class="c-green">{LEDGER.get("green")}</span> of {LEDGER.get("total")} <span class="u">green</span>',
                      f'{LEDGER.get("manual")} manual record · <span class="c-amber">{LEDGER.get("unsigned")} awaiting sign-off</span> · '
                      + ('<span class="c-amber">no gate signed yet</span>' if not signed else f'{len(signed)} signed'),
@@ -718,29 +816,30 @@ def status_strip():
     r.append(readout('Worked example QC', f'<span class="c-green">{QC.get("pass")}</span> of {QC.get("checks")} <span class="u">checks</span>',
                      f'{int(QC.get("values_compared", 0)):,} values · same-author re-derivation', f'study/run_all.R, R {esc(R_VER)}',
                      'study/05_qc/qc_ledger.html'))
-    r.append(readout('Updated', upd, 'Synthetic data only', 'capabilities.json', None, 'sm'))
-    return '<div class="strip" role="list">' + ''.join(x.replace('class="readout"', 'class="readout" role="listitem"', 1) for x in r) + '</div>'
+    sas_n, r_n, designs = tlf_counts()
+    if sas_n != r_n:
+        fail(f'TLF libraries: {sas_n} SAS programs but {r_n} R scripts; the status strip reads them as twins')
+    r.append(readout('TLF templates', f'{sas_n} <span class="u">SAS/R twins</span>',
+                     f'{designs} early-phase designs · R parse-checked · SAS not executed (no license)', 'Pseudocode, not run on data', 'methods.html#libraries'))
+    cap = (f'<p class="strip-cap"><span class="k">This site in numbers</span><span>Read from this repository\'s files when the pages are built; '
+           f'updated {upd}; <span class="c-amber">synthetic data only</span></span></p>')
+    return cap + '<div class="strip" role="list">' + ''.join(x.replace('class="readout"', 'class="readout" role="listitem"', 1) for x in r) + '</div>'
+
+
+def strongest_link(s):
+    sg = s['strongest']
+    ext = is_ext(sg['href'])
+    note = f' <span class="note-q">({esc(sg["note"])})</span>' if sg.get('note') else ''
+    rel = ' rel="noopener"' if ext else ''
+    arrow = ' ↗' if ext else ''
+    return f'<a href="{esc(sg["href"])}"{rel}>{esc(sg["text"])}</a>{arrow}{note}'
 
 
 def stage_card(s):
-    sg = s['strongest']
-    ext = is_ext(sg['href'])
-    if sg.get('tile') == 'gap':
-        th = '<span class="thumb thumb--gap" aria-hidden="true">No artifact on this site</span>'
-    elif sg.get('tile') == 'ext':
-        th = f'<a class="thumb thumb--ext" href="{esc(sg["href"])}" tabindex="-1" aria-hidden="true"><span class="big">{s["n"]:02d}</span>{esc(sg.get("tile_text", ""))} ↗</a>'
-    else:
-        i = img(sg.get('thumb', ''))
-        th = f'<a class="thumb" href="{esc(sg["href"])}" tabindex="-1">{i}</a>' if i else ''
-    note = f' ({esc(sg["note"])})' if sg.get('note') else ''
-    rel = ' rel="noopener"' if ext else ''
-    arrow = ' ↗' if ext else ''
-    link = f'<a href="{esc(sg["href"])}"{rel}>{esc(sg["text"])}</a>{arrow}{note}'
     return (f'<article class="card card--stage"{seg_style([l["k"] for l in s["labels"]])}>'
-            f'<div class="top-row"><h3><span class="num">{s["n"]:02d}</span><a href="lifecycle.html#{s["id"]}">{esc(s["name"])}</a></h3>{th}</div>'
-            f'<p class="labs">{"".join(lab(l) for l in s["labels"])}</p>'
-            f'<p class="strong"><span class="k">Strongest here</span>{link}</p>'
-            f'<a class="all" href="lifecycle.html#{s["id"]}">All {esc(s["name"])} work</a></article>')
+            f'<h3><span class="num">{s["n"]:02d}</span><a href="lifecycle.html#{s["id"]}">{esc(s["name"])}</a></h3>'
+            + labs_dl(s['labels']) +
+            f'<p class="strong"><span class="k">Strongest here</span>{strongest_link(s)}</p></article>')
 
 
 def sec_head(n, key, h_id, title, intro='', more=''):
@@ -811,8 +910,8 @@ def home_regions(t):
     g = []
     g.append(card(feat[0], 'card card--feature span-8', eager=True, priority=True, large=True))
     g.append(card(feat[1], 'card span-4', eager=True, max_links=4))
-    g.append(card(feat[2], 'card span-8', thumb=False))
-    g.append(card(feat[3], 'card span-4'))
+    g.append(card(feat[2], 'card span-8 card--slim-phone', thumb=False))
+    g.append(card(feat[3], 'card span-4 card--slim-phone'))
     t = set_region(t, 'glance', glance(), 'html', 'index.html')
     t = set_region(t, 'status', status_strip(), 'html', 'index.html')
     t = set_region(t, 'featured', '<div class="grid-12">' + ''.join(g) + '</div>', 'html', 'index.html')
@@ -872,8 +971,28 @@ def page(title, desc, section, main):
             + topbar(section, 0, 'page') + f'<main id="main" class="wrap">\n{main}\n</main>\n' + site_footer(0) + '</body>\n</html>\n')
 
 
+STAGE_NAME = {s['name']: s['id'] for s in STAGES}
+
+
+def primary_stage(mid):
+    """Where a module's full card goes on the lifecycle page: its "primary" field, else the stage its
+    eyebrow names, else the first stage that lists it. Other stages show a one-line cross-reference."""
+    m = PUB[mid]
+    if m.get('primary') in STAGE:
+        return m['primary']
+    if STAGE_NAME.get(m.get('eyebrow')) and any(mid in s['modules'] and s['id'] == STAGE_NAME[m['eyebrow']] for s in STAGES):
+        return STAGE_NAME[m['eyebrow']]
+    return next(s['id'] for s in STAGES if mid in s['modules'])
+
+
+def empty_state(noun):
+    return (f'<div class="f-empty" hidden><p>No {esc(noun)} match these filters.</p>'
+            '<button type="button" class="btn" data-f-reset>Clear filters</button></div>')
+
+
 def matrix():
-    head = '<thead><tr><th scope="col">Stage</th>' + ''.join(f'<th scope="col">{esc(v["name"])}</th>' for v in CAPS['labels'].values()) + '</tr></thead>'
+    head = ('<thead><tr><th scope="col">Stage</th>' + ''.join(f'<th scope="col">{esc(v["name"])}</th>' for v in CAPS['labels'].values())
+            + '<th scope="col">Strongest here</th></tr></thead>')
     rows = []
     for s in STAGES:
         cells = []
@@ -889,10 +1008,13 @@ def matrix():
                     txt = esc(txt)
                 inner.append(f'<span class="mk {k}" aria-hidden="true"></span>{txt}')
             cells.append('<td>' + '<br>'.join(inner) + '</td>')
+        cells.append(f'<td class="best"><span class="k">Strongest here</span>{strongest_link(s)}</td>')
         rows.append(f'<tr><th scope="row"><a href="#{s["id"]}"><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</a></th>' + ''.join(cells) + '</tr>')
-    return ('<div class="tblwrap" tabindex="0" role="region" aria-label="Coverage matrix, scrolls sideways on small screens">'
-            '<table class="matrix"><caption>Lifecycle snapshot, October 2026: every stage with its labels, gaps included. '
-            'A marker shows the label applies; text shows its qualifier.</caption>' + head + '<tbody>' + ''.join(rows) + '</tbody></table></div>')
+    return ('<p class="matrix-cap" id="matrix-cap">Lifecycle snapshot, October 2026: every stage with its labels, gaps included. '
+            'A marker shows the label applies; text shows its qualifier. The last column links the strongest artifact for the stage.</p>'
+            '<div class="tblwrap" tabindex="0" role="region" aria-label="Coverage matrix, scrolls sideways on small screens">'
+            '<table class="matrix" aria-describedby="matrix-cap"><caption class="sr">Coverage matrix: stages, labels and the strongest artifact</caption>'
+            + head + '<tbody>' + ''.join(rows) + '</tbody></table></div>')
 
 
 def lifecycle_page():
@@ -900,16 +1022,33 @@ def lifecycle_page():
     chips_lb = ''.join(f'<button type="button" aria-pressed="false" data-f-label="{k}">{esc(v["name"])}</button>' for k, v in CAPS['labels'].items())
     secs = []
     for s in STAGES:
-        mods = ''.join(card(PUB[i], 'card card--compact', thumb=False) for i in s['modules'])
-        if not mods:
-            mods = '<p class="small">No module on this site for this stage.</p>'
+        own = [i for i in s['modules'] if primary_stage(i) == s['id']]
+        also = [i for i in s['modules'] if primary_stage(i) != s['id']]
+        mods = ''.join(card(PUB[i], 'card card--compact', thumb=False, max_links=3) for i in own)
+        items = []
+        if also:
+            for i in also:
+                p = STAGE[primary_stage(i)]
+                x = next((x for x in PUB[i].get('status', []) if x['k'] in EXEC_KINDS), None)
+                chip = st(x, re.sub(r':.*$', '', fill(x['text'])), fill(x['text'])) if x else ''
+                items.append(f'<li><a href="{esc(PUB[i]["href"])}">{esc(PUB[i]["title"])}</a>{chip}'
+                             f'<span class="where">full card under <a href="#{p["id"]}">{p["n"]:02d} {esc(p["name"])}</a></span></li>')
+        also_html = ('<div class="also"><h4 class="sub">Also used in this stage</h4><ul>' + ''.join(items) + '</ul></div>') if also else ''
+        mods = (f'<div class="mod-grid">{mods}</div>' if mods else '') + also_html
+        if not s['modules']:
+            mods = '<p class="small none">No module on this site for this stage.</p>'
         kinds = ' '.join(sorted({l['k'] for l in s['labels']}))
-        secs.append(f'<section class="stage-sec" id="{s["id"]}" data-item data-stages="{s["id"]}" data-labels="{kinds}" aria-labelledby="{s["id"]}-h">'
-                    f'<div><h2 id="{s["id"]}-h"><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</h2>'
-                    f'<p class="labs">{"".join(lab(l) for l in s["labels"])}</p>'
+        n_mod = len(s['modules'])
+        count = f'{n_mod} module{"s" if n_mod != 1 else ""}' if n_mod else 'no module'
+        # a disclosure: open by default (and without script); ui.js folds the stages on phones
+        secs.append(f'<details class="stage-sec" id="{s["id"]}" data-item data-stages="{s["id"]}" data-labels="{kinds}" open>'
+                    f'<summary><h2 id="{s["id"]}-h"><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</h2>'
+                    + labs_dl(s['labels']) +
+                    f'<span class="fold" aria-hidden="true"><span class="count-m">{count}</span></span></summary>'
+                    f'<div class="stage-body"><div class="stage-text">'
                     f'<h3 class="sub">Experience (from the resume)</h3><p>{s["experience"]}</p>'
                     f'<h3 class="sub">On this site</h3><p>{s["on_site_html"]}</p></div>'
-                    f'<div class="mods"><h3 class="sub">Modules</h3>{mods}</div></section>')
+                    f'<div class="mods"><h3 class="sub">Modules ({n_mod})</h3>{mods}</div></div></details>')
     main = ('<section class="page-head"><p class="eyebrow">Lifecycle</p><h1>Across the trial lifecycle</h1>'
             '<p class="lede">Each stage pairs what the resume supports with what this site can show today. Labels are deliberately narrow:</p>'
             + legend() + '</section>'
@@ -919,8 +1058,9 @@ def lifecycle_page():
             f'<div class="group" role="group" aria-label="Stage"><span class="k">Stage</span>{chips_st}</div>'
             f'<div class="group" role="group" aria-label="Label"><span class="k">Label</span>{chips_lb}</div>'
             '<div class="group"><label for="f-q">Search</label><input id="f-q" type="search" placeholder="Press / to search" autocomplete="off"></div>'
+            '<button type="button" class="fold-all" data-f-expand>Fold all stages</button>'
             '<span class="count" role="status" aria-live="polite"></span></div>'
-            '<div id="stages-list">' + ''.join(secs) + '</div>'
+            '<div id="stages-list">' + empty_state('stages') + ''.join(secs) + '</div>'
             f'<p class="not-covered">{CAPS["not_covered_html"]}</p></section>')
     return page('Lifecycle', 'Every stage of the clinical trial lifecycle: what the resume supports, what this site shows, the labels and the gaps.',
                 'lifecycle', main)
@@ -942,7 +1082,7 @@ def group_page(key, title, h1, lede, desc, section, run_local):
             f'<div class="filter filter--sticky" data-filter="#{key}-list" data-noun="modules" role="search" aria-label="Filter the {key}">'
             f'<div class="group"><label for="f-q">Search</label><input id="f-q" type="search" placeholder="Press / to search" autocomplete="off"></div>'
             '<span class="count" role="status" aria-live="polite"></span></div>'
-            f'<div id="{key}-list">' + ''.join(secs) + '</div>')
+            f'<div id="{key}-list">' + empty_state('modules') + ''.join(secs) + '</div>')
     return page(title, desc, section, main)
 
 
@@ -974,7 +1114,27 @@ RENDERED = {
     '_partials/_topbar-methods-d1.html': ['cqtc_hysteresis/index.html'],
 }
 STALE = []
+LEAK = re.compile(r'@keyframes|edge-animation|#mermaid-[\w-]+\s*\{|data-cites="keyframes"')
+
+
+def visible_text(page):
+    t = re.sub(r'<(script|style)\b[^>]*>.*?</\1>', ' ', page, flags=re.S | re.I)
+    return re.sub(r'<[^>]+>', ' ', t)
+
+
+def leaked_css(p):
+    """A diagram whose stylesheet spilled into the page as text (the 1.10.19 SVG-mermaid failure):
+    the page has no script error, so only its visible text shows it."""
+    s = rd(p)
+    return len(LEAK.findall(visible_text(s))) + s.count('data-cites="keyframes"')
+
+
+QUARTO_PAGES = sorted({p for ps in RENDERED.values() for p in ps} | {
+    'uat_irt/quarto/uat-slides.html', 'budget_reconciliation/quarto/hours-slides.html'})
 if '--rendered' in sys.argv or CHECK:
+    for p in QUARTO_PAGES:
+        if exists(p) and leaked_css(p):
+            fail(f'{p}: a diagram\'s CSS shows as page text ({leaked_css(p)} matches); re-render it (see the mermaid note in the README)')
     for part, pages in RENDERED.items():
         # compare what the bar says and where it links (Quarto's HTML writer reserializes the markup:
         # attribute case, self-closing SVG tags), not its bytes

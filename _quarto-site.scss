@@ -123,7 +123,31 @@ html:not(.js) .theme-toggle { display: none; }
 .st-fail { color: var(--red); background: var(--red-soft); border-color: color-mix(in srgb, var(--red) 40%, transparent); }
 .st-fail::before { border-radius: 1px; border: 0; width: 8px; height: 8px; background: linear-gradient(45deg, transparent 42%, currentColor 42% 58%, transparent 58%), linear-gradient(-45deg, transparent 42%, currentColor 42% 58%, transparent 58%); }
 .st-note::before { display: none; }
+code span.st, pre span.st { display: inline; gap: 0; max-width: none; margin: 0; padding: 0; vertical-align: baseline; border: 0; border-radius: 0;
+  background: none; font: inherit; overflow-wrap: normal; }   /* Pandoc marks string tokens in highlighted code with .st */
+code span.st::before, pre span.st::before { content: none; display: none; }
 .chips { display: flex; flex-wrap: wrap; align-items: center; margin: 0 0 8px; }
+.labs { margin: 0 0 8px; }
+
+/* lifecycle labels with qualifiers, as rows: the label name in its hue, then the qualifier */
+.labs-dl { display: grid; gap: 5px; margin: 0 0 12px; padding: 0; font-size: 13.5px; line-height: 1.4; }
+.labs-dl > div { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: baseline; margin: 0; }
+.labs-dl dt { display: inline-flex; align-items: baseline; gap: 7px; margin: 0; font: 650 12.5px/1.4 var(--sans); white-space: nowrap; }
+.labs-dl dt::before { content: ""; flex: none; width: 8px; height: 8px; border-radius: 50%; background: currentColor; transform: translateY(-1px); }
+.labs-dl dd { margin: 0; color: var(--text); }
+.labs-dl .led dt { color: var(--led-fg); } .labs-dl .sup dt { color: var(--sup-fg); }
+.labs-dl .tools dt { color: var(--tools-fg); } .labs-dl .gap dt { color: var(--gap-fg); }
+.labs-dl .tools dt::before { border-radius: 2px; } .labs-dl .gap dt::before { border-radius: 1px; transform: translateY(-1px) rotate(45deg); }
+.labs-dl .gap dd { color: var(--gap-fg); }
+
+/* secondary statuses: a quiet line under the chip row, never a second chip pile */
+.aux { display: flex; flex-wrap: wrap; gap: 2px 12px; margin: -2px 0 10px; font: 500 12px/1.45 var(--mono); color: var(--muted); }
+.aux .ax { display: inline-flex; align-items: baseline; gap: 6px; }
+.aux .ax-synthetic { color: var(--amber); }
+.aux .ax-synthetic::before { content: ""; flex: none; width: 6px; height: 6px; background: currentColor; transform: translateY(-1px); }
+.aux .ax-manual, .aux .ax-revision { color: var(--amber); }
+.aux .ax-parse, .aux .ax-struct { color: var(--blue); }
+.aux .ax-runs { color: var(--green); }
 
 /* typed link chips: the glyph says what kind of destination it is */
 ul.go { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; margin: auto 0 0; padding: 14px 0 0; }
@@ -155,11 +179,7 @@ ul.go a:hover { border-color: var(--accent); background: var(--surface-3); color
   border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface-2); }
 .thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top left; }
 a.thumb:hover { border-color: var(--accent); }
-.thumb--gap, .thumb--ext { display: grid; place-content: center; gap: 4px; padding: 12px; text-align: center; }
-.thumb--gap { color: var(--gap-fg); font: 600 13px/1.35 var(--sans);
-  background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--gap-line) 35%, transparent) 0 2px, transparent 2px 12px), var(--surface-2); }
-.thumb--ext { color: var(--muted); font: 600 13px/1.35 var(--sans); text-decoration: none; }
-.thumb--ext .big { font: 700 34px/1 var(--mono); color: var(--line-2); letter-spacing: -.02em; }
+.thumb picture { display: contents; }
 
 /* three panels: what this shows, what was executed, what it is not */
 .triad { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin: 20px 0; }
@@ -205,6 +225,11 @@ pre code { color: var(--ink); }
 .card { background: var(--surface); border-color: var(--line-2); }
 .cell-output-display svg, .quarto-figure img, .figure img { border-radius: var(--r-md); }
 .cell-output-display:has(svg[id^="mermaid"]) { padding: 12px; border: 1px solid var(--line-2); border-radius: var(--r-md); background: var(--surface); }
+svg[id^="mermaid"] .cluster rect { fill: var(--surface-2) !important; stroke: var(--line-2) !important; }
+svg[id^="mermaid"] .cluster-label, svg[id^="mermaid"] .cluster-label .nodeLabel, svg[id^="mermaid"] .cluster text { color: var(--muted) !important; fill: var(--muted) !important; }
+svg[id^="mermaid"] .edgeLabel, svg[id^="mermaid"] .edgeLabel p, svg[id^="mermaid"] .labelBkg { background-color: var(--surface) !important; color: var(--text) !important; }
+svg[id^="mermaid"] .edgeLabel rect { fill: var(--surface) !important; }
+.quarto-figure img, .figure img, .cell-output-display img { border: 1px solid var(--line-2); box-shadow: var(--shadow-1); }   /* figures and screenshots read as framed panels in both themes */
 .code-tools-button, .quarto-code-tools-source { color: var(--muted); }
 .nav-tabs .nav-link.active { background: var(--surface); color: var(--ink); border-color: var(--line-2) var(--line-2) var(--surface); }
 .nav-tabs { border-bottom-color: var(--line-2); }
