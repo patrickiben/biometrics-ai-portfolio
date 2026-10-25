@@ -33,7 +33,7 @@ worked artifact yet).
 
 | Folder | What it is | Status |
 |---|---|---|
-| [`sim_lifecycle/`](sim_lifecycle/index.html) | PK, NCA and bioequivalence sandbox: one synthetic 2x2 crossover in base R (eight ADaM-shaped domains, NCA, geometric mean ratio with 90% CI) | Runs (R 4.6.0) and regenerates its committed outputs byte for byte |
+| [`sim_lifecycle/`](sim_lifecycle/index.html) | PK, NCA and bioequivalence sandbox: one synthetic 2x2 crossover in base R (eight ADaM-shaped domains, NCA, geometric mean ratio with 90% CI); with a [residual-carryover study](sim_lifecycle/carryover_oc/index.html) of the M13A 5% pre-dose rule (exploratory, synthetic) | Runs (R 4.6.0) and regenerates its committed outputs byte for byte; the carryover study's tests pass |
 | [`study/`](study/index.html) | Flagship worked example: one synthetic 2x2 bioequivalence study taken from sample size and randomization through the SAP, ADaM (admiral), NCA (PKNCA), the ICH M13A analysis, rtables/tern tables, QC and CSR text | Runs from `study/run_all.R` (R 4.6.0; versions pinned in `study/renv.lock`); QC is same-author re-derivation; define.xml and ADRG not authored |
 | [`sas_tlf_pseudocode/`](sas_tlf_pseudocode/index.html) | 217 SAS TLF programs across five early-phase designs | Not executed (no SAS license) |
 | [`r_tlf_pseudocode/`](r_tlf_pseudocode/index.html) | The R twin: 217 scripts | Parse-checked (R 4.6.0); not run on data |
@@ -91,6 +91,7 @@ R (R >= 4.4.0; tested on 4.6.x):
 ```sh
 Rscript sim_lifecycle/run_lifecycle.R                          # the sandbox; base R only
 Rscript validation_harness/checks/conformance.R sim_lifecycle/out
+Rscript sim_lifecycle/carryover_oc/tests/test_carryover.R      # carryover study checks; base R
 bash validation_harness/run_harness.sh                          # rewrites the evidence ledger (R and python3)
 Rscript uat_irt/tests/test-logic.R                              # each Shiny module has tests/test-logic.R
 ```
