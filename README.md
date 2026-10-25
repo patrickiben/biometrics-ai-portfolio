@@ -34,6 +34,7 @@ worked artifact yet).
 | Folder | What it is | Status |
 |---|---|---|
 | [`sim_lifecycle/`](sim_lifecycle/index.html) | PK, NCA and bioequivalence sandbox: one synthetic 2x2 crossover in base R (eight ADaM-shaped domains, NCA, geometric mean ratio with 90% CI) | Runs (R 4.6.0) and regenerates its committed outputs byte for byte |
+| [`study/`](study/index.html) | Flagship worked example: one synthetic 2x2 bioequivalence study taken from sample size and randomization through the SAP, ADaM (admiral), NCA (PKNCA), the ICH M13A analysis, rtables/tern tables, QC and CSR text | Runs from `study/run_all.R` (R 4.6.0; versions pinned in `study/renv.lock`); QC is same-author re-derivation; define.xml and ADRG not authored |
 | [`sas_tlf_pseudocode/`](sas_tlf_pseudocode/index.html) | 217 SAS TLF programs across five early-phase designs | Not executed (no SAS license) |
 | [`r_tlf_pseudocode/`](r_tlf_pseudocode/index.html) | The R twin: 217 scripts | Parse-checked (R 4.6.0); not run on data |
 | [`validation_harness/`](validation_harness/index.html) | Eight-gate QC harness and evidence ledger | Structural checks plus a re-run of the sandbox (G1); G6 is red (two QTc figure conventions); G5 is a manual record; G7 is not signed; no gate signed yet |

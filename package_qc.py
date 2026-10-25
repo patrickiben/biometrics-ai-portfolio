@@ -20,7 +20,8 @@ What it checks
   4. Navigation: the home page exists, the old entry pages are redirect stubs to it, and
      every top-level module folder is listed in README.md.
   5. Orphaned landing pages that nothing links to.
-  6. Terminology: trial-sense "subject" in prose (CDISC USUBJID/SUBJID are fine).
+  6. Terminology: trial-sense "subject" in prose (CDISC USUBJID/SUBJID and the ADaMIG name
+     and class of ADSL, "Subject-Level Analysis Dataset", are fine).
   7. Retired framing: the old program brand and employer-only phrases.
   8. Count drift: the TLF library size and the validation-harness gate count.
   9. Style: no em dash in the core pages (home, 404, redirect stubs, README).
@@ -51,6 +52,10 @@ RETIRED_FRAMING = re.compile(
     r'no new approval gate|ship this now|layer AI on top when|streamlit\.app|htmlpreview\.github\.io|'
     r'Cloud Claude|API \+ BAA|Max seat|account lead|\bClaude\b|\bBAA\b|Copilot|\bin-house\b|'
     r'hybrid[- ]AI (strategy|governance|policy|routing)|internal hybrid|AI[- ]governance (lead|owner|SOP)', re.I)
+# CDISC standard names that contain "subject" and must keep it (variables are already exempt
+# through USUBJID/SUBJID): the ADaMIG name and class of ADSL ("Subject-Level Analysis Dataset",
+# "SUBJECT LEVEL ANALYSIS DATASET"), which the study/ specification and XPT labels carry.
+CDISC_NAMES = re.compile(r'Subject[- ]Level Analysis Dataset', re.I)
 TRIAL_SUBJ = re.compile(r'\b(\d+\s+subjects?|per[- ]subject|each subject|subject[- ]level|number of subjects|'
                         r'intra-?subject|inter-?subject|subject (?:data|profiles?)|'
                         r'subjects?\s+(were|was|are|is|enrolled|randomi|received|dosed|discontinued|completed|withdrew|per)|'
@@ -203,7 +208,7 @@ for f in page_files + md_files:
     t = strip_blocks(read(f)) if f.endswith('.html') else read(f)
     for i, line in enumerate(t.splitlines(), 1):
         low = line.lower()
-        if TRIAL_SUBJ.search(line) and 'usubjid' not in low and 'subjid' not in low:
+        if TRIAL_SUBJ.search(CDISC_NAMES.sub('', line)) and 'usubjid' not in low and 'subjid' not in low:
             add("Terminology: 'subject' (use participant)", f'{rel(f)}:{i}')
 
 # 7. retired framing ------------------------------------------------------------------------
@@ -303,7 +308,7 @@ for f in walk(*DOC_EXTS):
         m = RETIRED_FRAMING.search(line)
         if m:
             add('Retired framing or employer phrase', f'{rel(f)} (text line {i}): "{m.group(0)}"')
-        if TRIAL_SUBJ.search(line) and 'usubjid' not in low and 'subjid' not in low:
+        if TRIAL_SUBJ.search(CDISC_NAMES.sub('', line)) and 'usubjid' not in low and 'subjid' not in low:
             add("Terminology: 'subject' (use participant)", f'{rel(f)} (text line {i})')
         m = BRITISH.search(line)
         if m:
