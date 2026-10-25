@@ -1,15 +1,11 @@
 /* cqtc_hysteresis page: figures and tables. Layered on ../site.css (its tokens and
-   module-page classes). Chart colors: the reference categorical slots 1 and 2,
-   checked with the palette checker for light (#FFFFFF) and dark (#1A2129) surfaces. */
-:root {
-  --c-s1: #2a78d6; --c-s2: #eb6834; --c-ind: #6b6a65;
-  --c-grid: #e1e0d9; --c-axis: #c3c2b7; --c-ref: #898781;
-}
-@media (prefers-color-scheme: dark) {
-  :root { --c-s1: #3987e5; --c-s2: #d95926; --c-ind: #a3a29b; --c-grid: #2c3540; --c-axis: #4a5561; --c-ref: #8a95a1; }
-}
-.synthetic { color: var(--muted); font-size: .92rem; }
-.toc { columns: 2 16em; margin: 18px 0 0; padding-left: 1.3em; }
+   module-page classes). Series colors: the reference categorical slots 1 and 2, checked with
+   the palette checker on the dark (#111721) and light (#FFFFFF) surfaces; grid, axis and
+   reference lines use the site tokens. Dark is the default, as on the rest of the site. */
+:root { --c-s1: #3987e5; --c-s2: #d95926; --c-ind: #a3a29b; --c-grid: var(--line); --c-axis: var(--line-2); --c-ref: var(--faint); }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) { --c-s1: #2a78d6; --c-s2: #eb6834; --c-ind: #6b6a65; } }
+:root[data-theme="light"] { --c-s1: #2a78d6; --c-s2: #eb6834; --c-ind: #6b6a65; }
+.toc { columns: 2 16em; margin: 18px 0 0; padding-left: 1.3em; font-size: 15px; }
 .toc li { margin: 0 0 4px; }
 .eq { font-family: var(--mono); font-size: .95rem; background: var(--surface-2); padding: 8px 12px; border-radius: 6px; overflow-x: auto; }
 .facts li { margin: 0 0 8px; }

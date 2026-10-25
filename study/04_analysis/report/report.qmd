@@ -12,9 +12,10 @@ format:
       - ../../../site.css
       - ../../study.css
       - report.css
-    include-before-body: _topbar.html
-    include-in-header:
-      text: '<link rel="icon" href="data:,">'
+    include-before-body:
+      - _skip.html
+      - ../../../_partials/_topbar-example-d3.html
+    include-in-header: ../../../_partials/_quarto-head-d3.html
 execute:
   echo: false
   warning: false

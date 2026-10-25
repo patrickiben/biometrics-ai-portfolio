@@ -147,7 +147,18 @@ esc <- function(x) {
 ## because every input string is authored in this repository).
 md <- function(...) commonmark::markdown_html(paste(c(...), collapse = "\n"), extensions = "table")
 
-lab <- function(kind, text) sprintf('<span class="lab %s">%s</span>', kind, esc(text))
+## A chip whose text starts with Led, Supported, Tools built or Gap is a lifecycle label (.lab);
+## anything else ("Runs: ...", "Executed: ...", "Synthetic data") is an execution status (.st).
+lab <- function(kind, text) {
+  if (grepl("^(Led|Supported|Tools built|Gap)\\b", text))
+    return(sprintf('<span class="lab %s">%s</span>', kind, esc(text)))
+  st <- if (grepl("^Synthetic", text)) "synthetic" else if (grepl("^(Runs|Executed)", text)) "runs" else "note"
+  sprintf('<span class="st st-%s">%s</span>', st, esc(text))
+}
+
+## The site's head and top bar, read unchanged from the partials that build_pages.py writes
+## (the working directory is the repository root).
+partial <- function(name) paste(readLines(file.path("_partials", name), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 
 html_table <- function(df, caption = NULL, cls = "data", digits = NULL) {
   df <- as.data.frame(df, check.names = FALSE)
@@ -164,6 +175,9 @@ page_html <- function(title, kicker, h1, body, depth = 1, description = NULL, la
   up <- paste(rep("../", depth + 1), collapse = "")      # to the repository root
   st <- paste(rep("../", depth), collapse = "")          # to study/
   desc <- description %||% paste(h1, "(synthetic worked example).")
+  crumbs <- paste0('<nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="', up, 'index.html">Home</a></li>',
+                   if (depth > 0) paste0('<li><a href="', st, 'index.html">Worked example</a></li><li aria-current="page">', esc(title), '</li>')
+                   else '<li aria-current="page">Worked example</li>', '</ol></nav>')
   paste0(
 '<!doctype html>
 <html lang="en">
@@ -172,23 +186,14 @@ page_html <- function(title, kicker, h1, body, depth = 1, description = NULL, la
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>', esc(title), ' | Patrick Iben</title>
 <meta name="description" content="', esc(desc), '">
-<link rel="icon" href="data:,">
-<link rel="stylesheet" href="', up, 'site.css">
+', partial(sprintf("_head-d%d.html", depth + 1)), '
 <link rel="stylesheet" href="', st, 'study.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="top">
-  <div class="wrap">
-    <a class="name" href="', up, 'index.html">Patrick Iben</a>
-    <nav aria-label="Site">
-      <a href="', up, 'index.html">Home</a>
-      <a href="', up, 'index.html#lifecycle">Lifecycle</a>
-      <a href="', st, 'index.html">Worked example</a>
-    </nav>
-  </div>
-</header>
+', partial(sprintf("_topbar-example-d%d.html", depth + 1)), '
 <main id="main" class="wrap">
+  ', crumbs, '
   <section class="page-head">
     <p class="kicker">', esc(kicker), '</p>
     <h1>', esc(h1), '</h1>

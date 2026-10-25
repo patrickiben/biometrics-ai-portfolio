@@ -288,6 +288,9 @@ build_page <- function(mod) {
     F1 = fig_f1(oc, FALSE), F2 = f2html, T1 = table_t1(oc), EXTAB = extab, NCROWS = nc_rows,
     NSCEN = as.character(length(unique(oc$scenario))),
     EX_DF = sprintf("%s to %s", f1(min(ex$df)), f1(max(ex$df))))
+  ## the site's head and top bar, read unchanged from the partials that build_pages.py writes
+  partial <- function(name) paste(readLines(file.path(dirname(mod), "_partials", name), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  v <- c(v, HEAD = partial("_head-d1.html"), TOPBAR = partial("_topbar-methods-d1.html"))
   html <- PAGE_TEMPLATE
   for (k in names(v)) html <- gsub(paste0("{{", k, "}}"), v[[k]], html, fixed = TRUE)
   stopifnot(!grepl("{{", html, fixed = TRUE))
@@ -302,28 +305,18 @@ PAGE_TEMPLATE <- r"---(<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>C-QTc Hysteresis Check | Patrick Iben</title>
 <meta name="description" content="A prespecified C-QTc hysteresis check: the signed area of each participant's concentration-ddQTcF loop on residuals from the direct-effect model, tested with a standard error that allows for the shared placebo mean, with its operating characteristics on synthetic data.">
-<link rel="icon" href="data:,">
-<link rel="stylesheet" href="../site.css">
+{{HEAD}}
 <link rel="stylesheet" href="cqtc.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
-<header class="top">
-  <div class="wrap">
-    <a class="name" href="../index.html">Patrick Iben</a>
-    <nav aria-label="Site">
-      <a href="../index.html">Home</a>
-      <a href="../index.html#lifecycle">Lifecycle</a>
-      <a href="../sas_tlf_pseudocode/index.html">SAS library</a>
-      <a href="../r_tlf_pseudocode/index.html">R library</a>
-    </nav>
-  </div>
-</header>
+{{TOPBAR}}
 <main id="main" class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../methods.html">Methods</a></li><li aria-current="page">C-QTc hysteresis check</li></ol></nav>
   <section class="page-head">
     <p class="kicker">SAP and mock shells: a prespecified check</p>
     <h1>C-QTc hysteresis check: a signed loop area on model residuals</h1>
-    <p class="meta"><span class="lab tools">Tools built</span><span class="lab tools">Runs: cqtc_hysteresis/R/run_oc.R</span><span class="lab tools">Exploratory (synthetic)</span></p>
+    <p class="meta"><span class="lab tools">Tools built</span><span class="st st-runs">Runs: cqtc_hysteresis/R/run_oc.R</span><span class="st st-synthetic">Exploratory (synthetic)</span></p>
     <p class="synthetic">Synthetic data only: simulated for this page; not trial data and not a regulatory deliverable.</p>
   </section>
 
