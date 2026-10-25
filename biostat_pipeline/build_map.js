@@ -39,11 +39,11 @@ s.addText([{ text: "Hybrid-AI governance track:  ", options: { bold: true, color
 
 // AI tier legend + hard rules
 const ly = ty + 1.05;
-const legend = [["🟢 GREEN · 48", "drafts, scaffolds, docs (de-identified)", "0F9D6E"], ["🟡 AMBER · 54", "dataset / TLF code — AI as one side of double-programming", "C2891C"], ["🔴 RED · 34", "validated engine produces the number — LLM out of the path", "B5564B"]];
+const legend = [["🟢 GREEN · 48", "drafts, scaffolds, docs (de-identified)", "0F9D6E"], ["🟡 AMBER · 54", "dataset / TLF code: AI as one side of double-programming", "C2891C"], ["🔴 RED · 34", "validated engine produces the number; LLM out of the path", "B5564B"]];
 const lw = (W - 2 * M - 2 * 0.25) / 3;
 legend.forEach((g, i) => { const x = M + i * (lw + 0.25); s.addShape(pres.shapes.RECTANGLE, { x, y: ly, w: lw, h: 0.6, fill: { color: PANEL }, line: { color: LINEC, width: 1 } }); s.addShape(pres.shapes.RECTANGLE, { x, y: ly, w: 0.09, h: 0.6, fill: { color: g[2] } }); s.addText([{ text: g[0] + "  ", options: { bold: true, color: INK, fontSize: 11 } }, { text: g[1], options: { color: MUTED, fontSize: 9.5 } }], { x: x + 0.22, y: ly, w: lw - 0.35, h: 0.6, margin: 0, fontFace: BF, valign: "middle", lineSpacingMultiple: 0.95 }); });
 
-s.addText([{ text: "3 hard rules:  ", options: { bold: true, color: "312C8A" } }, { text: "PHI / unblinded never leaves (local frozen model) · every reported number from a validated engine, never an LLM · de-identification unlocks the cloud path (Claude API + BAA, never a consumer seat).", options: { color: INK } }], { x: M, y: ly + 0.7, w: W - 2 * M, h: 0.35, margin: 0, fontFace: BF, fontSize: 10, valign: "middle" });
+s.addText([{ text: "3 hard rules:  ", options: { bold: true, color: "312C8A" } }, { text: "PHI / unblinded never leaves (local frozen model) · every reported number from a validated engine, never an LLM · de-identification unlocks the cloud path (contracted cloud model only).", options: { color: INK } }], { x: M, y: ly + 0.7, w: W - 2 * M, h: 0.35, margin: 0, fontFace: BF, fontSize: 10, valign: "middle" });
 s.addText("136 deliverables across 5 stages · full register with every field = the .xlsx · stage-by-stage detail = the Word/PDF reference · standards current mid-2026 (CDISC SDTMIG v3.4 / ADaMIG v1.3 / Define-XML v2.1; ICH E3·E6(R3)·E9(R1)·M11; 21 CFR Part 11).", { x: M, y: 7.12, w: W - 2 * M, h: 0.3, margin: 0, fontFace: BF, fontSize: 8, italic: true, color: "9197B5" });
 
-pres.writeFile({ fileName: "/Users/patrickiben/Optimized_CCR_Slides/biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pptx" }).then(f => console.log("WROTE", f)).catch(e => { console.error(e); process.exit(1); });
+pres.writeFile({ fileName: require("path").join(__dirname, "EarlyPhase_Biostat_Pipeline_Map.pptx") }).then(f => console.log("WROTE", f)).catch(e => { console.error(e); process.exit(1); });

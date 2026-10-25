@@ -47,10 +47,10 @@ const tiers = { GREEN: 0, AMBER: 0, RED: 0, "": 0 };
 reg.forEach(d => tiers[primaryTier(d.ai_tier)]++);
 md += "\n## The hybrid-AI routing overlay\n\nEvery deliverable is risk-tiered (**Model Risk = influence × consequence**) and routed by data sensitivity. The pattern from the hybrid AI strategy applies here, deliverable by deliverable.\n\n";
 md += "| Tier | Count | What AI does | Engine |\n|---|---|---|---|\n";
-md += `| 🟢 GREEN | ${tiers.GREEN} | Drafts, scaffolds, documentation, summaries on de-identified text | Cloud Claude (API + BAA) or local |\n`;
+md += `| 🟢 GREEN | ${tiers.GREEN} | Drafts, scaffolds, documentation, summaries on de-identified text | A contracted cloud model or local |\n`;
 md += `| 🟡 AMBER | ${tiers.AMBER} | Dataset/TLF code; AI as **one side** of double-programming | Local frozen model (participant-level) / cloud (de-identified) |\n`;
 md += `| 🔴 RED | ${tiers.RED} | **Nothing autonomous** — validated engine produces the number; LLM out of the path | Validated engine (Phoenix WinNonlin / SAS / NONMEM) only |\n\n`;
-md += "**The three hard rules (override everything):** (1) PHI / unblinded / randomization data never leaves — always the local frozen model; (2) every **reported number** comes from a validated engine, never an LLM; (3) de-identification is the only thing that unlocks the cloud path (Claude API under BAA — never a consumer Copilot/Max seat).\n";
+md += "**The three hard rules (override everything):** (1) PHI / unblinded / randomization data never leaves — always the local frozen model; (2) every **reported number** comes from a validated engine, never an LLM; (3) de-identification is the only thing that unlocks the cloud path (a contracted cloud model under a data-processing agreement, never a consumer AI account).\n";
 
 // Governance
 md += "\n## Validation & governance (cross-cutting)\n\n";
@@ -60,7 +60,7 @@ md += "- **Engine-of-record** recorded per deliverable; reported numbers always 
 md += "- **Model-freeze records** for the local open-weight model (fixed weights + config + seed = a re-runnable validation artifact); change control on any model update.\n";
 md += "- **Data-classification routing log** and **zero-egress attestation** for sensitive data; consolidated into a submission-level hybrid-AI governance dossier.\n";
 md += "- **Software / environment qualification** (IQ/OQ/PQ) for SAS/R, Phoenix WinNonlin, NONMEM/Monolix, Pinnacle 21.\n";
-md += "\n## Closing\n\nThis pipeline is the operating map for an in-house, hybrid-AI biometrics function: human-owned and signed at every step, validated engines for every reported number, full CDISC and Part 11 rigor — with AI accelerating the language, code-drafting, and QC-support layers under explicit, deliverable-by-deliverable controls. The complete register (every field, all " + reg.length + " deliverables) is in the companion spreadsheet; the visual map is the accompanying one-pager.\n";
+md += "\n## Closing\n\nThis pipeline is a reference map for a biometrics function that uses AI only under these controls: human-owned and signed at every step, validated engines for every reported number, full CDISC and Part 11 rigor — with AI accelerating the language, code-drafting, and QC-support layers under explicit, deliverable-by-deliverable controls. The complete register (every field, all " + reg.length + " deliverables) is in the companion spreadsheet; the visual map is the accompanying one-pager.\n";
 
 fs.writeFileSync(__dirname + "/EarlyPhase_Biostat_Pipeline.md", md);
 

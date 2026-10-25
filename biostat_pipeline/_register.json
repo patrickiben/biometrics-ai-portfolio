@@ -12,7 +12,7 @@
     "qc": "Independent biostatistician peer review; cross-check design vs objectives/estimands; medical/clin-pharm/regulatory review; protocol team consensus",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude (de-identified, no PHI) drafts/redlines design-rationale prose, summarizes class precedents and regulatory guidance, and stress-tests internal consistency of design vs objectives; all design decisions and final wording are human-owned by the biostatistician. No subject-level data involved."
+    "ai_use": "A contracted cloud model (de-identified, no PHI) drafts/redlines design-rationale prose, summarizes class precedents and regulatory guidance, and stress-tests internal consistency of design vs objectives; all design decisions and final wording are human-owned by the biostatistician. No subject-level data involved."
   },
   {
     "id": "S1-02",
@@ -27,7 +27,7 @@
     "qc": "Independent biostatistician review of estimand completeness (all 5 attributes, every ICE addressed); clinical & clin-pharm alignment review; consistency check objectives↔estimands↔endpoints↔analysis sets",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the objective→estimand→endpoint table and enumerates candidate intercurrent events and handling strategies from de-identified design text; biostatistician selects/decides ICE strategies and population-level summaries. Estimand definitions are human-decided; AI is a scaffolding/consistency aid only."
+    "ai_use": "A contracted cloud model drafts the objective→estimand→endpoint table and enumerates candidate intercurrent events and handling strategies from de-identified design text; biostatistician selects/decides ICE strategies and population-level summaries. Estimand definitions are human-decided; AI is a scaffolding/consistency aid only."
   },
   {
     "id": "S1-03",
@@ -42,7 +42,7 @@
     "qc": "Peer review by independent biostatistician; alignment check vs estimands and vs planned SAP scope; cross-functional protocol review",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts and tightens the statistical-overview prose from de-identified protocol content and templates, and checks it does not contradict the estimand/design sections; biostatistician owns scope decisions. Pure document drafting — no reported numbers."
+    "ai_use": "A contracted cloud model drafts and tightens the statistical-overview prose from de-identified protocol content and templates, and checks it does not contradict the estimand/design sections; biostatistician owns scope decisions. Pure document drafting — no reported numbers."
   },
   {
     "id": "S1-04",
@@ -57,7 +57,7 @@
     "qc": "Independent review of set definitions for mutual consistency and estimand linkage; clin-pharm review of PK-evaluable exclusion rules; traceability check to ADSL flag plan",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts standardized analysis-set definitions consistent with ADaMIG flag conventions and proposes PK-exclusion edge cases to consider; biostatistician finalizes the rules. Definitional text only; no subject data."
+    "ai_use": "A contracted cloud model drafts standardized analysis-set definitions consistent with ADaMIG flag conventions and proposes PK-exclusion edge cases to consider; biostatistician finalizes the rules. Definitional text only; no subject data."
   },
   {
     "id": "S1-05",
@@ -72,7 +72,7 @@
     "qc": "Independent re-derivation/double-check of sample-size or precision calculation (independent code/program run); review of assumptions vs source data; documentation of method and seed/software version",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the narrative and can scaffold the calculation approach on de-identified assumptions; the actual sample-size/precision/power numbers are produced and confirmed by a validated stats engine (SAS/R/nQuery/PASS) and independently re-derived by a second biostatistician — AI output is one side of a double-check, never the reported number. Amber because numbers influence the design."
+    "ai_use": "A contracted cloud model drafts the narrative and can scaffold the calculation approach on de-identified assumptions; the actual sample-size/precision/power numbers are produced and confirmed by a validated stats engine (SAS/R/nQuery/PASS) and independently re-derived by a second biostatistician — AI output is one side of a double-check, never the reported number. Amber because numbers influence the design."
   },
   {
     "id": "S1-06",
@@ -87,7 +87,7 @@
     "qc": "Independent biostatistician review of design spec; verification that block/ratio/sentinel logic enforces intended allocation; segregation-of-duties check (spec author ≠ schedule generator); blinding-integrity review",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the randomization-design specification text (block/sentinel/sequence logic, blinding & unblinding narrative) from de-identified design parameters; biostatistician owns the design. NOTE: generation of the actual randomization schedule (the unblinded list) is a separate Stage-2 deliverable that is RED — validated engine + human only, zero LLM in the path."
+    "ai_use": "A contracted cloud model drafts the randomization-design specification text (block/sentinel/sequence logic, blinding & unblinding narrative) from de-identified design parameters; biostatistician owns the design. NOTE: generation of the actual randomization schedule (the unblinded list) is a separate Stage-2 deliverable that is RED — validated engine + human only, zero LLM in the path."
   },
   {
     "id": "S1-07",
@@ -102,7 +102,7 @@
     "qc": "Independent review of decision-rule logic for unambiguity and safety conservatism; consistency check vs protocol dose levels and stopping rules; committee/regulatory review; (if model-based) operating-characteristics simulation review",
     "ai_tier": "Amber",
     "ai_engine": "Local+Cloud",
-    "ai_use": "Cloud Claude drafts charter prose and decision-rule logic on de-identified text (Green/Amber). When the rules are illustrated against any subject-level or unblinded escalation data, that work routes to the LOCAL frozen model (zero egress). Escalation decisions and any reported safety/PK numbers come from validated engines + the committee/human — AI is out of the decision path. Amber because the rules govern dosing of humans."
+    "ai_use": "A contracted cloud model drafts charter prose and decision-rule logic on de-identified text (Green/Amber). When the rules are illustrated against any subject-level or unblinded escalation data, that work routes to the LOCAL frozen model (zero egress). Escalation decisions and any reported safety/PK numbers come from validated engines + the committee/human — AI is out of the decision path. Amber because the rules govern dosing of humans."
   },
   {
     "id": "S1-08",
@@ -117,7 +117,7 @@
     "qc": "Independent re-run/replication of simulation with documented seed & environment; code review; scenario-grid completeness review; sanity-check of OC against design intuition",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude (on de-identified, simulated parameters — no PHI) helps scaffold/refactor simulation code (R/SAS, packages such as escalation/dfcrm/UnifiedDoseFinding/OncoBayes2) and draft the OC interpretation; all simulation results are produced by the validated stats engine and the code is independently re-run/reviewed. AI is a coding assistant and one side of a double-check, not the source of reported operating characteristics. Amber."
+    "ai_use": "A contracted cloud model (on de-identified, simulated parameters — no PHI) helps scaffold/refactor simulation code (R/SAS, packages such as escalation/dfcrm/UnifiedDoseFinding/OncoBayes2) and draft the OC interpretation; all simulation results are produced by the validated stats engine and the code is independently re-run/reviewed. AI is a coding assistant and one side of a double-check, not the source of reported operating characteristics. Amber."
   },
   {
     "id": "S1-09",
@@ -132,7 +132,7 @@
     "qc": "Independent statistical review of adaptation rules & error-rate control; simulation of operating characteristics; firewall/independence review; documentation of 'N/A' decision where no adaptation",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the adaptive-rule specification and N/A rationale on de-identified design text, and helps scaffold any supporting simulation code; error-control results come from a validated engine with independent replication. AI assists drafting/structuring; the adaptation rules and their statistical validity are human-owned. Amber because adaptations affect inference & dosing."
+    "ai_use": "A contracted cloud model drafts the adaptive-rule specification and N/A rationale on de-identified design text, and helps scaffold any supporting simulation code; error-control results come from a validated engine with independent replication. AI assists drafting/structuring; the adaptation rules and their statistical validity are human-owned. Amber because adaptations affect inference & dosing."
   },
   {
     "id": "S1-10",
@@ -147,7 +147,7 @@
     "qc": "Joint biostatistician–PK scientist review; cross-check sampling adequacy vs predicted t1/2; sensitivity of precision to CV% assumptions; documentation of assumption sources",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude (de-identified literature/parameters) summarizes class CV% and drafts the memo, and sanity-checks sampling-scheme adequacy against predicted half-lives; PK scientist and biostatistician own the assumptions and any precision figures (validated-engine-confirmed if quantitative). No subject data. Green for the narrative; any quantitative precision result is double-checked."
+    "ai_use": "A contracted cloud model (de-identified literature/parameters) summarizes class CV% and drafts the memo, and sanity-checks sampling-scheme adequacy against predicted half-lives; PK scientist and biostatistician own the assumptions and any precision figures (validated-engine-confirmed if quantitative). No subject data. Green for the narrative; any quantitative precision result is double-checked."
   },
   {
     "id": "S1-11",
@@ -162,7 +162,7 @@
     "qc": "Comment-tracking & resolution log; independent (second-biostatistician) consistency check on objectives↔estimands↔endpoints; signed/audited approval; amendment version control",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude runs an automated consistency/completeness check across the de-identified protocol (objective↔estimand↔endpoint↔analysis-set↔analysis traceability; ICH E9(R1)/M11 checklist) and drafts review comments; the biostatistician adjudicates every comment and provides the human sign-off (Part 11 e-signature). AI assists review, never approves. Green."
+    "ai_use": "A contracted cloud model runs an automated consistency/completeness check across the de-identified protocol (objective↔estimand↔endpoint↔analysis-set↔analysis traceability; ICH E9(R1)/M11 checklist) and drafts review comments; the biostatistician adjudicates every comment and provides the human sign-off (Part 11 e-signature). AI assists review, never approves. Green."
   },
   {
     "id": "S1-12",
@@ -177,7 +177,7 @@
     "qc": "Independent review of firewall & segregation-of-duties; verification unblinding pathway is auditable and minimally disruptive to the blind; cross-check vs DSMB charter and randomization spec",
     "ai_tier": "Green",
     "ai_engine": "Local+Cloud",
-    "ai_use": "Cloud Claude drafts the de-identified unblinding/firewall procedure and governance text; any illustration touching subject-level allocation would route to the LOCAL model. The actual unblinding/code-break execution (later stages) is RED — validated/audited mechanism, zero LLM. Here AI only drafts the procedural specification. Green for the document."
+    "ai_use": "A contracted cloud model drafts the de-identified unblinding/firewall procedure and governance text; any illustration touching subject-level allocation would route to the LOCAL model. The actual unblinding/code-break execution (later stages) is RED — validated/audited mechanism, zero LLM. Here AI only drafts the procedural specification. Green for the document."
   },
   {
     "id": "S1-13",
@@ -191,7 +191,7 @@
     "outputs": "BSSR plan section (in protocol or SAP), blinded re-estimation SOP reference",
     "ai_use": "GREEN — AI drafts plan scaffold on de-identified design text",
     "ai_tier": "GREEN",
-    "ai_engine": "Cloud Claude (API+BAA) on de-identified design text",
+    "ai_engine": "A contracted cloud model on de-identified design text",
     "qc": "Biostatistician review and sign-off; no unblinded data touched",
     "deliverable_note": ""
   },
@@ -207,7 +207,7 @@
     "outputs": "Estimand attribute table with intercurrent-event strategies and assumptions",
     "ai_use": "GREEN — drafting/structuring on de-identified text",
     "ai_tier": "GREEN",
-    "ai_engine": "Cloud Claude (API+BAA)",
+    "ai_engine": "A contracted cloud model",
     "qc": "Biostatistician + medical reviewer sign-off",
     "deliverable_note": ""
   },
@@ -224,7 +224,7 @@
     "qc": "Senior biostatistician peer review; cross-check vs protocol & estimands; documented sign-off; formal version control of amendments",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts/structures SAP prose, checks internal consistency vs protocol, generates estimand tables and method boilerplate on de-identified text; ALL statistical method decisions, final wording, and sign-off are human (lead biostatistician). No PHI to cloud."
+    "ai_use": "A contracted cloud model drafts/structures SAP prose, checks internal consistency vs protocol, generates estimand tables and method boilerplate on de-identified text; ALL statistical method decisions, final wording, and sign-off are human (lead biostatistician). No PHI to cloud."
   },
   {
     "id": "S2-02",
@@ -239,7 +239,7 @@
     "qc": "Independent review of each change; timestamp vs lock/unblinding verified; Part 11 audit trail retained",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts change summaries and redline narratives on de-identified text; human owns approval and the pre-/post-unblinding classification."
+    "ai_use": "A contracted cloud model drafts change summaries and redline narratives on de-identified text; human owns approval and the pre-/post-unblinding classification."
   },
   {
     "id": "S2-03",
@@ -254,7 +254,7 @@
     "qc": "Independent reviewer confirms flag logic vs SAP; double-programmed in ADSL; reconciled at blinded data review",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts decision-tree logic and flag-derivation pseudocode on de-identified definitions; final exclusion rules and population calls are human/documented at blinded review."
+    "ai_use": "A contracted cloud model drafts decision-tree logic and flag-derivation pseudocode on de-identified definitions; final exclusion rules and population calls are human/documented at blinded review."
   },
   {
     "id": "S2-04",
@@ -269,7 +269,7 @@
     "qc": "Peer/medical-writer/clinical review of shells; titles/footnotes vs SAP; dummy-data render test for layout",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude scaffolds shell titles/footnotes/structure and proposes the full TLF inventory from the SAP (de-identified); human finalizes content and conventions. No real data."
+    "ai_use": "A contracted cloud model scaffolds shell titles/footnotes/structure and proposes the full TLF inventory from the SAP (de-identified); human finalizes content and conventions. No real data."
   },
   {
     "id": "S2-05",
@@ -284,7 +284,7 @@
     "qc": "Cross-check vs SAP analyses (no orphan/missing outputs); peer review",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude generates and reconciles the inventory against the SAP; human approves scope."
+    "ai_use": "A contracted cloud model generates and reconciles the inventory against the SAP; human approves scope."
   },
   {
     "id": "S2-06",
@@ -299,7 +299,7 @@
     "qc": "Spec peer review; downstream independent double-programming of ADSL; Pinnacle 21 ADaM conformance",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts variable-level metadata and derivation text from SAP/SDTM annotations (de-identified spec text); human reviews. The dataset BUILD from real data (Stage 3) is Amber/double-programmed."
+    "ai_use": "A contracted cloud model drafts variable-level metadata and derivation text from SAP/SDTM annotations (de-identified spec text); human reviews. The dataset BUILD from real data (Stage 3) is Amber/double-programmed."
   },
   {
     "id": "S2-07",
@@ -314,7 +314,7 @@
     "qc": "Spec review vs PK plan (BLQ/time rules); independent double-programming of ADPC; reconciliation to SDTM PC",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts BLQ/time-window derivation logic and metadata on de-identified spec; human owns the BLQ/LLOQ rules. Build & reported values are validated-engine/double-programmed downstream."
+    "ai_use": "A contracted cloud model drafts BLQ/time-window derivation logic and metadata on de-identified spec; human owns the BLQ/LLOQ rules. Build & reported values are validated-engine/double-programmed downstream."
   },
   {
     "id": "S2-08",
@@ -329,7 +329,7 @@
     "qc": "Spec review vs parameter list; ADPP reconciled to validated Phoenix output; independent double-programming of structure",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the parameter mapping spec/metadata (de-identified). Reported PK parameter VALUES come ONLY from validated Phoenix WinNonlin — never an LLM; LLM stays out of the numeric path."
+    "ai_use": "A contracted cloud model drafts the parameter mapping spec/metadata (de-identified). Reported PK parameter VALUES come ONLY from validated Phoenix WinNonlin — never an LLM; LLM stays out of the numeric path."
   },
   {
     "id": "S2-09",
@@ -344,7 +344,7 @@
     "qc": "Spec review of TEAE logic; independent double-programming; reconcile vs SDTM AE",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts TEAE-flag and windowing logic on de-identified spec; human reviews coding-version/derivation. Build double-programmed."
+    "ai_use": "A contracted cloud model drafts TEAE-flag and windowing logic on de-identified spec; human reviews coding-version/derivation. Build double-programmed."
   },
   {
     "id": "S2-10",
@@ -359,7 +359,7 @@
     "qc": "Spec review of baseline/window/unit logic; independent double-programming; SDTM reconciliation",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts baseline/windowing/unit-conversion and QTc-derivation logic on de-identified spec; human owns clinical conventions. Build double-programmed."
+    "ai_use": "A contracted cloud model drafts baseline/windowing/unit-conversion and QTc-derivation logic on de-identified spec; human owns clinical conventions. Build double-programmed."
   },
   {
     "id": "S2-11",
@@ -374,7 +374,7 @@
     "qc": "Spec review vs PD plan; independent double-programming; SDTM reconciliation",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts PD derivation/metadata on de-identified spec; human reviews. Build double-programmed."
+    "ai_use": "A contracted cloud model drafts PD derivation/metadata on de-identified spec; human reviews. Build double-programmed."
   },
   {
     "id": "S2-12",
@@ -389,7 +389,7 @@
     "qc": "Independent review vs SDTMIG/CT; Pinnacle 21 rule mapping; traceability check raw->SDTM",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude proposes mappings/CT assignments from de-identified CRF/spec text and flags SDTMIG gaps; human SDTM expert finalizes. Build & conformance are validated/double-programmed downstream."
+    "ai_use": "A contracted cloud model proposes mappings/CT assignments from de-identified CRF/spec text and flags SDTMIG gaps; human SDTM expert finalizes. Build & conformance are validated/double-programmed downstream."
   },
   {
     "id": "S2-13",
@@ -404,7 +404,7 @@
     "qc": "Page-by-page review vs mapping spec; consistency with Define-XML origin; peer review",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude cross-checks annotations vs mapping spec and flags mismatches on de-identified blank CRF; human owns the final annotated PDF. (Blank CRF only — no subject data.)"
+    "ai_use": "A contracted cloud model cross-checks annotations vs mapping spec and flags mismatches on de-identified blank CRF; human owns the final annotated PDF. (Blank CRF only — no subject data.)"
   },
   {
     "id": "S2-14",
@@ -419,7 +419,7 @@
     "qc": "Independent spec review; basis for double-programming reconciliation; traceability to SAP",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts derivation pseudocode/metadata from SAP on de-identified specs; human reviews. Actual production/validation code is Amber and double-programmed."
+    "ai_use": "A contracted cloud model drafts derivation pseudocode/metadata from SAP on de-identified specs; human reviews. Actual production/validation code is Amber and double-programmed."
   },
   {
     "id": "S2-15",
@@ -434,7 +434,7 @@
     "qc": "PK scientist + biostatistician review; rules cross-checked vs SAP; Phoenix template qualified",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the parameter list, BLQ/time-rule prose and lambda-z criteria text (de-identified); PK scientist owns all rules. NCA numbers come from validated Phoenix WinNonlin only."
+    "ai_use": "A contracted cloud model drafts the parameter list, BLQ/time-rule prose and lambda-z criteria text (de-identified); PK scientist owns all rules. NCA numbers come from validated Phoenix WinNonlin only."
   },
   {
     "id": "S2-16",
@@ -449,7 +449,7 @@
     "qc": "Independent pharmacometrics review; model-qualification criteria pre-specified; run records reproducible",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the modelling-plan narrative, covariate-screening strategy text and dataset-spec scaffolding (de-identified); pharmacometrician owns model decisions. Model estimates come from validated NONMEM/Monolix."
+    "ai_use": "A contracted cloud model drafts the modelling-plan narrative, covariate-screening strategy text and dataset-spec scaffolding (de-identified); pharmacometrician owns model decisions. Model estimates come from validated NONMEM/Monolix."
   },
   {
     "id": "S2-17",
@@ -464,7 +464,7 @@
     "qc": "Independent check vs ADaM source; structure/covariate completeness verified; reproducibility",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts dataset-construction logic/spec on de-identified structure; pharmacometrician/programmer build and verify. Reported model results from validated engine only."
+    "ai_use": "A contracted cloud model drafts dataset-construction logic/spec on de-identified structure; pharmacometrician/programmer build and verify. Reported model results from validated engine only."
   },
   {
     "id": "S2-18",
@@ -494,7 +494,7 @@
     "qc": "Independent review vs protocol; IRT UAT alignment; documented approval",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the spec text from the protocol (de-identified, no actual assignments); human approves. Generation itself stays Red/validated-engine."
+    "ai_use": "A contracted cloud model drafts the spec text from the protocol (de-identified, no actual assignments); human approves. Generation itself stays Red/validated-engine."
   },
   {
     "id": "S2-20",
@@ -509,7 +509,7 @@
     "qc": "SOP/charter alignment review; role/firewall verification; emergency-unblinding log tested",
     "ai_tier": "Red",
     "ai_engine": "Validated engine only (no LLM)",
-    "ai_use": "Unblinding-adjacent: LLM out of the path for any execution. Cloud Claude may draft the de-identified PROCEDURE text (Green), but actual unblinding and code-break are validated-process + human, fully logged."
+    "ai_use": "Unblinding-adjacent: LLM out of the path for any execution. A contracted cloud model may draft the de-identified PROCEDURE text (Green), but actual unblinding and code-break are validated-process + human, fully logged."
   },
   {
     "id": "S2-21",
@@ -524,7 +524,7 @@
     "qc": "Peer review; decisions recorded with timestamp before unblinding; consistency with SAP",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the plan/agenda and decision-rule wording (de-identified). When the actual blinded subject-level review listings are produced/reviewed, that runs LOCAL (subject-level data, zero egress)."
+    "ai_use": "A contracted cloud model drafts the plan/agenda and decision-rule wording (de-identified). When the actual blinded subject-level review listings are produced/reviewed, that runs LOCAL (subject-level data, zero egress)."
   },
   {
     "id": "S2-22",
@@ -539,7 +539,7 @@
     "qc": "Metadata completeness vs specs; Pinnacle 21 define checks; value-level metadata review",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts value-level/computational-method metadata text and checks CT references on de-identified specs; human owns the define.xml. Final conformance validated."
+    "ai_use": "A contracted cloud model drafts value-level/computational-method metadata text and checks CT references on de-identified specs; human owns the define.xml. Final conformance validated."
   },
   {
     "id": "S2-23",
@@ -554,7 +554,7 @@
     "qc": "Version-pin verification; Pinnacle 21 CT checks; extensible-codelist review",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the CT/version documentation and flags non-standard terms on de-identified specs; human confirms versions and extensions."
+    "ai_use": "A contracted cloud model drafts the CT/version documentation and flags non-standard terms on de-identified specs; human confirms versions and extensions."
   },
   {
     "id": "S2-24",
@@ -569,22 +569,22 @@
     "qc": "Risk-based assignment reviewed/approved; double-programming mandatory for key outputs; audit-ready",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts the QC strategy/matrix and risk tiering (de-identified). Plan ENFORCES that AI is at most one independent side of double-programming (Amber) and never the source of reported numbers (Red = validated engine + human)."
+    "ai_use": "A contracted cloud model drafts the QC strategy/matrix and risk tiering (de-identified). Plan ENFORCES that AI is at most one independent side of double-programming (Amber) and never the source of reported numbers (Red = validated engine + human)."
   },
   {
     "id": "S2-25",
     "stage": "Stage 2 — Planning & Specifications",
     "deliverable": "Hybrid-AI Data-Classification & Routing Plan",
     "type": "Plan",
-    "description": "Governance artifact specifying, per planned deliverable, the data sensitivity classification and routing decision: PHI/unblinded/subject-level -> LOCAL frozen open-weight model (zero egress); de-identified text/specs reasoning -> CLOUD Claude (API+BAA); reported numbers -> validated engine only. Records engine-of-record, model-freeze references, and prompt/output retention policy. Establishes the operating rules used across all stages.",
+    "description": "Governance artifact specifying, per planned deliverable, the data sensitivity classification and routing decision: PHI/unblinded/subject-level -> LOCAL frozen open-weight model (zero egress); de-identified text/specs reasoning -> a contracted CLOUD model; reported numbers -> validated engine only. Records engine-of-record, model-freeze references, and prompt/output retention policy. Establishes the operating rules used across all stages.",
     "owner": "Lead biostatistician",
     "inputs": "Deliverables register, data sensitivity map, hybrid-AI design, Part 11 requirements",
     "outputs": "Per-deliverable routing log used in Stages 3-5; engine-of-record register; model-freeze/audit records",
-    "standard": "21 CFR Part 11, ALCOA++, ICH E6(R3); sponsor AI/data-governance policy; HIPAA (API+BAA, not consumer)",
+    "standard": "21 CFR Part 11, ALCOA++, ICH E6(R3); sponsor AI/data-governance policy; HIPAA (contracted cloud service on de-identified data, not a consumer account)",
     "qc": "Governance review of routing assignments; zero-egress verification for local tier; retention/audit-trail check",
     "ai_tier": "Green",
     "ai_engine": "Local+Cloud",
-    "ai_use": "Defines the routing itself. Cloud Claude drafts the policy text on de-identified content; the plan mandates LOCAL-only for any subject-level/unblinded data and validated-engine-only for reported numbers, with documented model freeze and retention."
+    "ai_use": "Defines the routing itself. A contracted cloud model drafts the policy text on de-identified content; the plan mandates LOCAL-only for any subject-level/unblinded data and validated-engine-only for reported numbers, with documented model freeze and retention."
   },
   {
     "id": "S2-26",
@@ -599,7 +599,7 @@
     "qc": "Structure conformance to ADaM specs; coverage of edge cases (BLQ, missing, windows)",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude generates synthetic/dummy data and edge-case scenarios from the ADaM spec (no real data involved); human confirms it exercises the shells. Cloud is acceptable because data is fully synthetic."
+    "ai_use": "A contracted cloud model generates synthetic/dummy data and edge-case scenarios from the ADaM spec (no real data involved); human confirms it exercises the shells. Cloud is acceptable because data is fully synthetic."
   },
   {
     "id": "S2-27",
@@ -614,7 +614,7 @@
     "qc": "Test-transfer review; key/format/unit verification; reconciliation procedure agreed",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude reviews/drafts transfer-spec structure and flags unit/LLOQ/key gaps on de-identified specs; human and DM own agreements. Actual transferred subject data handled per routing (local)."
+    "ai_use": "A contracted cloud model reviews/drafts transfer-spec structure and flags unit/LLOQ/key gaps on de-identified specs; human and DM own agreements. Actual transferred subject data handled per routing (local)."
   },
   {
     "id": "S2-28",
@@ -629,7 +629,7 @@
     "qc": "Independent review of assumptions/code; seed/reproducibility documented; results sanity-checked",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts simulation code scaffolding and summarizes operating characteristics on de-identified assumptions; biostatistician owns assumptions and runs the validated simulation. Reported design metrics human-verified."
+    "ai_use": "A contracted cloud model drafts simulation code scaffolding and summarizes operating characteristics on de-identified assumptions; biostatistician owns assumptions and runs the validated simulation. Reported design metrics human-verified."
   },
   {
     "id": "S2-29",
@@ -659,7 +659,7 @@
     "outputs": "Bioanalytical DTS, sample reconciliation rules, BLQ/LLOQ handling spec",
     "ai_use": "GREEN/AMBER on de-identified spec text",
     "ai_tier": "AMBER",
-    "ai_engine": "Cloud Claude (API+BAA) on de-identified spec; LOCAL if subject-level concentrations referenced",
+    "ai_engine": "A contracted cloud model on de-identified spec; LOCAL if subject-level concentrations referenced",
     "qc": "Double-check vs lab dictionary; PK scientist sign-off",
     "deliverable_note": ""
   },
@@ -675,7 +675,7 @@
     "outputs": "VLM tables feeding define.xml (where-clauses, origins, codelists, computational methods)",
     "ai_use": "AMBER — draft VLM from de-identified specs, double-programmed",
     "ai_tier": "AMBER",
-    "ai_engine": "Cloud Claude (API+BAA) on de-identified specs",
+    "ai_engine": "A contracted cloud model on de-identified specs",
     "qc": "Independent review vs datasets; Pinnacle 21 Define validation",
     "deliverable_note": ""
   },
@@ -691,7 +691,7 @@
     "outputs": "Software validation summary, version-control register, validated-environment attestation",
     "ai_use": "GREEN — drafting documentation only; AI never in computational path",
     "ai_tier": "GREEN",
-    "ai_engine": "Cloud Claude (API+BAA) for doc drafting",
+    "ai_engine": "A contracted cloud model for doc drafting",
     "qc": "QA review; reported numbers always from validated engines",
     "deliverable_note": ""
   },
@@ -1279,7 +1279,7 @@
     "outputs": "Classified deviation log, blinded deviation-review minutes, population-impact map",
     "ai_use": "AMBER — categorization assist on de-identified text; human adjudicates",
     "ai_tier": "AMBER",
-    "ai_engine": "Cloud Claude (API+BAA) on de-identified deviation text; LOCAL if PHI present",
+    "ai_engine": "A contracted cloud model on de-identified deviation text; LOCAL if PHI present",
     "qc": "Blinded review meeting; medical/biostat adjudication documented",
     "deliverable_note": ""
   },
@@ -1311,7 +1311,7 @@
     "outputs": "DRM minutes, decision log, blinded sign-off to proceed to lock",
     "ai_use": "GREEN — minutes drafting on de-identified content",
     "ai_tier": "GREEN",
-    "ai_engine": "Cloud Claude (API+BAA) on de-identified text; LOCAL if PHI",
+    "ai_engine": "A contracted cloud model on de-identified text; LOCAL if PHI",
     "qc": "Attendees confirm minutes; signatures retained",
     "deliverable_note": ""
   },
@@ -1327,7 +1327,7 @@
     "outputs": "Lock authorization memo, audit-trail review report, e-signature manifest",
     "ai_use": "GREEN — documentation drafting only",
     "ai_tier": "GREEN",
-    "ai_engine": "Cloud Claude (API+BAA) for drafting; system records untouched by LLM",
+    "ai_engine": "A contracted cloud model for drafting; system records untouched by LLM",
     "qc": "QA review of audit trail; independent lock approval",
     "deliverable_note": ""
   },
@@ -1360,7 +1360,7 @@
     "qc": "Installation/operational qualification records; environment qualification checklist; version log; reviewer sign-off",
     "ai_tier": "Amber",
     "ai_engine": "Cloud",
-    "ai_use": "CLOUD Claude on de-identified scaffolding may draft setup scripts/checklists; the qualified environment record and validation are human-owned. No PHI to the LLM.",
+    "ai_use": "CLOUD a contracted cloud model on de-identified scaffolding may draft setup scripts/checklists; the qualified environment record and validation are human-owned. No PHI to the LLM.",
     "standard_note": ""
   },
   {
@@ -1648,7 +1648,7 @@
     "qc": "Risk-based QC (key exploratory outputs double-programmed); exploratory flagging reviewed",
     "ai_tier": "Amber",
     "ai_engine": "Local+Cloud",
-    "ai_use": "CLOUD Claude may help design/interpret exploratory analyses on de-identified specs; LOCAL model runs/checks code over subject-level data. Reported numbers from validated execution; exploratory status explicit.",
+    "ai_use": "CLOUD a contracted cloud model may help design/interpret exploratory analyses on de-identified specs; LOCAL model runs/checks code over subject-level data. Reported numbers from validated execution; exploratory status explicit.",
     "standard_note": ""
   },
   {
@@ -1696,7 +1696,7 @@
     "qc": "Completeness/consistency review of QC records; lead biostatistician sign-off",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "CLOUD Claude drafts/structures QC documentation templates and discrepancy-log summaries over de-identified metadata; human verifies and signs. No subject-level data to cloud.",
+    "ai_use": "CLOUD a contracted cloud model drafts/structures QC documentation templates and discrepancy-log summaries over de-identified metadata; human verifies and signs. No subject-level data to cloud.",
     "standard_note": ""
   },
   {
@@ -1744,7 +1744,7 @@
     "qc": "Independent review of model & report; key results reproduced; run-record completeness check",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "CLOUD Claude drafts/edits the report narrative over de-identified model outputs/text; reported parameters and predictions remain validated-engine-derived (NONMEM/Monolix) + pharmacometrician-owned.",
+    "ai_use": "CLOUD a contracted cloud model drafts/edits the report narrative over de-identified model outputs/text; reported parameters and predictions remain validated-engine-derived (NONMEM/Monolix) + pharmacometrician-owned.",
     "standard_note": ""
   },
   {
@@ -1760,7 +1760,7 @@
     "qc": "Completeness/traceability review; lead biostatistician sign-off; archived per retention policy",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "CLOUD Claude assembles/indexes the validation package over de-identified records; human reviews and signs. Engine run records (the load-bearing evidence) are validated-engine-generated, not LLM.",
+    "ai_use": "CLOUD a contracted cloud model assembles/indexes the validation package over de-identified records; human reviews and signs. Engine run records (the load-bearing evidence) are validated-engine-generated, not LLM.",
     "standard_note": ""
   },
   {
@@ -1823,7 +1823,7 @@
     "outputs": "QC-level assignment matrix, executed-QC evidence per output",
     "ai_use": "GREEN for matrix drafting; AMBER where AI is one QC side",
     "ai_tier": "AMBER",
-    "ai_engine": "Cloud Claude (API+BAA) on de-identified specs",
+    "ai_engine": "A contracted cloud model on de-identified specs",
     "qc": "QC lead sign-off; mandatory independent double-programming for RED outputs",
     "deliverable_note": ""
   },
@@ -1856,7 +1856,7 @@
     "qc": "Peer review by second biostatistician against final SAP; cross-check that every method maps to a reported output; medical-writer editorial QC; SAP-vs-CSR methods reconciliation checklist",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts/restructures de-identified methods prose from the final SAP and harmonizes terminology; biostatistician authors estimand/PK specifics and owns final wording — no reported numbers introduced by the LLM."
+    "ai_use": "A contracted cloud model drafts/restructures de-identified methods prose from the final SAP and harmonizes terminology; biostatistician authors estimand/PK specifics and owns final wording — no reported numbers introduced by the LLM."
   },
   {
     "id": "S5-02",
@@ -1871,7 +1871,7 @@
     "qc": "Independent double-programming or 1:1 reconciliation of every in-text value against the corresponding full TLF and source ADaM; numerical-consistency check; QC log signed off",
     "ai_tier": "Red",
     "ai_engine": "Validated engine only (no LLM)",
-    "ai_use": "All reported PK/PD/safety numbers come from validated programs/Phoenix against locked data; LLM is OUT of the numeric path. Cloud Claude may only check de-identified table titles/footnotes for editorial consistency."
+    "ai_use": "All reported PK/PD/safety numbers come from validated programs/Phoenix against locked data; LLM is OUT of the numeric path. A contracted cloud model may only check de-identified table titles/footnotes for editorial consistency."
   },
   {
     "id": "S5-03",
@@ -1886,7 +1886,7 @@
     "qc": "Documented number-by-number consistency check (CSR-vs-TLF-vs-ADaM); second-reviewer spot-check; tracked-changes/comment resolution log retained as a controlled record",
     "ai_tier": "Amber",
     "ai_engine": "Local+Cloud",
-    "ai_use": "Local frozen model assists consistency/number-matching scans over the unblinded/subject-level draft (zero egress); cloud Claude assists editorial review of de-identified passages. Final scientific judgment and sign-off are human; LLM never overrides a number."
+    "ai_use": "Local frozen model assists consistency/number-matching scans over the unblinded/subject-level draft (zero egress); a contracted cloud model assists editorial review of de-identified passages. Final scientific judgment and sign-off are human; LLM never overrides a number."
   },
   {
     "id": "S5-04",
@@ -1901,7 +1901,7 @@
     "qc": "Completeness/version reconciliation (approved versions only); cross-check SAP content vs CSR Methods; QA review of appendix assembly",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude helps assemble/format the de-identified document set and check version cross-references; human verifies that only approved/signed versions are included."
+    "ai_use": "A contracted cloud model helps assemble/format the de-identified document set and check version cross-references; human verifies that only approved/signed versions are included."
   },
   {
     "id": "S5-05",
@@ -1931,7 +1931,7 @@
     "qc": "Pinnacle 21 conformance re-run on final datasets; reviewer-guide completeness check; define-vs-dataset consistency QC",
     "ai_tier": "Amber",
     "ai_engine": "Local+Cloud",
-    "ai_use": "Cloud Claude drafts/refines de-identified reviewer-guide narrative text and checks metadata descriptions; local model used if any dataset-level content is referenced. Define-XML/metadata correctness verified by validated tooling, not the LLM."
+    "ai_use": "A contracted cloud model drafts/refines de-identified reviewer-guide narrative text and checks metadata descriptions; local model used if any dataset-level content is referenced. Define-XML/metadata correctness verified by validated tooling, not the LLM."
   },
   {
     "id": "S5-07",
@@ -1991,7 +1991,7 @@
     "qc": "Independent verification that each CSR/TLF number traces to a derivation and source; gap review; QA audit",
     "ai_tier": "Amber",
     "ai_engine": "Local+Cloud",
-    "ai_use": "Local model assists building/checking links over subject-level metadata; cloud Claude assists on de-identified spec text. Provenance correctness confirmed by validated tooling and human review."
+    "ai_use": "Local model assists building/checking links over subject-level metadata; a contracted cloud model assists on de-identified spec text. Provenance correctness confirmed by validated tooling and human review."
   },
   {
     "id": "S5-11",
@@ -2021,7 +2021,7 @@
     "qc": "Consistency check vs CSR body and TLFs (numbers identical); peer/medical review; sign-off",
     "ai_tier": "Green",
     "ai_engine": "Cloud",
-    "ai_use": "Cloud Claude drafts/condenses de-identified synopsis and briefing prose and checks consistency of wording; biostatistician verifies every figure against the CSR/TLFs — reported numbers remain validated-engine + human."
+    "ai_use": "A contracted cloud model drafts/condenses de-identified synopsis and briefing prose and checks consistency of wording; biostatistician verifies every figure against the CSR/TLFs — reported numbers remain validated-engine + human."
   },
   {
     "id": "S5-13",
@@ -2050,7 +2050,7 @@
     "outputs": "Assembled m5 study-data package, package-level conformance report",
     "ai_use": "GREEN — assembly checklists/docs on de-identified metadata",
     "ai_tier": "GREEN",
-    "ai_engine": "Cloud Claude (API+BAA) for documentation; datasets via validated tools",
+    "ai_engine": "A contracted cloud model for documentation; datasets via validated tools",
     "qc": "Submission-readiness review; Pinnacle 21 package validation",
     "deliverable_note": ""
   },
@@ -2066,7 +2066,7 @@
     "outputs": "Cross-document consistency checklist, discrepancy resolutions",
     "ai_use": "AMBER — AI cross-checks de-identified spec text for mismatches",
     "ai_tier": "AMBER",
-    "ai_engine": "Cloud Claude (API+BAA) on de-identified documents",
+    "ai_engine": "A contracted cloud model on de-identified documents",
     "qc": "Biostatistician sign-off; documented discrepancy closure",
     "deliverable_note": ""
   },
