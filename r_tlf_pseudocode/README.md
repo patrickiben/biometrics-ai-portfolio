@@ -39,7 +39,8 @@ structurally identical, re-pointed to the design's variables.
 `f_lab_lft_scatter` · `f_lab_change` · `l_lab_abnormal`
 
 **Safety: Vitals / ECG** (ADVS, ADEG): `t_vitals_summary` · `f_vitals_change` · `l_vitals` ·
-`t_ecg_summary` · `t_ecg_qtc_categorical` · `f_qtc_change` · `l_ecg`
+`t_ecg_summary` · `t_ecg_qtc_categorical` · `f_qtc_change` · `l_ecg` · `t_cqtc_hysteresis` · `f_cqtc_hysteresis` (SAD, MAD;
+the prespecified C-QTc hysteresis check)
 
 **PK** (ADPC, ADPP): `t_pk_conc_summary` · `l_pk_conc` · `f_pk_conc_mean` (linear+semilog) ·
 `f_pk_conc_individual` · `t_pk_param_summary` · `l_pk_param` · `f_pk_param_boxplot` ·
@@ -70,12 +71,13 @@ populations `SAFFL/PKFL/ITTFL`; analysis `PARAMCD/AVAL/CHG/PCHG/BASE/AVISIT/ATPT
 AE `TRTEMFL/AESOC/AEDECOD/AESEVN/AREL/AESER/AESDTH/AEACN`; PK `ADPC AVAL=conc`, `ADPP PARAMCD=Cmax/Tmax/AUClast/AUCinf/CL/Vz/Rac`.
 
 ## Status
-Complete: **217 TLF scripts** across all five design folders + `00_setup_helpers.R`. Generated with AI
+Complete: **221 TLF scripts** across all five design folders + `00_setup_helpers.R`. Generated with AI
 assistance to mirror the SAS twin, then reviewed by an AI-agent panel (six reviewers by program family,
 then per-finding verification: 24 findings, **14 confirmed P0/P1 issues fixed**), then a deterministic
-sweep; human sign-off is pending. **All 218 scripts parse under `Rscript` (R 4.6.0); none has been run
+sweep; human sign-off is pending. **All 222 scripts parse under `Rscript` (R 4.6.0); none has been run
 on data**, so these checks are static: `design_vars()` matches every folder, geometric PK stats compute on the
 log scale, AE/safety counts are distinct participants, single-sequence participant-level tables key on
 `dv$seqvar`, period tables denominate from a period-bearing source, exposure uses ADaM `AVAL`/`TRTDURD`/
 `NDOSES` (no `*DTC` arithmetic), and the library is free of `eDISH`/`Hy's Law` terminology. Pseudocode for
-specification and double programming; reported numbers come from validated systems.
+specification and double programming; reported numbers come from validated systems. The four C-QTc hysteresis
+scripts (October 2026) postdate the panel review.
