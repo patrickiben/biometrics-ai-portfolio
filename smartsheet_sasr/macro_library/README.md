@@ -1,7 +1,7 @@
-# SHEETLINK — a SAS/R helper library for driving Smartsheet (no AI)
+# SHEETLINK: a SAS/R helper library for driving Smartsheet (no AI)
 
 **What it is.** A small, deterministic library that lets a biostatistician keep a Smartsheet
-program tracker current **automatically from scheduled SAS or R** — no copy-paste, no manual
+program tracker current **automatically from scheduled SAS or R**, no copy-paste, no manual
 status updates, no LLM. SAS/R writes the *truthful operational status* to Smartsheet by a
 stable key; **Smartsheet's own built-in workflows send the notifications.** That split is the
 whole design: *code owns the data, Smartsheet owns the alerts.*
@@ -25,13 +25,13 @@ whole design: *code owns the data, Smartsheet owns the alerts.*
 
 ## The five things this library guarantees
 
-1. **Idempotent — never duplicates.** `%ss_upsert` / `ss_upsert()` match on a **stable
+1. **Idempotent, never duplicates.** `%ss_upsert` / `ss_upsert()` match on a **stable
    external key you own** (a Task/Deliverable/Milestone code). If the key is on the sheet it
    **updates that row in place** (PUT); if not, it **appends** (POST). Run it ten times a
-   night — the sheet converges to the same state. *Never blind-append.*
-2. **Ops-only — no PHI ever leaves the tenant.** `%ss_guard` / `ss_guard()` check **every
+   night: the sheet converges to the same state. *Never blind-append.*
+2. **Ops-only, no PHI ever leaves the tenant.** `%ss_guard` / `ss_guard()` check **every
    column you are about to write against an allowlist** (`CFG_ALLOW`). Try to push a
-   non-allowlisted column and the job **fails loud and stops** — a coded boundary, not a
+   non-allowlisted column and the job **fails loud and stops**: a coded boundary, not a
    habit. Allowed: milestone dates, deliverable/QC status, % complete, aggregate counts,
    ownership. **Never:** participant-level, unblinded, PHI, or reported clinical numbers.
 3. **Token is never hard-coded or logged.** Read at runtime from `SMARTSHEET_TOKEN` (or a
@@ -45,18 +45,18 @@ whole design: *code owns the data, Smartsheet owns the alerts.*
 
 ## Newer helpers (SAS · R · PowerShell)
 
-- **Dry run — validate before you schedule.** `ss_upsert(..., dryrun = TRUE)` (R),
+- **Dry run: validate before you schedule.** `ss_upsert(..., dryrun = TRUE)` (R),
   `%ss_upsert(..., dryrun=Y)` (SAS), `-DryRun` (PowerShell) compute exactly what *would* be
-  updated and added and print the counts — **without sending anything**. Run it once by hand
+  updated and added and print the counts, **without sending anything**. Run it once by hand
   before you put the job on a scheduler.
 - **Read-back / verification.** `ss_get(sheet, key, keycol, col)` (R) and
   `%ss_get(sheet=, key=, keycolname=, col=, mvar=)` (SAS) return one cell's current value by
-  its key — handy for a read-after-write check or a guard condition.
+  its key: handy for a read-after-write check or a guard condition.
 - **Empty means "leave it."** A missing/`NA`/blank value for a column is now **omitted** from
-  the write in all three (it was already so in SAS) — the cell is left untouched rather than
+  the write in all three (it was already so in SAS): the cell is left untouched rather than
   overwritten with a blank or the literal text `NA`.
 
-## See it / run it — no Smartsheet account needed
+## See it / run it, no Smartsheet account needed
 
 `../_demo/` runs this **exact** library end-to-end against a local stand-in of the Smartsheet
 REST API, so you can watch the real HTTP calls, the idempotent upsert, the attach, and the
@@ -67,9 +67,8 @@ node ../_demo/ss_mock_api.js &                                   # representativ
 SMARTSHEET_TOKEN=demo CP101_TRACKER_ID=5500 Rscript ../_demo/ss_run_demo.R
 ```
 
-Or, with no terminal at all, open **`../CP101_Tracker_Demo.html`** (the interactive tracker)
-or watch **`../SAS_R_Smartsheet_Example_narrated.mp4`** (the narrated screencast — a faithful
-re-creation of the run above; the `_demo/` is the genuine, runnable article).
+Or, with no terminal at all, open **`../CP101_Tracker_Demo.html`** (the interactive tracker). The captured
+output of the run above is in `../_demo/capture/`. The SAS macros have not been executed (no SAS license).
 
 ## Quick start (SAS)
 
@@ -91,7 +90,7 @@ run;
 ```
 
 The **contract for `%ss_upsert`**: your dataset has the key variable plus one variable per
-column to write, and **each value variable is labelled with its exact Smartsheet column
+column to write, and **each value variable is labeled with its exact Smartsheet column
 title** (`label Status="Status" PctDone="% Done";`). The macro reads those labels, resolves
 each to a `columnId` from a freshly-fetched column map, JSON-escapes values, and splits the
 work into a PUT (existing keys) and a POST (new keys).
@@ -128,8 +127,8 @@ In R the **data-frame column names are the Smartsheet titles** (back-tick names 
 The robust pattern is **not** to send emails from SAS. It is:
 
 1. SAS/R writes the truthful cell (e.g. `Status = "At Risk"`).
-2. A Smartsheet **Automation** you set up once — *When `Status` changes to `At Risk` → Alert
-   the PM / send a mobile push / post to a Teams channel* — fires.
+2. A Smartsheet **Automation** you set up once, *When `Status` changes to `At Risk` → Alert
+   the PM / send a mobile push / post to a Teams channel*: fires.
 
 This keeps recipients, escalation, quiet-hours, and channels in Smartsheet (where a PM can
 edit them) and keeps your code about *data*. Use `%ss_update_request` only for a targeted
@@ -151,9 +150,9 @@ and `PROC DATASETS lib=_ssj;` to confirm, then adjust `%ss_colmap`/`%ss_get_rows
 
 **Make the key a TEXT column.** The idempotent match is on the key value as text on both sides
 (`cats()`), so the Smartsheet key column should be a **Text/Number column holding text codes**
-(`CP101-DBL`), not an auto-number or a numeric column — otherwise a zero-padded code
+(`CP101-DBL`), not an auto-number or a numeric column, otherwise a zero-padded code
 (`007`) can fail to match its own prior row and a duplicate is appended. Use a stable code you
 own as the key.
 
 Validate the library against a **non-production sandbox sheet** before scheduling it against a
-live program tracker — the same way you'd validate any macro that writes to a shared artifact.
+live program tracker: the same way you'd validate any macro that writes to a shared artifact.

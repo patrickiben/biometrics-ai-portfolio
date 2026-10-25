@@ -59,7 +59,7 @@ ss_upsert <- function(sheet, key, df, allow, dryrun = FALSE) {
     r <- list(...); kv <- as.character(r[[key]]); rid <- existing[kv]
     cells <- imap(r, function(v, nm) list(columnId = unname(colmap[toupper(nm)]), value = v))
     # drop cells with no mapped column, AND cells whose value is NA: an NA means "leave this
-    # cell untouched" — never write a blank/NA, which would otherwise land in the sheet as the
+    # cell untouched": never write a blank/NA, which would otherwise land in the sheet as the
     # literal text "NA" (and clobber a real value).
     cells <- Filter(function(c) !is.na(c$columnId) &&
                     !(length(c$value) == 1 && (is.na(c$value) || (is.character(c$value) && c$value == ""))), cells)

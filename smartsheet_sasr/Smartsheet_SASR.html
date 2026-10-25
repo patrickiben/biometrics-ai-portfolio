@@ -1,6 +1,6 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Smartsheet for Biostatisticians — SAS/R automation</title><style>
-/* AI for Biometrics — Mission Control theme, adapted for the Smartsheet no-code wiki */
+<title>Smartsheet for Biostatisticians: SAS/R automation</title><style>
+/* Dark theme for this wiki */
 :root{
   --bg:#06090f;--bg2:#04060b;--panel:#0c1018;--panel2:#10151f;--panelhi:#131a26;
   --line:#1b2535;--line2:#27344a;--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;
@@ -99,9 +99,9 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
 @media(max-width:860px){#wrap{flex-direction:column}#side{width:100%;flex:none;height:auto;position:static;border-right:0;border-bottom:1px solid var(--line2)}#main{padding:22px}}
 @media print{.top,#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
 </style></head>
-<body><a href="#main" class="skip">Skip to content</a><div class="top"><b>AI for Biometrics</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../smartsheet_nocode/Smartsheet_NoCode.html">Smartsheet · no code</a><a href="../START_HERE.html">Full library</a></div></div>
+<body><a href="#main" class="skip">Skip to content</a><div class="top"><b>Patrick Iben</b><div class="nav"><a href="../index.html">Home</a><a href="../index.html#lifecycle">Lifecycle</a><a href="../sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html">Monitoring wiki</a></div></div>
 <div id="wrap">
-<nav id="side" aria-label="Wiki sections"><div class="brand"><b>Smartsheet &times; SAS/R</b><span>Automated tracking — no AI</span></div>
+<nav id="side" aria-label="Wiki sections"><div class="brand"><b>Smartsheet &times; SAS/R</b><span>Automated tracking, no AI</span></div>
 <label for="search" class="vh">Search the wiki</label><input id="search" type="search" placeholder="Search the wiki..." autocomplete="off">
 <a href="#start" data-t="start">Start here</a>
 <a href="#arch" data-t="arch">How it works (SAS/R + API)</a>
@@ -110,36 +110,34 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
 <a href="#watch" data-t="watch">&#9654; The tracker that updates itself</a>
 <a href="#macros" data-t="macros">The SAS/R helper library</a>
 <a href="#gov" data-t="gov">Governance &amp; limits</a>
-<a href="#faq" data-t="faq">FAQ</a>
-<a href="#transcript" data-t="transcript">Transcript</a></nav>
+<a href="#faq" data-t="faq">FAQ</a></nav>
 <main id="main" tabindex="-1"><section id="start" aria-label="Start here">
-    <h1>Make Smartsheet update itself &mdash; from SAS/R, no AI</h1>
-    <p class="lede">A deterministic, <strong>no-AI</strong> companion that lets a biostatistician keep a Smartsheet program tracker <strong>perfectly current automatically</strong> &mdash; from the validated SAS and/or R you already run on schedule. No copy-paste, no manual status updates, no new vendor, and <strong>no PHI egress</strong>. It ships with a ready-to-use <a href="#macros">SAS/R helper library</a>.</p>
-    <div class="callout warn"><strong>The one idea that makes it safe.</strong> <strong>Code owns the data; Smartsheet owns the alerts.</strong> Scheduled SAS/R writes the <em>truthful operational status</em> to the sheet by a stable key; Smartsheet&rsquo;s own built-in <strong>Automations</strong> send the notifications. You never email from code &mdash; you write a cell, and the workflow a PM configured once decides who to tell. That split is the whole design.</div>
+    <h1>Make Smartsheet update itself, from SAS/R, no AI</h1>
+    <p class="lede">A deterministic, <strong>no-AI</strong> companion that lets a biostatistician keep a Smartsheet program tracker <strong>perfectly current automatically</strong>, from the validated SAS and/or R you already run on schedule. No copy-paste, no manual status updates, no new vendor, and <strong>no PHI egress</strong>. It ships with a ready-to-use <a href="#macros">SAS/R helper library</a>.</p>
+    <div class="callout warn"><strong>The one idea that makes it safe.</strong> <strong>Code owns the data; Smartsheet owns the alerts.</strong> Scheduled SAS/R writes the <em>truthful operational status</em> to the sheet by a stable key; Smartsheet&rsquo;s own built-in <strong>Automations</strong> send the notifications. You never email from code: you write a cell, and the workflow a PM configured once decides who to tell. That split is the whole design.</div>
     <div class="shots" style="margin:20px 0 8px">
-      <figure><img src="example_img/grid_before.png" alt="The CP-101 Smartsheet tracker before the run — every row On Track"><figcaption><b>Before tonight&rsquo;s run</b> &mdash; the tracker as the team last left it.</figcaption></figure>
-      <figure><img src="example_img/grid_after.png" alt="The CP-101 Smartsheet tracker after the scheduled SAS/R upsert — Enrollment At Risk, data cut Watch with a slipped date, spec at 85 percent, and a new CSR row"><figcaption><b>After the scheduled SAS/R</b> &mdash; At&nbsp;Risk, Watch, 85%, a new row. Upserted by key, in place &mdash; then Smartsheet sent the alert.</figcaption></figure>
+      <figure><img src="example_img/grid_before.png" alt="The CP-101 Smartsheet tracker before the run: every row On Track"><figcaption><b>Before tonight&rsquo;s run</b>: the tracker as the team last left it.</figcaption></figure>
+      <figure><img src="example_img/grid_after.png" alt="The CP-101 Smartsheet tracker after the scheduled SAS/R upsert: Enrollment At Risk, data cut Watch with a slipped date, spec at 85 percent, and a new CSR row"><figcaption><b>After the scheduled SAS/R</b>: At&nbsp;Risk, Watch, 85%, a new row. Upserted by key, in place, then Smartsheet sent the alert.</figcaption></figure>
     </div>
     <div class="dl">
-      <a class="btn" href="CP101_Tracker_Demo.html">&#9654;&nbsp; Run it yourself &mdash; the interactive demo</a>
-      <a class="btn ghost" href="SAS_R_Smartsheet_Screencast_narrated.mp4">&#9654;&nbsp; Watch the 2-min overview</a>
+      <a class="btn" href="CP101_Tracker_Demo.html">&#9654;&nbsp; Run it yourself: the interactive demo</a>
     </div>
     <h2>The 60-second version</h2>
     <ol>
       <li>A <strong>scheduler</strong> (Task Scheduler / cron) fires a <strong>version-controlled SAS or R program</strong> after your nightly extract refreshes.</li>
-      <li>The program builds an <strong>ops-only snapshot</strong> (milestone dates, deliverable/QC status, % complete, aggregate counts, ownership) and <strong>upserts it to Smartsheet by a stable key</strong> &mdash; updating rows in place, never duplicating.</li>
-      <li>A Smartsheet <strong>Automation you set up once</strong> &mdash; <em>&ldquo;when Status changes to At&nbsp;Risk &rarr; alert the PM&rdquo;</em> &mdash; fires the email / mobile push / Teams or Slack message.</li>
+      <li>The program builds an <strong>ops-only snapshot</strong> (milestone dates, deliverable/QC status, % complete, aggregate counts, ownership) and <strong>upserts it to Smartsheet by a stable key</strong>: updating rows in place, never duplicating.</li>
+      <li>A Smartsheet <strong>Automation you set up once</strong> (<em>&ldquo;when Status changes to At&nbsp;Risk &rarr; alert the PM&rdquo;</em>) fires the email / mobile push / Teams or Slack message.</li>
       <li>The job <strong>fails loud</strong> on any error and ends with a heartbeat, so a stale tracker can never masquerade as a fresh one.</li>
     </ol>
-    <p>See it end-to-end in <a href="#watch">The tracker that updates itself</a> &mdash; one nightly run on Study&nbsp;CP-101.</p>
+    <p>See one captured run in <a href="#watch">The tracker that updates itself</a> (fictional Study&nbsp;CP-101, local mock API).</p>
     <h2>Why a biostatistician wants this</h2>
-    <p>The program tracker stops being a chore you maintain by hand and becomes a <strong>by-product of the pipeline you already run</strong>. The numbers on the sheet are exactly the ones your validated programs computed; the PM gets alerted the moment something slips; and because only <strong>non-sensitive operational</strong> data crosses, there is <strong>no new approval gate</strong> &mdash; just your normal program validation.</p>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <p>The program tracker stops being a chore you maintain by hand and becomes a <strong>by-product of the pipeline you already run</strong>. The numbers on the sheet are exactly the ones your validated programs computed; the PM gets alerted the moment something slips; and because only <strong>non-sensitive operational</strong> data crosses, validation is the normal study-program validation.</p>
+  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
 <section id="arch" aria-label="How it works (SAS/R + API)">
-    <h1>The loop &mdash; scheduler &rarr; SAS/R &rarr; Smartsheet cells &rarr; Smartsheet alert</h1>
+    <h1>The loop: scheduler &rarr; SAS/R &rarr; Smartsheet cells &rarr; Smartsheet alert</h1>
     <p>Every component already exists. SAS and R talk to the Smartsheet REST API directly; you do <em>not</em> need any add-on product, connector, or middleware.</p>
     <div class="flow">
-      <div class="node out"><b>Scheduler (the clock)</b><span>Task Scheduler / cron &mdash; runs under a <b>service account</b>, after the validated extract refreshes</span></div>
+      <div class="node out"><b>Scheduler (the clock)</b><span>Task Scheduler / cron: runs under a <b>service account</b>, after the validated extract refreshes</span></div>
       <div class="arrow">&darr;</div>
       <div class="node pa"><b>SAS / R program (batch, unattended)</b><span>build ops-only snapshot &rarr; <b>allowlist guard</b> &rarr; <b>idempotent upsert by key</b> to the sheet</span></div>
       <div class="arrow split">&darr; &nbsp; &nbsp; &darr;</div>
@@ -154,14 +152,14 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <p><code>httr2</code> builds the request (<code>req_auth_bearer_token()</code>, <code>req_retry()</code> for throttling) and <code>jsonlite</code> handles the bodies; the same operations are <code>ss_colmap()</code>, <code>ss_get_rows()</code>, <code>ss_upsert()</code>. Pin packages with <code>renv</code>; schedule with <code>cronR</code> / <code>taskscheduleR</code>.</p>
     <table>
       <tr><th>Concern</th><th>How the library handles it</th></tr>
-      <tr><td><b>Column ids drift</b> &mdash; titles/order can change; only <code>columnId</code> is a stable address.</td><td>The column map is <b>rebuilt every run</b> from a fresh GET; values are written by id, never by position.</td></tr>
-      <tr><td><b>Rate limits</b> &mdash; ~300 requests/min/token.</td><td><code>%ss_http</code> / <code>req_retry()</code> retry <b>429 &amp; 5xx with exponential backoff</b>; batch writes go in one array, not row-by-row.</td></tr>
-      <tr><td><b>Pagination</b> &mdash; large sheets page their rows.</td><td>Reads request <code>includeAll=true</code> so the key&rarr;row map is complete.</td></tr>
+      <tr><td><b>Column ids drift</b>: titles/order can change; only <code>columnId</code> is a stable address.</td><td>The column map is <b>rebuilt every run</b> from a fresh GET; values are written by id, never by position.</td></tr>
+      <tr><td><b>Rate limits</b>: ~300 requests/min/token.</td><td><code>%ss_http</code> / <code>req_retry()</code> retry <b>429 &amp; 5xx with exponential backoff</b>; batch writes go in one array, not row-by-row.</td></tr>
+      <tr><td><b>Pagination</b>: large sheets page their rows.</td><td>Reads request <code>includeAll=true</code> so the key&rarr;row map is complete.</td></tr>
     </table>
   <!-- SHEETLINK-FULL-PROGRAM -->
-    <p style="margin-top:26px">Everything above is the design. Here is the <b>actual program</b> that runs it, in full: the one file you edit per study, then the nightly job you schedule. It is plain, double-programmed SAS you can read top to bottom, and it is the same code the <a href="#watch">worked example</a> and the runnable <code>_demo/</code> exercise.</p>
+    <p style="margin-top:26px">Everything above is the design. Here is the <b>actual program</b> that runs it, in full: the one file you edit per study, then the nightly job you schedule. It is plain SAS you can read top to bottom (not executed: no SAS license; not double-programmed), and it is the same code the <a href="#watch">worked example</a> and the runnable <code>_demo/</code> exercise.</p>
     <h2>The one file you edit per study: ss_config.sas</h2>
-    <p class="muted" style="margin-bottom:6px">SAS &middot; 22 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 22 lines &middot; the real shipped file, in full: nothing elided.</p>
     <p>ss_config.sas is the single per-study file a biostatistician edits to point SHEETLINK at one Smartsheet tracker. It holds the sheet and row ids, the join key, the notification recipients, the token location, and the ops-only allowlist, kept separate from the driver so standing up a new tracker is one file change instead of a code edit. It is meant to be <code>%include</code>-ed before the driver runs, so every one of these values is in scope when the upload job executes. Nothing here reads or writes data on its own: it declares constants the rest of SHEETLINK reads, and it is the place where the PHI boundary is defined in code.</p>
     <pre class="code"><code>/*====================================================================================
   ss_config.sas  -  per-study/per-sheet constants for SHEETLINK. %include before the
@@ -194,7 +192,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
       <p><b>CFG_BACKUP and CFG_PM: the notification recipients.</b> <code>CFG_BACKUP</code> is the fail-loud target (the address that gets notified when the job cannot complete), so a broken sync surfaces to a person instead of failing silently. <code>CFG_PM</code> is the project manager address for the CP-101 tracker. Both are ordinary email addresses swapped per study. The fail-loud design means a failed push is treated as an incident to be seen, consistent with the principle that this pipeline should never quietly drift out of sync.</p>
       <p><b>CFG_ALLOW: the ops-only allowlist and the in-code PHI boundary.</b> <code>CFG_ALLOW</code> is a pipe-delimited list of Smartsheet column titles that this job is permitted to write, compared case-insensitively: here <code>TASK ID|STATUS|% DONE|OWNER|DUE|TASK</code>. Its comment is explicit that <code>%ss_guard</code> FAILS LOUD if a job tries to write any column not on this list, which makes this line the in-code PHI and sensitive-data boundary. Every allowed column is operational metadata (task identity, status, percent done, ownership, due date), so the list structurally prevents this cloud-bound sync from ever carrying PHI, participant-level, unblinded, or reported clinical numbers. Reported clinical results come only from validated tools, never from this sheet, and this allowlist is what enforces that separation at run time: adding a clinical column here would be the single edit that breaks the boundary, so it is the line to review most carefully.</p>
     <h2>The nightly job you schedule, every line: tracker_update.sas</h2>
-    <p class="muted" style="margin-bottom:6px">SAS &middot; 50 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 50 lines &middot; the real shipped file, in full: nothing elided.</p>
     <p>tracker_update.sas is the nightly SHEETLINK driver: the top-to-bottom SAS job you schedule (cron, Windows Task Scheduler, or SAS batch) to run <b>after</b> your validated nightly extract has refreshed. It pushes the ops-only status of the CP-101 program tracker to Smartsheet idempotently, then lets Smartsheet's own configured workflow send the notifications. Everything it writes is operational (status, % complete, ownership, dates), never PHI, participant-level, unblinded, or reported clinical numbers. The header comment states the flow explicitly: config, macros, init, build ops-only labeled data, upsert, optional status-PDF attach, then heartbeat, with a fail-loud posture throughout.</p>
     <pre class="code"><code>/*====================================================================================
   tracker_update.sas  -  the nightly SHEETLINK driver. Schedule this (cron / Task
@@ -254,60 +252,77 @@ run;
       <p><b>Step 4, ss_attach: optionally attach the one-page status PDF, guarded by fileexist.</b> The <code>%if %sysfunc(fileexist(&ROOT/out/cp101_status.pdf))</code> block runs <code>%ss_attach(sheet=&CFG_SHEET, row=&CFG_SUMMARYROW, file=&ROOT/out/cp101_status.pdf, name=CP101_status.pdf)</code> only when last night's status PDF actually exists, so a missing report skips the attach cleanly instead of erroring. The attachment goes once to the summary row (<code>&CFG_SUMMARYROW</code>), not per data row, because the comment flags attaching as rate-intensive against the API. The comment also marks the PDF as an ops-only document, consistent with the no-PHI boundary: it is a status summary, not participant data. This step is optional and non-fatal, so the job proceeds even when no PDF was produced.</p>
       <p><b>Step 5, notifications are configured in Smartsheet, not sent from code.</b> This step is documentation, not executable logic: it states that alerts are configured once in Smartsheet's own Automation (for example, when Status changes to At Risk, alert the PM) rather than fired from SAS. The division of labor is deliberate: SAS writes only the truthful operational cell and Smartsheet decides who to tell (called Pattern A here), which keeps notification routing out of the batch job. A commented-out <code>%ss_update_request</code> call shows the one sanctioned exception, a targeted human-in-the-loop update request that passes <code>sheet=&CFG_SHEET</code>, <code>rowids=&CFG_SUMMARYROW</code>, and <code>sendto=&CFG_PM</code> to ask the PM to confirm the DB-lock date, which you can uncomment and complete when you genuinely need a person to respond. Left commented, it does nothing on a normal run.</p>
       <p><b>Step 6, ss_assert heartbeat: fail loud and prove the job ran.</b> <code>%ss_assert(cond=(&SS_RC=0), msg=SHEETLINK finished with errors - see log)</code> checks the accumulated return code and hard-fails the job with that message if any prior step set <code>&SS_RC</code> nonzero, enforcing the fail-loud contract so a problem cannot pass silently. The closing <code>%put NOTE: [SHEETLINK] tracker_update complete, status=&SS_STATUS;</code> emits a tagged completion line carrying <code>&SS_STATUS</code>. That heartbeat is what makes scheduling trustworthy: because a healthy run always prints this NOTE, its <b>absence</b> in the log unambiguously signals a failed or non-running job rather than a benign no-op, which is exactly what you want a monitored nightly driver to guarantee.</p>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
 <section id="usecases" aria-label="What to automate">
     <h1>What a biostatistician should automate</h1>
-    <p>Everything here is <strong>operational</strong> &mdash; status, dates, counts, ownership &mdash; the data that belongs on a tracker. <strong>None of it is participant-level or clinical.</strong></p>
+    <p>Everything here is <strong>operational</strong> (status, dates, counts, ownership) the data that belongs on a tracker. <strong>None of it is participant-level or clinical.</strong></p>
     <table>
       <tr><th>Use case</th><th>What the nightly SAS/R job writes</th><th>The alert Smartsheet then sends</th></tr>
       <tr><td><b>Deliverable &amp; milestone status</b></td><td>RAG status, % complete, planned vs actual dates for each tracked task (DB lock, ADaM, TLFs, CSR sections), keyed by a stable Task code.</td><td>On any task &rarr; At&nbsp;Risk: alert the PM and the task owner.</td></tr>
       <tr><td><b>QC / double-programming status</b></td><td>Per-output QC state (not&nbsp;started / in&nbsp;progress / passed / discrepancy) rolled up from your validation log.</td><td>On a discrepancy logged: notify the QC reviewer; reminder if it ages.</td></tr>
-      <tr><td><b>Enrollment vs plan (aggregate)</b></td><td>Actual vs planned counts by cohort/site &mdash; <b>counts only</b>, never a participant.</td><td>On actual falling below plan by a threshold: alert the PM &amp; CRA lead.</td></tr>
+      <tr><td><b>Enrollment vs plan (aggregate)</b></td><td>Actual vs planned counts by cohort/site: <b>counts only</b>, never a participant.</td><td>On actual falling below plan by a threshold: alert the PM &amp; CRA lead.</td></tr>
       <tr><td><b>Timeline &amp; critical-path dates</b></td><td>Forecast vs baseline dates from your project plan; slippage flags.</td><td>Smartsheet&rsquo;s built-in <b>reminders</b> fire N days before each due date automatically.</td></tr>
       <tr><td><b>Task ownership &amp; handoffs</b></td><td>Current owner / next action for each row, so coverage is unambiguous.</td><td>On owner change or a handoff date: notify the new owner.</td></tr>
       <tr><td><b>Run / pipeline health</b></td><td>Last successful run timestamp + record counts (the heartbeat) on a status row.</td><td>If the timestamp goes stale, an automation flags the tracker itself as unfresh.</td></tr>
     </table>
-    <div class="callout tip"><b>The pattern is always the same:</b> SAS/R writes a <em>truthful operational cell</em>; a Smartsheet Automation turns that change into the right notification. You add a new use case by adding a column to the allowlist and a row to the snapshot &mdash; not by writing new alerting code.</div>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <div class="callout tip"><b>The pattern is always the same:</b> SAS/R writes a <em>truthful operational cell</em>; a Smartsheet Automation turns that change into the right notification. You add a new use case by adding a column to the allowlist and a row to the snapshot, not by writing new alerting code.</div>
+  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
 <section id="notify" aria-label="Notifications  reminders">
     <h1>Notifications: configure once in Smartsheet, not in code</h1>
-    <p>The robust, low-maintenance pattern keeps <em>recipients, channels, escalation, and quiet-hours</em> in Smartsheet &mdash; where a PM can edit them without touching your program &mdash; and keeps your code about <em>data</em>.</p>
-    <h2>Pattern A &mdash; cell change &rarr; alert (the default)</h2>
+    <p>The robust, low-maintenance pattern keeps <em>recipients, channels, escalation, and quiet-hours</em> in Smartsheet (where a PM can edit them without touching your program) and keeps your code about <em>data</em>.</p>
+    <h2>Pattern A: cell change &rarr; alert (the default)</h2>
     <ol>
       <li>Your job writes <code>Status = "At Risk"</code> on a row (idempotent, by key).</li>
-      <li>A Smartsheet <b>Automation</b> &mdash; set up once: <em>&ldquo;When Status changes to At&nbsp;Risk &rarr; Alert the PM&rdquo;</em> &mdash; fires the notification (email, mobile push, Teams, Slack).</li>
+      <li>A Smartsheet <b>Automation</b> (set up once: <em>&ldquo;When Status changes to At&nbsp;Risk &rarr; Alert the PM&rdquo;</em>) fires the notification (email, mobile push, Teams, Slack).</li>
     </ol>
     <p>SAS/R never holds an email list. This is the most maintainable design and the one the worked example uses.</p>
-    <h2>Pattern B &mdash; time-based reminders</h2>
+    <h2>Pattern B: time-based reminders</h2>
     <p>Smartsheet&rsquo;s native <b>reminders</b> fire relative to a date cell (&ldquo;3 days before <code>Due</code>&rdquo;). Your job just keeps the <code>Due</code> dates honest; Smartsheet handles the calendar. Zero code.</p>
-    <h2>Pattern C &mdash; the targeted update request</h2>
-    <p>When you need a <em>specific person to act</em> &mdash; &ldquo;please confirm the DB-lock date&rdquo; &mdash; the library can send a Smartsheet <b>update request</b> (<code>%ss_update_request</code> / <code>ss_update_request()</code>): it emails the recipient a link to edit just those rows/columns, and their reply writes straight back to the sheet. Use this sparingly, for human-in-the-loop confirmations.</p>
-    <div class="callout warn"><b>Message bodies carry operational signal only</b> &mdash; &ldquo;CP-101 DB lock now At&nbsp;Risk, due 20&nbsp;Jun&rdquo; &mdash; never anything participant-level. The detail lives in the attached ops status PDF on the validated share, linked, not in the alert.</div>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <h2>Pattern C: the targeted update request</h2>
+    <p>When you need a <em>specific person to act</em>, &ldquo;please confirm the DB-lock date&rdquo; the library can send a Smartsheet <b>update request</b> (<code>%ss_update_request</code> / <code>ss_update_request()</code>): it emails the recipient a link to edit just those rows/columns, and their reply writes straight back to the sheet. Use this sparingly, for human-in-the-loop confirmations.</p>
+    <div class="callout warn"><b>Message bodies carry operational signal only</b>: &ldquo;CP-101 DB lock now At&nbsp;Risk, due 20&nbsp;Jun&rdquo; never anything participant-level. The detail lives in the attached ops status PDF on the validated share, linked, not in the alert.</div>
+  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
 <section id="watch" aria-label="The tracker that updates itself">
-    <h1>The tracker that updates itself &mdash; one nightly run on CP-101</h1>
-    <p class="lede">The deterministic job doing its one job: reading the sheet, writing the truthful status by key, attaching the evidence, and letting Smartsheet send the alert &mdash; with zero AI and zero copy-paste.</p>
+    <h1>The tracker that updates itself: one nightly run on CP-101</h1>
+    <p class="lede">The deterministic job doing its one job: reading the sheet, writing the truthful status by key, attaching the evidence, and letting Smartsheet send the alert, with zero AI and zero copy-paste.</p>
     <div class="dl">
-      <a class="btn" href="CP101_Tracker_Demo.html">&#9654;&nbsp; Run it yourself &mdash; the interactive tracker demo</a>
-      <a class="btn ghost" href="SAS_R_Smartsheet_Example_narrated.mp4">&#9654;&nbsp; Watch the R job run, step by step (~3 min)</a>
-      <a class="btn ghost" href="Smartsheet_SASR_Example_StepGuide.pdf">&#10515;&nbsp; Step-by-step picture guide (PDF)</a>
+      <a class="btn" href="CP101_Tracker_Demo.html">&#9654;&nbsp; Run it yourself: the interactive tracker demo</a>
       <a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; The SAS/R helper library + runnable demo</a>
     </div>
 
-    <h2>What one scheduled run prints to the log</h2>
-    <p>There is nothing to watch in a UI. The point is that every read and write is an auditable line in the job log, straight from the shipped code. Here is a representative run for the night the database cut slipped (the SAS log shown; the R companion prints the row-level equivalent underneath). Read it top to bottom.</p>
-    <pre class="code"><code># tracker_update.sas, fired by cron / Task Scheduler after the validated nightly extract refreshed
-NOTE: [SHEETLINK] init - token loaded (length hidden); allowlist=TASK ID|STATUS|% DONE|OWNER|DUE|TASK
-NOTE: [SHEETLINK] column map for sheet 1234567890123456 rebuilt (7 columns)
-NOTE: [SHEETLINK] upsert sheet 1234567890123456 done - updated=8 cells / added=5 cells (idempotent by Task ID)
-NOTE: [SHEETLINK] attached CP101_status.pdf to row 9876543210
-NOTE: [SHEETLINK] tracker_update complete, status=OK
+    <h2>What one run printed (captured)</h2>
+    <p>There is nothing to watch in a UI; every read and write is a line in the job output. Below is the captured output of the R companion (<code>macro_library/ss_companion.R</code>, driven by <code>_demo/ss_run_demo.R</code>) running against a local mock of the Smartsheet API (<code>_demo/ss_mock_api.js</code>), copied from <code>_demo/capture/r_session.txt</code>. The SAS twin (<code>tracker_update.sas</code>) has not been executed (no SAS license), so no SAS log is shown.</p>
+    <pre class="code"><code>== read the sheet first: fresh column map + rows, keyed by the Task code ==
+column map (title -&gt; columnId):
+ TASKID    TASK  STATUS PCTDONE   OWNER     DUE 
+    101     102     103     104     105     106 
+  rowId     TASKID   STATUS PCTDONE     DUE
+1  1001  CP101-ENR On Track      NA ongoing
+2  1002 CP101-ADPC On Track     0.6  15 Jun
+3  1003  CP101-CUT On Track      NA  17 Jun
+4  1004  CP101-TLF On Track     0.1  24 Jun
+5  1005 CP101-DSMB On Track     0.0  30 Jun
 
-# the R companion (ss_companion.R) prints the row-level equivalent:
-[SHEETLINK] upsert sheet 1234567890123456: 4 updated, 1 added (idempotent by TaskID)
+== compute tonight's operational status from the validated extract ==
+      TaskID              Task   Status PctDone   Owner     Due
+1  CP101-ENR              &lt;NA&gt;  At Risk      NA    &lt;NA&gt; ongoing
+2 CP101-ADPC              &lt;NA&gt; On Track    0.85    &lt;NA&gt;  15 Jun
+3  CP101-CUT              &lt;NA&gt;    Watch      NA    &lt;NA&gt;  19 Jun
+4  CP101-TLF              &lt;NA&gt; On Track    0.10    &lt;NA&gt;  26 Jun
+5  CP101-CSR CSR shell - build  Planned    0.00 Biostat  10 Jul
 
-# Smartsheet Automation, configured once in the UI:  Status -&gt; At Risk  =&gt;  email to the PM</code></pre>
-    <p class="muted">The run is idempotent. Re-run it ten times tonight and the log converges to <code>updated=0 cells / added=0 cells</code>; a re-run cannot duplicate a row. Silence is never assumed either: a failed run mails the fail-loud address instead of finishing quietly.</p>
+== push by key: idempotent upsert (ops-only allowlist enforced in code) ==
+[SHEETLINK] upsert sheet 5500: 4 updated, 1 added (idempotent by TaskID)
+
+== attach last night's one-page status PDF to the data-cut row ==
+[SHEETLINK] attached CP101_status.pdf to row 1003
+
+== re-run the SAME job: matched by key, it converges and never duplicates ==
+[SHEETLINK] upsert sheet 5500: 5 updated, 0 added (idempotent by TaskID)
+
+== try to push a non-allowlisted column: the guard blocks it (no PHI to cloud) ==
+[SHEETLINK] BLOCKED non-allowlisted column(s): PARTICIPANTALT - possible PHI/sensitive leak </code></pre>
+    <p class="muted">The run is idempotent: re-running the same job matched all five rows by key (5 updated, 0 added), so a re-run cannot duplicate a row. By design, a failed run mails the fail-loud address instead of finishing quietly.</p>
 
     <h2>The run, beat by beat</h2>
     <p><b>Read first, key by Task&nbsp;ID.</b> The job pulls a fresh column map (columnIds are the only stable address, titles and order drift) and reads the existing rows keyed on the Task code you own, so it knows which rows to update in place and which to append. It never blind-appends, which is why a re-run cannot duplicate a row.</p>
@@ -315,10 +330,10 @@ NOTE: [SHEETLINK] tracker_update complete, status=OK
     <p><b>Cascade dependent dates deterministically.</b> When the cut date moves, the dependent milestones (soft-lock, dry-run TLFs) are recomputed in SAS/R and pushed in the same call, so the timeline stays internally consistent without anyone re-typing a date.</p>
     <p><b>Attach the evidence, then stop.</b> The job attaches the one-page ops-only status PDF to the summary row, then stops. It sends no email of its own, and only aggregate operational status ever left the environment (the allowlist guard blocks anything else, in code).</p>
     <p><b>Smartsheet sends the alert, a human decides.</b> The instant Status became At&nbsp;Risk, the Automation a PM set up once fired the notification on whatever channel they chose. The code wrote the fact, Smartsheet chose who to tell, and the medical monitor or PM owns what it means.</p>
-    <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
 <section id="macros" aria-label="The SAS/R helper library">
-    <h1>The helper library &mdash; <code>%ss_*</code> macros &amp; R functions</h1>
-    <p>A small, deterministic library so &ldquo;keep the tracker current&rdquo; is a few lines you schedule. It guarantees five things: <b>idempotent</b> (never duplicates), <b>ops-only</b> (coded allowlist), <b>token never logged</b>, <b>rate-limit aware</b>, and <b>fails loud</b>. It also ships a <b>dry run</b> (preview an upsert before you schedule it &mdash; <code>dryrun=Y</code> / <code>dryrun=TRUE</code> / <code>-DryRun</code>), a <b>read-back</b> (<code>%ss_get</code> / <code>ss_get()</code>), and a <b>runnable demo</b> (<code>_demo/</code>) that exercises the real library against a representative Smartsheet API with no account needed.</p>
+    <h1>The helper library: <code>%ss_*</code> macros &amp; R functions</h1>
+    <p>A small, deterministic library so &ldquo;keep the tracker current&rdquo; is a few lines you schedule. It guarantees five things: <b>idempotent</b> (never duplicates), <b>ops-only</b> (coded allowlist), <b>token never logged</b>, <b>rate-limit aware</b>, and <b>fails loud</b>. It also ships a <b>dry run</b> (preview an upsert before you schedule it: <code>dryrun=Y</code> / <code>dryrun=TRUE</code> / <code>-DryRun</code>), a <b>read-back</b> (<code>%ss_get</code> / <code>ss_get()</code>), and a <b>runnable demo</b> (<code>_demo/</code>) that exercises the real library against a representative Smartsheet API with no account needed.</p>
     <div class="dl">
       <a class="btn ghost" href="macro_library/ss_macros.sas">&#10515;&nbsp; ss_macros.sas</a>
       <a class="btn ghost" href="macro_library/ss_companion.R">&#10515;&nbsp; ss_companion.R</a>
@@ -327,9 +342,9 @@ NOTE: [SHEETLINK] tracker_update complete, status=OK
       <a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; README</a>
     </div>
     <!-- SHEETLINK-FULL-PROGRAM -->
-    <p>These are the <b>actual, complete</b> library files, shown in full below and available as downloads above. The SAS macro library and the R companion are behaviour-matched; the PowerShell script is a laptop-only path with the same guarantees. Read the SAS library first, the R and PowerShell mirror it.</p>
+    <p>These are the <b>actual, complete</b> library files, shown in full below and available as downloads above. The SAS macro library and the R companion are behavior-matched; the PowerShell script is a laptop-only path with the same guarantees. Read the SAS library first, the R and PowerShell mirror it.</p>
     <h2>The complete SAS library: ss_macros.sas</h2>
-    <p class="muted" style="margin-bottom:6px">SAS &middot; 263 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p class="muted" style="margin-bottom:6px">SAS &middot; 263 lines &middot; the real shipped file, in full: nothing elided.</p>
     <p>ss_macros.sas is the complete SHEETLINK helper library: every <code>%ss_*</code> macro that lets a scheduled, no-AI SAS job drive a Smartsheet tracker over its REST API using only PROC HTTP and the JSON LIBNAME engine on Base SAS 9.4M5+. It runs unattended (typically from a scheduler) to push OPS-ONLY data to the sheet: milestone dates, deliverable and QC status, % complete, aggregate enrollment counts, and ownership. It never carries PHI, participant-level, unblinded, or reported clinical numbers; reported numbers come from validated tools, never from this sheet. You %include this file once to define the macros, call <code>%ss_init</code> to load credentials and the allowlist, then call <code>%ss_upsert</code> (and friends) from your driver program. The file opens by declaring the shared global macro variables <code>SS_BASE SS_TOKEN SS_RC SS_STATUS SS_BACKUP SS_ALLOW</code> that the macros read and write across calls.</p>
     <pre class="code"><code>/*====================================================================================
   ss_macros.sas  -  SHEETLINK: a deterministic SAS macro library for driving Smartsheet
@@ -608,7 +623,7 @@ NOTE: [SHEETLINK] tracker_update complete, status=OK
       <p><b>ss_update_request: the human-in-the-loop notification.</b> <code>%ss_update_request</code> is the supported way to ask people to fill in cells: it POSTs to the sheet's <code>updaterequests</code> endpoint, emailing each recipient a link to update the named rows and columns. It hand-builds the JSON body: <code>sendto</code> is space-separated emails expanded into individual <code>email</code> objects entries under <code>sendTo</code>, <code>rowids</code> and <code>colids</code> are comma-separated bare ids dropped straight into <code>rowIds</code> and <code>columnIds</code>, and the free-text <code>subject</code> and <code>message</code> are JSON-escaped before insertion. It sets <code>includeAttachments:false</code> and routes the send through <code>%ss_http</code>, and its message text is operational only.</p>
       <p><b>obs: the row-count helper.</b> <code>%obs</code> is a one-line utility that returns a dataset's logical observation count by opening it with <code>open</code> and reading the <code>nlobs</code> attribute via <code>attrn</code>. The other macros use it inline for their log messages and control flow: for example <code>%ss_upsert</code> reports <code>updated=%obs(_cupd)</code> and <code>added=%obs(_cnew)</code>, and guards each API send with <code>%if %obs(dataset)</code> so an empty update or add batch is skipped entirely. Small as it is, it is what lets the library only make calls it actually needs to.</p>
     <h2>The same library in R: ss_companion.R</h2>
-    <p class="muted" style="margin-bottom:6px">R (httr2 + jsonlite) &middot; 114 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p class="muted" style="margin-bottom:6px">R (httr2 + jsonlite) &middot; 114 lines &middot; the real shipped file, in full: nothing elided.</p>
     <p>ss_companion.R is the R twin of the SHEETLINK SAS library (ss_macros.sas): an httr2-based toolkit (the header names httr2 + jsonlite) that lets scheduled R jobs push operational tracker data into Smartsheet with no AI in the loop. It runs unattended, typically nightly under cronR or taskscheduleR, refreshing status, dates, percent-complete, ownership, and aggregate counts on a shared sheet. The governance model is identical to the SAS version: an ops-only column allowlist enforced in code, the bearer token read from an environment variable rather than hard-coded, idempotent upsert-by-key so re-runs never duplicate rows, retry on 429/5xx, and fail-loud assertions. Reported clinical numbers never travel through this file: those come only from validated tools, and the allowlist is the in-code PHI boundary that keeps participant-level or unblinded data off the cloud SaaS.</p>
     <pre class="code"><code># =====================================================================================
 # ss_companion.R  -  SHEETLINK R companion: drive Smartsheet from scheduled R (no AI).
@@ -671,7 +686,7 @@ ss_upsert &lt;- function(sheet, key, df, allow, dryrun = FALSE) {
     r &lt;- list(...); kv &lt;- as.character(r[[key]]); rid &lt;- existing[kv]
     cells &lt;- imap(r, function(v, nm) list(columnId = unname(colmap[toupper(nm)]), value = v))
     # drop cells with no mapped column, AND cells whose value is NA: an NA means "leave this
-    # cell untouched" — never write a blank/NA, which would otherwise land in the sheet as the
+    # cell untouched": never write a blank/NA, which would otherwise land in the sheet as the
     # literal text "NA" (and clobber a real value).
     cells &lt;- Filter(function(c) !is.na(c$columnId) &amp;&amp;
                     !(length(c$value) == 1 &amp;&amp; (is.na(c$value) || (is.character(c$value) &amp;&amp; c$value == ""))), cells)
@@ -738,7 +753,7 @@ if (sys.nframe() == 0) {
       <p><b>The %||% null-coalescing helper.</b> <code>%||%</code> is a small infix operator that returns its left side unless that side is <code>NULL</code>, in which case it returns the right side. <code>ss_get_rows</code> relies on it to turn a null cell value into <code>NA</code> so the resulting tibble has a clean, consistent shape. It is defined here as plain R, so the library does not depend on the same-named operator from another package being loaded.</p>
       <p><b>The example nightly driver block.</b> The trailing block runs only when the file is executed as a script rather than sourced, guarded by <code>if (sys.nframe() == 0)</code>, so importing the functions does not trigger a live write. It defines an ops-only allowlist (<code>TaskID</code>, <code>Status</code>, <code>PctDone</code>, <code>Owner</code>, <code>Due</code>), builds a small demonstration tibble for a synthetic CP101 tracker, and includes deliberate blanks: <code>PctDone = NA</code> and <code>Due = ""</code> exercise the leave-untouched behavior so those cells are not overwritten. It then calls <code>ss_upsert</code> with the sheet id read from <code>CP101_TRACKER_ID</code> in the environment and <code>TaskID</code> as the key, showing the intended pattern: schedule this file with cronR::cron_add or taskscheduleR to refresh an ops tracker unattended.</p>
     <h2>Standalone on Windows, no SAS or R: Update-Smartsheet.ps1</h2>
-    <p class="muted" style="margin-bottom:6px">PowerShell 5.1+ &middot; 106 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
+    <p class="muted" style="margin-bottom:6px">PowerShell 5.1+ &middot; 106 lines &middot; the real shipped file, in full: nothing elided.</p>
     <p>Update-Smartsheet.ps1 is a standalone Windows PowerShell 5.1+ script that pushes operational status from a CSV file into a Smartsheet tracker, idempotently, with no SAS or R in the loop and no clicking around the Smartsheet GUI. A biostatistician runs it from a laptop, typically after exporting a small status CSV, to keep a shared tracker current: sheet is found by name, columns are mapped by title, and rows are matched on a stable key so re-runs never duplicate. It is the Windows companion to the SHEETLINK %ss_* SAS and ss_companion.R helpers (use those inside pipelines, this one standalone). Governance is built in: an allowlist guard is the in-code PHI boundary, so only non-sensitive operational fields (status, dates, % complete, counts, ownership) ever leave the machine, never PHI, participant-level, unblinded, or reported clinical numbers, which come only from validated tools.</p>
     <pre class="code"><code>&lt;#  Update-Smartsheet.ps1  ----------------------------------------------------
   Push operational status from a CSV into a Smartsheet tracker, IDEMPOTENTLY,
@@ -887,8 +902,8 @@ Write-Host ("Smartsheet '{0}': {1} row(s) updated, {2} added (idempotent on key 
       <tr><td><code>%ss_attach</code></td><td><code>ss_attach</code></td><td>Attach an ops-only status PDF to a row.</td></tr>
       <tr><td><code>%ss_update_request</code></td><td><code>ss_update_request</code></td><td>Targeted human-in-the-loop ask (Pattern&nbsp;C).</td></tr>
     </table>
-    <div class="callout tip"><b>To start a new tracker</b> you edit one file (<code>ss_config.sas</code>): the sheet id, the key column, recipients, and the allowlist &mdash; not the code.</div>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <div class="callout tip"><b>To start a new tracker</b> you edit one file (<code>ss_config.sas</code>): the sheet id, the key column, recipients, and the allowlist, not the code.</div>
+  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
 <section id="gov" aria-label="Governance  limits">
     <h1>Governance, security &amp; honest limits</h1>
     <h2>The data boundary (the reason this can be automated at all)</h2>
@@ -904,18 +919,18 @@ Write-Host ("Smartsheet '{0}': {1} row(s) updated, {2} added (idempotent on key 
       <li><b>Idempotent &amp; auditable.</b> Upsert-by-key means a re-run can only converge, never corrupt; every write is a deterministic function of validated data.</li>
     </ul>
     <h2>The honest limit</h2>
-    <div class="callout warn"><b>This keeps a tracker current and triggers pre-configured alerts &mdash; it does not triage, narrate, or decide.</b> It writes the operational facts your validated programs computed and lets Smartsheet notify the right people, reproducibly. It does not weigh what a slip <em>means</em> or prioritize across signals &mdash; humans and the PM own every decision. Like any program that writes to a shared artifact, validate the library against a non-production sandbox sheet before scheduling it live.</div>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <div class="callout warn"><b>This keeps a tracker current and triggers pre-configured alerts: it does not triage, narrate, or decide.</b> It writes the operational facts your validated programs computed and lets Smartsheet notify the right people, reproducibly. It does not weigh what a slip <em>means</em> or prioritize across signals: humans and the PM own every decision. Like any program that writes to a shared artifact, validate the library against a non-production sandbox sheet before scheduling it live.</div>
+  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
 <section id="faq" aria-label="FAQ">
     <h1>FAQ</h1>
     <p><b>Do we need to buy a Smartsheet connector or any middleware?</b> No. SAS (<code>PROC HTTP</code> + JSON engine) and R (<code>httr2</code>) call the Smartsheet REST API directly with your token. The helper library is the only thing you add.</p>
-    <p><b>Will re-running the job create duplicate rows?</b> No &mdash; that is the point of the <b>upsert by key</b>. Existing keys update in place; only genuinely new keys append. Run it as often as you like.</p>
-    <p><b>Could this leak PHI to the cloud?</b> The <code>%ss_guard</code> allowlist blocks any non-operational column in code &mdash; the job fails rather than write it. Only aggregate operational status crosses; nothing participant-level.</p>
+    <p><b>Will re-running the job create duplicate rows?</b> No, that is the point of the <b>upsert by key</b>. Existing keys update in place; only genuinely new keys append. Run it as often as you like.</p>
+    <p><b>Could this leak PHI to the cloud?</b> The <code>%ss_guard</code> allowlist blocks any non-operational column in code: the job fails rather than write it. Only aggregate operational status crosses; nothing participant-level.</p>
     <p><b>Who sends the emails?</b> Smartsheet does. You configure the Automations once; SAS/R just writes the truthful cell. That keeps recipients and escalation editable by the PM, not buried in code.</p>
-    <p><b>What if the token is exposed in a log?</b> It isn&rsquo;t &mdash; it&rsquo;s read inside <code>NOSOURCE</code> and never printed. If a token is ever compromised, rotate it in Smartsheet; no code change is needed.</p>
-    <p><b>Is this AI?</b> No. It is deterministic SAS/R hitting a REST API. It complements the AI pipelines &mdash; the same &ldquo;ship the validated, no-AI layer now&rdquo; philosophy as the SAS/R trial-monitoring companion.</p>
-  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section>
-<section id="transcript" aria-label="Transcript"><h1>Walkthrough transcript</h1><p class="lede">The complete narration of the &ldquo;tracker that updates itself&rdquo; video, as readable text.</p><h2>1. Part 1</h2><p>Here is how a biostatistician keeps a Smartsheet program tracker perfectly current without ever touching it, and without any A-I. A scheduled SAS or R job writes the truthful operational status to the sheet by a stable key. Smartsheet's own built-in workflow then sends the alerts. Code owns the data; Smartsheet owns the notifications.</p><h2>2. Part 2</h2><p>The loop has four parts. A scheduler fires the program every night, the same way your validated reports already run. The program reads last night's validated extract, computes the operational status, and pushes only ops-only columns to the sheet. Then a Smartsheet automation you set up once watches those cells and notifies the right people. Nothing sensitive leaves the environment, and there is no new tool to validate.</p><h2>3. Part 3</h2><p>Beat one: the job reads the sheet first. It pulls a fresh column map, because the column ids are the only stable address, and it reads the existing rows keyed on the Task code you own. Now the job knows exactly which rows already exist, so it can update in place instead of blindly appending.</p><h2>4. Part 4</h2><p>Beat two: the job writes the new status by key. Database lock has slipped to At Risk; the tables row moves to Watch. Because every write is matched on the Task code, re-running the job ten times a night converges to the same sheet. It never creates a duplicate row. That idempotence is the whole reason this is safe to automate.</p><h2>5. Part 5</h2><p>Beat three: one upsert call carries the whole batch. The job hands Smartsheet a single array of rows, splits cleanly into updates for keys that already exist and appends for the new ones, and every affected milestone flips at once. This is plain, readable SAS or R, double-programmed and version-controlled like any study program.</p><h2>6. Part 6</h2><p>Beats four and five: the job attaches last night's one-page status PDF to the summary row, and then steps back. It does not send a single email. The instant the status cell changed to At Risk, the Smartsheet workflow you configured once fired the alert to the project manager, on whatever channel they chose. SAS wrote the fact; Smartsheet decided who to tell.</p><h2>7. Part 7</h2><p>Four safeguards make this trustworthy. The upsert is idempotent, matched by key, so it can never duplicate. A coded allowlist blocks any non-operational column, so no participant-level or reported clinical number can ever reach the cloud. The token is read from a secret at runtime, never hard-coded and never logged. And the job is rate-limit aware and fails loud, so a stale tracker announces itself instead of pretending to be fresh.</p><h2>8. Part 8</h2><p>That is the whole idea. Your tracker is always current, the alerts are automatic, and you never copy and paste a status again, all with validated SAS and R you already own. The macro library ships ready to use: drop in your sheet id, your key, and your allowlist, and schedule it.</p><div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; built June 2026 (illustrative).</div></section></main></div>
+    <p><b>What if the token is exposed in a log?</b> It isn&rsquo;t: it&rsquo;s read inside <code>NOSOURCE</code> and never printed. If a token is ever compromised, rotate it in Smartsheet; no code change is needed.</p>
+    <p><b>Is this AI?</b> No. It is deterministic SAS/R hitting a REST API. It takes the same deterministic, no-AI approach as the <a href="../sas_r_automation/SAS_R_Trial_Monitoring_Automation.html">SAS/R trial-monitoring wiki</a>.</p>
+  <div class="footer">Smartsheet for Biostatisticians &middot; driven by scheduled SAS/R, no AI &middot; ops-only, idempotent, token never logged &middot; Smartsheet sends the alerts &middot; humans decide &middot; illustrative; revised October 2026.</div></section>
+</main></div>
 <script>
 const secs=[...document.querySelectorAll('section')];
 const links=[...document.querySelectorAll('#side a[data-t]')];
