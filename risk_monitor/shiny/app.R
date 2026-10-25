@@ -1,10 +1,10 @@
 # ===========================================================================
-# app.R - Trial-Termination Early-Warning console (Shiny), 3 tiers.
+# app.R - Trial-Termination Early-Warning console (Shiny), 2 tiers.
 #
-# Participant / Study / Client signals roll up to a tier RAG and an overall
+# Participant and Study signals roll up to a tier RAG and an overall
 # termination-risk index. Select a signal and change its level to watch the
 # tier and overall risk move - the roll-up is transparent. The AI flags; the
-# SRC / DSMB / medical monitor / PM / account lead decide. Synthetic, no PHI.
+# SRC / DSMB / medical monitor / PM decide. Synthetic, no PHI.
 #
 # Run:  shiny::runApp("risk_monitor/shiny")
 # Data: data/signals.csv (a representative subset; swap in your KRI feed).
@@ -20,8 +20,8 @@ ui <- page_sidebar(
   sidebar = sidebar(
     width = 320,
     div(class = "small text-muted",
-        "3 tiers of early-termination risk. The AI flags and drafts; the SRC / DSMB / ",
-        "medical monitor / PM / account lead decide. Synthetic, no PHI, no participant records."),
+        "2 tiers of early-termination risk. The AI flags and drafts; the SRC / DSMB / ",
+        "medical monitor / PM decide. Synthetic, no PHI, no participant records."),
     selectInput("tier", "Show tier", choices = c("All", TIERS), selected = "All"),
     hr(),
     div(class = "small fw-bold text-muted", "Set a signal's level (what-if)"),
@@ -30,11 +30,10 @@ ui <- page_sidebar(
     actionButton("reset", "Reset to feed", class = "btn-sm btn-outline-warning")
   ),
   layout_columns(
-    col_widths = c(3,3,3,3),
+    col_widths = c(4,4,4),
     value_box("Overall termination risk", uiOutput("v_overall"), theme = "secondary"),
     value_box("Participant tier", uiOutput("v_part"), theme = "secondary"),
-    value_box("Study tier", uiOutput("v_study"), theme = "secondary"),
-    value_box("Client tier", uiOutput("v_client"), theme = "secondary")
+    value_box("Study tier", uiOutput("v_study"), theme = "secondary")
   ),
   layout_columns(
     col_widths = c(7,5),
@@ -74,7 +73,6 @@ server <- function(input, output, session) {
   output$v_overall <- renderUI(vb("overall","overall"))
   output$v_part    <- renderUI(vb("part","Participant"))
   output$v_study   <- renderUI(vb("study","Study"))
-  output$v_client  <- renderUI(vb("client","Client"))
 
   output$signals <- renderDT({
     v <- if (input$tier == "All") rv$signals else rv$signals[rv$signals$tier == input$tier, ]

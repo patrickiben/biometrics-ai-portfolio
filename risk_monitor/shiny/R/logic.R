@@ -1,17 +1,21 @@
 # ---------------------------------------------------------------------------
-# logic.R - pure roll-up scoring for the 3-tier Trial-Termination Early-Warning
+# logic.R - pure roll-up scoring for the 2-tier Trial-Termination Early-Warning
 # console. Operations-only, synthetic, no PHI, no participant-level data (the
 # "participant tier" holds de-identified signal states, never records).
 #
-# The AI flags; the SRC / DSMB / medical monitor / PM / account lead decide.
+# The AI flags; the SRC / DSMB / medical monitor / PM decide.
 # Reported safety numbers come from the validated safety database, never here.
-# The advanced-engine signals use published methods (Optimal Transport /
-# Wasserstein drift, Active Inference / free-energy) - flagged `advanced`.
+# Signals flagged `advanced` are illustrative placeholders: the optimal-transport
+# and active-inference engine they describe is not implemented here.
+#
+# Known issue: the severity-weighted average can dilute a single red safety
+# signal (the red Hy's-Law candidate rolls up to an amber Participant tier).
+# The next revision replaces it with a worst-of roll-up.
 # ---------------------------------------------------------------------------
 
-TIERS <- c("Participant", "Study", "Client")
+TIERS <- c("Participant", "Study")
 SEVERITY <- c(green = 0, amber = 50, red = 100)
-TIER_WEIGHT <- c(Participant = 0.50, Study = 0.30, Client = 0.20)
+TIER_WEIGHT <- c(Participant = 0.625, Study = 0.375)   # the former 0.50 / 0.30, renormalized
 
 risk_load <- function(dir = NULL) {
   cand <- c(dir, "data", "../data", "shiny/data", "risk_monitor/shiny/data")

@@ -5309,7 +5309,7 @@ z-index: 1000;
     <h2 id="toc-title">On this page</h2>
    
   <ul>
-  <li><a href="#three-tiers-one-roll-up" id="toc-three-tiers-one-roll-up" class="nav-link active" data-scroll-target="#three-tiers-one-roll-up">Three tiers, one roll-up</a></li>
+  <li><a href="#three-tiers-one-roll-up" id="toc-three-tiers-one-roll-up" class="nav-link active" data-scroll-target="#three-tiers-one-roll-up">Two tiers, one roll-up</a></li>
   <li><a href="#live" id="toc-live" class="nav-link" data-scroll-target="#live">The live console - computed from the signal feed</a></li>
   <li><a href="#run" id="toc-run" class="nav-link" data-scroll-target="#run">Run it - and change it</a></li>
   <li><a href="#the-other-formats" id="toc-the-other-formats" class="nav-link" data-scroll-target="#the-other-formats">The other formats</a></li>
@@ -5319,12 +5319,12 @@ z-index: 1000;
 <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
 </div>
 <main class="content" id="quarto-document-content">
-<div class="mc-top"><b>AI for Biometrics</b><div class="nav"><a href="../../Operations.html">Operations</a><a href="../../Biostatistics.html">Biostatistics</a><a href="../../START_HERE.html">Full library</a></div></div>
+<div class="mc-top"><b>Patrick Iben</b><div class="nav"><a href="../../index.html">Home</a><a href="../../index.html#lifecycle">Lifecycle</a><a href="../../index.html#start">Start here</a></div></div>
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <div class="quarto-title-block"><div><h1 class="title">Trial-Termination Early-Warning</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
-<p class="subtitle lead">A visual, runnable guide to the 3-tier risk console</p>
+<p class="subtitle lead">A visual, runnable guide to the 2-tier risk console</p>
 </div>
 
 
@@ -5361,12 +5361,22 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 <i class="callout-icon"></i>
 </div>
 <div class="callout-body-container">
-<p><strong>The rule.</strong> The AI <strong>flags, aggregates, and drafts</strong> the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study; the account lead owns the client signal. Reported safety numbers come from the validated safety database, never from a model.</p>
+<p><strong>The rule.</strong> The AI <strong>flags, aggregates, and drafts</strong> the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study. Reported safety numbers come from the validated safety database, never from a model.</p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-simple callout-warning">
+<div class="callout-body d-flex">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-body-container">
+<p><strong>Known issues, being fixed.</strong> The severity-weighted average dilutes a single red safety signal: the red Hy&rsquo;s-Law candidate S-1042 rolls up to an amber Participant tier. The next revision replaces it with a worst-of roll-up and moves these tiers into TRIALMON. Signals marked ADV are illustrative placeholders; the optimal-transport and active-inference engine they describe is not implemented.</p>
 </div>
 </div>
 </div>
 <section id="three-tiers-one-roll-up" class="level2">
-<h2 class="anchored" data-anchor-id="three-tiers-one-roll-up">Three tiers, one roll-up</h2>
+<h2 class="anchored" data-anchor-id="three-tiers-one-roll-up">Two tiers, one roll-up</h2>
 <div class="cell" data-layout-align="default">
 <div class="cell-output-display">
 <div>
@@ -5374,10 +5384,10 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 <div>
 <pre class="mermaid mermaid-js">%%{init: {&#39;theme&#39;:&#39;base&#39;,&#39;themeVariables&#39;:{&#39;primaryColor&#39;:&#39;#28344f&#39;,&#39;primaryTextColor&#39;:&#39;#eef2fb&#39;,&#39;primaryBorderColor&#39;:&#39;#7d9bd6&#39;,&#39;lineColor&#39;:&#39;#aab8d6&#39;,&#39;clusterBkg&#39;:&#39;#161d33&#39;,&#39;clusterBorder&#39;:&#39;#3a476a&#39;,&#39;tertiaryColor&#39;:&#39;#20406a&#39;,&#39;tertiaryTextColor&#39;:&#39;#eef2fb&#39;,&#39;tertiaryBorderColor&#39;:&#39;#7d9bd6&#39;,&#39;secondaryColor&#39;:&#39;#20406a&#39;,&#39;secondaryTextColor&#39;:&#39;#eef2fb&#39;}}}%%
 flowchart LR
-  SRC[&quot;Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS · finance&quot;] --&gt; RT{&quot;Route by&lt;br/&gt;sensitivity&quot;}
+  SRC[&quot;Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS&quot;] --&gt; RT{&quot;Route by&lt;br/&gt;sensitivity&quot;}
   RT --&gt;|&quot;safety / PK /&lt;br/&gt;unblinded&quot;| LOC[&quot;On-device model&lt;br/&gt;zero egress&quot;]
-  RT --&gt;|&quot;non-sensitive&lt;br/&gt;ops&quot;| CLD[&quot;Cloud Claude&lt;br/&gt;API + BAA&quot;]
-  LOC --&gt; ADV[&quot;Advanced engine&lt;br/&gt;OT + Active Inference&quot;]
+  RT --&gt;|&quot;non-sensitive&lt;br/&gt;ops&quot;| CLD[&quot;Cloud model&lt;br/&gt;de-identified aggregates&quot;]
+  LOC --&gt; ADV[&quot;Advanced engine&lt;br/&gt;(not implemented)&quot;]
   CLD --&gt; ADV
   ADV --&gt; SC[&quot;Severity-weighted&lt;br/&gt;roll-up to tier RAG&quot;]
   SC --&gt; ESC[&quot;Alert +&lt;br/&gt;escalation&quot;]
@@ -5395,7 +5405,7 @@ flowchart LR
 <div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">
 <div style="flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px">
 <div style="font-size:26px;font-weight:700;color:#e0a64c;font-family:monospace;line-height:1">
-35 · AMBER
+33 · AMBER
 </div>
 <div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">
 Overall termination risk
@@ -5417,14 +5427,6 @@ Participant tier
 Study tier
 </div>
 </div>
-<div style="flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px">
-<div style="font-size:26px;font-weight:700;color:#e0a64c;font-family:monospace;line-height:1">
-44 · AMBER
-</div>
-<div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">
-Client tier
-</div>
-</div>
 </div>
 <div class="tabset-margin-container"></div><div class="panel-tabset">
 <ul class="nav nav-tabs" role="tablist"><li class="nav-item" role="presentation"><a class="nav-link active" id="tabset-1-1-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-1" role="tab" aria-controls="tabset-1-1" aria-selected="true" href>Early-warning feed</a></li><li class="nav-item" role="presentation"><a class="nav-link" id="tabset-1-2-tab" data-bs-toggle="tab" data-bs-target="#tabset-1-2" role="tab" aria-controls="tabset-1-2" aria-selected="false" href>All signals</a></li></ul>
@@ -5436,49 +5438,10 @@ Client tier
 </div>
 <div>
 <div style="font-size:13px;color:#e9edf7">
-<b>Client</b> · <span style="font-family:ui-monospace,monospace;color:#7fb0ff">AR-60</span> Accounts-receivable aging &gt; 60 days
-</div>
-<div style="font-size:12px;color:#94a1c0">
-payment-aging KRI breached
-</div>
-</div>
-</div>
-<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350">
-<div style="flex:0 0 8px;height:8px;border-radius:50%;background:#e8657a;margin-top:6px">
-
-</div>
-<div>
-<div style="font-size:13px;color:#e9edf7">
 <b>Participant</b> · <span style="font-family:ui-monospace,monospace;color:#7fb0ff">S-1042</span> Candidate Hy’s-Law / DILI
 </div>
 <div style="font-size:12px;color:#94a1c0">
 ALT 3.4x ULN + total bili 2.1x ULN (DLT window, day 9)
-</div>
-</div>
-</div>
-<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350">
-<div style="flex:0 0 8px;height:8px;border-radius:50%;background:#e0a64c;margin-top:6px">
-
-</div>
-<div>
-<div style="font-size:13px;color:#e9edf7">
-<b>Client</b> · <span style="font-family:ui-monospace,monospace;color:#7fb0ff">COMMS</span> Sponsor comms cadence <span style="font-size:10px;background:#3a4157;border-radius:4px;padding:1px 5px">ADV</span>
-</div>
-<div style="font-size:12px;color:#94a1c0">
--40% month-on-month - behavior drift, relationship watch
-</div>
-</div>
-</div>
-<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350">
-<div style="flex:0 0 8px;height:8px;border-radius:50%;background:#e0a64c;margin-top:6px">
-
-</div>
-<div>
-<div style="font-size:13px;color:#e9edf7">
-<b>Client</b> · <span style="font-family:ui-monospace,monospace;color:#7fb0ff">SCOPE-CO</span> Scope-reduction change-orders
-</div>
-<div style="font-size:12px;color:#94a1c0">
-2 this quarter
 </div>
 </div>
 </div>
@@ -5734,60 +5697,6 @@ backlog rising ahead of database lock
 <td style="text-align: left;">green</td>
 <td style="text-align: right;">3</td>
 </tr>
-<tr class="even">
-<td style="text-align: left;">Client</td>
-<td style="text-align: left;">AR-60</td>
-<td style="text-align: left;">Accounts-receivable aging &gt; 60 days</td>
-<td style="text-align: left;">Finance</td>
-<td style="text-align: left;">Cloud</td>
-<td style="text-align: left;">red</td>
-<td style="text-align: right;">9</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Client</td>
-<td style="text-align: left;">COMMS</td>
-<td style="text-align: left;">Sponsor comms cadence</td>
-<td style="text-align: left;">Relationship</td>
-<td style="text-align: left;">Cloud</td>
-<td style="text-align: left;">amber</td>
-<td style="text-align: right;">5</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Client</td>
-<td style="text-align: left;">SCOPE-CO</td>
-<td style="text-align: left;">Scope-reduction change-orders</td>
-<td style="text-align: left;">Commercial</td>
-<td style="text-align: left;">Cloud</td>
-<td style="text-align: left;">amber</td>
-<td style="text-align: right;">6</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Client</td>
-<td style="text-align: left;">RENEWAL</td>
-<td style="text-align: left;">Contract-renewal signal</td>
-<td style="text-align: left;">Commercial</td>
-<td style="text-align: left;">Cloud</td>
-<td style="text-align: left;">green</td>
-<td style="text-align: right;">5</td>
-</tr>
-<tr class="even">
-<td style="text-align: left;">Client</td>
-<td style="text-align: left;">FILINGS</td>
-<td style="text-align: left;">Public-filings sentiment</td>
-<td style="text-align: left;">Commercial</td>
-<td style="text-align: left;">Cloud</td>
-<td style="text-align: left;">green</td>
-<td style="text-align: right;">4</td>
-</tr>
-<tr class="odd">
-<td style="text-align: left;">Client</td>
-<td style="text-align: left;">SATIS</td>
-<td style="text-align: left;">Sponsor-satisfaction pulse</td>
-<td style="text-align: left;">Relationship</td>
-<td style="text-align: left;">Cloud</td>
-<td style="text-align: left;">green</td>
-<td style="text-align: right;">4</td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -5800,14 +5709,14 @@ backlog rising ahead of database lock
 <h2 class="anchored" data-anchor-id="run">Run it - and change it</h2>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;risk_monitor/shiny&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co"># needs: install.packages(c(&quot;shiny&quot;,&quot;bslib&quot;,&quot;DT&quot;))</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Select a signal, set its level, and watch the tier and overall risk re-colour. The <a href="risk-build.html">run-and-build page</a> shows how the console is built from <code>R/logic.R</code>.</p>
+<p>Select a signal, set its level, and watch the tier and overall risk re-color. The <a href="risk-build.html">run-and-build page</a> shows how the console is built from <code>R/logic.R</code>.</p>
 <div class="callout callout-style-simple callout-tip">
 <div class="callout-body d-flex">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-body-container">
-<p><strong>Going live:</strong> the feed file <a href="../shiny/data/signals.csv"><code>signals.csv</code></a> is a representative subset of the 65-signal catalog. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.</p>
+<p><strong>Going live:</strong> the feed file <a href="../shiny/data/signals.csv"><code>signals.csv</code></a> is a representative signal set. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.</p>
 </div>
 </div>
 </div>
@@ -5836,7 +5745,7 @@ backlog rising ahead of database lock
 </tr>
 </tbody>
 </table>
-<p><em>Synthetic, no PHI. The AI flags; the SRC / DSMB / PM / account lead decide.</em></p>
+<p><em>Synthetic, no PHI. The AI flags; the SRC / DSMB / PM decide.</em></p>
 <!-- -->
 
 </section>
@@ -6294,133 +6203,136 @@ backlog rising ahead of database lock
     }
   });
   </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> &quot;Trial-Termination Early-Warning&quot;</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> &quot;A visual, runnable guide to the 3-tier risk console&quot;</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">    theme:</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">      - darkly</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">      - ../../_quarto-mc.scss</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">    include-before-body: ../../_mc-topbar.html</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-location: left</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-title: On this page</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">    embed-resources: true</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: false</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="an">knitr:</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">  opts_chunk:</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">    dev: png</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup}</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;../shiny/R/logic.R&quot;</span>)</span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">risk_load</span>(<span class="st">&quot;../shiny/data&quot;</span>)</span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>o <span class="ot">&lt;-</span> <span class="fu">risk_overall</span>(s)</span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="in">```{=html}</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="in">&lt;style&gt;</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="in">svg[id^=&quot;mermaid&quot;]{ width:100% !important; max-width:940px; height:auto; display:block; margin:8px auto; }</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="in">svg[id^=&quot;mermaid&quot;] .nodeLabel, svg[id^=&quot;mermaid&quot;] .edgeLabel { font-size:16px !important; }</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="in">&lt;/style&gt;</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>::: {.callout-note appearance=&quot;simple&quot;}</span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up), the [**Run &amp;amp; build the Shiny app**](risk-build.html) lets you *run* it and set a what-if, the <span class="co">[</span><span class="ot">dashboard</span><span class="co">](risk-dashboard.html)</span> is a shareable snapshot, and the <span class="co">[</span><span class="ot">run-and-build page</span><span class="co">](risk-build.html)</span> shows how it is made. Synthetic, no PHI, no participant records.</span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>::: {.callout-important appearance=&quot;simple&quot;}</span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>**The rule.** The AI **flags, aggregates, and drafts** the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study; the account lead owns the client signal. Reported safety numbers come from the validated safety database, never from a model.</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="fu">## Three tiers, one roll-up</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>%<span class="dt">%</span>{init: {<span class="ot">&#39;</span><span class="ss">theme</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">base</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">themeVariables</span><span class="ot">&#39;</span>:{<span class="ot">&#39;</span><span class="ss">primaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#28344f</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">primaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">primaryBorderColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#7d9bd6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">lineColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#aab8d6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">clusterBkg</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#161d33</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">clusterBorder</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#3a476a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#20406a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryBorderColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#7d9bd6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">secondaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#20406a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">secondaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>}}}%%</span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>  SRC[<span class="ot">&quot;</span><span class="st">Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS · finance</span><span class="ot">&quot;</span>] --&gt; RT{<span class="ot">&quot;</span><span class="st">Route by&lt;br/&gt;sensitivity</span><span class="ot">&quot;</span>}</span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  RT --&gt;|<span class="ot">&quot;</span><span class="st">safety / PK /&lt;br/&gt;unblinded</span><span class="ot">&quot;</span>| LOC[<span class="ot">&quot;</span><span class="st">On-device model&lt;br/&gt;zero egress</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  RT --&gt;|<span class="ot">&quot;</span><span class="st">non-sensitive&lt;br/&gt;ops</span><span class="ot">&quot;</span>| CLD[<span class="ot">&quot;</span><span class="st">Cloud Claude&lt;br/&gt;API + BAA</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  LOC --&gt; ADV[<span class="ot">&quot;</span><span class="st">Advanced engine&lt;br/&gt;OT + Active Inference</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  CLD --&gt; ADV</span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>  ADV --&gt; SC[<span class="ot">&quot;</span><span class="st">Severity-weighted&lt;br/&gt;roll-up to tier RAG</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  SC --&gt; ESC[<span class="ot">&quot;</span><span class="st">Alert +&lt;br/&gt;escalation</span><span class="ot">&quot;</span>]</span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>The scoring is transparent - each signal has a level (green/amber/red) and a</span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>weight; a tier is the weighted blend, and the overall index weights the tiers</span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>(participant safety heaviest).</span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## The live console - computed from the signal feed {#live}</span></span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>Everything below is computed from one file, the signal feed: <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> (in the <span class="co">[</span><span class="ot">`shiny/data/`</span><span class="co">](../shiny/data/)</span> folder). Edit that CSV (or run the app) and the roll-up, the tiers, and the feed all move.</span>
-<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="in">```{r kpis, results=&#39;asis&#39;}</span></span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>box <span class="ot">&lt;-</span> <span class="cf">function</span>(label, score, rag) {</span>
-<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>  col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">green=</span><span class="st">&quot;#43c47d&quot;</span>, <span class="at">amber=</span><span class="st">&quot;#e0a64c&quot;</span>, <span class="at">red=</span><span class="st">&quot;#e8657a&quot;</span>)[rag]</span>
-<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px&quot;&gt;&lt;div style=&quot;font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1&quot;&gt;%d · %s&lt;/div&gt;&lt;div style=&quot;font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
-<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>    col, score, <span class="fu">toupper</span>(rag), label)</span>
-<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px&quot;&gt;&#39;</span>)</span>
-<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">box</span>(<span class="st">&quot;Overall termination risk&quot;</span>, o<span class="sc">$</span>score, o<span class="sc">$</span>rag))</span>
-<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> TIERS) { ts <span class="ot">&lt;-</span> o<span class="sc">$</span>tiers[[t]]; <span class="fu">cat</span>(<span class="fu">box</span>(<span class="fu">paste</span>(t, <span class="st">&quot;tier&quot;</span>), ts<span class="sc">$</span>score, ts<span class="sc">$</span>rag)) }</span>
-<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;/div&gt;&#39;</span>)</span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>::: {.panel-tabset}</span>
-<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><span class="fu">### Early-warning feed</span></span>
-<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="in">```{r feed, results=&#39;asis&#39;}</span></span>
-<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">risk_feed</span>(s)</span>
-<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(f))) {</span>
-<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> f[j, ]; col <span class="ot">&lt;-</span> <span class="cf">if</span> (r<span class="sc">$</span>level <span class="sc">==</span> <span class="st">&quot;red&quot;</span>) <span class="st">&quot;#e8657a&quot;</span> <span class="cf">else</span> <span class="st">&quot;#e0a64c&quot;</span></span>
-<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>  adv <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">as.logical</span>(r<span class="sc">$</span>advanced)) <span class="st">&#39; &lt;span style=&quot;font-size:10px;background:#3a4157;border-radius:4px;padding:1px 5px&quot;&gt;ADV&lt;/span&gt;&#39;</span> <span class="cf">else</span> <span class="st">&quot;&quot;</span></span>
-<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350&quot;&gt;&lt;div style=&quot;flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div style=&quot;font-size:13px;color:#e9edf7&quot;&gt;&lt;b&gt;%s&lt;/b&gt; · &lt;span style=&quot;font-family:ui-monospace,monospace;color:#7fb0ff&quot;&gt;%s&lt;/span&gt; %s%s&lt;/div&gt;&lt;div style=&quot;font-size:12px;color:#94a1c0&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
-<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>    col, r<span class="sc">$</span>tier, r<span class="sc">$</span>id, r<span class="sc">$</span>signal, adv, r<span class="sc">$</span>detail))</span>
-<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><span class="fu">### All signals</span></span>
-<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a><span class="in">```{r table}</span></span>
-<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> s[, <span class="fu">c</span>(<span class="st">&quot;tier&quot;</span>,<span class="st">&quot;id&quot;</span>,<span class="st">&quot;signal&quot;</span>,<span class="st">&quot;category&quot;</span>,<span class="st">&quot;engine&quot;</span>,<span class="st">&quot;level&quot;</span>,<span class="st">&quot;weight&quot;</span>)]</span>
-<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(d, <span class="at">col.names=</span><span class="fu">c</span>(<span class="st">&quot;Tier&quot;</span>,<span class="st">&quot;ID&quot;</span>,<span class="st">&quot;Signal&quot;</span>,<span class="st">&quot;Category&quot;</span>,<span class="st">&quot;Engine&quot;</span>,<span class="st">&quot;Level&quot;</span>,<span class="st">&quot;Weight&quot;</span>), <span class="at">row.names=</span><span class="cn">FALSE</span>)</span>
-<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run it - and change it {#run}</span></span>
-<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
-<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;risk_monitor/shiny&quot;</span>)</span>
-<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="co"># needs: install.packages(c(&quot;shiny&quot;,&quot;bslib&quot;,&quot;DT&quot;))</span></span>
-<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>Select a signal, set its level, and watch the tier and overall risk re-colour. The</span>
-<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">run-and-build page</span><span class="co">](risk-build.html)</span> shows how the console is built from <span class="in">`R/logic.R`</span>.</span>
-<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip appearance=&quot;simple&quot;}</span>
-<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a>**Going live:** the feed file <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> is a representative subset of the 65-signal catalog. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.</span>
-<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>:::</span>
-<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## The other formats</span></span>
-<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> Artifact <span class="pp">|</span></span>
-<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
-<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Run <span class="pp">|</span> <span class="co">[</span><span class="ot">Run &amp;amp; build the Shiny app</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
-<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Share (no R) <span class="pp">|</span> <span class="co">[</span><span class="ot">Dashboard</span><span class="co">](risk-dashboard.html)</span> <span class="pp">|</span></span>
-<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Build <span class="pp">|</span> <span class="co">[</span><span class="ot">Run-and-build walkthrough</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
-<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>*Synthetic, no PHI. The AI flags; the SRC / DSMB / PM / account lead decide.*</span>
-</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> &quot;Trial-Termination Early-Warning&quot;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="an">subtitle:</span><span class="co"> &quot;A visual, runnable guide to the 2-tier risk console&quot;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">    theme:</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">      - darkly</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co">      - ../../_quarto-mc.scss</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co">    include-before-body: ../../_mc-topbar.html</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-location: left</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-title: On this page</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">    embed-resources: true</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools: true</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">    code-fold: true</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="an">execute:</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">  echo: false</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">  warning: false</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">  message: false</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="an">knitr:</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">  opts_chunk:</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">    dev: png</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup}</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&quot;../shiny/R/logic.R&quot;</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">risk_load</span>(<span class="st">&quot;../shiny/data&quot;</span>)</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>o <span class="ot">&lt;-</span> <span class="fu">risk_overall</span>(s)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="in">```{=html}</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="in">&lt;style&gt;</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="in">svg[id^=&quot;mermaid&quot;]{ width:100% !important; max-width:940px; height:auto; display:block; margin:8px auto; }</span></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="in">svg[id^=&quot;mermaid&quot;] .nodeLabel, svg[id^=&quot;mermaid&quot;] .edgeLabel { font-size:16px !important; }</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="in">&lt;/style&gt;</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>::: {.callout-note appearance=&quot;simple&quot;}</span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>**Run / share / read / build - pick your mode.** This page *shows* the console (diagrams + a live roll-up), the [**Run &amp;amp; build the Shiny app**](risk-build.html) lets you *run* it and set a what-if, the <span class="co">[</span><span class="ot">dashboard</span><span class="co">](risk-dashboard.html)</span> is a shareable snapshot, and the <span class="co">[</span><span class="ot">run-and-build page</span><span class="co">](risk-build.html)</span> shows how it is made. Synthetic, no PHI, no participant records.</span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>::: {.callout-important appearance=&quot;simple&quot;}</span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>**The rule.** The AI **flags, aggregates, and drafts** the alert. The SRC / DSMB / medical monitor make every DLT and safety call; the PM owns the study. Reported safety numbers come from the validated safety database, never from a model.</span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>::: {.callout-warning appearance=&quot;simple&quot;}</span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>**Known issues, being fixed.** The severity-weighted average dilutes a single red safety signal: the red Hy&#x27;s-Law candidate S-1042 rolls up to an amber Participant tier. The next revision replaces it with a worst-of roll-up and moves these tiers into TRIALMON. Signals marked ADV are illustrative placeholders; the optimal-transport and active-inference engine they describe is not implemented.</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a>## Two tiers, one roll-up</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="in">```{mermaid}</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>%<span class="dt">%</span>{init: {<span class="ot">&#39;</span><span class="ss">theme</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">base</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">themeVariables</span><span class="ot">&#39;</span>:{<span class="ot">&#39;</span><span class="ss">primaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#28344f</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">primaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">primaryBorderColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#7d9bd6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">lineColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#aab8d6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">clusterBkg</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#161d33</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">clusterBorder</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#3a476a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#20406a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">tertiaryBorderColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#7d9bd6</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">secondaryColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#20406a</span><span class="ot">&#39;</span>,<span class="ot">&#39;</span><span class="ss">secondaryTextColor</span><span class="ot">&#39;</span>:<span class="ot">&#39;</span><span class="ss">#eef2fb</span><span class="ot">&#39;</span>}}}%%</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>flowchart LR</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  SRC[&quot;Data sources&lt;br/&gt;EDC · safety DB · labs&lt;br/&gt;IXRS · CTMS&quot;] --&gt; RT{&quot;Route by&lt;br/&gt;sensitivity&quot;}</span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>  RT --&gt;|<span class="ot">&quot;</span><span class="st">safety / PK /&lt;br/&gt;unblinded</span><span class="ot">&quot;</span>| LOC[<span class="ot">&quot;</span><span class="st">On-device model&lt;br/&gt;zero egress</span><span class="ot">&quot;</span>]</span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  RT --&gt;|&quot;non-sensitive&lt;br/&gt;ops&quot;| CLD[&quot;Cloud model&lt;br/&gt;de-identified aggregates&quot;]</span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>  LOC --&gt; ADV[&quot;Advanced engine&lt;br/&gt;(not implemented)&quot;]</span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  CLD --&gt; ADV</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>  ADV --&gt; SC[<span class="ot">&quot;</span><span class="st">Severity-weighted&lt;br/&gt;roll-up to tier RAG</span><span class="ot">&quot;</span>]</span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  SC --&gt; ESC[<span class="ot">&quot;</span><span class="st">Alert +&lt;br/&gt;escalation</span><span class="ot">&quot;</span>]</span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>The scoring is transparent - each signal has a level (green/amber/red) and a</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>weight; a tier is the weighted blend, and the overall index weights the tiers</span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>(participant safety heaviest).</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="fu">## The live console - computed from the signal feed {#live}</span></span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>Everything below is computed from one file, the signal feed: <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> (in the <span class="co">[</span><span class="ot">`shiny/data/`</span><span class="co">](../shiny/data/)</span> folder). Edit that CSV (or run the app) and the roll-up, the tiers, and the feed all move.</span>
+<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="in">```{r kpis, results=&#39;asis&#39;}</span></span>
+<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a>box <span class="ot">&lt;-</span> <span class="cf">function</span>(label, score, rag) {</span>
+<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a>  col <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">green=</span><span class="st">&quot;#43c47d&quot;</span>, <span class="at">amber=</span><span class="st">&quot;#e0a64c&quot;</span>, <span class="at">red=</span><span class="st">&quot;#e8657a&quot;</span>)[rag]</span>
+<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;flex:1 1 150px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px&quot;&gt;&lt;div style=&quot;font-size:26px;font-weight:700;color:%s;font-family:monospace;line-height:1&quot;&gt;%d · %s&lt;/div&gt;&lt;div style=&quot;font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
+<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a>    col, score, <span class="fu">toupper</span>(rag), label)</span>
+<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px&quot;&gt;&#39;</span>)</span>
+<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">box</span>(<span class="st">&quot;Overall termination risk&quot;</span>, o<span class="sc">$</span>score, o<span class="sc">$</span>rag))</span>
+<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (t <span class="cf">in</span> TIERS) { ts <span class="ot">&lt;-</span> o<span class="sc">$</span>tiers[[t]]; <span class="fu">cat</span>(<span class="fu">box</span>(<span class="fu">paste</span>(t, <span class="st">&quot;tier&quot;</span>), ts<span class="sc">$</span>score, ts<span class="sc">$</span>rag)) }</span>
+<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&#39;&lt;/div&gt;&#39;</span>)</span>
+<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a>::: {.panel-tabset}</span>
+<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><span class="fu">### Early-warning feed</span></span>
+<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="in">```{r feed, results=&#39;asis&#39;}</span></span>
+<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a>f <span class="ot">&lt;-</span> <span class="fu">risk_feed</span>(s)</span>
+<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (j <span class="cf">in</span> <span class="fu">seq_len</span>(<span class="fu">nrow</span>(f))) {</span>
+<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a>  r <span class="ot">&lt;-</span> f[j, ]; col <span class="ot">&lt;-</span> <span class="cf">if</span> (r<span class="sc">$</span>level <span class="sc">==</span> <span class="st">&quot;red&quot;</span>) <span class="st">&quot;#e8657a&quot;</span> <span class="cf">else</span> <span class="st">&quot;#e0a64c&quot;</span></span>
+<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a>  adv <span class="ot">&lt;-</span> <span class="cf">if</span> (<span class="fu">as.logical</span>(r<span class="sc">$</span>advanced)) <span class="st">&#39; &lt;span style=&quot;font-size:10px;background:#3a4157;border-radius:4px;padding:1px 5px&quot;&gt;ADV&lt;/span&gt;&#39;</span> <span class="cf">else</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&#39;&lt;div style=&quot;display:flex;gap:8px;padding:6px 0;border-bottom:1px solid #2b3350&quot;&gt;&lt;div style=&quot;flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px&quot;&gt;&lt;/div&gt;&lt;div&gt;&lt;div style=&quot;font-size:13px;color:#e9edf7&quot;&gt;&lt;b&gt;%s&lt;/b&gt; · &lt;span style=&quot;font-family:ui-monospace,monospace;color:#7fb0ff&quot;&gt;%s&lt;/span&gt; %s%s&lt;/div&gt;&lt;div style=&quot;font-size:12px;color:#94a1c0&quot;&gt;%s&lt;/div&gt;&lt;/div&gt;&lt;/div&gt;&#39;</span>,</span>
+<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a>    col, r<span class="sc">$</span>tier, r<span class="sc">$</span>id, r<span class="sc">$</span>signal, adv, r<span class="sc">$</span>detail))</span>
+<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><span class="fu">### All signals</span></span>
+<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a><span class="in">```{r table}</span></span>
+<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a>d <span class="ot">&lt;-</span> s[, <span class="fu">c</span>(<span class="st">&quot;tier&quot;</span>,<span class="st">&quot;id&quot;</span>,<span class="st">&quot;signal&quot;</span>,<span class="st">&quot;category&quot;</span>,<span class="st">&quot;engine&quot;</span>,<span class="st">&quot;level&quot;</span>,<span class="st">&quot;weight&quot;</span>)]</span>
+<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a><span class="fu">kable</span>(d, <span class="at">col.names=</span><span class="fu">c</span>(<span class="st">&quot;Tier&quot;</span>,<span class="st">&quot;ID&quot;</span>,<span class="st">&quot;Signal&quot;</span>,<span class="st">&quot;Category&quot;</span>,<span class="st">&quot;Engine&quot;</span>,<span class="st">&quot;Level&quot;</span>,<span class="st">&quot;Weight&quot;</span>), <span class="at">row.names=</span><span class="cn">FALSE</span>)</span>
+<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a><span class="fu">## Run it - and change it {#run}</span></span>
+<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><span class="in">```r</span></span>
+<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a>shiny<span class="sc">::</span><span class="fu">runApp</span>(<span class="st">&quot;risk_monitor/shiny&quot;</span>)</span>
+<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="co"># needs: install.packages(c(&quot;shiny&quot;,&quot;bslib&quot;,&quot;DT&quot;))</span></span>
+<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a>Select a signal, set its level, and watch the tier and overall risk re-color. The</span>
+<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="co">[</span><span class="ot">run-and-build page</span><span class="co">](risk-build.html)</span> shows how the console is built from <span class="in">`R/logic.R`</span>.</span>
+<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a>::: {.callout-tip appearance=&quot;simple&quot;}</span>
+<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a>**Going live:** the feed file <span class="co">[</span><span class="ot">`signals.csv`</span><span class="co">](../shiny/data/signals.csv)</span> is a representative signal set. Replace it with your KRI / stopping-rule feed (same columns) and the roll-up is yours. Participant-tier signals are de-identified states, never records.</span>
+<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a>:::</span>
+<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## The other formats</span></span>
+<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Mode <span class="pp">|</span> Artifact <span class="pp">|</span></span>
+<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|</span></span>
+<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Run <span class="pp">|</span> <span class="co">[</span><span class="ot">Run &amp;amp; build the Shiny app</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
+<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Share (no R) <span class="pp">|</span> <span class="co">[</span><span class="ot">Dashboard</span><span class="co">](risk-dashboard.html)</span> <span class="pp">|</span></span>
+<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Build <span class="pp">|</span> <span class="co">[</span><span class="ot">Run-and-build walkthrough</span><span class="co">](risk-build.html)</span> <span class="pp">|</span></span>
+<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a>*Synthetic, no PHI. The AI flags; the SRC / DSMB / PM decide.*</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 
