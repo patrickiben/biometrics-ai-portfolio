@@ -14,7 +14,10 @@ shiny::runApp("lifecycle_dashboard/shiny")
 ```
 
 It also runs in the browser with Shinylive (webR): the site's Pages workflow exports this folder,
-data included, to `apps/lifecycle_dashboard/`.
+data included, to `apps/lifecycle_dashboard/`. `app.R` sources the shared status and error helpers, [`apps/_shared/portfolio_app.R`](../../apps/_shared/portfolio_app.R)
+(from the repository in local R; the Pages build copies the file next to `app.R` for the browser), and
+the site opens the app behind a launch page that reports each step of starting R
+([how it works](../../apps/_shared/README.md)).
 
 ## What's here
 

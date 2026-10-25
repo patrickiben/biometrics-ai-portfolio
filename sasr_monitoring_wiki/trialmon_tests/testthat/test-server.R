@@ -124,7 +124,11 @@ test_that("Shinylive readiness: allowed packages only, data inside the app folde
                  unlist(regmatches(code, gregexpr("[A-Za-z0-9.]+(?=::)", code, perl = TRUE)))))
   expect_true(all(pk %in% c("shiny", "bslib", "DT", "ggplot2", "utils", "stats", "base")), info = paste(pk, collapse = ", "))
   expect_false(any(grepl("downloadHandler|downloadButton", code)))
-  expect_false(any(grepl("\\.\\./", readLines(file.path(APP_DIR, "app.R")))))
+  # nothing outside the app folder, except the local fallback path of the shared helper: the Pages
+  # build copies apps/_shared/portfolio_app.R next to app.R before the Shinylive export
+  outside <- grep("\\.\\./", readLines(file.path(APP_DIR, "app.R")), value = TRUE)
+  expect_true(all(grepl('"../../apps/_shared/portfolio_app.R"', outside, fixed = TRUE)),
+              info = paste(outside, collapse = "\n"))
   needed <- c("adsl.csv", "adlb.csv", "adeg.csv", "adae.csv", "cohorts.csv", "study_kri.csv", "notes.csv")
   expect_true(all(file.exists(file.path(APP_DIR, "data", needed))))
 })

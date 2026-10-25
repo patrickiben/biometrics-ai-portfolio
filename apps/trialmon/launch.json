@@ -1,0 +1,32 @@
+{
+  "source": "sasr_monitoring_wiki/trialmon_shiny",
+  "title": "TRIALMON safety review console",
+  "summary": "A one-screen safety review of a synthetic first-in-human multiple ascending dose study, CP-101, at its Cohort 4 (120 mg) data cut with 18 dosed participants. Participant, cohort and study-level flags roll up worst-of into one ranked worklist, beside an eDISH liver plot, QTcF categories, CTCAE lab shifts, adverse events by system organ class, a DLT tally against an illustrative 3+3 rule and a study tier with a what-if. The console flags positions for the medical monitor and the Safety Review Committee; it does not adjudicate cases or make a dose-escalation decision.",
+  "try": [
+    "Click a Participant row in the worklist to open that participant's packet in the sidebar.",
+    "Open Liver (eDISH) and click a point in the upper-right quadrant to see whether the timing makes it a potential Hy's Law case.",
+    "Switch Lab grading between NCI CTCAE v6.0 and v5.0 and watch the lab shifts and the flag counts change.",
+    "On Study tier, set an indicator to RED: the overall level re-rolls worst-of, and Reset to the feed undoes it."
+  ],
+  "screenshot": null,
+  "links": [
+    {"label": "About TRIALMON", "href": "../../sasr_monitoring_wiki/index.html"},
+    {"label": "Read-only snapshot", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html"},
+    {"label": "Guide", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html"}
+  ],
+  "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "smoke": {
+    "timeout_s": 150,
+    "outputs": ["v_overall", "v_part", "v_study", "v_red", "v_amber", "v_watch", "v_n", "worklist", "packet"],
+    "expect": {"v_overall": "RED", "v_study": "AMBER", "v_n": "18"},
+    "tabs": [
+      {"tab": "Liver (eDISH)", "outputs": ["edish", "traj", "liver_tbl"]},
+      {"tab": "Convention grid", "outputs": ["grid_tbl", "grid_note"]},
+      {"tab": "QTcF", "outputs": ["qtc_cat", "qtc_tbl"]},
+      {"tab": "Labs (CTCAE)", "outputs": ["shift", "shift_note"]},
+      {"tab": "Adverse events", "outputs": ["ae_tbl", "ae_note"]},
+      {"tab": "Dose escalation", "outputs": ["dlt_tbl", "ladder"]},
+      {"tab": "Study tier", "outputs": ["study_tbl"]}
+    ]
+  }
+}

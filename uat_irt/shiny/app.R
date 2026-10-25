@@ -19,6 +19,8 @@ suppressPackageStartupMessages({
   library(DT)
   library(ggplot2)
 })
+source(if (file.exists("portfolio_app.R")) "portfolio_app.R" else "../../apps/_shared/portfolio_app.R")  # status, error cards
+warm_up_graphics()   # in the browser, load the plot fonts while the launch page still shows its status
 source("R/logic.R")
 
 seed <- uat_load()   # ../templates in local R; the bundled templates/ in the browser
@@ -46,6 +48,7 @@ ui <- page_sidebar(
     actionButton("reset", "Reset to seed", class = "btn-sm btn-outline-warning")
   ),
   tags$head(tags$script(HTML(DOWNLOAD_JS))),
+  app_status_ui("the KPIs, the test-script table, the sign-off gate and the area plot"),
   layout_columns(
     col_widths = c(2, 2, 2, 3, 3),
     value_box("Test scripts", textOutput("v_total"), theme = "secondary"),

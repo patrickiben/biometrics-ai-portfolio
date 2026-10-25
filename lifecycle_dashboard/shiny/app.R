@@ -12,6 +12,8 @@
 # Runs in the browser under Shinylive too: the data sit in data/ inside this folder.
 # ===========================================================================
 suppressPackageStartupMessages({ library(shiny); library(bslib); library(DT); library(ggplot2) })
+source(if (file.exists("portfolio_app.R")) "portfolio_app.R" else "../../apps/_shared/portfolio_app.R")  # status, error cards
+warm_up_graphics()   # in the browser, load the plot fonts while the launch page still shows its status
 source("R/logic.R")
 if (!file.exists("data/studies.csv")) { source("R/gen_data.R"); gen_portfolio("data") }
 seed <- lifecycle_load("data")
@@ -40,6 +42,7 @@ ui <- page_sidebar(
     sliderInput("dblprog", "Double-programmed %", min = 0, max = 100, value = S0$dbl_prog_pct),
     actionButton("reset", "Reset to data", class = "btn-sm btn-outline-warning")
   ),
+  app_status_ui("the risk scores, the heatmap, the ranked signals and the selected study's detail"),
   layout_columns(
     col_widths = c(2,2,2,2,2,2),
     value_box("Active studies", textOutput("k_n"), theme="secondary"),

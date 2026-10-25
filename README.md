@@ -47,7 +47,7 @@ worked artifact yet).
 | [`sas_r_automation/`](sas_r_automation/SAS_R_Trial_Monitoring_Automation.html) | Deterministic SAS/R monitoring macro library and wiki | Not executed (no SAS license) |
 | [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html) | Tracker updates from SAS/R through the Smartsheet API | R companion run against a local mock API; SAS not executed |
 | [`lifecycle_dashboard/`](lifecycle_dashboard/quarto/lifecycle-guide.html) | Deliverable status report for a synthetic study portfolio (Shiny console, local R or in the browser), with a [field guide](lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html) | Unit and `shiny::testServer()` tests pass locally; static snapshots |
-| `apps/` | Where the site serves three Shiny apps in the browser: TRIALMON, the UAT tracker and the lifecycle console. The Pages workflow (`.github/workflows/pages.yml`) builds them with Shinylive; the committed pages are placeholders, and the build output is not committed | Exported and checked in headless Chrome locally; Safari and Firefox not checked |
+| [`apps/`](apps/_shared/README.md) | Where the site serves three Shiny apps in the browser: TRIALMON, the UAT tracker and the lifecycle console. The Pages workflow (`.github/workflows/pages.yml`) builds them with Shinylive, each behind a launch page that says what the app shows and reports each step of starting R, and smoke-tests every app in headless Chrome before it deploys; the committed pages are placeholders, and the build output is not committed | Exported and smoke-tested in headless Chrome locally, error states included; Safari and Firefox not checked |
 | [`budget_reconciliation/`](budget_reconciliation/quarto/hours-guide.html) | Effort (hours) reconciliation example | Illustration on synthetic data |
 
 Research and teaching (six manuscripts and twelve educational editions) are on the
@@ -112,7 +112,12 @@ locally, with shinylive 0.5.0 and the apps' packages installed (build outside th
 ```sh
 Rscript .github/pages/build_site.R ../portfolio-site             # static pages plus the three apps
 python3 -m http.server 8000 --directory ../portfolio-site        # then open http://localhost:8000/apps/trialmon/
+npm ci --prefix .github/pages/smoke                              # the smoke test the workflow runs before it deploys
+CHROME_PATH=/path/to/chrome node .github/pages/smoke/smoke.mjs ../portfolio-site
 ```
+
+The launch page, the shared R helpers and the smoke test are described in
+[`apps/_shared/README.md`](apps/_shared/README.md).
 
 The SAS programs are written for SAS 9.4M8 or later (9.4M9, June 2025, is current) and have not been
 executed here.

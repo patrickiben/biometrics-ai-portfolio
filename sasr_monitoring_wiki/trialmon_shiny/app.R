@@ -14,6 +14,8 @@
 # Run:  shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
 # ===========================================================================
 suppressPackageStartupMessages({ library(shiny); library(bslib); library(DT); library(ggplot2) })
+source(if (file.exists("portfolio_app.R")) "portfolio_app.R" else "../../apps/_shared/portfolio_app.R")  # status, error cards
+warm_up_graphics()   # in the browser, load the plot fonts while the launch page still shows its status
 source("R/logic.R")
 source("R/hyslaw_grid.R")
 if (!file.exists("data/adsl.csv") || !file.exists("data/labs_long.csv")) { source("R/gen_data.R"); gen_trialmon("data") }
@@ -84,6 +86,7 @@ ui <- page_sidebar(
     textInput("meddra", "MedDRA version (label)", value = "29.1")
   ),
   tags$head(tags$link(rel = "icon", href = "data:,"), tags$script(HTML(DOWNLOAD_JS)), tags$style(HTML(SEV_CSS))),
+  app_status_ui("the worst-of safety roll-up, the ranked worklist and the participant packet"),
   p(class = "small mb-2",
     "Synthetic study CP-101: a first-in-human multiple ascending dose study at the Cohort 4 (120 mg) data cut. ",
     "The console flags positions for the medical monitor and the Safety Review Committee; it does not adjudicate ",

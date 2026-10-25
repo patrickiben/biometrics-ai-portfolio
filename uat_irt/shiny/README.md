@@ -18,7 +18,10 @@ Or from inside this folder: `setwd("uat_irt/shiny"); shiny::runApp()`.
 It also runs in the browser with Shinylive (webR): the site's Pages workflow exports this folder to
 `apps/uat_irt/`. Shinylive exports only the app folder, so the folder carries a copy of the three
 seed CSVs in `templates/`, and the CSV download is built in the browser (a Blob sent through
-`session$sendCustomMessage()`) rather than by a `downloadHandler`.
+`session$sendCustomMessage()`) rather than by a `downloadHandler`. `app.R` sources the shared status and error helpers, [`apps/_shared/portfolio_app.R`](../../apps/_shared/portfolio_app.R)
+(from the repository in local R; the Pages build copies the file next to `app.R` for the browser), and
+the site opens the app behind a launch page that reports each step of starting R
+([how it works](../../apps/_shared/README.md)).
 
 ## What's here
 

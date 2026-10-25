@@ -39,10 +39,13 @@ shiny::testServer(app, {
 })
 
 # Data without CP-108 (for example a CTMS export): the app still starts, on the first study.
-# Runs on a temporary copy of the app with CP-108 renamed to CP-208 in every data file.
+# Runs on a temporary copy of the app with CP-108 renamed to CP-208 in every data file. The copy
+# gets the shared helper next to app.R, as the Pages build does before the Shinylive export.
 tmp <- file.path(tempfile("lifecycle-"), "shiny")
 dir.create(tmp, recursive = TRUE)
 invisible(file.copy(list.files(app, full.names = TRUE), tmp, recursive = TRUE))
+stopifnot("copied the shared helper" =
+  file.copy(file.path(app, "..", "..", "apps", "_shared", "portfolio_app.R"), tmp))
 for (f in list.files(file.path(tmp, "data"), pattern = "[.]csv$", full.names = TRUE))
   writeLines(gsub("CP-108", "CP-208", readLines(f), fixed = TRUE), f)
 e2 <- new.env()

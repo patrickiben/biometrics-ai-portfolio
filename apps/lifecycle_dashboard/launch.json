@@ -1,0 +1,22 @@
+{
+  "source": "lifecycle_dashboard/shiny",
+  "title": "Study Lifecycle Monitor",
+  "summary": "An operational health console for a synthetic portfolio of studies, from protocol to clinical study report: a risk heatmap scored on timeline, data, TLF and resource, ranked early-warning signals, the portfolio's open-query trend, and each study's milestones and TLF production funnel. The scoring is transparent, so a what-if on one study's open queries or double programming moves its risk where you can see it. Study-level operations data only, with no participant data.",
+  "try": [
+    "Click a row of the heatmap, or pick a study in the sidebar, to open its milestone track and TLF funnel.",
+    "Drag Open queries up for the selected study and watch its Data score, the At risk count and the signals change.",
+    "For a study in DB Lock or Reporting, lower Double-programmed % below 60: a double-programming lag signal appears, and Reset to data undoes the what-if."
+  ],
+  "screenshot": null,
+  "links": [
+    {"label": "Guide", "href": "../../lifecycle_dashboard/quarto/lifecycle-guide.html"},
+    {"label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
+  ],
+  "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "smoke": {
+    "timeout_s": 150,
+    "outputs": ["k_n", "k_risk", "k_watch", "k_q", "k_del", "k_dbl", "heat", "signals", "trend", "detail_hdr", "milestones", "funnel"],
+    "expect": {"k_n": "8", "k_risk": "1", "k_watch": "3", "k_q": "148"},
+    "tabs": []
+  }
+}

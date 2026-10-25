@@ -25,7 +25,10 @@ ggplot2, and the CSV download is built in the browser (a Blob sent through
 `SYNTHETIC_trialmon_worklist_CTCAEv6.0.csv` and its first column labels every row synthetic. The
 site's Pages workflow (`.github/workflows/pages.yml`) exports it with shinylive 0.5.0 (assets
 0.10.12) to `apps/trialmon/`, where it runs in the browser; a local export rendered and responded
-in headless Chrome, and its CSV download worked.
+in headless Chrome, and its CSV download worked. `app.R` sources the shared status and error helpers, [`apps/_shared/portfolio_app.R`](../../apps/_shared/portfolio_app.R)
+(from the repository in local R; the Pages build copies the file next to `app.R` for the browser), and
+the site opens the app behind a launch page that reports each step of starting R
+([how it works](../../apps/_shared/README.md)).
 
 ## Files
 

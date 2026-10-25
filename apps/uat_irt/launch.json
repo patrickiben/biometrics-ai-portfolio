@@ -1,0 +1,23 @@
+{
+  "source": "uat_irt/shiny",
+  "title": "IRT/RTSM UAT tracker",
+  "summary": "A user acceptance testing tracker for a synthetic interactive response technology (IRT/RTSM) build: 29 test scripts traced to requirements, a defect log, and a go-live sign-off gate that recomputes as you mark tests and close defects. The gate packages the evidence for a named tester or biostatistician to sign; it does not grant approval. Operations data only, with no participant data.",
+  "try": [
+    "Click a row in the test-script table, then mark the test Pass, Fail or Blocked in the sidebar: the counts and the area plot update.",
+    "In the defect log, double-click a Status cell, change Open to Closed and press Enter: the gate's checklist moves.",
+    "Close both open critical or major defects: the gate stays blocked until every critical test passes and every requirement has a test.",
+    "Download the test results as a CSV built in your browser, or Reset to seed to start over."
+  ],
+  "screenshot": null,
+  "links": [
+    {"label": "Guide", "href": "../../uat_irt/quarto/uat-guide.html"},
+    {"label": "Read-only snapshot", "href": "../../uat_irt/quarto/uat-dashboard.html"}
+  ],
+  "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "smoke": {
+    "timeout_s": 150,
+    "outputs": ["v_total", "v_pass", "v_fail", "v_def", "v_cov", "tests", "gate", "plot", "defects", "detail"],
+    "expect": {"v_total": "29", "v_pass": "22", "v_fail": "2", "v_def": "3", "v_cov": "97%"},
+    "tabs": []
+  }
+}
