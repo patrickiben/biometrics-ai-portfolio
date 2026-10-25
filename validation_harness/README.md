@@ -46,7 +46,7 @@ ledger view.
 - **Automatable:** table‑vs‑source numeric diff; a scan that every PK program uses the log‑scale geometric convention; a scan that counts use `n_distinct(USUBJID)` / `CLASS USUBJID`; confirmation that the narrative drafter's self‑test **rejects any number it did not receive from the pipeline**.
 - **Human judgment:** whether a difference sits within Monte‑Carlo noise (a 1–2 MCSE move is not a finding).
 - **Pass criterion:** zero LLM‑sourced numbers; the log‑scale geometric convention present in every PK mean program; counts distinct‑participant; the drafter's number‑validation self‑test is present.
-- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer. The scan passes while the log-scale pattern appears in at least one program, not in every PK program: the seeded-defect run (G10, defect D04) planted exp(mean(x)) in one PK program and G2 stayed green.
+- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer. The scan counts files, not programs: it passes while the log-scale pattern appears in any file under `r_tlf_pseudocode`, documentation included (14 files today: 11 R programs, the shared helpers in `00_setup_helpers.R`, `README.md` and `index.html`), so it would pass even if no R program used the log scale. The seeded-defect run (G10, defect D04) planted exp(mean(x)) in one PK program and G2 stayed green. Restricting G2 to the PK programs and requiring the pattern in each one would be a separate gate change; it is not made here.
 
 ### G3: Data conformance & integrity gate (CDISC + no PHI)
 **Claim it defends:** *"The analysis data is CDISC‑conformant, referentially intact across domains, correctly termed, and carries no PHI/PII or unblinded content."*
@@ -114,7 +114,7 @@ ledger view.
 ### G10: Harness sensitivity gate (seeded defects)
 **Claim it defends:** *"We know which realistic programming defects this harness catches, and which it misses."*
 
-- **Do:** register a list of defects in advance (file, the exact text replaced, its replacement, the predicted catcher and the reasoning) and freeze it by its SHA-256. Plant each defect alone in a throwaway copy of the repository (never a branch); regenerate the outputs over the copy's committed outputs, so G1 cannot fire; run the other gates and the module tests; compare with an unmutated copy run the same way. Classify each defect CAUGHT (with the layers that failed), SURVIVED, EQUIVALENT (no output or printed result differs, shown by diff) or NOT APPLICABLE.
+- **Do:** register a list of defects in advance (file, the exact text replaced, its replacement, the predicted catcher and the reasoning) and freeze it by its SHA-256. Plant each defect alone in a throwaway copy of the repository (never a branch); regenerate the outputs over the copy's committed outputs, so G1 cannot fire; run the other gates and the module tests; compare with an unmutated copy run the same way. Classify each defect CAUGHT (with the layers that failed), SURVIVED, EQUIVALENT (no output or printed result differs, shown by diff on the shipped data, so not proof that the change has no effect) or NOT APPLICABLE.
 - **Automatable:** all of it: `teeth/run_teeth.sh` with `teeth/apply_defect.py`; tests in `teeth/tests/test_teeth.sh`.
 - **Human judgment:** which defects belong on the list, and what to do about each survivor.
 - **Pass criterion:** green while the last run used the current frozen registry and the current gate scripts, and every registry entry still applies; otherwise "stale". Survivors are disclosures of what the harness misses, not failures.
@@ -124,12 +124,26 @@ ledger view.
 
 ## The seeded-defect run (G10)
 
-The registry (`teeth/defects.csv`, 17 defects, D00 to D16) was frozen by its SHA-256
-(`6693bc70198f6a68...`, in `teeth/defects.sha256`) and committed before the first run. Each row
-gives the file, the exact text replaced, its replacement, the predicted catcher and the reasoning.
-Run on 2026-10-25 with R 4.6.0 (`bash validation_harness/teeth/run_teeth.sh`, about 15 minutes);
-the unmutated copy passed every layer. Results: `teeth/results/teeth_2026-10-25.csv` and
-`teeth/results/summary.json`.
+The registry (`teeth/defects.csv`) gives, for each defect, the file, the exact text replaced, its
+replacement, the predicted catcher and the reasoning. It is frozen by its SHA-256 in
+`teeth/defects.sha256` and committed before each run; the runner refuses an edited registry.
+
+- **Registry v1** (17 defects, D00 to D16; sha256 `6693bc70198f6a68c49ce9eee80f9dc053dec88ba07fa78f407703fd1cfa4e62`) was frozen in commit 2c36aa2 before the
+  first run (commit 99adc6a). All 17 outcomes matched the predictions. That run's rows are kept in
+  `teeth/results/teeth_2026-10-25_registry-v1.csv`.
+- **A review probe then found a gap.** Changing the convention grid's lower window bound from `>=`
+  to `>`, so that total bilirubin drawn on the same day as the aminotransferase draw no longer
+  counts, failed no test and changed no output on the shipped data, so the runner filed it
+  EQUIVALENT. No planted case and no study participant has its only qualifying TBL on the
+  aminotransferase day. A same-day known-answer test was then added to `test-hyslaw-grid.R`.
+- **Registry v2** (18 defects, D00 to D17; sha256 `e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3`) was frozen in commit f0c75a2 before the
+  second run. It adds D17, that lower-bound change, and corrects one sentence of D04's rationale
+  (what G2 scans); no v1 prediction changed. D17's prediction was written after the test that
+  catches it, so its catch shows the gap is closed, not that the tests were well designed.
+
+The second run, on registry v2, was on 2026-10-25 with R 4.6.0
+(`bash validation_harness/teeth/run_teeth.sh`, about 13 minutes); the unmutated copy passed
+every layer. Results: `teeth/results/teeth_2026-10-25.csv` and `teeth/results/summary.json`.
 
 | ID | Planted defect | Where | Result | Caught by |
 |---|---|---|---|---|
@@ -147,27 +161,38 @@ the unmutated copy passed every layer. Results: `teeth/results/teeth_2026-10-25.
 | D11 | BLQ imputed as LLOQ/2 into AUC | `nca_one()` | CAUGHT | G9 only |
 | D12 | Potential Hy's Law AND turned into OR | TRIALMON `logic.R` | CAUGHT | TRIALMON tests only (all four files) |
 | D13 | TBL threshold 2x lowered to 1.5x ULN | TRIALMON `logic.R` | CAUGHT | TRIALMON tests only (all four files) |
-| D14 | Grid window bound made exclusive | TRIALMON `hyslaw_grid.R` | CAUGHT | `test-hyslaw-grid.R` only |
+| D14 | Grid window upper bound made exclusive | TRIALMON `hyslaw_grid.R` | CAUGHT | `test-hyslaw-grid.R` only |
 | D15 | 5% predose exclusion skipped | n/a | NOT APPLICABLE | every predose concentration is 0 |
 | D16 | AUC on nominal times | n/a | NOT APPLICABLE | ADPC has no actual-time variable |
+| D17 | Grid window lower bound made strict (v2) | TRIALMON `hyslaw_grid.R` | CAUGHT | `test-hyslaw-grid.R` only; no shipped output changes |
 
-Counts for this list: 13 caught, 1 survived, 1 equivalent, 2 not applicable. All 17 outcomes
-matched the registered predictions. The predictions were written by the person who wrote the
-gates, after reading their code (and, for D06 and D11, the committed data), so the match shows the
-gates behave as their author reads them; it is not an independent test.
+Counts for registry v2: 14 caught, 1 survived, 1 equivalent, 2 not applicable. All 18 outcomes
+matched the registered predictions, by this rule: a defect matches when its class is the
+predicted one and every predicted catcher is among the layers that caught it. More catchers than
+predicted still match. D12 and D13 were predicted to fail `test-logic.R` and `test-hyslaw-grid.R`;
+they also failed `test-boundaries.R` and `test-server.R` (the `beyond_prediction` column of the
+results lists such extra layers). The predictions were written by the person who wrote the gates,
+after reading their code (and, for D06 and D11, the committed data), so the match shows the gates
+behave as their author reads them; it is not an independent test.
+
+EQUIVALENT is decided by diff on the shipped data: the runner compares the outputs and printed
+results with those of the unmutated copy. A change that matters only for data the sandbox does
+not contain is filed EQUIVALENT, so the class is not proof that a change has no effect. That is
+how the v1 tests missed the lower-bound change that became D17.
 
 What the run shows:
 
 - **G1 to G8 caught none of the seven numeric and counting defects (D05 to D11).** Structural
   scans and byte-for-byte regeneration cannot see a wrong formula once the outputs are
   regenerated; only the independent recomputation (G9) caught them.
-- **D04 survived.** G2 passes while the log-scale pattern appears in at least one R program, not in
-  every PK program, and no layer runs the TLF libraries on data. This is a disclosure of what the
-  harness misses, not a failure of the run.
+- **D04 survived.** G2 counts files, not programs: it passes while the log-scale pattern appears
+  in any file under `r_tlf_pseudocode`, documentation included, so it would pass even if no R
+  program used the log scale; and no layer runs the TLF libraries on data. This is a disclosure of
+  what the harness misses, not a failure of the run.
 - **D01 was caught earlier than the build spec predicted.** `simulate_study()` asserts that the
   ADSL period-1 TRT01A equals the ADEX period-1 TRTA, so the generator stops before G3's
   TRT01A-tracks-TRTSEQP check sees any data; that G3 check is not exercised by this list.
-- **The harness does not run the TRIALMON tests.** D12 to D14 were caught only by
+- **The harness does not run the TRIALMON tests.** D12 to D14 and D17 were caught only by
   `sasr_monitoring_wiki/trialmon_tests`; `run_harness.sh` alone would have reported green.
 - The counts describe this hand-picked list. They estimate nothing beyond it, so there is no
   detection rate and no interval.
