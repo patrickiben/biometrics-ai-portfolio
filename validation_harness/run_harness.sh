@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 ###############################################################################
 # Trial-Management Validation Harness: runner.
-# Runs the automatable checks of the 8 gates against THIS repository's SAS/R TLF
+# Runs the automatable checks of the 10 gates against THIS repository's SAS/R TLF
 # pseudocode libraries + synthetic ADaM, and emits EVIDENCE_LEDGER.md + ledger.json.
-# Most checks are structural (files, patterns, counts); G1 re-runs the synthetic study.
+# Most checks are structural (files, patterns, counts); G1 re-runs the synthetic study;
+# G9 recomputes the sandbox's PK, BE and AE results; G10 reads the last seeded-defect run
+# (teeth/run_teeth.sh), which measures what the other gates catch.
 # G5 is a manual record, not computed here; G7 stays "not signed" until a named
 # statistician signs it. SAS is never executed (no license).
 # Automate detection; the biostatistician signs. 100% synthetic data; no PHI.
@@ -134,6 +136,78 @@ G8=green; [ "${PKGRC:-1}" = 0 ] || G8=red
 add "G8 Package & GUI consistency" "the package is navigable, linked, and internally consistent" "$G8" \
     "package_qc.py: ${PKGN:-?} issues across ${PKGP:-?} HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)"
 
+# ---- G9 Independent recomputation -----------------------------------------
+# A separately written recomputation (never sources the sandbox code) of ADPP and of the
+# driver's printed results from ADPC, ADEX, ADSL and ADAE; relative tolerance 1e-6.
+G9OUT=$(Rscript validation_harness/checks/independent_recompute.R sim_lifecycle/out 2>/dev/null)
+G9V=$(printf '%s\n' "$G9OUT" | awk '/^G9_VERDICT/{print $2}')
+G9P=$(printf '%s\n' "$G9OUT" | awk '/^G9_PROFILES/{print $2}')
+G9M=$(printf '%s\n' "$G9OUT" | awk '/^G9_MAXREL/{print $2}')
+G9E=$(printf '%s\n' "$G9OUT" | sed -n 's/^G9_ENGINES //p')
+G9N=$(printf '%s\n' "$G9OUT" | grep -cE '^CHECK .* (PASS|FAIL)( |$)')
+G9F=$(printf '%s\n' "$G9OUT" | grep -cE '^CHECK .* FAIL( |$)')
+G9=green; [ "${G9V:-FAIL}" = PASS ] || G9=red
+add "G9 Independent recomputation" "the sandbox's NCA parameters (ADPP) and printed results (geometric means and CV%, GMR and 90% CI, AE participant counts) match a separately written recomputation from ADPC, ADEX, ADSL and ADAE (same author: a re-derivation, not double programming by a second person)" "$G9" \
+    "${G9P:-0} profiles compared; maximum relative difference ${G9M:-NA} (tolerance 1e-6); ${G9F:-?} of ${G9N:-?} checks failed; engines: ${G9E:-none} (checks/independent_recompute.R; AUC(0-t) from the predose zero, BLQ as 0)"
+
+# ---- G10 Harness sensitivity (seeded defects) ------------------------------
+# Reads teeth/results/summary.json, written by teeth/run_teeth.sh. Green only while that run
+# used the current frozen registry and the current gate scripts; otherwise "stale". Survivors
+# are disclosures of what the harness misses, not failures.
+read -r G10 G10E < <(python3 - <<'PY'
+import hashlib, json, os
+T = "validation_harness/teeth"
+def sha(p):
+    return hashlib.sha256(open(p, "rb").read()).hexdigest()
+reg = sha(f"{T}/defects.csv") if os.path.exists(f"{T}/defects.csv") else None
+frozen = open(f"{T}/defects.sha256").read().split()[0] if os.path.exists(f"{T}/defects.sha256") else None
+try:
+    S = json.load(open(f"{T}/results/summary.json", encoding="utf-8"))
+except Exception:
+    S = None
+why = []
+if reg is None:
+    why.append("no defect registry")
+elif frozen != reg:
+    why.append("defects.csv no longer matches its frozen hash in defects.sha256")
+if S is None:
+    why.append("no seeded-defect run recorded")
+else:
+    if S.get("registry_sha256") != reg:
+        why.append("the last run used a different registry")
+    changed = [p for p, h in S.get("gate_scripts", {}).items() if not os.path.exists(p) or sha(p) != h]
+    if changed:
+        why.append("changed since the last run: " + ", ".join(changed))
+    if S.get("partial"):
+        why.append("the last run covered only part of the registry")
+if reg:
+    import subprocess
+    chk = subprocess.run(["python3", f"{T}/apply_defect.py", f"{T}/defects.csv", "--check-all", "."],
+                         capture_output=True, text=True)
+    if chk.returncode != 0:
+        gone = [l.split(":")[0] for l in chk.stdout.splitlines() if "occurs" in l or "does not exist" in l]
+        why.append("the registry no longer applies to the current code (" + ", ".join(gone) + ")")
+ev = []
+if reg:
+    import csv
+    n = len(list(csv.DictReader(open(f"{T}/defects.csv", encoding="utf-8", newline=""))))
+    ev.append(f"registry of {n} defects frozen at sha256 {reg[:16]}")
+if S:
+    c = S.get("counts", {})
+    ev.append(f"last run {S.get('run_date')}: " + ", ".join(f"{k} {c.get(k, 0)}" for k in ("CAUGHT", "SURVIVED", "EQUIVALENT", "NOT APPLICABLE")))
+    surv = [f"{r['id']} ({r['defect']})" for r in S.get("rows", []) if r.get("class") == "SURVIVED"]
+    if surv:
+        ev.append("survived (disclosed, not failures): " + "; ".join(surv))
+    ev.append("the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)")
+txt = "; ".join(ev)
+if why:
+    txt = "stale: " + "; ".join(why) + ". " + txt
+print(("green" if not why else "stale") + " " + txt.replace("|", "/").replace("\n", " "))
+PY
+)
+add "G10 Harness sensitivity" "the harness's own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)" "${G10:-stale}" \
+    "${G10E:-stale: the summary could not be read}"
+
 # ---- emit ledger -----------------------------------------------------------
 STAMP="$(date '+%Y-%m-%d %H:%M %Z')"; RVER="$(Rscript -e 'cat(R.version.string)' 2>/dev/null)"
 n=${#GATE[@]}; greens=0; manual=0; unsigned=0
@@ -155,7 +229,9 @@ scanned=$((n-manual-unsigned))
   echo
   echo "> **The split:** every evidence cell above is produced by this script except G5, which is a"
   echo "> manual record. G7's scans pass, but its status stays \"not signed\" until a named statistician"
-  echo "> signs for AI use. Most checks are structural; SAS is never executed. The **Human sign-off** column"
+  echo "> signs for AI use. G10 reads the last seeded-defect run (teeth/run_teeth.sh) and turns \"stale\""
+  echo "> when the registry or a gate script changes after it. Most checks are structural; SAS is never"
+  echo "> executed. The **Human sign-off** column"
   echo "> is not automated: a named biostatistician reviews each gate and signs, and no gate is signed yet."
   echo "> Re-run: \`bash validation_harness/run_harness.sh\`"
 } > validation_harness/EVIDENCE_LEDGER.md

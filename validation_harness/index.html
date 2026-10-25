@@ -35,6 +35,24 @@
   .sign{font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:7px}
   .sign .box{color:var(--gold)}
   code{background:#0e1424;border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-family:var(--mono);font-size:12px;color:#bfe1ff}
+  .gate.stale{border-left:4px solid var(--gold)}
+  .badge.stale{color:var(--gold);background:rgba(224,166,76,.12);border:1px solid rgba(224,166,76,.4)} .badge.stale .dot{background:var(--gold)}
+  section.teeth{margin-top:30px;padding-top:6px;border-top:1px solid var(--line)}
+  section.teeth h2{font-size:20px;margin:14px 0 6px;font-weight:660}
+  section.teeth p{font-size:13.8px;color:var(--mut);max-width:880px}
+  section.teeth p b{color:var(--ink)}
+  .counts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+  .count{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:7px 12px;font-family:var(--mono);font-size:12px;color:var(--mut)}
+  .count b{display:block;font-size:20px;color:var(--ink);font-family:"Segoe UI",Inter,system-ui,Arial,sans-serif}
+  .tw{overflow-x:auto;border:1px solid var(--line);border-radius:10px;margin:10px 0}
+  table.tt{border-collapse:collapse;width:100%;min-width:760px;font-size:12.8px}
+  table.tt th,table.tt td{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  table.tt th{background:var(--panel2);color:var(--mut);font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+  table.tt td.id{font-family:var(--mono);color:var(--accent);white-space:nowrap}
+  table.tt td code{font-size:11px}
+  .res{font-family:var(--mono);font-size:11px;font-weight:700;white-space:nowrap}
+  .res.CAUGHT{color:var(--green)} .res.SURVIVED{color:var(--red)} .res.EQUIVALENT{color:var(--teal)} .res.NA{color:var(--mut)}
+  .small{font-size:12px;color:var(--mut)}
   footer{color:var(--mut);font-size:12.5px;border-top:1px solid var(--line);margin-top:22px;padding-top:14px}
 </style></head>
 <body>
@@ -42,7 +60,7 @@
   <header class="hero">
     <div class="home"><a href="../index.html">&larr; Home</a> &middot; <a href="README.md">harness spec</a></div>
     <h1>Trial‑Management Validation Harness <span style="font-size:13px;color:var(--mut);font-weight:400">· evidence ledger</span></h1>
-    <p class="sub">Eight gates for a clinical‑biometrics deliverable, run against this repository's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <strong>Most checks are structural</strong> (inventories, pattern scans, counts); G1 re-runs the synthetic study; <strong>G5 is a manual record</strong>, not computed; <strong>G6</strong> checks that every QTc change figure uses one reference-line convention (0, 30 and 60 ms, the ICH E14 categorical thresholds); <strong>G7 stays &ldquo;not signed&rdquo;</strong> until a named statistician signs for AI use; <strong>SAS is never executed</strong> (no license). No gate has a human sign-off yet. <a href="README.md">Full spec &rarr;</a></p>
+    <p class="sub">Ten gates for a clinical‑biometrics deliverable, run against this repository's own SAS/R TLF pseudocode libraries and synthetic ADaM data. <strong>Most checks are structural</strong> (inventories, pattern scans, counts); G1 re-runs the synthetic study; <strong>G9</strong> recomputes the sandbox's PK, bioequivalence and adverse-event results with separately written code; <strong>G10</strong> reports <a href="#teeth">what the harness catches</a> when defects are planted on purpose; <strong>G5 is a manual record</strong>, not computed; <strong>G6</strong> checks that every QTc change figure uses one reference-line convention (0, 30 and 60 ms, the ICH E14 categorical thresholds); <strong>G7 stays &ldquo;not signed&rdquo;</strong> until a named statistician signs for AI use; <strong>SAS is never executed</strong> (no license). No gate has a human sign-off yet. <a href="README.md">Full spec &rarr;</a></p>
     <div class="meta" id="meta">Loading ledger…</div>
   </header>
 
@@ -56,6 +74,21 @@
 
   <div id="gates"></div>
 
+  <section class="teeth" id="teeth" aria-labelledby="teeth-h">
+    <h2 id="teeth-h">What the harness catches</h2>
+    <p>A <b>seeded-defect check</b> (G10). Realistic programming defects from a list fixed in advance are planted one at a time in a throwaway copy of this repository. After each one the copy's outputs are regenerated, so G1's byte-for-byte check cannot fire; then the other gates and the module tests run, and the result is compared with an unmutated copy run the same way. <b>Caught</b> lists the layers that failed. <b>Survived</b> means no layer failed. <b>Equivalent</b> means no layer failed and no output or printed result differed (shown by diff, not assumed). The list is hand-picked, so the counts describe this list only: they are not a detection rate and carry no interval. Survivors are reported as what the harness misses, not hidden.</p>
+    <div class="meta" id="teeth-meta">No seeded-defect run recorded yet.</div>
+    <div class="counts" id="teeth-counts"></div>
+    <div class="tw"><table class="tt">
+      <thead><tr><th scope="col">ID</th><th scope="col">Planted defect</th><th scope="col">Where</th><th scope="col">Predicted</th><th scope="col">Result</th><th scope="col">Caught by</th></tr></thead>
+      <tbody id="teeth-rows"><tr><td colspan="6">Run <code>bash validation_harness/teeth/run_teeth.sh</code>.</td></tr></tbody>
+    </table></div>
+    <p class="small">Registry: <a href="teeth/defects.csv">teeth/defects.csv</a> (file, exact text replaced, replacement, predicted catcher and rationale per defect), frozen by its SHA-256 in <a href="teeth/defects.sha256">teeth/defects.sha256</a> before the first run; the runner refuses an edited registry. Runner: <a href="teeth/run_teeth.sh">teeth/run_teeth.sh</a> with <a href="teeth/apply_defect.py">teeth/apply_defect.py</a>. Results: <code>teeth/results/summary.json</code> and the dated CSV beside it. G10 turns &ldquo;stale&rdquo; when the registry or any gate script changes after the run. Layers: G1 to G9 and the module tests (TRIALMON testthat files, the UAT logic test); &ldquo;driver error&rdquo; means <code>run_lifecycle.R</code> stopped with an error. The TRIALMON defects are caught only by its tests, which the harness itself does not run.</p>
+    <div class="principle"><b>Tools built:</b> QC-process engineering adapted from the teeth check and method-invariance grid in my consilience-engine software. It measures the harness itself and is not a statistical method. The Hy's Law grid in the TRIALMON console is a structured sensitivity analysis of SAP conventions. Synthetic data; SAS not executed.<br><br>
+    <b>Prior art first.</b> Mutation testing (DeMillo, Lipton and Sayward, &ldquo;Hints on test data selection,&rdquo; <em>Computer</em> 11(4):34&ndash;41, 1978) and error seeding (Mills, IBM report, 1972) plant known faults to measure a test suite; the R package muttest (0.3.0, CRAN, July 2026) does this for R code. Zheng (JSM Proceedings 2019) models the errors that independent dual programming misses with a Poisson process, a model rather than an experiment. The grid follows multiverse analysis (Steegen et al., <em>Perspectives on Psychological Science</em> 11(5):702&ndash;712, 2016) and specification curves (Simonsohn, Simmons and Nelson, <em>Nature Human Behaviour</em>, 2020), in the spirit of ICH E9(R1) sensitivity analyses and FDA's July 2009 DILI guidance. <b>What is new here</b> is no new statistics: it is measuring which defects this clinical QC harness catches against a list registered before the run (a literature search for this build found no published example, which does not show there is none), and making each potential Hy's Law flag's dependence on SAP conventions explicit.<br><br>
+    <b>Source of the method:</b> Iben P. Which data modality recognizes a gene set? A domain-agnostic consilience engine. In peer review at PeerJ (author draft exported 13 July 2026). Software: <a href="https://doi.org/10.5281/zenodo.21399794">doi:10.5281/zenodo.21399794</a>; code: <a href="https://github.com/patrickiben/consilience-engine">github.com/patrickiben/consilience-engine</a>.</div>
+  </section>
+
   <footer>
     Regenerate: <code>bash validation_harness/run_harness.sh</code> &rarr; rewrites
     <a href="EVIDENCE_LEDGER.md">EVIDENCE_LEDGER.md</a> + <code>ledger.json</code> from live checks against this repo.
@@ -66,18 +99,18 @@
 
 <script id="ledger" type="application/json">
 {
- "generated": "2026-10-25 12:32 EDT",
+ "generated": "2026-10-25 13:00 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 6,
+ "green": 7,
  "manual": 1,
  "unsigned": 1,
- "total": 8,
+ "total": 10,
  "gates": [
   {
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "489 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "492 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
@@ -128,17 +161,51 @@
    "status": "green",
    "evidence": "package_qc.py: 0 issues across 55 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
+  },
+  {
+   "gate": "G9 Independent recomputation",
+   "guards": "the sandbox's NCA parameters (ADPP) and printed results (geometric means and CV%, GMR and 90% CI, AE participant counts) match a separately written recomputation from ADPC, ADEX, ADSL and ADAE (same author: a re-derivation, not double programming by a second person)",
+   "status": "green",
+   "evidence": "80 profiles compared; maximum relative difference 4.4e-10 (tolerance 1e-6); 0 of 6 checks failed; engines: base R closed form and lm(); PKNCA 0.12.1 (checks/independent_recompute.R; AUC(0-t) from the predose zero, BLQ as 0)",
+   "sign_off": "pending"
+  },
+  {
+   "gate": "G10 Harness sensitivity",
+   "guards": "the harness's own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)",
+   "status": "stale",
+   "evidence": "stale: no seeded-defect run recorded. registry of 17 defects frozen at sha256 6693bc70198f6a68",
+   "sign_off": "pending"
   }
  ]
 }
 </script>
+<script id="teeth-data" type="application/json">
+null
+</script>
 <script>
 (function(){
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+  function teeth(T){
+    if(!T||!T.rows) return;
+    var c=T.counts||{};
+    document.getElementById("teeth-meta").innerHTML="Run "+esc(T.run_date)+" &middot; "+esc(T.r_version)+" &middot; registry sha256 <code>"+esc((T.registry_sha256||"").slice(0,16))+"</code> &middot; "+esc(T.n_run)+" of "+esc(T.n_defects)+" defects &middot; "+esc(T.as_predicted)+" as predicted";
+    document.getElementById("teeth-counts").innerHTML=["CAUGHT","SURVIVED","EQUIVALENT","NOT APPLICABLE"].map(function(k){
+      return '<div class="count"><b>'+esc(c[k]||0)+'</b>'+k.toLowerCase()+'</div>';}).join("");
+    document.getElementById("teeth-rows").innerHTML=T.rows.map(function(r){
+      var k=r["class"]==="NOT APPLICABLE"?"NA":r["class"];
+      var by=r.layers?esc(r.layers):(r.note?'<span class="small">'+esc(r.note)+'</span>':"");
+      return '<tr><td class="id">'+esc(r.id)+'</td><td>'+esc(r.defect)+'</td><td><code>'+esc(r.file)+'</code></td><td class="small">'+esc(r.predicted)+'</td>'+
+        '<td><span class="res '+k+'">'+esc(r["class"])+'</span><br><span class="small">'+esc(r.status)+'</span></td><td>'+by+'</td></tr>';}).join("");
+  }
+  teeth(JSON.parse(document.getElementById("teeth-data").textContent));
+  if(location.protocol.indexOf("http")===0){
+    fetch("teeth/results/summary.json").then(function(r){return r.ok?r.json():null;}).then(function(j){if(j)teeth(j);}).catch(function(){});
+  }
   function render(L){
     document.getElementById("meta").innerHTML =
       "Generated "+L.generated+" · "+L.r_version+" · <b>"+L.green+" of "+(L.total-(L.manual||0)-(L.unsigned||0))+" scan-based gates green</b>"+(L.manual?" · "+L.manual+" manual record":"")+(L.unsigned?" · "+L.unsigned+" not signed":"")+" · human sign-off pending";
     document.getElementById("gates").innerHTML = L.gates.map(function(g){
-      var s=(g.status==="green"||g.status==="manual")?g.status:(g.status==="not signed"?"unsigned":"red");
+      var s=(g.status==="green"||g.status==="manual"||g.status==="stale")?g.status:(g.status==="not signed"?"unsigned":"red");
       var label=s==="unsigned"?"not signed":s;
       return '<div class="gate '+s+'"><div class="gh"><span class="gid">'+g.gate.split(" ")[0]+'</span>'+
         '<span class="gt">'+g.gate.replace(/^G\d+ /,"")+'</span>'+
