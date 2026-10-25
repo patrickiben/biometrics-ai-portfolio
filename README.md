@@ -1,99 +1,118 @@
-# Clinical Biostatistics × Safe‑AI in Biometrics — Portfolio
+# Patrick Iben: clinical trial biostatistics portfolio
 
-A self‑contained body of work in **early‑phase clinical‑pharmacology biostatistics** and
-**human‑in‑the‑loop AI for biometrics**. Everything here runs offline from static files — open
-[`index.html`](index.html) in a browser (or [`START_HERE.html`](START_HERE.html) for the full
-one‑page index). All data is **100% synthetic**; there is no PHI and no participant‑level clinical data.
+Independent biostatistician: seven years of clinical trial work (Emmes, Syneos Health), including
+lead biostatistician on early-phase clinical pharmacology studies, shown here through worked examples
+and tools on synthetic data across the clinical trial lifecycle.
 
-**Author:** Patrick Iben
+**Site:** <https://patrickiben.github.io/biometrics-ai-portfolio/>. Start at the home page: it carries
+the lifecycle snapshot, labels each stage, and states the gaps (define.xml and ADRG authoring,
+submission packages, DMC charters, group-sequential interim design).
 
----
+Every dataset here is **synthetic**. Nothing is real trial data, and nothing here is a validated or
+regulatory deliverable.
 
-## What's inside
+## Status labels
 
-**Statistical programming (SAS + R)**
-- **ADaM‑based TLF pseudocode libraries** — 217 Table/Listing/Figure programs **each** in SAS and R
-  (pharmaverse: `dplyr` + `rtables` + `ggplot2` + `emmeans`), across every early‑phase design
-  (parallel, crossover, single/fixed‑sequence, SAD, MAD). **Cross‑validated SAS↔R for parity**;
-  all R parses. Geometric PK on the log scale, distinct‑participant counts, period denominators.
-  → [`sas_tlf_pseudocode/`](sas_tlf_pseudocode/index.html) · [`r_tlf_pseudocode/`](r_tlf_pseudocode/index.html)
-- **Synthetic ADaM generator + study‑lifecycle sandbox** — a self‑contained R generator (one‑compartment
-  oral PK + NCA, a 2×2 bioequivalence crossover, per‑period safety domains) that emits 8 ADaM domains and
-  runs demographics / PK‑NCA / BE‑ANOVA end‑to‑end. → [`sim_lifecycle/`](sim_lifecycle/index.html)
-- **Protocol→CSR deliverables pipeline** and a **TLF‑interpretation drafter** (a small‑model skeleton that
-  never sources a number). → [`biostat_pipeline/`](biostat_pipeline/) · [`tlf_interpret/`](tlf_interpret/index.html)
-- **eCRF pipeline apps** (separate repo) — four independent Streamlit apps for clinical eCRF extracts: MedDRA-style
-  auto-coding, PII/PHI redaction, participant risk scoring, and anomaly and drift detection. Public demos run in a locked
-  hosted mode on synthetic data only, with a 244-check QC harness in CI.
-  → [overview](https://patrickiben.github.io/ecrf-pipeline-apps/) · [coding](https://ecrf-coding.streamlit.app/?demo=1) ·
-  [PHI](https://ecrf-phi.streamlit.app/?demo=1) · [risk](https://ecrf-risk.streamlit.app/?demo=1) ·
-  [anomaly](https://ecrf-anomaly.streamlit.app/?demo=1) · [source](https://github.com/patrickiben/ecrf-pipeline-apps)
+Each module states what was actually executed:
 
-**Operational tooling (no AI required)**
-- **Deterministic SAS/R monitoring + on‑leave coverage** — scheduled, reproducible checks that detect,
-  package, and page humans; zero PHI egress. → [`sas_r_automation/`](sas_r_automation/) · [`sasr_monitoring_wiki/`](sasr_monitoring_wiki/)
-- **Coverage & continuity toolkit** — the on‑leave playbook generalized to five scenarios (planned leave,
-  unplanned absence, role handoff / departure, onboarding a new owner, bus‑factor review), plus an
-  interactive single‑file page: enter or import the team's recurring jobs (owner, backups, schedule,
-  inputs, outputs, criticality, last run, runbook) and get a coverage matrix, uncovered and single‑owner
-  risks, a checklist per job, and a printable or downloadable handoff packet. Data stays in the browser
-  (localStorage + JSON/CSV export); no network requests; ships with a clearly fictional example.
-  `tm_inventory.sh` refreshes last‑run status from the monitors' heartbeat files.
-  → [`sasr_onleave_wiki/Continuity_Toolkit.html`](sasr_onleave_wiki/Continuity_Toolkit.html) · [playbook](sasr_onleave_wiki/On_Leave_Coverage_Playbook.html) · [CSV template](sasr_onleave_wiki/continuity_jobs_template.csv)
-- **Self‑updating trackers & knowledge bases** — Smartsheet‑from‑SAS/R, a no‑GUI Outlook→KB pipeline, and a
-  navigable knowledge‑graph vault. → [`smartsheet_sasr/`](smartsheet_sasr/) · [`study_kb_nogui/`](study_kb_nogui/index.html) · [`knowledge_vault/`](knowledge_vault/)
-- **IRT / RTSM User Acceptance Testing** — UAT of the randomization & supply system from the biostatistics
-  lens: a test‑script library, traceability matrix, defect log, and an interactive execution tracker with a
-  live go‑live sign‑off gate. → **[fillable Excel workbook](uat_irt/UAT_IRT_RTSM_Workbook.xlsx)** · [`uat_irt/`](uat_irt/UAT_IRT_Guide.html)
-- **Hours "find‑hours" reconciliation** — where the hours come from when out‑of‑scope work lands: a
-  planned‑vs‑actual‑vs‑EAC effort reconciliation + decision tree (slack → contingency → defer → change order),
-  with an interactive worksheet. Hours/effort only, no dollars. → **[fillable Excel workbook](budget_reconciliation/Hours_Budget_Reconciliation_Workbook.xlsx)** · [`budget_reconciliation/`](budget_reconciliation/FindHours_Playbook.html)
+| Label | Meaning |
+|---|---|
+| **Runs** | Executed here; the page says how and when |
+| **Parse-checked** | The code parses; it has not been run on data |
+| **Not executed** | Written for a tool that was not available (SAS: no license) |
+| **Structural check** | Inventories, pattern scans or counts, not a numeric comparison |
+| **Manual record** | Entered by hand, not computed |
+| **Under revision** | Known issues are listed on the page; fixes come in the next revision |
 
-**Interactive dashboards** (self‑contained HTML, synthetic data)
-- Participant‑safety monitoring (**TRIALMON**), trial‑risk early‑warning, and a study‑lifecycle monitor.
-  → [`sasr_monitoring_wiki/TRIALMON_Dashboard.html`](sasr_monitoring_wiki/TRIALMON_Dashboard.html) · [`risk_monitor/`](risk_monitor/) · [`lifecycle_dashboard/`](lifecycle_dashboard/)
+The home page's lifecycle labels are narrower still: **Led** (owned, wrote or led the work in a job),
+**Supported** (reviewed, contributed, or created or reviewed), **Tools built** (shown only by code
+here), **Gap** (no job experience or no worked artifact yet).
 
-**Safe‑AI architecture** (design + methodology)
-- The **hybrid** (cloud + on‑prem) and **on‑device small‑model** operating patterns, and a short training
-  course. → [`hybrid_ops_wiki/`](hybrid_ops_wiki/) · [`slm_wiki/`](slm_wiki/) · [`slm_operating_wiki/`](slm_operating_wiki/) · [`courses/`](courses/Biostatistics_AI_Training.html)
+## What is here
 
-**Validation & QC**
-- **Trial‑Management Validation Harness** — seven named gates (reproducibility · numeric‑provenance · CDISC conformance & integrity · SAS↔R double‑programming parity · adversarial QC · regulatory & reporting standards · AI‑use governance) that make a deliverable *delivery‑confident*. The checks are **runnable and dogfooded** on this repo's own libraries + synthetic data and emit an evidence ledger (currently **7/7 gates green**, with one open item honestly disclosed). → [`validation_harness/`](validation_harness/index.html)
+| Folder | What it is | Status |
+|---|---|---|
+| [`sim_lifecycle/`](sim_lifecycle/index.html) | PK, NCA and bioequivalence sandbox: one synthetic 2x2 crossover in base R (eight ADaM-shaped domains, NCA, geometric mean ratio with 90% CI) | Runs (R 4.6.0) and regenerates its committed outputs byte for byte |
+| [`sas_tlf_pseudocode/`](sas_tlf_pseudocode/index.html) | 217 SAS TLF programs across five early-phase designs | Not executed (no SAS license) |
+| [`r_tlf_pseudocode/`](r_tlf_pseudocode/index.html) | The R twin: 217 scripts | Parse-checked (R 4.6.0); not run on data |
+| [`validation_harness/`](validation_harness/index.html) | Eight-gate QC harness and evidence ledger | Structural checks plus a re-run of the sandbox (G1); G5 is a manual record; no gate signed yet |
+| [`tlf_interpret/`](tlf_interpret/index.html) | Number-grounding check for drafted TLF text | Self-test runs without a model; the language-model step is a stub |
+| [`sasr_onleave_wiki/`](sasr_onleave_wiki/Continuity_Toolkit.html) | Continuity and handoff toolkit, and the coverage playbook | Toolkit runs in the browser; the SAS/R macros are not executed |
+| [`uat_irt/`](uat_irt/quarto/uat-guide.html) | IRT/RTSM acceptance-test library: workbook, Shiny tracker, static guide | Unit tests pass locally; synthetic test data |
+| [`biostat_pipeline/`](biostat_pipeline/EarlyPhase_Biostat_Pipeline.md) | Reference map of 136 Phase 1 biostatistics deliverables (document, register, one-page map) | A reference map, not a track record; the AI-routing overlay is a proposal |
+| [`sasr_monitoring_wiki/`](sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html) | TRIALMON participant-safety screening demo and the SAS/R monitoring wiki | Under revision: CP101-009 lacks a repeat-testing flag (see the page) |
+| [`risk_monitor/`](risk_monitor/quarto/risk-guide.html) | Two-tier trial early-warning console (Shiny and Quarto) | Under revision: the averaging roll-up dilutes a red signal (see the page) |
+| [`sas_r_automation/`](sas_r_automation/SAS_R_Trial_Monitoring_Automation.html) | Deterministic SAS/R monitoring macro library and wiki | Not executed (no SAS license) |
+| [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html) | Tracker updates from SAS/R through the Smartsheet API | R companion run against a local mock API; SAS not executed |
+| [`lifecycle_dashboard/`](lifecycle_dashboard/quarto/lifecycle-guide.html) | Deliverable status report for a synthetic study portfolio, with a [field guide](lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html) | Unit tests pass locally; static snapshots |
+| [`budget_reconciliation/`](budget_reconciliation/quarto/hours-guide.html) | Effort (hours) reconciliation example | Illustration on synthetic data |
 
----
+Research and teaching (six manuscripts and twelve educational editions) are on the
+[research map](https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md).
 
-## Principles the work is built on
+## In-browser eCRF apps (separate repository)
 
-- **Validated tools own every reported number** (Phoenix WinNonlin, Pinnacle 21, the EDC) — an LLM never
-  produces a regulated number; AI drafts the words *around* a number, behind a human gate.
-- **Operations‑only** — no PHI, no participant‑level data, no unblinded assignments in any AI/shared tool.
-- **"Participant," not "subject"** in prose; CDISC variables (`USUBJID`/`SUBJID`) preserved exactly.
-- **A qualified human signs every output.** AI and automation draft and check; they never decide.
-- **On‑prem where sovereignty/reproducibility matter**; a pinned, frozen model for anything regulated.
+Four Python apps that run in the browser on synthetic data. Files you load are processed on your
+device and are not uploaded by the app; GitHub Pages, jsDelivr and PyPI serve the page and see your IP
+address. The first visit downloads about 30 MB. Not a validated or Part 11 system.
 
----
+- [Coding QC assist](https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html)
+- [De-identification review assist](https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html)
+- [Protocol-criteria safety listing](https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html)
+- [Central statistical monitoring](https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html)
 
-## Notes
+Overview: <https://patrickiben.github.io/ecrf-pipeline-apps/>. Source:
+<https://github.com/patrickiben/ecrf-pipeline-apps>.
 
-- **Synthetic data only.** The generator's *design structure* is informed by public early‑phase
-  registration patterns on ClinicalTrials.gov; all participant‑level data is simulated from generic
-  domain priors. Nothing here is real trial data.
-- The AI‑built artifacts (TLF libraries, drafter, sandbox) are **skeletons and proofs‑of‑capability**
-  that jump‑start a validated build — not validated production systems.
-- The static site is deployable as‑is (see [`netlify.toml`](netlify.toml)); it also runs fully offline.
+## How I work
+
+Validated systems own reported numbers, a named statistician signs every deliverable, and this site
+uses synthetic data only. In a study, reported numbers come from validated, double-programmed SAS/R
+TLF programs on ADaM; NCA from Phoenix WinNonlin (version per the ADRG, currently 8.8) or PKNCA; CDISC
+conformance is checked with Pinnacle 21, which produces no reported numbers. AI tools may draft or
+check text; they never produce a reported number. Several modules were drafted with AI assistance;
+where an AI-agent review panel was used, the page says so, and human sign-off is recorded only where
+it was given (none yet in the validation ledger).
+
+## Run it locally
+
+The site is static HTML with relative links.
+
+```sh
+git clone https://github.com/patrickiben/biometrics-ai-portfolio.git
+cd biometrics-ai-portfolio
+python3 -m http.server 8000      # then open http://localhost:8000/index.html
+```
+
+R (R >= 4.4.0; tested on 4.6.x):
+
+```sh
+Rscript sim_lifecycle/run_lifecycle.R                          # the sandbox; base R only
+Rscript validation_harness/checks/conformance.R sim_lifecycle/out
+bash validation_harness/run_harness.sh                          # rewrites the evidence ledger (R and python3)
+Rscript uat_irt/tests/test-logic.R                              # each Shiny module has tests/test-logic.R
+```
+
+The Shiny apps run in local R, for example `shiny::runApp("uat_irt/shiny")` after
+`install.packages(c("shiny", "bslib", "DT", "ggplot2"))`. The same pattern works for
+`lifecycle_dashboard/shiny`, `budget_reconciliation/shiny`, `risk_monitor/shiny` and
+`sasr_monitoring_wiki/trialmon_shiny`.
+
+The SAS programs are written for SAS 9.4M8 or later (9.4M9, June 2025, is current) and have not been
+executed here.
+
+## Package check
+
+`python3 package_qc.py` checks local links (HTML and Markdown), retired content, empty link cards,
+navigation and this README's inventory, terminology, framing and count drift. GitHub Actions runs it
+on every push and pull request. Add `--external` to also request each external link once. It checks
+the package, not the statistics.
+
+## Contact
+
+patrickiben@gmail.com · [github.com/patrickiben](https://github.com/patrickiben) ·
+ORCID [0009-0005-2443-7973](https://orcid.org/0009-0005-2443-7973) · St. Petersburg, FL / Remote US
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
-
-## Static hosting and package checks
-
-The repository is ready to serve directly from **GitHub Pages: `main` branch, `/ (root)`**.
-No framework or build step is required. `.nojekyll` preserves the packaged Quarto assets.
-After enabling Pages in repository settings, verify the expected address before sharing it:
-`https://patrickiben.github.io/biometrics-ai-portfolio/`.
-
-Run `python3 package_qc.py` from a **complete checkout** to check navigation, local file links,
-static directory landing pages, terminology, and documented library counts. GitHub Actions runs
-this check on pushes and pull requests. It does not certify the statistical methods or execute
-SAS/R analysis; the study-validation evidence is described in `validation_harness/`.
+MIT; see [`LICENSE`](LICENSE).
