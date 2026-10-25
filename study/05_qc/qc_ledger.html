@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QC Ledger | Patrick Iben</title>
+<meta name="description" content="Executed QC ledger for a synthetic BE study: NonCompart vs PKNCA, two refits of the BE model, and base-R re-derivations, compared with diffdf.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../site.css">
+<link rel="stylesheet" href="../study.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../../index.html">Home</a>
+      <a href="../../index.html#lifecycle">Lifecycle</a>
+      <a href="../index.html">Worked example</a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap">
+  <section class="page-head">
+    <p class="kicker">Stage 5: QC and validation</p>
+    <h1>Executed QC ledger: re-derivation by a second method</h1>
+    <p class="meta"><span class="lab sup">Supported (job): reviewed outputs</span><span class="lab tools">Executed here: same-author re-derivation</span></p>
+    <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
+  </section>
+<div class="note"><p><strong>Same-author re-derivation, not independent double programming.</strong> One person wrote the primary programs and these checks from the same SAP. The checks re-derive each result by a different method and compare with <code>diffdf</code> at the tolerances shown. They can catch coding slips and engine defaults; they cannot catch a misreading of the SAP that both routes share.</p></div><ul class="kv"><li><span class="k">Checks</span><span class="v">37</span></li><li><span class="k">Pass</span><span class="v">37</span></li><li><span class="k">Fail</span><span class="v">0</span></li><li><span class="k">Values compared</span><span class="v">4863</span></li></ul><div class="tblwrap"><table class="data"><caption>Executed QC ledger. Tolerances are absolute, in the units of each variable; 'exact' means identical values.</caption><thead><tr><th scope="col">ID</th><th scope="col">Item</th><th scope="col">Variable</th><th scope="col">Primary route</th><th scope="col">QC route</th><th scope="col">Compared</th><th scope="col">Tolerance</th><th scope="col">Mismatches</th><th scope="col">Max abs diff</th><th scope="col">Status</th></tr></thead><tbody><tr><td>Q1</td><td>NCA parameters per profile</td><td>CMAX</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>TMAX</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>TLST</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>CLST</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>AUCLST</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-06</td><td>0</td><td>5.5e-12</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>AUCIFO</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-06</td><td>0</td><td>5.7e-12</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>AUCPEO</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-06</td><td>0</td><td>3.2e-14</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>LAMZHL</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-06</td><td>0</td><td>4.6e-14</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>LAMZ</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>1.7e-16</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>LAMZNPT</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>R2ADJ</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>8.9e-16</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>LAMZLL</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q1</td><td>NCA parameters per profile</td><td>LAMZUL</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA()</td><td>  79</td><td>1e-09</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q2</td><td>BE ratio, 90% CI and within-participant CV</td><td>ratio</td><td>lm() GLM (02_be.R)</td><td>two-sample t-test on half period differences (closed form)</td><td>   3</td><td>1e-10</td><td>0</td><td>6.7e-16</td><td>pass</td></tr>
+<tr><td>Q2</td><td>BE ratio, 90% CI and within-participant CV</td><td>lower</td><td>lm() GLM (02_be.R)</td><td>two-sample t-test on half period differences (closed form)</td><td>   3</td><td>1e-10</td><td>0</td><td>5.6e-16</td><td>pass</td></tr>
+<tr><td>Q2</td><td>BE ratio, 90% CI and within-participant CV</td><td>upper</td><td>lm() GLM (02_be.R)</td><td>two-sample t-test on half period differences (closed form)</td><td>   3</td><td>1e-10</td><td>0</td><td>6.7e-16</td><td>pass</td></tr>
+<tr><td>Q2</td><td>BE ratio, 90% CI and within-participant CV</td><td>cv_within</td><td>lm() GLM (02_be.R)</td><td>two-sample t-test on half period differences (closed form)</td><td>   3</td><td>1e-10</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q2</td><td>BE ratio, 90% CI and within-participant CV</td><td>df</td><td>lm() GLM (02_be.R)</td><td>two-sample t-test on half period differences (closed form)</td><td>   3</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q3</td><td>BE ratio, 90% CI and within-participant CV</td><td>ratio</td><td>lm() GLM (02_be.R)</td><td>nlme::lme() REML, random participant</td><td>   3</td><td>1e-06</td><td>0</td><td>6.7e-16</td><td>pass</td></tr>
+<tr><td>Q3</td><td>BE ratio, 90% CI and within-participant CV</td><td>lower</td><td>lm() GLM (02_be.R)</td><td>nlme::lme() REML, random participant</td><td>   3</td><td>1e-06</td><td>0</td><td>5.9e-10</td><td>pass</td></tr>
+<tr><td>Q3</td><td>BE ratio, 90% CI and within-participant CV</td><td>upper</td><td>lm() GLM (02_be.R)</td><td>nlme::lme() REML, random participant</td><td>   3</td><td>1e-06</td><td>0</td><td>6.6e-10</td><td>pass</td></tr>
+<tr><td>Q3</td><td>BE ratio, 90% CI and within-participant CV</td><td>cv_within</td><td>lm() GLM (02_be.R)</td><td>nlme::lme() REML, random participant</td><td>   3</td><td>1e-06</td><td>0</td><td>1.5e-07</td><td>pass</td></tr>
+<tr><td>Q3</td><td>BE ratio, 90% CI and within-participant CV</td><td>df</td><td>lm() GLM (02_be.R)</td><td>nlme::lme() REML, random participant</td><td>   3</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q4</td><td>ADPC relative times</td><td>NFRLT</td><td>admiral 1.5.0 ad_adpc.R pattern</td><td>base-R difftime() on PCDTC and EXSTDTC</td><td>1185</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q4</td><td>ADPC relative times</td><td>ARRLT</td><td>admiral 1.5.0 ad_adpc.R pattern</td><td>base-R difftime() on PCDTC and EXSTDTC</td><td>1185</td><td>1e-06</td><td>0</td><td>3.3e-09</td><td>pass</td></tr>
+<tr><td>Q4</td><td>ADPC relative times</td><td>AFRLT</td><td>admiral 1.5.0 ad_adpc.R pattern</td><td>base-R difftime() on PCDTC and EXSTDTC</td><td>1185</td><td>1e-06</td><td>0</td><td>3.3e-08</td><td>pass</td></tr>
+<tr><td>Q5</td><td>ADSL population flags</td><td>SAFFL</td><td>admiral ADSL plus 05_adpp.R rules</td><td>base R on DM, EX, PC, AE and PP</td><td>  40</td><td>exact</td><td>0</td><td></td><td>pass</td></tr>
+<tr><td>Q5</td><td>ADSL population flags</td><td>PKCFL</td><td>admiral ADSL plus 05_adpp.R rules</td><td>base R on DM, EX, PC, AE and PP</td><td>  40</td><td>exact</td><td>0</td><td></td><td>pass</td></tr>
+<tr><td>Q5</td><td>ADSL population flags</td><td>PKPFL</td><td>admiral ADSL plus 05_adpp.R rules</td><td>base R on DM, EX, PC, AE and PP</td><td>  40</td><td>exact</td><td>0</td><td></td><td>pass</td></tr>
+<tr><td>Q5</td><td>ADSL population flags</td><td>BEFL</td><td>admiral ADSL plus 05_adpp.R rules</td><td>base R on DM, EX, PC, AE and PP</td><td>  40</td><td>exact</td><td>0</td><td></td><td>pass</td></tr>
+<tr><td>Q6</td><td>Table 14.3.1.1 displayed counts</td><td>N</td><td>rtables/tern table cells</td><td>base-R count on AE and EX</td><td>   2</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q6</td><td>Table 14.3.1.1 displayed counts</td><td>any</td><td>rtables/tern table cells</td><td>base-R count on AE and EX</td><td>   2</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q6</td><td>Table 14.3.1.1 displayed counts</td><td>events</td><td>rtables/tern table cells</td><td>base-R count on AE and EX</td><td>   2</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q6</td><td>Table 14.3.1.1 displayed counts</td><td>related</td><td>rtables/tern table cells</td><td>base-R count on AE and EX</td><td>   2</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q6</td><td>Table 14.3.1.1 displayed counts</td><td>severe</td><td>rtables/tern table cells</td><td>base-R count on AE and EX</td><td>   2</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q6</td><td>Table 14.3.1.1 displayed counts</td><td>serious</td><td>rtables/tern table cells</td><td>base-R count on AE and EX</td><td>   2</td><td>exact</td><td>0</td><td>0</td><td>pass</td></tr>
+<tr><td>Q7</td><td>Control: planted 0.1% change in one AUC(0-t); pass = exactly 1 mismatch found</td><td>AUCLST</td><td>PKNCA results</td><td>the same results with one value changed</td><td>  79</td><td>1e-06</td><td>1</td><td>1.4e+00</td><td>pass</td></tr></tbody></table></div><h3>How to read it</h3>
+<ul>
+<li><strong>Q1</strong> runs a second NCA engine (NonCompart) on the same ADPC input with the same settings: linear-up/log-down AUC, BLQ as zero, at least 3 terminal points after tmax chosen by adjusted R-squared.</li>
+<li><strong>Q2</strong> is the closed-form crossover analysis: half the within-participant period difference, compared between sequences with a two-sample t-test. For complete 2x2 data it gives the same estimate, interval and residual variance as the GLM.</li>
+<li><strong>Q3</strong> refits the model with a random participant effect (<code>nlme::lme</code>, REML, tight convergence settings). With every participant contributing both periods it reproduces the GLM's estimate, interval and residual variance; the 1e-6 tolerance allows for the iterative fit. With the default settings the CV agreed only to about 5e-6 percentage points, so the settings were tightened rather than the tolerance widened.</li>
+<li><strong>Q4</strong> checks the admiral-derived times, including <code>derive_var_nfrlt()</code>, which admiral 1.5.0 labels experimental.</li>
+<li><strong>Q5</strong> and <strong>Q6</strong> rebuild the population flags and the adverse-event counts from the SDTM-like domains without admiral or tern.</li>
+<li><strong>Q7</strong> is a control: a 0.1% change planted in one value must be found exactly once, which shows the comparison can fail.</li>
+</ul>
+<p>Files: <a href="qc_ledger.csv">qc_ledger.csv</a>, <a href="qc_ledger.json">qc_ledger.json</a>, <a href="qc_nca_side_by_side.csv">qc_nca_side_by_side.csv</a> (PKNCA and NonCompart values for every profile). Program: <code>study/05_qc/qc.R</code>.</p>
+<h3>What the QC found while this example was built</h3>
+<p>The first full run had 6 failures out of 37, all now resolved; the fixes are in the code, not in the tolerances:</p>
+<ul>
+<li>TLST, LAMZLL and LAMZUL differed by about 3e-9 h because ADPC was rounded to 10 significant digits after PKNCA had already run on the unrounded times. ADPC is now rounded when it is built, so both engines and the XPT file see the same times.</li>
+<li>The degrees of freedom were stored as integer in one route and as double in the other; the comparison now uses values, not storage types.</li>
+<li>With nlme's default convergence settings the REML residual variance matched the GLM only to about 5e-6 percentage points of CV; the refit now uses tight convergence settings and meets the pre-set 1e-6 tolerance.</li>
+</ul>
+<h3>Not covered</h3>
+<ul>
+<li>No second programmer, no blinded re-implementation from the specification alone.</li>
+<li>The SDTM-like inputs are simulated by the same code base; there is no check against source documents or an EDC export.</li>
+<li>No Pinnacle 21 or CDISC CORE conformance run; the metadata checks in stage 3 are metatools and xportr checks against this study's own specification.</li>
+</ul>
+
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Generated by <code>study/run_all.R</code> from code in this repository. Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable. <a href="../index.html">Back to the worked example</a>.</p>
+  </div>
+</footer>
+</body>
+</html>
