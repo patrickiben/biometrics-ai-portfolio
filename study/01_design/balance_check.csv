@@ -1,0 +1,5 @@
+"check","value","expected","pass"
+"Schedule length equals planned enrollment","40","40",TRUE
+"Blocks with 2 TR and 2 RT","10 of 10","10 of 10",TRUE
+"Overall TR : RT","20 : 20","20 : 20",TRUE
+"Largest running imbalance (TR minus RT)","2","2 or less",TRUE

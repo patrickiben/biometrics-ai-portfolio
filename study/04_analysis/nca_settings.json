@@ -1,0 +1,43 @@
+{
+  "engine": "PKNCA 0.12.1",
+  "options": {
+    "auc.method": "lin up/log down",
+    "conc.blq": {
+      "first": "keep",
+      "middle": "keep",
+      "last": "keep"
+    },
+    "min.hl.points": 3,
+    "allow.tmax.in.half.life": false
+  },
+  "parameter_rules": {
+    "min_hl_adj_r_squared": 0.9,
+    "max_aucinf_pext_pct": 20,
+    "implementation": ["PKNCA exclude(): adj.r.squared below 0.9 flags get.parameter.deps(\"half.life\")", "PKNCA exclude(): aucpext.obs above 20 flags aucinf.obs"],
+    "excluded_values": [
+      {
+        "rule": "aucpext.obs > 20",
+        "profiles": 3,
+        "parameters": "AUCIFO",
+        "which": "SIMBE01-101-021 Period 2; SIMBE01-101-029 Period 1; SIMBE01-101-029 Period 2"
+      }
+    ]
+  },
+  "time": "ARRLT (actual time from the period's dose); pre-dose samples set to time 0",
+  "profiles": 79,
+  "intervals": "0 to Inf, one interval per participant and period",
+  "blq": {
+    "setting": {
+      "first": "keep",
+      "middle": "keep",
+      "last": "keep"
+    },
+    "pknca_default": {
+      "first": "keep",
+      "middle": "drop",
+      "last": "keep"
+    },
+    "profiles_with_blq_between_quantifiable": 1,
+    "profiles_changed_vs_pknca_default": 1
+  }
+}

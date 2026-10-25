@@ -1,0 +1,49 @@
+{
+  "study": "SIMBE01",
+  "synthetic": true,
+  "ci_level": 0.9,
+  "be_lower": 0.8,
+  "be_upper": 1.25,
+  "be_rule": "both primary parameters: 90% CI of the T/R geometric mean ratio within 80.00% to 125.00%, judged on unrounded limits",
+  "primary_params": ["CMAX", "AUCLST"],
+  "secondary_params": ["AUCIFO", "TMAX", "LAMZHL", "LAMZ", "AUCPEO"],
+  "model": "ln(AVAL) ~ sequence + participant(sequence) + period + formulation (fixed effects, GLM)",
+  "nca": {
+    "engine": "PKNCA",
+    "auc_method": "lin up/log down",
+    "conc_blq": {
+      "first": "keep",
+      "middle": "keep",
+      "last": "keep"
+    },
+    "blq_value": 0,
+    "time_variable": "ARRLT (actual time from the period's dose); pre-dose samples set to time 0",
+    "min_hl_points": 3,
+    "allow_tmax_in_half_life": false,
+    "lambda_z_selection": "largest number of points whose adjusted R-squared is within 1e-4 of the best (PKNCA default)",
+    "zero_segment": "linear trapezoid for a segment that starts or ends at a zero (BLQ) concentration; log-down only when both concentrations are positive",
+    "min_hl_adj_r_squared": 0.9,
+    "min_hl_adj_r_squared_rule": "lambda z, t1/2, AUC(0-inf) and the extrapolated percentage are not summarized or analyzed when the adjusted R-squared of the terminal fit is below 0.90",
+    "max_aucinf_pext_pct": 20,
+    "max_aucinf_pext_rule": "AUC(0-inf) is not summarized or analyzed when more than 20% of it is extrapolated; the extrapolated percentage itself is still summarized"
+  },
+  "exclusion_rules": {
+    "emesis_window_h": 2,
+    "emesis_rule": "period excluded if emesis occurs within 2 h of dosing (twice the expected median tmax of 1 h); a protocol violation documented when it happens, before bioanalysis (ICH M13A 2.2.1)",
+    "predose_pct_cmax": 5,
+    "predose_rule": "period excluded if the pre-dose concentration is above 5% of that period's Cmax; applied to the bioanalytical results (ICH M13A 2.2.3.3)",
+    "low_exposure_pct": 5,
+    "low_exposure_rule": "period may be excluded if its AUC is below 5% of the product's geometric mean AUC calculated without the participant, at most 1 participant expected; applied to the bioanalytical results (ICH M13A 2.2.1.1)",
+    "min_evaluable": 12,
+    "auc_coverage_pct": 80,
+    "auc_coverage_share_pct": 20,
+    "first_point_cmax_rule": "participants whose Cmax is at the first post-dose sample in either period are removed in a supplementary analysis; the primary analysis keeps them (ICH M13A 2.1.8.1)"
+  },
+  "summary_stats": ["n", "arithmetic mean", "SD", "CV%", "geometric mean", "geometric CV%", "median", "minimum", "maximum"],
+  "conventions": {
+    "geometric_mean": "exp(mean(log x))",
+    "geometric_cv": "100*sqrt(exp(s^2_log) - 1)",
+    "within_cv": "100*sqrt(exp(MSE) - 1)",
+    "tmax": "median (minimum, maximum)"
+  }
+}

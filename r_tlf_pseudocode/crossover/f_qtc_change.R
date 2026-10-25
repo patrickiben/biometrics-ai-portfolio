@@ -6,8 +6,9 @@
 # NOTE      : PSEUDOCODE. Within-participant crossover view: mean (+/-90% CI) CHG in
 #             QTcF from the PERIOD baseline over scheduled timepoint, one line
 #             per treatment (dv$trtvar = TRTA). 90% CI is the conventional
-#             thorough-QT presentation. Reference line at +10 ms (regulatory
-#             threshold of clinical interest). Each participant contributes a within-
+#             central-tendency presentation. Reference lines at 0, 30 and 60 ms
+#             (ICH E14 categorical thresholds for an increase from baseline).
+#             Each participant contributes a within-
 #             period QTcF change profile to the treatment given in that period.
 ################################################################################
 source("../00_setup_helpers.R")
@@ -32,12 +33,13 @@ mc <- eg %>%
 ttl <- tfl_titles(num = "14.3.8.3", type = "Figure",
    text = "Mean Change from Baseline in QTcF over Time by Treatment",
    pop  = "Safety Population",
-   foot = "Points = mean change from period baseline (QTcF); ribbon/bars = 90% CI. Reference lines at 0 and +10 ms (mean-effect threshold of clinical interest). One profile per treatment (crossover, within-participant).")
+   foot = "Points = mean change from period baseline (QTcF); ribbon/bars = 90% CI. Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms). One profile per treatment (crossover, within-participant).")
 
 pd <- position_dodge(width = 0.3)
 p <- ggplot(mc, aes(x = ATPTN, y = mean, colour = trt, group = trt)) +
-  geom_hline(yintercept = 0,  linetype = "dashed") +
-  geom_hline(yintercept = 10, linetype = "dotted", colour = "grey40") +
+  geom_hline(yintercept = 0,  linetype = "solid") +
+  geom_hline(yintercept = 30, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >30 ms
+  geom_hline(yintercept = 60, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >60 ms
   geom_errorbar(aes(ymin = lo, ymax = hi), width = 0.2, position = pd) +
   geom_line(position = pd) + geom_point(size = 2, position = pd) +
   scale_x_continuous(breaks = sort(unique(mc$ATPTN)),

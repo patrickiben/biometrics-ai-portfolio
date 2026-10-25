@@ -1,0 +1,18 @@
+/* Layout for the Quarto results report (minimal HTML, so the content blocks are direct
+   children of body). Colors come from the site.css tokens, so light and dark both work. */
+body { margin: 0; }
+body > *:not(.top):not(.skip) { box-sizing: border-box; max-width: 1000px; margin-left: auto; margin-right: auto; padding-left: 16px; padding-right: 16px; }
+#title-block-header { padding-top: 28px; }
+#title-block-header .title { font-size: clamp(1.6rem, 5vw, 2.2rem); margin: 0 0 6px; }
+#title-block-header .subtitle { color: var(--muted); margin: 0 0 12px; font-size: 1.05rem; }
+nav#TOC { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding-top: 10px; padding-bottom: 10px; margin-top: 12px; margin-bottom: 12px; }
+nav#TOC h2 { margin: 0 0 6px; font-size: 1rem; }
+nav#TOC ul { margin: 0; padding-left: 1.2em; }
+body > .synthetic { margin-top: 12px; margin-bottom: 12px; }
+.cell-output-display { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.cell table.data { min-width: 0; margin: 8px 0 16px; }
+img { display: block; max-width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; background: #FFFFFF; }
+figure { margin: 16px 0; }
+figcaption { color: var(--muted); font-size: .9rem; }
+table caption { text-align: left; color: var(--muted); font-size: .9rem; padding: 0 0 6px; }
+body > p:last-child { padding-bottom: 40px; }

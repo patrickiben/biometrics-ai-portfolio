@@ -1,0 +1,127 @@
+{
+  "validator": "tlf_interpret/R/validate_interpretation.R (unchanged)",
+  "limitation": "Checks that each number exists in the outputs at the displayed precision, not that the statement using it is correct.",
+  "paragraphs": [
+    {
+      "paragraph": "11.1",
+      "numbers_checked": 14,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 74,
+      "sentences": 5,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.2",
+      "numbers_checked": 11,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 38,
+      "sentences": 4,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.3",
+      "numbers_checked": 5,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 33,
+      "sentences": 2,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.1a",
+      "numbers_checked": 16,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 62,
+      "sentences": 4,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.1b",
+      "numbers_checked": 14,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 57,
+      "sentences": 3,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.1c",
+      "numbers_checked": 8,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 43,
+      "sentences": 2,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.2a",
+      "numbers_checked": 28,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 83,
+      "sentences": 3,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.2.2a",
+      "numbers_checked": 8,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 76,
+      "sentences": 4,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.2.2b",
+      "numbers_checked": 14,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 69,
+      "sentences": 3,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.7",
+      "numbers_checked": 10,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 63,
+      "sentences": 2,
+      "status": "DRAFT_OK"
+    }
+  ],
+  "controls": [
+    {
+      "control": "C1",
+      "what": "One number altered (upper Cmax limit changed to 108.47)",
+      "expected": "REJECTED",
+      "status": "REJECTED",
+      "unmatched": "108.47",
+      "text": "The adjusted geometric mean Cmax was 103.3 ng/mL for Test and 102.2 ng/mL for Reference. The ratio of geometric means (Test/Reference) was 101.07% with a 90% confidence interval of 98.89% to 108.47%. For AUC(0-t) the adjusted geometric means were 1204.9 and 1158.7 h*ng/mL, and the ratio was 103.99% (90% CI 98.52% to 109.75%). Both intervals lie within 80.00% to 125.00% (Table 14.4.3.1).",
+      "as_expected": true
+    },
+    {
+      "control": "C2",
+      "what": "Real numbers in a wrong statement (Cmax results attributed to AUC(0-t))",
+      "expected": "DRAFT_OK (the limitation)",
+      "status": "DRAFT_OK",
+      "unmatched": "",
+      "text": "For AUC(0-t), the ratio of geometric means was 101.07% (90% CI 98.89% to 103.30%).",
+      "as_expected": true
+    },
+    {
+      "control": "C3",
+      "what": "A conclusion that needs human judgment ('well tolerated')",
+      "expected": "FLAGGED",
+      "status": "FLAGGED",
+      "unmatched": "",
+      "text": "Both formulations were well tolerated; the ratio for Cmax was 101.07%.",
+      "as_expected": true
+    }
+  ],
+  "all_paragraphs_draft_ok": true,
+  "controls_as_expected": true
+}

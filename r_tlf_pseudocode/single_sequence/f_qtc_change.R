@@ -8,8 +8,8 @@
 #             model). Mean (+/-90% CI) CHG in QTcF from the PERIOD baseline over
 #             nominal post-dose timepoints (x = ATPTN), one line per PERIOD
 #             (dv$byperiod = APERIODC: Period 1 = reference/victim alone, Period 2
-#             = test/victim + perpetrator). Horizontal reference lines at 0, 30,
-#             and 60 ms (ICH E14 central-tendency thresholds), matching the SAS
+#             = test/victim + perpetrator). Horizontal reference lines at 0, 30
+#             and 60 ms (ICH E14 categorical thresholds), matching the SAS
 #             twin's reference lines / x-axis / footnote.
 ################################################################################
 source("../00_setup_helpers.R")
@@ -38,16 +38,16 @@ ttl <- tfl_titles(num = "14.3.8.3", type = "Figure",
    pop  = "Safety Population",
    foot = paste("Points = period mean change from period baseline (QTcF,",
                 "Fridericia); bars = 90% CI. Period 1 = reference (victim alone),",
-                "Period 2 = test (victim + perpetrator). Horizontal reference",
-                "lines at 0, 30, and 60 ms (ICH E14 central-tendency thresholds).",
+                "Period 2 = test (victim + perpetrator).",
+                "Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms).",
                 "One profile per treatment period (single-/fixed-sequence);",
                 "descriptive."))
 
 pd <- position_dodge(width = 0.3)
 p <- ggplot(mc, aes(x = ATPTN, y = mean, colour = per, group = per)) +
-  geom_hline(yintercept = 0,  linetype = "dashed") +
-  geom_hline(yintercept = 30, linetype = "dotted", colour = "grey40") +  # ICH E14
-  geom_hline(yintercept = 60, linetype = "dotted", colour = "grey40") +  # ICH E14
+  geom_hline(yintercept = 0,  linetype = "solid") +
+  geom_hline(yintercept = 30, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >30 ms
+  geom_hline(yintercept = 60, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >60 ms
   geom_errorbar(aes(ymin = lo, ymax = hi), width = 0.2, position = pd) +
   geom_line(position = pd) + geom_point(size = 2, position = pd) +
   scale_x_continuous(breaks = sort(unique(mc$ATPTN)),

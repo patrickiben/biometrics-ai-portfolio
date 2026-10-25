@@ -1,0 +1,10 @@
+"id","check","value","denominator","rule","pct","ok"
+"be_set","Participants with evaluable data for both products (bioequivalence set)",38,40,"ICH M13A 2.2.3.1: at least 12",95,TRUE
+"auc_coverage","Profiles with AUC(0-t)/AUC(0-inf) below 80%",2,78,"ICH M13A 2.2.2.2: discuss validity if more than 20% of profiles",2.6,TRUE
+"lambda_z_points","Profiles with fewer than 3 points in the terminal phase",0,78,"SAP and ICH M13A: at least 3 points",0,TRUE
+"aucinf_pext","Profiles whose AUC(0-inf) is more than 20% extrapolated (AUC(0-inf) not summarized or analyzed)",2,78,"SAP parameter rule: value kept in ADPP (NCAEXRSN), not summarized",2.6,TRUE
+"adj_r2","Profiles with adjusted R-squared below 0.90 (lambda z-based parameters not summarized or analyzed)",0,78,"SAP parameter rule: values kept in ADPP (NCAEXRSN), not summarized",0,TRUE
+"first_point_cmax","Profiles with Cmax at the first post-dose sample",2,78,"ICH M13A 2.1.8.1: discuss robustness; supplementary analysis 2 removes 2 participant(s) of the bioequivalence set",2.6,TRUE
+"emesis","Periods excluded for emesis within 2 h of dosing",1,79,"SAP rule: documented before bioanalysis (ICH M13A 2.2.1)",1.3,TRUE
+"predose","Periods excluded for a pre-dose concentration above 5% of Cmax",0,79,"ICH M13A 2.2.3.3: exclude the period (applied to the bioanalytical results)",0,TRUE
+"low_auc","Periods with AUC(0-t) below 5% of the product geometric mean (without the participant)",0,79,"ICH M13A 2.2.1.1: may exclude, at most 1 participant (applied to the bioanalytical results)",0,TRUE

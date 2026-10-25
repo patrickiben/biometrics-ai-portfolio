@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ADaM Datasets and Specification | Patrick Iben</title>
+<meta name="description" content="Synthetic SDTM-like domains, ADaM datasets derived with admiral 1.5.0, a metacore-readable specification, metatools checks and XPT v5 from xportr.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="../../site.css">
+<link rel="stylesheet" href="../study.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../../index.html">Patrick Iben</a>
+    <nav aria-label="Site">
+      <a href="../../index.html">Home</a>
+      <a href="../../index.html#lifecycle">Lifecycle</a>
+      <a href="../index.html">Worked example</a>
+    </nav>
+  </div>
+</header>
+<main id="main" class="wrap">
+  <section class="page-head">
+    <p class="kicker">Stage 3: data standards</p>
+    <h1>SDTM-like inputs, ADaM with admiral, specification checks and XPT</h1>
+    <p class="meta"><span class="lab sup">Supported (job): created or reviewed CDISC analysis specifications</span><span class="lab tools">Executed here</span><span class="lab gap">Gap: define.xml and ADRG not authored</span></p>
+    <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
+  </section>
+<p>SDTM-like source domains are simulated by <code>03_adam/01_sdtm.R</code>, which reuses the <code>sim_lifecycle/</code> priors and one-compartment model (N = 40, seed 2026) and takes each participant's sequence from the stage 1 randomization schedule. ADaM datasets are derived with admiral 1.5.0 following its <code>ad_adsl.R</code>, <code>ad_adpc.R</code>, <code>ad_adpp.R</code> and <code>ad_adae.R</code> templates, checked against the specification with metacore 0.3.0 and metatools 0.3.0, and written as SAS XPORT v5 with xportr 0.6.0.</p>
+<h2>SDTM-like inputs</h2><div class="tblwrap"><table class="data"><thead><tr><th scope="col">Domain</th><th scope="col">Records</th><th scope="col">Content</th><th scope="col">File</th></tr></thead><tbody><tr><td>DM</td><td>  40</td><td>Demographics and reference dates</td><td>dm.csv</td></tr>
+<tr><td>EX</td><td>  79</td><td>One record per dose (Test or Reference)</td><td>ex.csv</td></tr>
+<tr><td>PC</td><td>1185</td><td>Plasma concentrations at actual sampling times; BLQ as text</td><td>pc.csv</td></tr>
+<tr><td>AE</td><td>  32</td><td>Adverse events from the sim_lifecycle priors</td><td>ae.csv</td></tr>
+<tr><td>VS</td><td>  80</td><td>Screening height and weight</td><td>vs.csv</td></tr>
+<tr><td>DS</td><td> 120</td><td>Consent, randomization and disposition</td><td>ds.csv</td></tr>
+<tr><td>PP</td><td>1027</td><td>PK parameters from the NCA in stage 4 (derived, then fed back into ADPP)</td><td>pp.csv</td></tr></tbody></table></div><p>Files: <a href="sdtm/dm.csv">dm.csv</a>, <a href="sdtm/ex.csv">ex.csv</a>, <a href="sdtm/pc.csv">pc.csv</a>, <a href="sdtm/ae.csv">ae.csv</a>, <a href="sdtm/vs.csv">vs.csv</a>, <a href="sdtm/ds.csv">ds.csv</a>, <a href="sdtm/pp.csv">pp.csv</a>, <a href="sdtm/scenarios.json">scenarios.json</a>. No LB domain: no output in this example needs laboratory data.</p>
+<h3>Documented scenarios that exercise the SAP rules</h3><div class="tblwrap"><table class="data"><thead><tr><th scope="col">Participant</th><th scope="col">Scenario</th></tr></thead><tbody><tr><td>SIMBE01-101-017</td><td>withdraws consent after Period 1 (no Period 2 dose)</td></tr>
+<tr><td>SIMBE01-101-029</td><td>vomits 45 minutes after the Period 2 dose</td></tr>
+<tr><td>SIMBE01-101-008</td><td>measurable Period 2 pre-dose concentration at 2.5% of that period's Cmax (below the 5% rule)</td></tr>
+<tr><td>SIMBE01-101-035</td><td>12 h sample in Period 1 not collected</td></tr>
+<tr><td>SIMBE01-101-012</td><td>4 h sample in Period 1 drawn 25 minutes late</td></tr>
+<tr><td>SIMBE01-101-024</td><td>6 h sample in Period 2 reported below the LLOQ between quantifiable samples (a simulated sample-handling problem; no reassay)</td></tr></tbody></table></div><h2>ADaM datasets</h2><div class="tblwrap"><table class="data"><thead><tr><th scope="col">Dataset</th><th scope="col">Records</th><th scope="col">Variables</th><th scope="col">Template</th></tr></thead><tbody><tr><td>ADSL</td><td>  40</td><td>54</td><td>ad_adsl.R pattern; derive_vars_period() for the crossover</td></tr>
+<tr><td>ADPC</td><td>1264</td><td>52</td><td>ad_adpc.R, step by step (adaptations listed below)</td></tr>
+<tr><td>ADPP</td><td>1027</td><td>34</td><td>ad_adpp.R; SAP exclusion rules</td></tr>
+<tr><td>ADAE</td><td>  32</td><td>31</td><td>ad_adae.R pattern; period from create_period_dataset()</td></tr></tbody></table></div><ul class="files"><li><a href="data/adsl.xpt">adsl.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adsl.csv">csv</a> <a href="data/json/adsl.json">Dataset-JSON</a></li><li><a href="data/adpc.xpt">adpc.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adpc.csv">csv</a> <a href="data/json/adpc.json">Dataset-JSON</a></li><li><a href="data/adpp.xpt">adpp.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adpp.csv">csv</a> <a href="data/json/adpp.json">Dataset-JSON</a></li><li><a href="data/adae.xpt">adae.xpt</a><span class="d">SAS XPORT v5 (xportr_write)</span> <a href="data/adae.csv">csv</a> <a href="data/json/adae.json">Dataset-JSON</a></li></ul><h3>Template adaptations in ADPC (each one commented in <code>03_adam/03_adpc.R</code>)</h3>
+<ul>
+<li>The analyte name joins PC and EX, because EXTRT carries the formulation (<code>SIMDRUG TEST</code> or <code>SIMDRUG REFERENCE</code>).</li>
+<li>A pre-dose sample belongs to the dose that follows it (ARRLT below 0, NRRLT = 0), as the template's DTYPE COPY records do for repeated dosing.</li>
+<li>BLQ values are 0 in AVAL (SAP, ICH M13A); the template's LLOQ/2 records are not created.</li>
+<li>The sample that was not collected stays in ADPC with ANL01FL not Y, so a listing can show it.</li>
+<li><code>derive_var_nfrlt()</code> and <code>convert_xxtpt_to_hours()</code> are labeled EXPERIMENTAL in admiral 1.5.0; NFRLT is re-derived by plain arithmetic in stage 5 (Q4).</li>
+</ul>
+<h2>Specification</h2>
+<p><a href="spec/adam_spec.xlsx">adam_spec.xlsx</a> uses the Pinnacle 21 specification layout (Study, Datasets, Variables, ValueLevel, WhereClauses, Codelists, Dictionaries, Methods, Comments, Documents), which <code>metacore::spec_to_metacore()</code> reads. <a href="spec/adam_spec.json">adam_spec.json</a> holds the same tables for scripts and diffs. Both come from one definition in <code>03_adam/spec/build_spec.R</code>. Variable labels follow CDISC naming (for example USUBJID, &quot;Unique Subject Identifier&quot;).</p>
+<h3>Metadata checks (executed)</h3><div class="tblwrap"><table class="data"><caption>metatools checks, length and mandatory checks, and an XPT read-back for each dataset.</caption><thead><tr><th scope="col">dataset</th><th scope="col">check</th><th scope="col">pass</th><th scope="col">detail</th></tr></thead><tbody><tr><td>ADSL</td><td>metatools::check_variables (strict)</td><td>pass</td><td>54 variables in data, 54 in spec</td></tr>
+<tr><td>ADSL</td><td>metatools::check_ct_data</td><td>pass</td><td>all values in their codelists</td></tr>
+<tr><td>ADSL</td><td>metatools::check_unique_keys</td><td>pass</td><td>STUDYID, USUBJID</td></tr>
+<tr><td>ADSL</td><td>text values fit the spec lengths</td><td>pass</td><td>34 text variables</td></tr>
+<tr><td>ADSL</td><td>mandatory variables populated</td><td>pass</td><td>48 mandatory variables</td></tr>
+<tr><td>ADSL</td><td>XPT v5 read back: names, order and labels match the spec</td><td>pass</td><td>40 rows x 54 columns; dataset label 'Subject-Level Analysis Dataset'</td></tr>
+<tr><td>ADPC</td><td>metatools::check_variables (strict)</td><td>pass</td><td>52 variables in data, 52 in spec</td></tr>
+<tr><td>ADPC</td><td>metatools::check_ct_data</td><td>pass</td><td>all values in their codelists</td></tr>
+<tr><td>ADPC</td><td>metatools::check_unique_keys</td><td>pass</td><td>STUDYID, USUBJID, ASEQ</td></tr>
+<tr><td>ADPC</td><td>text values fit the spec lengths</td><td>pass</td><td>30 text variables</td></tr>
+<tr><td>ADPC</td><td>mandatory variables populated</td><td>pass</td><td>35 mandatory variables</td></tr>
+<tr><td>ADPC</td><td>XPT v5 read back: names, order and labels match the spec</td><td>pass</td><td>1264 rows x 52 columns; dataset label 'PK Concentrations Analysis Dataset'</td></tr>
+<tr><td>ADPP</td><td>metatools::check_variables (strict)</td><td>pass</td><td>34 variables in data, 34 in spec</td></tr>
+<tr><td>ADPP</td><td>metatools::check_ct_data</td><td>pass</td><td>all values in their codelists</td></tr>
+<tr><td>ADPP</td><td>metatools::check_unique_keys</td><td>pass</td><td>STUDYID, USUBJID, APERIOD, PARAMCD</td></tr>
+<tr><td>ADPP</td><td>text values fit the spec lengths</td><td>pass</td><td>24 text variables</td></tr>
+<tr><td>ADPP</td><td>mandatory variables populated</td><td>pass</td><td>26 mandatory variables</td></tr>
+<tr><td>ADPP</td><td>XPT v5 read back: names, order and labels match the spec</td><td>pass</td><td>1027 rows x 34 columns; dataset label 'PK Parameters Analysis Dataset'</td></tr>
+<tr><td>ADAE</td><td>metatools::check_variables (strict)</td><td>pass</td><td>31 variables in data, 31 in spec</td></tr>
+<tr><td>ADAE</td><td>metatools::check_ct_data</td><td>pass</td><td>all values in their codelists</td></tr>
+<tr><td>ADAE</td><td>metatools::check_unique_keys</td><td>pass</td><td>STUDYID, USUBJID, ASEQ</td></tr>
+<tr><td>ADAE</td><td>text values fit the spec lengths</td><td>pass</td><td>20 text variables</td></tr>
+<tr><td>ADAE</td><td>mandatory variables populated</td><td>pass</td><td>30 mandatory variables</td></tr>
+<tr><td>ADAE</td><td>XPT v5 read back: names, order and labels match the spec</td><td>pass</td><td>32 rows x 31 columns; dataset label 'Adverse Events Analysis Dataset'</td></tr></tbody></table></div><div class="not-covered"><p><strong>Gap: not authored here.</strong> No define.xml and no Analysis Data Reviewer's Guide (ADRG). No Pinnacle 21 or CDISC CORE conformance run: the checks above test the datasets against this study's own specification. The source domains are SDTM-like (no trial design domains, no SUPP datasets). The Dataset-JSON v1.1 copies are a demonstration: FDA has not accepted Dataset-JSON as of Oct 2026, and SAS XPORT v5 remains the submission format.</p></div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <p class="fine">Generated by <code>study/run_all.R</code> from code in this repository. Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable. <a href="../index.html">Back to the worked example</a>.</p>
+  </div>
+</footer>
+</body>
+</html>

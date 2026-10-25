@@ -1,0 +1,35 @@
+{
+  "study": "SIMBE01",
+  "synthetic": true,
+  "seed": 2026,
+  "r_version": "4.6.0",
+  "packages": {
+    "admiral": "1.5.0",
+    "metacore": "0.3.0",
+    "metatools": "0.3.0",
+    "xportr": "0.6.0",
+    "datasetjson": "0.4.1",
+    "PKNCA": "0.12.1",
+    "NonCompart": "0.8.4",
+    "PowerTOST": "1.5-7",
+    "blockrand": "1.5",
+    "rtables": "0.6.17",
+    "tern": "0.9.13",
+    "formatters": "0.5.13",
+    "r2rtf": "1.3.1",
+    "diffdf": "1.1.2",
+    "dplyr": "1.2.1",
+    "ggplot2": "4.0.3",
+    "knitr": "1.51",
+    "rmarkdown": "2.31",
+    "openxlsx": "4.2.9",
+    "renv": "1.3.1"
+  },
+  "stages": ["01_design/design.R", "02_sap/sap.R", "03_adam/01_sdtm.R", "03_adam/02_adsl.R", "03_adam/03_adpc.R", "03_adam/04_adae.R", "04_analysis/01_nca.R", "03_adam/05_adpp.R", "03_adam/spec/build_spec.R", "03_adam/06_checks_xpt.R", "04_analysis/02_be.R", "04_analysis/03_tlf.R", "04_analysis/report/report.qmd", "05_qc/qc.R", "06_csr/csr.R", "R/pages.R"],
+  "results": {
+    "be_shown": true,
+    "n_be_set": 38,
+    "qc_pass": 40,
+    "qc_checks": 40
+  }
+}

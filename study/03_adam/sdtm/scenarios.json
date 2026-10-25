@@ -1,0 +1,43 @@
+{
+  "withdrawal": {
+    "subj": "017",
+    "what": "withdraws consent after Period 1 (no Period 2 dose)",
+    "usubjid": "SIMBE01-101-017"
+  },
+  "emesis": {
+    "subj": "029",
+    "period": 2,
+    "onset_min": 45,
+    "what": "vomits 45 minutes after the Period 2 dose",
+    "usubjid": "SIMBE01-101-029"
+  },
+  "carryover": {
+    "subj": "008",
+    "period": 2,
+    "frac": 0.025,
+    "what": "measurable Period 2 pre-dose concentration at 2.5% of that period's Cmax (below the 5% rule)",
+    "usubjid": "SIMBE01-101-008"
+  },
+  "missed": {
+    "subj": "035",
+    "period": 1,
+    "tpt": 12,
+    "what": "12 h sample in Period 1 not collected",
+    "usubjid": "SIMBE01-101-035"
+  },
+  "late_sample": {
+    "subj": "012",
+    "period": 1,
+    "tpt": 4,
+    "dev_min": 25,
+    "what": "4 h sample in Period 1 drawn 25 minutes late",
+    "usubjid": "SIMBE01-101-012"
+  },
+  "mid_blq": {
+    "subj": "024",
+    "period": 2,
+    "tpt": 6,
+    "what": "6 h sample in Period 2 reported below the LLOQ between quantifiable samples (a simulated sample-handling problem; no reassay)",
+    "usubjid": "SIMBE01-101-024"
+  }
+}

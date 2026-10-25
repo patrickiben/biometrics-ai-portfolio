@@ -5,8 +5,8 @@
 # INPUT     : ADEG (PARAMCD == "QTCF")
 # NOTE      : PSEUDOCODE. Mean change-from-baseline (CHG) QTcF with +/-1 SE error
 #             bars over nominal post-baseline timepoints, one line per treatment
-#             arm. Reference lines at 0 and +10 ms (the mean-effect threshold of
-#             regulatory interest for a mean change-from-baseline QTc figure).
+#             arm. Reference lines at 0, 30 and 60 ms (ICH E14 categorical
+#             thresholds for an increase from baseline).
 #             Parallel: between-arm comparison, colour = dv$trtvar (TRT01A).
 ################################################################################
 source("../00_setup_helpers.R")
@@ -32,12 +32,13 @@ sumdat <- eg %>%
 ttl <- tfl_titles(num = "14.3.5.3", type = "Figure",
    text = "Mean (+/-SE) Change from Baseline in QTcF by Visit/Timepoint",
    pop  = "Safety Population",
-   foot = "QTcF = Fridericia-corrected QT. Points = arm mean change; error bars = +/-1 SE. Reference lines at 0 and +10 ms. Baseline = pre-dose.")
+   foot = "QTcF = Fridericia-corrected QT. Points = arm mean change; error bars = +/-1 SE. Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms). Baseline = pre-dose.")
 
 pd <- position_dodge(width = 0.3)
 p <- ggplot(sumdat, aes(x = tp, y = mean, colour = trt, group = trt)) +
-  geom_hline(yintercept = 0,  linetype = "dashed") +
-  geom_hline(yintercept = 10, linetype = "dotted", colour = "grey50") +   # +10 ms mean-effect threshold
+  geom_hline(yintercept = 0,  linetype = "solid") +
+  geom_hline(yintercept = 30, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >30 ms
+  geom_hline(yintercept = 60, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >60 ms
   geom_errorbar(aes(ymin = lo, ymax = hi), width = 0.2, position = pd) +
   geom_line(position = pd) +
   geom_point(size = 2, position = pd) +

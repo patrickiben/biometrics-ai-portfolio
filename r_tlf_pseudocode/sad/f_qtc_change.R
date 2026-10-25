@@ -5,8 +5,9 @@
 # INPUT     : ADEG (PARAMCD == "QTCF")
 # NOTE      : PSEUDOCODE. Descriptive mean change-from-baseline (CHG) QTcF with
 #             95% confidence-interval error bars over nominal post-dose timepoints
-#             (ATPTN), one line per DOSE COHORT. Horizontal reference lines at 0 ms
-#             and at the ICH E14 thresholds of 30 ms and 60 ms. Descriptive only
+#             (ATPTN), one line per DOSE COHORT. Horizontal reference lines at 0, 30
+#             and 60 ms (ICH E14 categorical thresholds for an increase).
+#             Descriptive only
 #             (no model embedded). SAD: between-cohort comparison along ascending
 #             dose, colour = dv$trtvar (TRT01A = dose level), ordered low -> high.
 #             Single dose -> profile is the Day-1 post-dose time course (ATPTN),
@@ -41,13 +42,13 @@ sumdat <- eg %>%
 ttl <- tfl_titles(num = "14.3.5.3", type = "Figure",
    text = "Mean (+/-95% CI) Change from Baseline in QTcF by Dose and Timepoint",
    pop  = "Safety Population",
-   foot = "Lines = ascending SAD dose cohorts (placebo pooled). QTcF = Fridericia-corrected QT. Points = descriptive cohort mean change; error bars = 95% confidence interval. Horizontal reference lines at 0 ms and at the ICH E14 thresholds of 30 ms and 60 ms. Descriptive only (no model embedded). Baseline = pre-dose; profile = Day 1 post-single-dose time course.")
+   foot = "Lines = ascending SAD dose cohorts (placebo pooled). QTcF = Fridericia-corrected QT. Points = descriptive cohort mean change; error bars = 95% confidence interval. Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms). Descriptive only (no model embedded). Baseline = pre-dose; profile = Day 1 post-single-dose time course.")
 
 pd <- position_dodge(width = 0.3)
 p <- ggplot(sumdat, aes(x = tp, y = mean, colour = trt, group = trt)) +
   geom_hline(yintercept = 0,  linetype = "solid") +
-  geom_hline(yintercept = 30, linetype = "dashed", colour = "grey50") +   # 30 ms (E14)
-  geom_hline(yintercept = 60, linetype = "dashed", colour = "grey50") +   # 60 ms (E14)
+  geom_hline(yintercept = 30, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >30 ms
+  geom_hline(yintercept = 60, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >60 ms
   geom_errorbar(aes(ymin = lo, ymax = hi), width = 0.2, position = pd) +
   geom_line(position = pd) +
   geom_point(size = 2, position = pd) +
