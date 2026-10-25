@@ -12,6 +12,9 @@
 #   adeg.csv  QTcF by visit and time point (AVAL, BASE, CHG)
 #   adae.csv  adverse events (MedDRA PT and primary SOC, CTCAE grade as recorded)
 #   cohorts.csv, study_kri.csv (operational study-level indicators), notes.csv (teaching notes)
+#   labs_long.csv  liver tests for seven planted known-answer cases (CP101-901 to -907) used only by
+#             the Hy's Law convention grid; they are not among the 18 dosed participants
+# data/narrative_flags.csv is written by hand (the verdict each narrative implies), not here.
 #
 # Run from the app folder:  Rscript R/gen_data.R
 # ---------------------------------------------------------------------------
@@ -247,7 +250,44 @@ gen_trialmon <- function(out_dir = "data", seed = 20260611L) {
   w <- function(x, f) utils::write.csv(x, file.path(out_dir, f), row.names = FALSE, na = "")
   w(adsl, "adsl.csv"); w(adlb, "adlb.csv"); w(adeg, "adeg.csv"); w(adae, "adae.csv")
   w(coh, "cohorts.csv"); w(kri, "study_kri.csv"); w(notes, "notes.csv")
-  invisible(list(adsl = adsl, adlb = adlb, adeg = adeg, adae = adae))
+
+  # ---- planted known-answer cases for the Hy's Law convention grid: labs_long.csv ----------
+  # Seven synthetic participants (CP101-901 to -907) that exist only in labs_long.csv, so no other
+  # TRIALMON count changes. Liver tests by study day as multiples of ULN; every draw not listed
+  # holds background values inside the reference ranges. No random draws, so the files above are
+  # unchanged. Expected verdicts (see R/hyslaw_grid.R and data/narrative_flags.csv):
+  #   901 robust 12/12; 902 window 4/12 (60 days only); 903 ALP rule 6/12; 904 aminotransferase
+  #   definition 6/12; 905 peak-only artifact 0/12; 906 not flagged; 907 window 8/12 (TBL on
+  #   exactly Day 40, 30 days after the ALT draw: tests the inclusive bound)
+  bg <- c(ALT = .5, AST = .5, ALP = .7, BILI = .5)
+  planted <- list(
+    list(id = "CP101-901", days = c(8, 15, 18, 29), ALT = c(`15` = 4.5, `18` = 2.8),
+         ALP = c(`15` = 1.1, `18` = 1.1), BILI = c(`18` = 2.6)),
+    list(id = "CP101-902", days = c(10, 24, 52), ALT = c(`10` = 3.8, `24` = 1.5, `52` = 1.2),
+         ALP = c(`10` = 1.0), BILI = c(`52` = 2.4)),
+    list(id = "CP101-903", days = c(8, 9, 22), ALT = c(`8` = 3.5, `9` = 2.9), AST = c(`8` = 2.0, `9` = 1.8),
+         ALP = c(`8` = 2.6, `9` = 2.4), BILI = c(`9` = 2.3)),
+    list(id = "CP101-904", days = c(12, 14, 29), ALT = c(`12` = 2.4, `14` = 2.0), AST = c(`12` = 3.4, `14` = 2.5),
+         BILI = c(`14` = 2.2)),
+    list(id = "CP101-905", days = c(3, 15, 30, 43), ALT = c(`30` = 3.6), BILI = c(`3` = 2.5, `15` = .8, `30` = .7)),
+    list(id = "CP101-906", days = c(14, 21, 29), ALT = c(`14` = 3.2, `21` = 2.1), BILI = c(`14` = 1.5, `21` = 1.8)),
+    list(id = "CP101-907", days = c(10, 25, 40), ALT = c(`10` = 3.3, `25` = 1.8), BILI = c(`40` = 2.2)))
+  lr <- ref[ref$PARAMCD %in% names(bg), ]
+  ll <- do.call(rbind, lapply(planted, function(cs) {
+    d <- c(1, cs$days)
+    do.call(rbind, lapply(seq_len(nrow(lr)), function(j) {
+      p <- lr$PARAMCD[j]; x <- rep(bg[[p]], length(d)); v <- cs[[p]]
+      if (!is.null(v)) x[match(as.numeric(names(v)), d)] <- unname(v)
+      av <- rnd(x * lr$ANRHI[j], lr$dig[j])
+      data.frame(STUDYID = "CP-101", USUBJID = cs$id, PARAMCD = p, PARAM = lr$PARAM[j],
+                 AVISIT = paste("Day", d), ADY = as.integer(d), AVAL = av, AVALU = lr$AVALU[j],
+                 ANRLO = lr$ANRLO[j], ANRHI = lr$ANRHI[j], BASE = av[1], ABLFL = ifelse(d == 1, "Y", ""),
+                 stringsAsFactors = FALSE)
+    }))
+  }))
+  ll <- ll[order(ll$USUBJID, ll$PARAMCD, ll$ADY), ]
+  w(ll, "labs_long.csv")
+  invisible(list(adsl = adsl, adlb = adlb, adeg = adeg, adae = adae, labs_long = ll))
 }
 
 if (sys.nframe() == 0) gen_trialmon(out_dir = "data")
