@@ -15,7 +15,10 @@ suppressPackageStartupMessages({ library(shiny); library(bslib); library(DT); li
 source("R/logic.R")
 if (!file.exists("data/studies.csv")) { source("R/gen_data.R"); gen_portfolio("data") }
 seed <- lifecycle_load("data")
-S0 <- seed$studies[seed$studies$id == "CP-108", ]   # the study selected when the app opens
+# the study selected when the app opens: CP-108 (the planted at-risk study), or the first study
+# when the data have no CP-108, for example a CTMS export
+OPEN_ID <- if ("CP-108" %in% seed$studies$id) "CP-108" else sort(seed$studies$id)[1]
+S0 <- seed$studies[seed$studies$id == OPEN_ID, ][1, ]
 MS_ORDER <- c("Protocol","SAP","FPFV","LPLV","DBL","TLFs","CSR")
 DARK <- theme_minimal(base_size = 12) + theme(
   legend.position = "none", plot.background = element_rect(fill="#222630", colour=NA),
@@ -30,7 +33,7 @@ ui <- page_sidebar(
     width = 300,
     div(class = "small text-muted", "Operational health, protocol to CSR. Synthetic, no PHI. ",
         "Pick a study, then nudge the what-if sliders to see the transparent score move."),
-    selectInput("study", "Study", choices = sort(seed$studies$id), selected = S0$id),
+    selectInput("study", "Study", choices = sort(seed$studies$id), selected = OPEN_ID),
     hr(),
     div(class = "small fw-bold text-muted", "What-if on the selected study"),
     sliderInput("openq", "Open queries", min = 0, max = max(150, S0$open_queries), value = S0$open_queries),

@@ -38,4 +38,32 @@ shiny::testServer(app, {
   stopifnot("reset restores the data" = identical(rv$studies, seed$studies))
 })
 
+# Data without CP-108 (for example a CTMS export): the app still starts, on the first study.
+# Runs on a temporary copy of the app with CP-108 renamed to CP-208 in every data file.
+tmp <- file.path(tempfile("lifecycle-"), "shiny")
+dir.create(tmp, recursive = TRUE)
+invisible(file.copy(list.files(app, full.names = TRUE), tmp, recursive = TRUE))
+for (f in list.files(file.path(tmp, "data"), pattern = "[.]csv$", full.names = TRUE))
+  writeLines(gsub("CP-108", "CP-208", readLines(f), fixed = TRUE), f)
+e2 <- new.env()
+old <- setwd(tmp); built <- tryCatch({ sys.source("app.R", envir = e2); TRUE },
+                                    error = function(err) conditionMessage(err)); setwd(old)
+stopifnot("the app builds when the data have no CP-108" = isTRUE(built))
+ui <- as.character(e2$ui)
+first <- sort(e2$seed$studies$id)[1]
+s1 <- e2$seed$studies[e2$seed$studies$id == first, ]
+stopifnot(
+  "the renamed data have no CP-108"              = !"CP-108" %in% e2$seed$studies$id,
+  "it opens on the first study"                  = e2$OPEN_ID == first,
+  "open-queries slider starts at that study's value" = slider_from("openq") == s1$open_queries,
+  "double-programming slider starts at that study's value" = slider_from("dblprog") == s1$dbl_prog_pct
+)
+seed2 <- e2$seed
+shiny::testServer(tmp, {
+  session$setInputs(study = first, openq = s1$open_queries, dblprog = s1$dbl_prog_pct)
+  stopifnot("opening the app leaves the renamed data as loaded" = identical(rv$studies, seed2$studies),
+            "the KPIs compute"                                  = kpi()$n == nrow(seed2$studies))
+})
+unlink(dirname(tmp), recursive = TRUE)
+
 cat("Lifecycle server: all tests passed\n")

@@ -132,8 +132,8 @@ shiny::testServer("lifecycle_dashboard/shiny", {
 })
 ```
 
-A scripted version, which also checks that opening the app leaves the data as loaded, runs
-with `Rscript lifecycle_dashboard/tests/test-server.R`.
+A scripted version, which also checks that opening the app leaves the data as loaded and that
+the app still starts on data without CP-108, runs with `Rscript lifecycle_dashboard/tests/test-server.R`.
 
 ## The unit tests: shiny is not involved
 
@@ -152,7 +152,7 @@ Rscript lifecycle_dashboard/tests/test-logic.R   # prints: Lifecycle logic: all 
 ## Make it yours
 
 - **Change the rule:** edit `score_study()` (or the signal rules in `lifecycle_signals()`) in `shiny/R/logic.R`. Nothing else changes, because everything calls those functions.
-- **Change the data:** swap the four CSVs in `shiny/data/` for a CTMS export with the same columns.
+- **Change the data:** swap the four CSVs in `shiny/data/` for a CTMS export with the same columns. The console opens on CP-108, or on the first study by id when the export has no CP-108.
 - **Add a dimension:** add a sub-score in `score_study()`, add its column to `score_portfolio()`, and add it to the heatmap's `dims` vector.
 - **Add a panel:** another `card()` in the UI and a matching `render*` in the server.
 
