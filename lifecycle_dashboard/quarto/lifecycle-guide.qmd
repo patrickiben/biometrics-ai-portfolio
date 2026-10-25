@@ -128,7 +128,7 @@ shiny::runApp("lifecycle_dashboard/shiny")
 ```
 
 Pick a study, then move the what-if sliders (open queries, double-programming) and
-watch that study's row in the heatmap re-colour. The [run-and-build page](lifecycle-build.html)
+watch that study's row in the heatmap re-color. The [run-and-build page](lifecycle-build.html)
 shows how the app is built from `R/logic.R`.
 
 ::: {.callout-tip appearance="simple"}
