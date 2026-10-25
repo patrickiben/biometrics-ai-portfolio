@@ -49,6 +49,9 @@
   table.t th,table.t td{text-align:left;padding:7px 9px;border-bottom:1px solid var(--line);vertical-align:top}
   table.t th{color:var(--mut);font-weight:600;background:#0e1422}
   table.t tr:hover td{background:#0e1626}
+  /* phone width: long inline code wraps, and a wide table scrolls inside its own box */
+  code{overflow-wrap:anywhere}
+  @media(max-width:720px){table.t{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}li,p,td{overflow-wrap:anywhere}}
   .note,.warn,.formula,.step{border-radius:9px;padding:11px 14px;margin:12px 0;font-size:13.6px}
   .note{background:#0e2230;border:1px solid #235049;border-left:3px solid var(--teal)}
   .note::before{content:"NOTE";display:block;font-size:10.5px;letter-spacing:.06em;color:var(--teal);font-weight:700;margin-bottom:3px}
