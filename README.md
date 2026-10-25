@@ -56,11 +56,12 @@ Research and teaching (six manuscripts and twelve educational editions) are on t
 Four Python apps on synthetic data: coding QC assist, de-identification review assist, participant
 risk screening (rule-based default thresholds) and central statistical monitoring. Their evaluation
 reports measured failures; for example, on held-out synthetic text the de-identification stand-in
-left 108 of 308 identifiers readable (the full model path: 91 of 308). Screenshots of the in-browser
-build, run locally on bundled synthetic data, are in `assets/ecrf/` and on the home page. The hosted
-in-browser versions are not published yet; when they are, they will run in the browser on bundled
-synthetic data with uploads disabled, and GitHub Pages and jsDelivr, which serve the page, will see
-the visitor's IP address (about 30 MB on first visit). Not a validated or Part 11 system.
+left 108 of 308 identifiers readable (the full model path: 91 of 308). They run in the browser
+from GitHub Pages on bundled synthetic data, with uploads disabled; GitHub Pages and jsDelivr,
+which serve the page, see the visitor's IP address (about 30 MB on first visit):
+[coding QC](https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html) · [de-identification](https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html) ·
+[risk screening](https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html) · [central monitoring](https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html)
+([overview](https://patrickiben.github.io/ecrf-pipeline-apps/)). Not a validated or Part 11 system.
 
 Source and evaluation: <https://github.com/patrickiben/ecrf-pipeline-apps>.
 
