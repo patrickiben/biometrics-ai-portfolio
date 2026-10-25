@@ -25,8 +25,9 @@ Each module states what was actually executed:
 | **Under revision** | Known issues are listed on the page; fixes come in the next revision |
 
 The home page's lifecycle labels are narrower still: **Led** (owned, wrote or led the work in a job),
-**Supported** (reviewed, contributed, or created or reviewed), **Tools built** (shown only by code
-here), **Gap** (no job experience or no worked artifact yet).
+**Supported** (reviewed, contributed, or created or reviewed), **Tools built** (shown only by
+independent work: code here or public drafts, not job experience), **Gap** (no job experience or no
+worked artifact yet).
 
 ## What is here
 
@@ -50,19 +51,18 @@ here), **Gap** (no job experience or no worked artifact yet).
 Research and teaching (six manuscripts and twelve educational editions) are on the
 [research map](https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md).
 
-## In-browser eCRF apps (separate repository)
+## eCRF assist apps (separate repository)
 
-Four Python apps that run in the browser on synthetic data. Files you load are processed on your
-device and are not uploaded by the app; GitHub Pages, jsDelivr and PyPI serve the page and see your IP
-address. The first visit downloads about 30 MB. Not a validated or Part 11 system.
+Four Python apps on synthetic data: coding QC assist, de-identification review assist, participant
+risk screening (rule-based default thresholds) and central statistical monitoring. Their evaluation
+reports measured failures; for example, on held-out synthetic text the de-identification stand-in
+left 108 of 308 identifiers readable (the full model path: 91 of 308). Screenshots of the in-browser
+build, run locally on bundled synthetic data, are in `assets/ecrf/` and on the home page. The hosted
+in-browser versions are not published yet; when they are, they will run in the browser on bundled
+synthetic data with uploads disabled, and GitHub Pages and jsDelivr, which serve the page, will see
+the visitor's IP address (about 30 MB on first visit). Not a validated or Part 11 system.
 
-- [Coding QC assist](https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html)
-- [De-identification review assist](https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html)
-- [Protocol-criteria safety listing](https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html)
-- [Central statistical monitoring](https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html)
-
-Overview: <https://patrickiben.github.io/ecrf-pipeline-apps/>. Source:
-<https://github.com/patrickiben/ecrf-pipeline-apps>.
+Source and evaluation: <https://github.com/patrickiben/ecrf-pipeline-apps>.
 
 ## How I work
 
