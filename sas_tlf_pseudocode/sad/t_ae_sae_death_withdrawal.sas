@@ -71,7 +71,7 @@ proc transpose data=_rep out=_wide; by pord panel level term; id &TRTNVAR; var v
 %tfltitle(num=14.3.1.4, type=Table,
    text=%str(Serious Adverse Events, Deaths, and Adverse Events Leading to Study Drug Withdrawal by Dose Level),
    pop=Safety Population,
-   foot=%str(All counts are treatment-emergent. A participant is counted once at each level within a panel. Columns = ascending dose levels (placebo pooled). % = participants / N in dose column. MedDRA v27.0.));
+   foot=%str(All counts are treatment-emergent. A participant is counted once at each level within a panel. Columns = ascending dose levels (placebo pooled). % = participants / N in dose column. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns pord panel level term ("Dose Level" /* ascending dose cols + Total */);
   define pord  / order noprint;

@@ -84,7 +84,7 @@ proc transpose data=_rep out=_wide; by level AESOC term; id APERIOD sevc; var va
 %tfltitle(num=14.3.1.3, type=Table,
    text=%str(Treatment-Emergent Adverse Events by System Organ Class, Preferred Term and Maximum Severity, by Period),
    pop=Safety Population,
-   foot=%str(A participant is counted once at their maximum severity per preferred term (and per SOC) per period. Severity: Mild/Moderate/Severe. Period 1 = reference; later period(s) = test condition. % = participants / N exposed in the period. MedDRA v27.0.));
+   foot=%str(A participant is counted once at their maximum severity per preferred term (and per SOC) per period. Severity: Mild/Moderate/Severe. Period 1 = reference; later period(s) = test condition. % = participants / N exposed in the period. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns level term ("By Period and Maximum Severity" /* P x {Mild|Mod|Sev} */);
   define level / order noprint;

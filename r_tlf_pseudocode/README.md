@@ -51,6 +51,9 @@ design-specific `t_dose_proportionality` (SAD) · `t_accumulation` (MAD) · `t_b
 ## Naming & conventions
 `t_` table · `l_` listing · `f_` figure. One script → one output. Each script `source()`s
 `00_setup_helpers.R`, calls `setup()`, gets `dv <- design_vars("<DESIGN>")`, then the TLF body.
+Coding-dictionary versions are arguments of `setup()` (`meddra =`, `whodrug =`; defaults
+`"MedDRA v29.1"` and `"WHODrug Global B3, Sep 2026"`); `tfl_titles()` writes them wherever a
+footnote says `{meddra}` or `{whodrug}`. Set them to the versions the SAP names.
 
 ### House rules baked in (the same correctness lessons as the SAS twin)
 - **Geometric PK stats on the log scale**: `geomean = exp(mean(log(x)))`, `geocv = 100*sqrt(exp(var(log(x)))-1)` never `exp(mean(raw))`.

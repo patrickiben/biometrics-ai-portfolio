@@ -84,7 +84,7 @@ proc transpose data=_repv out=_wide; by level term; id trtn; var value; run;
 %tfltitle(num=14.1.7, type=Table,
    text=%str(Medical History by System Organ Class and Preferred Term),
    pop=Safety Population,
-   foot=%str(A participant is counted once at each level. Medical history is a pre-treatment characteristic shared across both periods. SOC ordered by overall frequency; PT within SOC. MedDRA v27.0. Percentages based on Safety Population N.));
+   foot=%str(A participant is counted once at each level. Medical history is a pre-treatment characteristic shared across both periods. SOC ordered by overall frequency; PT within SOC. &MEDDRAVER.. Percentages based on Safety Population N.));
 proc report data=_wide nowd split='|';
   columns level term ("Treatment Sequence" /* sequence col + Total */);
   define level / order noprint;

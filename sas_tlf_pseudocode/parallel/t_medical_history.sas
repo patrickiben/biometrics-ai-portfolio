@@ -52,7 +52,7 @@ proc transpose data=_rep out=_wide; by socn ptn level term; id &TRTNVAR; var val
 
 %tfltitle(num=14.1.7, type=Table, text=Medical History,
           pop=Safety Population,
-          foot=%str(A participant is counted once at each level. MedDRA v27.0. Percentages based on Safety Population N per arm.));
+          foot=%str(A participant is counted once at each level. &MEDDRAVER.. Percentages based on Safety Population N per arm.));
 proc report data=_wide nowd split='|';
   columns socn ptn level term ("Treatment" /* arm cols + Total */);
   define socn  / order descending noprint;

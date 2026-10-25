@@ -35,7 +35,7 @@ proc sort data=ae; by subjid APERIOD ASTDT AEDECOD; run;
 
 %tfltitle(num=16.2.7.1, type=Listing, text=Listing of Adverse Events by Period,
           pop=Safety Population,
-          foot=%str(TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per investigator/analysis. Period 1 = reference; later period(s) = test condition. MedDRA v27.0.));
+          foot=%str(TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per investigator/analysis. Period 1 = reference; later period(s) = test condition. &MEDDRAVER..));
 proc report data=ae nowd split='*';
   columns subjid perc trt ('Adverse Event' AESOC AEDECOD)
           ('Onset*(Day)' relday) durn sev ('Serious' ser) ('TEAE' te)

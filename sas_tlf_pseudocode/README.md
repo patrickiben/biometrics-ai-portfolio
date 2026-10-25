@@ -46,6 +46,9 @@ identical, re-pointed to the design's treatment/period variables.
 ## Naming convention
 `t_` table · `l_` listing · `f_` figure. One program → one output. Each program `%include`s
 `00_setup_macros.sas`, calls `%setup` then `%designvars(design=<folder>)`, then the TLF body.
+Coding-dictionary versions are parameters of `%setup` (`meddraver=`, `whodrugver=`; defaults
+`MedDRA v29.1` and `WHODrug Global B3, Sep 2026`) and reach the footnotes as `&MEDDRAVER` and
+`&WHODRUGVER`; set them to the versions the SAP names.
 
 ## ADaM variables relied on (no re-derivation here)
 - Treatment: `TRT01A/TRT01AN` (parallel), `TRTA/TRTAN`+`APERIOD/APERIODC`+`TRTSEQP` (crossover/seq)

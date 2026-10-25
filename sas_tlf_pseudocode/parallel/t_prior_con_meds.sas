@@ -5,7 +5,7 @@
 * INPUT     : ADCM
 * NOTE      : PSEUDOCODE. Counts = PARTICIPANTS with >=1 medication (distinct
 *             USUBJID), NOT medication rows. n (%) per arm; % denom = SAFFL N
-*             per arm. Summarized by WHO-DD ATC class (CMCLAS) and Preferred
+*             per arm. Summarized by WHODrug ATC class (CMCLAS) and Preferred
 *             Term (CMDECOD). Prior vs concomitant split by ADCM timing flags
 *             (PREFL / ONTRTFL). Parallel: one treatment per participant (TRT01A).
 ******************************************************************************/
@@ -64,7 +64,7 @@ run;
 
 %tfltitle(num=14.1.6, type=Table, text=Prior and Concomitant Medications,
           pop=Safety Population,
-          foot=%str(A participant is counted once at each level within a window. WHO-DD coding. Prior = started before first dose; Concomitant = taken during treatment. Percentages based on Safety Population N per arm.));
+          foot=%str(A participant is counted once at each level within a window. &WHODRUGVER. coding. Prior = started before first dose; Concomitant = taken during treatment. Percentages based on Safety Population N per arm.));
 proc report data=_wide nowd split='|';
   columns secord section clsn ptn level term ("Treatment" /* arm cols + Total */);
   define secord  / order noprint;

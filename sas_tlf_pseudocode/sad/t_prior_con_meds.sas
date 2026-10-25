@@ -5,7 +5,7 @@
 * INPUT     : ADCM
 * NOTE      : PSEUDOCODE. Counts = PARTICIPANTS with >=1 medication (distinct
 *             USUBJID), NOT medication rows. n (%) per column; % denom =
-*             SAFFL N per column. Summarized by WHO-DD ATC class (CMCLAS) and
+*             SAFFL N per column. Summarized by WHODrug ATC class (CMCLAS) and
 *             Preferred Term (CMDECOD). Prior vs concomitant split by ADCM
 *             timing flags (PREFL / ONTRTFL); for SAD, "concomitant" = taken
 *             around the single dosing day / PK collection window. SAD:
@@ -68,7 +68,7 @@ run;
 
 %tfltitle(num=14.1.6, type=Table, text=Prior and Concomitant Medications,
           pop=Safety Population,
-          foot=%str(A participant is counted once at each level within a window. WHO-DD coding. Prior = started before the single dose; Concomitant = taken around the single-dose day / PK window. Column = assigned dose level (TRT01A); placebo may be pooled. Percentages based on Safety Population N per dose level.));
+          foot=%str(A participant is counted once at each level within a window. &WHODRUGVER. coding. Prior = started before the single dose; Concomitant = taken around the single-dose day / PK window. Column = assigned dose level (TRT01A); placebo may be pooled. Percentages based on Safety Population N per dose level.));
 proc report data=_wide nowd split='|';
   columns secord section clsn ptn level term ("Dose Level" /* dose cols + Total */);
   define secord  / order noprint;

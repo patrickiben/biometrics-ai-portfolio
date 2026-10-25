@@ -38,7 +38,7 @@ ttl <- tfl_titles(
   pop  = "Safety Population",
   foot = paste("SAD: one block per single ascending dose level (TRT01A), ordered",
                "low to high. TEAE = treatment-emergent. SAE = serious. Rel =",
-               "relationship to study drug per investigator/analysis. MedDRA v27.0."))
+               "relationship to study drug per investigator/analysis. {meddra}."))
 
 ## render: one block per dose level (page break), ascending; drop sort-key cols.
 ## listings::create_listing(ae, ...) or gt::gt(ae %>% select(-ASTDT, -DoseN))

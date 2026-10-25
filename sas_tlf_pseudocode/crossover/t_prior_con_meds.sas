@@ -89,7 +89,7 @@ proc transpose data=_repall out=_wide; by secord section level term; id seqn; va
 %tfltitle(num=14.1.6, type=Table,
    text=%str(Prior and Concomitant Medications by ATC Class and Preferred Term),
    pop=Safety Population,
-   foot=%str(A participant is counted once at each coding level. Columns are randomized treatment sequences (TRTSEQP). Coded with WHO Drug. Prior = before first dose; Concomitant = on treatment. Percentages based on Safety N per sequence.));
+   foot=%str(A participant is counted once at each coding level. Columns are randomized treatment sequences (TRTSEQP). &WHODRUGVER. coding. Prior = before first dose; Concomitant = on treatment. Percentages based on Safety N per sequence.));
 proc report data=_wide nowd split='|';
   columns secord section level term ("Treatment Sequence" _NAME_  /* seq cols + Total */);
   define secord  / order noprint;

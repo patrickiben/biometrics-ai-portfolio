@@ -99,7 +99,7 @@ run;
 %tfltitle(num=14.3.1.2, type=Table,
    text=%str(Treatment-Emergent Adverse Events by System Organ Class, Preferred Term and Maximum Severity),
    pop=Safety Population,
-   foot=%str(A participant is counted once at each level at their maximum severity. Severity per AESEVN (Mild/Moderate/Severe). % = participants / N in arm. MedDRA v27.0.));
+   foot=%str(A participant is counted once at each level at their maximum severity. Severity per AESEVN (Mild/Moderate/Severe). % = participants / N in arm. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns socn ptn level term ("Treatment (Dose) by Maximum Severity" /* arm x sev cols */);
   define socn  / order descending noprint;

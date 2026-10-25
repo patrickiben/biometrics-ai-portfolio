@@ -41,7 +41,7 @@ ttl <- tfl_titles(
   foot = paste("MAD: one treatment per participant = dose level (blocks ascending by dose).",
                "Onset Day = study day within the repeated-dosing period.",
                "TEAE = treatment-emergent. SAE = serious. Rel = relationship to study",
-               "drug per investigator/analysis. MedDRA v27.0."))
+               "drug per investigator/analysis. {meddra}."))
 
 ## render: one block per dose level (page break), ascending; columns as ordered.
 ## listings::create_listing(ae, ...) or gt::gt(ae %>% select(-ASTDT, -`Dose (n)`))

@@ -72,7 +72,7 @@ ttl <- tfl_titles(
   pop  = "Safety Population",
   foot = paste("SAE = AESER==Y; fatal = AESDTH==Y; discontinuation = AEACN==DRUG WITHDRAWN.",
                "Treatment-emergent only (TRTEMFL=Y). A participant is counted once at each level",
-               "within a panel. % = participants / N in arm. MedDRA v27.0."))
+               "within a panel. % = participants / N in arm. {meddra}."))
 
 ## rtables: split_rows_by(panel) outermost; within each, SOC bold, PT indented.
 print(rep)

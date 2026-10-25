@@ -58,7 +58,7 @@ rep <- bind_rows(any_mh, soc, socpt) %>%
 ttl <- tfl_titles(num = "14.1.7", type = "Table",
    text = "Medical History by System Organ Class and Preferred Term",
    pop  = "Safety Population",
-   foot = "A participant is counted once at each level. Columns = randomized sequence (TRTSEQP); medical history is fixed within participant. MedDRA v27.0. % = participants with condition / N in sequence.")
+   foot = "A participant is counted once at each level. Columns = randomized sequence (TRTSEQP); medical history is fixed within participant. {meddra}. % = participants with condition / N in sequence.")
 
 ## rtables/gt rendering: SOC bold (level 1), PT indented (level 2)
 print(rep)

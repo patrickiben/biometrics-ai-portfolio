@@ -59,7 +59,7 @@ ttl <- tfl_titles(num = "14.3.1.4", type = "Table",
    pop  = "Safety Population",
    foot = paste("DDI: Period 1 = victim alone (reference); Period 2 = victim + perpetrator (test).",
                 "Related = AREL in Related/Possible/Probable/Definite (case-insensitive). Participant counted once at each level within a period.",
-                "% = participants / participants dosed in that period (ADEX). MedDRA v27.0."))
+                "% = participants / participants dosed in that period (ADEX). {meddra}."))
 
 ## rtables / gt rendering; SOC bold (level 1), PT indented (level 2)
 print(rep)

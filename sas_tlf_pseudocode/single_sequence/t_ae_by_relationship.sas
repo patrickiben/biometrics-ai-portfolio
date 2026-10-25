@@ -68,7 +68,7 @@ proc transpose data=_rep out=_wide; by socn ptn level term; id APERIOD; var valu
 %tfltitle(num=14.3.1.4, type=Table,
    text=%str(Drug-Related Treatment-Emergent Adverse Events by System Organ Class and Preferred Term, by Period),
    pop=Safety Population,
-   foot=%str(Related = analysis relationship (AREL) of related/possible/probable/definite. A participant is counted once at each level per period. Period 1 = reference; later period(s) = test condition. % = participants / N exposed in the period. MedDRA v27.0.));
+   foot=%str(Related = analysis relationship (AREL) of related/possible/probable/definite. A participant is counted once at each level per period. Period 1 = reference; later period(s) = test condition. % = participants / N exposed in the period. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns socn ptn level term ("By Period" /* period cols: P1=Reference, P2=Test... */);
   define socn  / order descending noprint;

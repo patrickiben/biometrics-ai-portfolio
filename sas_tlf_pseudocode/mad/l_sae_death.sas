@@ -54,7 +54,7 @@ proc sort data=sae; by &TRTNVAR subjid ASTDY AEDECOD; run;
 %tfltitle(num=16.2.7.2, type=Listing,
           text=Listing of Serious Adverse Events and Deaths by Dose Level,
           pop=Safety Population,
-          foot=%str(All serious and fatal events listed regardless of treatment-emergence. Onset/resolution days relative to first dose. Rel = relationship to study drug per investigator/analysis. MedDRA v27.0.));
+          foot=%str(All serious and fatal events listed regardless of treatment-emergence. Onset/resolution days relative to first dose. Rel = relationship to study drug per investigator/analysis. &MEDDRAVER..));
 proc report data=sae nowd split='*';
   columns &TRTNVAR trt subjid ('Adverse Event' AESOC AEDECOD)
           ('Onset*(Day)' onsd) ('Resln*(Day)' resd) sev

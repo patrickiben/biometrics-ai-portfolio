@@ -84,7 +84,7 @@ ttl <- tfl_titles(
                "low to high; placebo may be pooled. SAE = AESER==Y; fatal =",
                "AESDTH==Y; discontinuation = AEACN==DRUG WITHDRAWN. Treatment-",
                "emergent only (TRTEMFL=Y). A participant is counted once at each level",
-               "within a panel. % = participants / N in dose level. MedDRA v27.0."))
+               "within a panel. % = participants / N in dose level. {meddra}."))
 
 ## rtables: split_rows_by(panel) outermost; split_cols_by(dv$trtvar) (ascending
 ## dose); within each panel, SOC bold, PT indented.

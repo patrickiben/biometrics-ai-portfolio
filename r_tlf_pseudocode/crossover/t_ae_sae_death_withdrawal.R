@@ -76,7 +76,7 @@ ttl <- tfl_titles(num = "14.3.1.5", type = "Table",
    text = "Serious Adverse Events, Deaths, and Adverse Events Leading to Withdrawal by SOC and PT",
    pop  = "Safety Population",
    foot = paste0("A participant is counted once at each level within each panel. Columns = treatment (TRTA). ",
-                 "% = participants / N exposed (ADEX). SAE = AESER=Y; Death = AESDTH=Y; Withdrawal = AEACN='DRUG WITHDRAWN'. MedDRA v27.0."))
+                 "% = participants / N exposed (ADEX). SAE = AESER=Y; Death = AESDTH=Y; Withdrawal = AEACN='DRUG WITHDRAWN'. {meddra}."))
 
 ## rtables: row split on panel -> SOC -> PT; treatment columns + Total
 print(rep)

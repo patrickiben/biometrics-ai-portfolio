@@ -70,7 +70,7 @@ proc transpose data=_rep out=_wide; by level term; id seqn; var value; run;  /* 
 %tfltitle(num=14.1.7, type=Table,
    text=%str(Medical History by System Organ Class and Preferred Term),
    pop=Safety Population,
-   foot=%str(A participant is counted once at each level. Columns are randomized treatment sequences (TRTSEQP). Coded with MedDRA v27.0. Percentages based on Safety N per sequence.));
+   foot=%str(A participant is counted once at each level. Columns are randomized treatment sequences (TRTSEQP). Coded with &MEDDRAVER.. Percentages based on Safety N per sequence.));
 proc report data=_wide nowd split='|';
   columns level term ("Treatment Sequence" _NAME_  /* seq cols + Total */);
   define level / order noprint;

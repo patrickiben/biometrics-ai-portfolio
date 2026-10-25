@@ -4,7 +4,7 @@
   ------------------------------------------------------------------------------------
   Pattern : scheduled SAS writes ops-only data to Smartsheet by a stable key (idempotent
             upsert); Smartsheet's own configured workflows send the rich notifications.
-  Prefix  : every macro is %ss_<name>.  Base SAS 9.4M5+ (PROC HTTP + JSON libname).
+  Prefix  : every macro is %ss_<name>.  Base SAS 9.4M8 or later (PROC HTTP + JSON libname).
   GOVERNANCE (load-bearing): Smartsheet is a CLOUD SaaS -> only NON-SENSITIVE OPERATIONAL
             data may leave the tenant (milestone dates, deliverable/QC status, % complete,
             aggregate enrollment counts, ownership). NEVER PHI, participant-level, unblinded,

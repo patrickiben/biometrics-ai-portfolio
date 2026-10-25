@@ -70,7 +70,7 @@ ttl <- tfl_titles(
   foot = paste("MAD: parallel ascending-dose cohorts, repeated dosing; columns = dose",
                "level (ascending). Treatment-related = AREL in {RELATED, POSSIBLE,",
                "PROBABLE, DEFINITE} (case-insensitive). A participant is counted once at each",
-               "level. % = participants / N at dose. MedDRA v27.0."))
+               "level. % = participants / N at dose. {meddra}."))
 
 ## rtables/gt: split_cols_by(dose, ascending); SOC bold (level 1), PT indented (level 2)
 print(rep)

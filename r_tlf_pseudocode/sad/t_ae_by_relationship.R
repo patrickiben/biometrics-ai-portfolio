@@ -72,7 +72,7 @@ ttl <- tfl_titles(
                "low to high; placebo may be pooled. Treatment-related = AREL in",
                "{RELATED, POSSIBLE, PROBABLE, DEFINITE} (case-insensitive). A",
                "participant is counted once at each level. % = participants / N in dose",
-               "level. MedDRA v27.0."))
+               "level. {meddra}."))
 
 ## rtables/gt: split_cols_by(dv$trtvar) (ascending dose); SOC bold (level 1),
 ## PT indented (level 2).

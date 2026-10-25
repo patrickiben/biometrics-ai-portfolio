@@ -85,7 +85,7 @@ ttl <- tfl_titles(
   foot = paste("MAD: parallel ascending-dose cohorts, repeated dosing; columns = dose",
                "level (ascending). SAE = AESER==Y; fatal = AESDTH==Y; discontinuation =",
                "AEACN==DRUG WITHDRAWN. Treatment-emergent only (TRTEMFL=Y). A participant is",
-               "counted once at each level within a panel. % = participants / N at dose. MedDRA v27.0."))
+               "counted once at each level within a panel. % = participants / N at dose. {meddra}."))
 
 ## rtables: split_rows_by(panel) outermost; within each, SOC bold, PT indented;
 ## split_cols_by(dose) ascending.

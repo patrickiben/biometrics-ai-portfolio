@@ -10,15 +10,23 @@
 *             come from validated ADaM + this code; double-program per the study's SOPs.
 ******************************************************************************/
 
-/*--- environment ---------------------------------------------------------*/
-%macro setup(study=, adam=, out=);
+/*--- environment ---------------------------------------------------------*
+* meddraver / whodrugver = coding-dictionary versions named in the SAP and   *
+* printed in the footnotes (&MEDDRAVER, &WHODRUGVER). Use the MedDRA version *
+* current at study start (FDA sdTCG 6.1.4) and the WHODrug Global B3 release *
+* actually used for coding; the defaults below are examples, Oct 2026.       */
+%macro setup(study=, adam=, out=, meddraver=MedDRA v29.1,
+             whodrugver=%str(WHODrug Global B3, Sep 2026));
   libname adam   "&adam"  access=readonly;   /* ADaM read-only            */
   libname tfl    "&out";                      /* output datasets           */
   options nodate nonumber missing=' ' validvarname=v7 mprint;
   /* study-level formats: treatment order, AE severity, lab ranges, etc.  */
   proc format library=tfl.formats; /* %include study format catalog */ run;
   options fmtsearch=(tfl.formats);
-  %global STUDYID;  %let STUDYID=&study;
+  %global STUDYID MEDDRAVER WHODRUGVER;
+  %let STUDYID=&study;
+  %let MEDDRAVER=&meddraver;
+  %let WHODRUGVER=%superq(whodrugver);   /* keep the comma quoted */
 %mend setup;
 
 /*--- big N: population counts per treatment column (header denominators) --

@@ -82,7 +82,7 @@ ttl <- tfl_titles(
   foot = paste("SAD: dose super-columns ordered low to high (TRT01A); placebo may",
                "be pooled. A participant is counted once at their MAXIMUM severity",
                "within each SOC and Preferred Term. Severity per investigator",
-               "(Mild/Moderate/Severe). % = participants / N in dose level. MedDRA v27.0."))
+               "(Mild/Moderate/Severe). % = participants / N in dose level. {meddra}."))
 
 ## rtables: split_cols_by(TRT01A) (ascending dose) then nested split_cols_by(severity);
 ## split_rows_by(AESOC) with PT analyzed within (indent level 2).

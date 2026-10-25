@@ -76,7 +76,7 @@ proc transpose data=_rep out=_wide; by descending ptn AESOC AEDECOD sevcat; id t
 %tfltitle(num=14.3.1.2, type=Table,
    text=%str(Treatment-Emergent Adverse Events by System Organ Class, Preferred Term and Maximum Severity, by Dose Level),
    pop=Safety Population,
-   foot=%str(A participant is counted once per severity category at the maximum severity within each term over the multiple-dose period. Columns = ascending dose levels (placebo pooled). %% = participants / N in dose column. MedDRA v27.0.));
+   foot=%str(A participant is counted once per severity category at the maximum severity within each term over the multiple-dose period. Columns = ascending dose levels (placebo pooled). %% = participants / N in dose column. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns ptn AESOC AEDECOD sevcat ("Dose Level" /* ascending dose cols + Total */);
   define ptn    / order descending noprint;

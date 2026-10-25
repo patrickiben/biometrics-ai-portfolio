@@ -30,7 +30,7 @@ ae <- adam$adae %>% filter(SAFFL == "Y") %>%
 
 ttl <- tfl_titles(num = "16.2.7.1", type = "Listing", text = "Listing of Adverse Events",
    pop = "Safety Population",
-   foot = "TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per investigator/analysis. MedDRA v27.0.")
+   foot = "TEAE = treatment-emergent. SAE = serious. Rel = relationship to study drug per investigator/analysis. {meddra}.")
 
 ## render: one block per treatment (page break), columns as ordered above
 ## listings::create_listing(ae, ...) or gt::gt(ae %>% select(-ASTDT))

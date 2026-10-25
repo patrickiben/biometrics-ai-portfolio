@@ -22,11 +22,17 @@ suppressPackageStartupMessages({
 })
 
 ## --- environment ------------------------------------------------------------
-setup <- function(study = "CP-101", adam = "/data/adam", out = "/data/tfl") {
-  options(stringsAsFactors = FALSE)
+## meddra / whodrug = coding-dictionary versions named in the SAP; tfl_titles()
+## writes them into footnotes wherever a footnote says {meddra} or {whodrug}. Use the
+## MedDRA version current at study start (FDA sdTCG 6.1.4) and the WHODrug Global B3
+## release actually used for coding; the defaults are examples (October 2026).
+setup <- function(study = "CP-101", adam = "/data/adam", out = "/data/tfl",
+                  meddra = "MedDRA v29.1", whodrug = "WHODrug Global B3, Sep 2026") {
+  options(stringsAsFactors = FALSE, tfl.study = study,
+          tfl.meddra = meddra, tfl.whodrug = whodrug)
   ## read ADaM (haven::read_xpt / read_sas) or assume already loaded as tibbles
   ## adsl <- haven::read_xpt(file.path(adam, "adsl.xpt")) ...
-  list(study = study, adam = adam, out = out)
+  list(study = study, adam = adam, out = out, meddra = meddra, whodrug = whodrug)
 }
 
 ## --- design helper: resolve column + by-structure for a design --------------
@@ -119,6 +125,8 @@ pkstats <- function(df, var = "AVAL", by) {
 ## --- titles / footnotes banner (feed to rtables / ggplot) -------------------
 tfl_titles <- function(num, type = "Table", text, pop = "Safety Population",
                        foot = NULL, study = getOption("tfl.study", "CP-101")) {
+  foot <- gsub("{meddra}",  getOption("tfl.meddra",  "MedDRA v29.1"), foot, fixed = TRUE)
+  foot <- gsub("{whodrug}", getOption("tfl.whodrug", "WHODrug Global B3, Sep 2026"), foot, fixed = TRUE)
   list(
     titles    = c(sprintf("%s  %s", study, format(Sys.Date())),
                   sprintf("%s %s", type, num), text, sprintf("(%s)", pop)),

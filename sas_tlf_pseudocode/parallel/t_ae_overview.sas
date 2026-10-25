@@ -69,7 +69,7 @@ proc transpose data=_rep out=_wide; by ord catlbl; id trtn; var value; run;
 %tfltitle(num=14.3.1, type=Table,
    text=%str(Overview of Treatment-Emergent Adverse Events),
    pop=Safety Population,
-   foot=%str(TEAE = treatment-emergent AE (TRTEMFL='Y'). A participant is counted once in each category. % = participants with the event / N in arm. MedDRA v27.0.));
+   foot=%str(TEAE = treatment-emergent AE (TRTEMFL='Y'). A participant is counted once in each category. % = participants with the event / N in arm. &MEDDRAVER..));
 proc report data=_wide nowd split='|';
   columns ord catlbl ("Treatment (Dose)" /* dose cols + Total */);
   define ord    / order noprint;

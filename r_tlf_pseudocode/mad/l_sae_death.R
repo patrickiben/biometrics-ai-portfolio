@@ -64,7 +64,7 @@ ttl <- tfl_titles(
                "Onset Day = study day within the repeated-dosing period.",
                "Includes records with AESER==Y (serious) and/or AESDTH==Y (fatal).",
                "TEAE = treatment-emergent (TRTEMFL=Y). Relationship per investigator/analysis.",
-               "MedDRA v27.0."))
+               "{meddra}."))
 
 ## render: one block per dose level (page break), ascending; drop sort-key columns.
 ## listings::create_listing(sae, ...) or gt::gt(sae %>% select(-ASTDT, -`Dose (n)`))

@@ -83,7 +83,7 @@ tab <- bind_rows(prior, conmed) %>%
 ttl <- tfl_titles(num = "14.1.6", type = "Table",
    text = "Prior and Concomitant Medications by Drug Class",
    pop  = "Safety Population",
-   foot = "Participants counted once per class / medication (distinct USUBJID). Percentages based on Safety Population N per arm. WHODrug Global Bxx coding; ATC class = CMCLAS.")
+   foot = "Participants counted once per class / medication (distinct USUBJID). Percentages based on Safety Population N per arm. {whodrug} coding; ATC class = CMCLAS.")
 
 lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
   split_rows_by("section", page_by = TRUE) %>%

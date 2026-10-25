@@ -42,7 +42,7 @@ proc sort data=sae; by seq subjid APERIOD ASTDT AEDECOD; run;
 %tfltitle(num=16.2.7.2, type=Listing,
           text=Listing of Serious Adverse Events and Deaths,
           pop=Safety Population,
-          foot=%str(Includes events with AESER=Y or AESDTH=Y. Crossover: Seq = TRTSEQP; Period = APERIODC; Treatment = TRTA at onset. Criteria from AES* seriousness flags. Rel = analysis relationship. MedDRA v27.0.));
+          foot=%str(Includes events with AESER=Y or AESDTH=Y. Crossover: Seq = TRTSEQP; Period = APERIODC; Treatment = TRTA at onset. Criteria from AES* seriousness flags. Rel = analysis relationship. &MEDDRAVER..));
 proc report data=sae nowd split='*';
   columns seq subjid perc trt ('Adverse Event' AESOC AEDECOD)
           ('Onset*(Day)' relday) durn sev ('Seriousness*Criteria' sercrit)

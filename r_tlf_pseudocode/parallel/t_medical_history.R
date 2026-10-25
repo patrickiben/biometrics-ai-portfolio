@@ -61,7 +61,7 @@ tab <- bind_rows(any_mh, bysoc) %>%
 ttl <- tfl_titles(num = "14.1.7", type = "Table",
    text = "Medical History by System Organ Class and Preferred Term",
    pop  = "Safety Population",
-   foot = "Participants counted once per SOC / PT (distinct USUBJID). Percentages based on Safety Population N per arm. MedDRA v27.0; SOC ordered by overall frequency.")
+   foot = "Participants counted once per SOC / PT (distinct USUBJID). Percentages based on Safety Population N per arm. {meddra}; SOC ordered by overall frequency.")
 
 lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
   split_rows_by("characteristic", page_by = FALSE) %>%

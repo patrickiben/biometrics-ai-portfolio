@@ -93,7 +93,7 @@ ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
    text = "Overview of Treatment-Emergent Adverse Events",
    pop  = "Safety Population",
    foot = paste0("A participant is counted once within each category. % = participants with the event / N exposed to the treatment (ADEX). ",
-                 "Related = AREL in {Related, Possible, Probable, Definite}. Severe = AESEVN=3. MedDRA v27.0."))
+                 "Related = AREL in {Related, Possible, Probable, Definite}. Severe = AESEVN=3. {meddra}."))
 
 ## rtables layout: category rows x treatment columns (+ Total)
 lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
