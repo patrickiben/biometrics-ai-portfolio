@@ -3,107 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI for Biometrics — Program Home</title>
+<meta name="robots" content="noindex">
+<meta http-equiv="refresh" content="0; url=index.html">
+<link rel="canonical" href="index.html">
+<title>Moved | Patrick Iben</title>
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<div class="top">
-  <b>AI for Biometrics</b>
-  <div class="nav">
-    <a href="#decision">Decision</a><a href="#ops">Operations</a><a href="#monitor">Monitoring</a>
-    <a href="#deliver">Deliverables</a><a href="#dash">Dashboards</a><a href="#learn">Learning</a>
-  </div>
-</div>
-<div class="wrap">
-  <header class="hero">
-    <div class="eyebrow">Program Home · single entry point</div>
-    <h1>Bringing routine biostatistics programming in-house with AI</h1>
-    <p class="sub">One question, answered across every artifact below: can we bring routine biostatistics programming in-house and do it faster, more consistently, and more defensibly &mdash; with AI we control? The recommendation is a <b>hybrid</b> stack (Claude for capability + an on-prem model for sovereignty and reproducibility), with humans and validated tools always in the loop.</p>
-    <div class="qprow">
-      <a class="qp go" href="New_Hire_Start_Here.html">
-        <div class="qe">&#128075; New biostatistician?</div>
-        <div class="qt">Start here &rarr;</div>
-        <div class="qd">How our team works, the rules you follow, what's real today vs proposed, and the order to learn it. The job &mdash; not the business case.</div>
-      </a>
-    </div>
-    <div class="heads"><b>Heads&#8209;up:</b> most of this package is a <b>proposal</b> pending management approval &mdash; <b>not current practice.</b> Today's production runs through validated tools (Phoenix WinNonlin, Pinnacle&nbsp;21, EDC) + our in&#8209;house team; the AI tools here are accelerators / skeletons, not validated systems. Everything below is the full library, organized by theme.</div>
-  </header>
-
-  <h2>Curated packages</h2>
-  <div class="pkgs">
-    <div class="pkg"><h3>Operations</h3><p>The ship-today, no-PHI operational layer: monitoring, coverage, self-updating trackers and knowledge bases.</p><a class="btn" href="#ops">View →</a></div>
-    <div class="pkg"><h3>Biostatistician</h3><p>The hands-on build: TLF libraries, interpretation drafter, pipeline, dashboards, and the lifecycle sandbox.</p><a class="btn" href="#deliver">View →</a></div>
-  </div>
-
-
-  <h2 id="ops">1 · Operations wikis <span style="color:var(--mut);text-transform:none;letter-spacing:0;font-weight:400">— low-risk, no new approval gate, no PHI</span></h2>
-  <div class="grid">
-    <div class="card"><h3>Self-updating Study KB — no GUI <span class="pill tmpl">scripts</span></h3><div class="d">Outlook emails become a searchable knowledge base by dragging them into a synced folder — one paste-able PowerShell script. No Power Automate designer, no SharePoint clicking, no Copilot Studio.</div>
-      <div class="links"><a class="code" href="study_kb_nogui/index.html">Study KB (no-GUI)</a></div></div>
-    <div class="card"><h3>Knowledge vault &amp; graph <span class="pill run">R Shiny + multimodal</span></h3><div class="d">The study KB as a navigable linked-note graph, now a runnable <b>R Shiny app</b> (igraph + visNetwork) + a <b>visual guide</b> + a shareable <b>interactive graph</b> + a <b>build-it walkthrough</b> &mdash; the three CSVs are the vault. Plus the 28-note vault and design note.</div>
-      <div class="links"><a href="knowledge_vault/quarto/kg-guide.html">&#9733; Visual guide</a><a class="dash" href="knowledge_vault/quarto/kg-graph.html">Interactive graph</a><a class="code" href="knowledge_vault/quarto/kg-build.html">Run &amp; build</a><a href="knowledge_vault/Knowledge_Vault_Design.html">Design note</a></div></div>
-    <div class="card"><h3>Hybrid trial-ops <span class="pill dsgn">wiki</span></h3><div class="d">The agentic trial-operations layer on the hybrid stack — recurrent QC, SOP RAG, eTMF filing, RBQM.</div>
-      <div class="links"><a href="hybrid_ops_wiki/Hybrid_AI_TrialOps_Wiki.html">Hybrid Ops Wiki</a></div></div>
-    <div class="card"><h3>On-device SLM operating wikis <span class="pill dsgn">wiki</span></h3><div class="d">The local small-model trial-ops stack and the Copilot-free Study Operations knowledge base.</div>
-      <div class="links"><a href="slm_wiki/SLM_SASR_TrialOps.html">SLM × SAS/R</a><a href="slm_operating_wiki/Local_SLM_Operating_Wiki.html">Local-SLM Operating</a><a href="slm_operating_wiki/Study_Operations_KB.html">Study Ops KB</a></div></div>
-    <div class="card"><h3>Self-updating Smartsheet trackers <span class="pill tmpl">scripts</span></h3><div class="d">Smartsheet updates itself from scheduled SAS/R — both the AI-assisted and the no-code/no-AI versions.</div>
-      <div class="links"><a href="smartsheet_sasr/Smartsheet_SASR.html">Smartsheet × SAS/R</a><a href="smartsheet_nocode/Smartsheet_NoCode.html">Smartsheet No-Code</a></div></div>
-    <div class="card"><h3>IRT / RTSM User Acceptance Testing <span class="pill run">R Shiny + multimodal</span></h3><div class="d">Run a UAT of the randomization &amp; supply (IRT/RTSM) system before go-live, from the biostatistics lens. Five ways from one shared R logic core: a <b>visual guide</b> (Mermaid diagrams + a live go-live gate computed from the data), a <b>runnable R Shiny app</b> you edit and own, a shareable <b>dashboard</b>, a fillable <b>Excel workbook</b> for the eTMF, and a <b>build-it walkthrough</b>. Synthetic test data.</div>
-      <div class="links"><a href="uat_irt/quarto/uat-guide.html">&#9733; Visual guide</a><a class="dash" href="uat_irt/quarto/uat-dashboard.html">Dashboard</a><a class="code" href="uat_irt/quarto/uat-build.html">Run &amp; build</a><a class="code" href="uat_irt/UAT_IRT_RTSM_Workbook.xlsx">Excel</a></div></div>
-    <div class="card"><h3>Hours "find-hours" reconciliation <span class="pill run">R Shiny + multimodal</span></h3><div class="d">Where do the hours come from when out-of-scope work lands? Five ways from one shared R logic core: a <b>visual guide</b> (decision-tree + source-map diagrams, a live net-findable roll-up), a <b>runnable R Shiny app</b>, a shareable <b>dashboard</b>, a fillable <b>Excel workbook</b>, and a <b>build-it walkthrough</b>. Net findable = (&Sigma; planned + contingency) &minus; &Sigma; EAC; hours only, no dollars.</div>
-      <div class="links"><a href="budget_reconciliation/quarto/hours-guide.html">&#9733; Visual guide</a><a class="dash" href="budget_reconciliation/quarto/hours-dashboard.html">Dashboard</a><a class="code" href="budget_reconciliation/quarto/hours-build.html">Run &amp; build</a><a class="code" href="budget_reconciliation/Hours_Budget_Reconciliation_Workbook.xlsx">Excel</a></div></div>
-  </div>
-
-  <h2 id="monitor">2 · Monitoring, safety &amp; coverage</h2>
-  <div class="grid">
-    <div class="card"><h3>SAS/R monitoring, coverage &amp; continuity <span class="pill tmpl">runnable templates</span></h3><div class="d">Deterministic, no-AI monitoring that detects, packages, and pages humans. The coverage playbook covers five scenarios (planned leave, unplanned absence, role handoff or departure, onboarding, bus-factor review), and the interactive Continuity Toolkit builds a coverage matrix, risk register, checklists and handoff packet in the browser.</div>
-      <div class="links"><a href="sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html">Monitoring Wiki</a><a href="sas_r_automation/SAS_R_Trial_Monitoring_Automation.html">SAS/R Automation</a><a href="sasr_onleave_wiki/On_Leave_Coverage_Playbook.html">Coverage Playbook</a><a class="dash" href="sasr_onleave_wiki/Continuity_Toolkit.html">Continuity Toolkit</a></div></div>
-    
-  </div>
-
-  <h2 id="deliver">3 · Core deliverables &amp; pipeline</h2>
-  <div class="grid">
-    <div class="card"><h3>TLF pseudocode libraries <span class="pill tmpl">217 + 217</span></h3><div class="d">ADaM-based Table/Listing/Figure pseudocode for every early-phase design, in both SAS and R (pharmaverse).</div>
-      <div class="links"><a class="code" href="sas_tlf_pseudocode/index.html">SAS library</a><a class="code" href="r_tlf_pseudocode/index.html">R library</a></div></div>
-    <div class="card"><h3>TLF interpretation drafter <span class="pill tmpl">skeleton</span></h3><div class="d">Quarto + on-prem MedGemma drafts the narrative text; the model never sources a number, and every draft is number-validated and human-gated.</div>
-      <div class="links"><a class="code" href="tlf_interpret/index.html">tlf_interpret</a></div></div>
-    <div class="card"><h3>Protocol→CSR biostat pipeline <span class="pill dsgn">register + map</span></h3><div class="d">The complete Phase-1 clin-pharm deliverables pipeline (136 deliverables) with a worked PK example.</div>
-      <div class="links"><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf">Pipeline</a><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pdf">Visual Map</a></div></div>
-    <div class="card"><h3>Study-lifecycle sandbox <span class="pill run">runs/verified</span></h3><div class="d">A public-calibrated synthetic study running all the tools end-to-end (8 ADaM domains, NCA, TLFs, SLM).</div>
-      <div class="links"><a class="code" href="sim_lifecycle/index.html">sim_lifecycle</a></div></div>
-    <div class="card"><h3>eCRF pipeline apps <span class="pill run">live demos</span></h3><div class="d">Four independent Streamlit apps for clinical eCRF extracts, each a four-tier chain with its own audit log: MedDRA-style auto-coding of adverse-event verbatims, PII/PHI flagging and redaction, participant safety and discontinuation risk scoring, and anomaly and drift detection. Labeled <code>[SI]</code> stand-ins run until trained runtimes are installed. The public demos run in a locked hosted mode on synthetic data only (99-prefixed placeholder codes, not MedDRA), with a 244-check QC harness in CI.</div>
-      <div class="links"><a class="dash" href="https://patrickiben.github.io/ecrf-pipeline-apps/">Overview</a><a class="dash" href="https://ecrf-coding.streamlit.app/?demo=1">Coding demo</a><a class="dash" href="https://ecrf-phi.streamlit.app/?demo=1">PHI demo</a><a class="dash" href="https://ecrf-risk.streamlit.app/?demo=1">Risk demo</a><a class="dash" href="https://ecrf-anomaly.streamlit.app/?demo=1">Anomaly demo</a><a class="code" href="https://github.com/patrickiben/ecrf-pipeline-apps">Source</a></div></div>
-    <div class="card"><h3>Trial-Management Validation Harness <span class="pill run">7/7 green</span></h3><div class="d">Seven named gates (reproducibility, numeric-provenance, CDISC conformance, SAS&harr;R parity, adversarial QC, regulatory standards, AI-use governance) that make a deliverable delivery-confident. Runnable + dogfooded on this repo's own libraries + synthetic data.</div>
-      <div class="links"><a class="dash" href="validation_harness/index.html">Evidence ledger</a><a class="code" href="validation_harness/README.md">Spec</a></div></div>
-  </div>
-
-  <h2 id="dash">4 · Dashboards</h2>
-  <div class="grid">
-    <div class="card"><h3>Study Lifecycle Monitor <span class="pill run">R Shiny + multimodal</span></h3><div class="d">The operational study-lifecycle console (portfolio RAG, ranked early-warning signals, milestones, TLF funnel), now a runnable <b>R Shiny app</b> you edit and own + a <b>visual guide</b> + shareable <b>dashboard</b> + <b>build-it walkthrough</b>, all from one shared R logic core. Plus the operating-depth field guide.</div>
-      <div class="links"><a href="lifecycle_dashboard/quarto/lifecycle-guide.html">&#9733; Visual guide</a><a class="dash" href="lifecycle_dashboard/quarto/lifecycle-dashboard.html">Dashboard</a><a class="code" href="lifecycle_dashboard/quarto/lifecycle-build.html">Run &amp; build</a><a href="lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html">Field Guide</a></div></div>
-    <div class="card"><h3>Safety &amp; risk consoles <span class="pill run">runs/verified</span></h3><div class="d">The participant-safety (TRIALMON) and trial-termination risk dashboards — the safety complement to the lifecycle console.</div>
-      <div class="links"><a href="sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html">TRIALMON</a><a href="sasr_monitoring_wiki/TRIALMON_Dashboard_Wiki.html">TRIALMON Field Guide</a><a href="risk_monitor/quarto/risk-guide.html">Risk Early-Warning</a></div></div>
-  </div>
-
-  <h2 id="learn">5 · Learning &amp; video walkthroughs</h2>
-  <div class="grid">
-    <div class="card"><h3>Training course <span class="pill dsgn">course</span></h3><div class="d">The biostatistics-AI training walkthrough.</div>
-      <div class="links"><a href="courses/Biostatistics_AI_Training.html">Open course</a></div></div>
-    <div class="card"><h3>Narrated walkthroughs <span class="pill run">video</span></h3><div class="d">Every wiki, pitch, and worked example has a narrated walkthrough (true headless-Chrome screencasts for the live tools). A few flagship videos:</div>
-      <div class="links"><a class="vid" href="sas_r_automation/SAS_R_Monitor_Screencast_narrated.mp4">SAS/R monitoring</a><a class="vid" href="risk_monitor/Risk_EarlyWarning_Walkthrough_narrated.mp4">Risk walkthrough</a><a class="vid" href="hybrid_ops_wiki/TrialOps_Day_WorkedExample_narrated.mp4">A day on trial-ops</a></div></div>
-  </div>
-
-  <footer>
-    <b>Scope &amp; housekeeping.</b> This home indexes the company biometrics-AI program only. Older duplicate
-    package snapshots were moved to <code>_archive/</code>, and separate personal research was moved to
-    <code>_personal/</code> — neither is part of this program.<br>
-    <b>Guardrails (apply throughout):</b> operations-only — no PHI, no participant-level data; reported/regulated
-    numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21, EDC/CTMS), never an LLM; every draft is
-    human-signed; the programming team is an in-house capability. Value framed as capacity, cycle-time,
-    quality, and sovereignty — not budget or headcount. Most artifacts are AI-built templates and proofs-of-capability
-    that jump-start validated builds, not validated production systems.
-  </footer>
-</div>
-<script src="site.js" defer></script>
+<main class="wrap stub">
+  <h1>This page has moved</h1>
+  <p>The portfolio now starts at the home page, which lists every stage of the trial lifecycle and the work behind it.</p>
+  <p class="actions"><a href="index.html">Go to the home page</a></p>
+</main>
 </body>
 </html>
