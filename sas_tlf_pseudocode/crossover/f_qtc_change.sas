@@ -8,6 +8,9 @@
 *             per analysis treatment TRTA across nominal post-dose timepoints.
 *             90% CI matches the QT/central-tendency convention. CHG = change
 *             from within-period baseline. X = timepoint (ATPTN); series = TRTA.
+*             Reference lines at 0, 30 and 60 ms: the ICH E14 categorical thresholds
+*             for an increase from baseline (>30 ms, >60 ms), the one convention used
+*             by every QTc change figure in this library.
 ******************************************************************************/
 %include "../00_setup_macros.sas";
 %setup(study=CP-101, adam=/data/adam, out=/data/tfl);
@@ -32,14 +35,15 @@ proc sort data=_m; by &TRTNVAR ATPTN; run;
 %tfltitle(num=14.3.8.3, type=Figure,
    text=%str(Mean (90% CI) Change from Baseline in QTcF by Timepoint and Treatment),
    pop=Safety Population,
-   foot=%str(Points = mean change from within-period baseline in QTcF (Fridericia); bars = 90% CI. One profile per analysis treatment (crossover). Reference lines at 0 and +10 msec (mean-effect threshold of clinical interest).));
+   foot=%str(Points = mean change from within-period baseline in QTcF (Fridericia); bars = 90% CI. One profile per analysis treatment (crossover). Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms).));
 proc sgplot data=_m;
   series  x=ATPTN y=mean / group=&TRTVAR markers
                            lineattrs=(thickness=2) markerattrs=(symbol=circlefilled);
   scatter x=ATPTN y=mean / group=&TRTVAR yerrorlower=lo yerrorupper=hi
                            markerattrs=(size=0);
-  refline 0  / axis=y lineattrs=(pattern=shortdash);
-  refline 10 / axis=y lineattrs=(pattern=dot) label='+10 ms';
+  refline 0  / axis=y lineattrs=(pattern=solid);
+  refline 30 / axis=y lineattrs=(pattern=shortdash) label='30 ms';   /* ICH E14 categorical: change >30 ms */
+  refline 60 / axis=y lineattrs=(pattern=shortdash) label='60 ms';   /* ICH E14 categorical: change >60 ms */
   xaxis label='Nominal time post-dose (h)' valuesformat=best.;
   yaxis label='Mean change from baseline in QTcF (msec)';
   keylegend / title='Treatment' position=bottom;

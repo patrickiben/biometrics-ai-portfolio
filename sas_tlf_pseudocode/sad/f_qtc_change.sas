@@ -7,8 +7,9 @@
 *             from baseline in QTcF (Fridericia) vs nominal post-dose timepoint
 *             (ATPTN). Descriptive mean dQTcF with 95% confidence-interval whiskers
 *             by timepoint. Series ordered by ascending dose so a dose-related QTcF
-*             trend is visually apparent. Horizontal reference lines at 0 and at the
-*             ICH E14 thresholds of 30 ms and 60 ms. Descriptive only (no model
+*             trend is visually apparent. Horizontal reference lines at 0, 30 and 60 ms
+*             (ICH E14 categorical thresholds for an increase from baseline).
+*             Descriptive only (no model
 *             embedded); single dose per participant, across-cohort comparison is
 *             descriptive.
 ******************************************************************************/
@@ -34,11 +35,11 @@ proc sort data=_stat; by &TRTNVAR ATPTN; run;
 %tfltitle(num=14.3.5.3, type=Figure,
    text=%str(Mean (+/-95% CI) Change from Baseline in QTcF by Dose and Timepoint),
    pop=Safety Population,
-   foot=%str(QTcF = Fridericia-corrected QT (ADaM). Points = descriptive mean change from baseline (CHG); whiskers = 95% confidence interval. One series per dose level (ascending). Single dose per participant. Horizontal reference lines at 0 ms and at the ICH E14 thresholds of 30 ms and 60 ms. Descriptive only (no model embedded).));
+   foot=%str(QTcF = Fridericia-corrected QT (ADaM). Points = descriptive mean change from baseline (CHG); whiskers = 95% confidence interval. One series per dose level (ascending). Single dose per participant. Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms). Descriptive only (no model embedded).));
 proc sgplot data=_stat;
-  refline 0  / lineattrs=(pattern=solid);
-  refline 30 / lineattrs=(pattern=shortdash) label='30 ms';
-  refline 60 / lineattrs=(pattern=shortdash) label='60 ms';
+  refline 0  / axis=y lineattrs=(pattern=solid);
+  refline 30 / axis=y lineattrs=(pattern=shortdash) label='30 ms';   /* ICH E14 categorical: change >30 ms */
+  refline 60 / axis=y lineattrs=(pattern=shortdash) label='60 ms';   /* ICH E14 categorical: change >60 ms */
   series  x=ATPTN y=mean / group=&TRTVAR markers
                            markerattrs=(symbol=circlefilled);
   scatter x=ATPTN y=mean / group=&TRTVAR yerrorlower=lo yerrorupper=hi

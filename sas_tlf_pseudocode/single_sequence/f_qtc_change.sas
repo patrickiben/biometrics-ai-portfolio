@@ -10,7 +10,7 @@
 *             across nominal post-dose timepoints. 90% CI matches the QT/central-
 *             tendency convention. CHG = change from within-period baseline.
 *             X = timepoint (ATPTN); series = period. Horizontal reference lines
-*             at 0, 30, and 60 msec (ICH E14 central-tendency thresholds).
+*             at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase).
 *             A by-period contrast (e.g. victim+perpetrator vs victim alone) is
 *             the natural read for a DDI QT assessment.
 ******************************************************************************/
@@ -39,15 +39,15 @@ proc sort data=_m; by APERIOD ATPTN; run;
 %tfltitle(num=14.3.8.3, type=Figure,
    text=%str(Mean (90% CI) Change from Baseline in QTcF by Timepoint and Treatment Period),
    pop=Safety Population,
-   foot=%str(Points = mean change from within-period baseline in QTcF (Fridericia); bars = 90% CI. One profile per treatment period (single-/fixed-sequence). Horizontal reference lines at 0, 30, and 60 msec (ICH E14 central-tendency thresholds). Descriptive.));
+   foot=%str(Points = mean change from within-period baseline in QTcF (Fridericia); bars = 90% CI. One profile per treatment period (single-/fixed-sequence). Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms). Descriptive.));
 proc sgplot data=_m;
   series  x=ATPTN y=mean / group=APERIODC markers
                            lineattrs=(thickness=2) markerattrs=(symbol=circlefilled);
   scatter x=ATPTN y=mean / group=APERIODC yerrorlower=lo yerrorupper=hi
                            markerattrs=(size=0);
-  refline 0  / axis=y lineattrs=(pattern=shortdash);
-  refline 30 / axis=y lineattrs=(pattern=dot);          /* ICH E14 threshold */
-  refline 60 / axis=y lineattrs=(pattern=dot);          /* ICH E14 threshold */
+  refline 0  / axis=y lineattrs=(pattern=solid);
+  refline 30 / axis=y lineattrs=(pattern=shortdash) label='30 ms';   /* ICH E14 categorical: change >30 ms */
+  refline 60 / axis=y lineattrs=(pattern=shortdash) label='60 ms';   /* ICH E14 categorical: change >60 ms */
   xaxis label='Nominal time post-dose (h)' valuesformat=best.;
   yaxis label='Mean change from baseline in QTcF (msec)';
   keylegend / title='Treatment Period' position=bottom;

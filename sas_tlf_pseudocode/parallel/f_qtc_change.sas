@@ -5,8 +5,9 @@
 * INPUT     : ADEG  (PARAMCD='QTCF'; CHG, AVISIT/AVISITN)
 * NOTE      : PSEUDOCODE. Parallel-group: one series per treatment arm
 *             (TRT01A), mean change from baseline in QTcF (Fridericia) vs
-*             scheduled visit, error bars = +/-1 SE. Reference line at +10 ms
-*             is the regulatory threshold of clinical interest. Between-group
+*             scheduled visit, error bars = +/-1 SE. Reference lines at 0, 30
+*             and 60 ms (ICH E14 categorical thresholds for an increase from
+*             baseline), as in every QTc change figure here. Between-group
 *             comparison is descriptive (one treatment per participant).
 ******************************************************************************/
 %include "../00_setup_macros.sas";
@@ -32,10 +33,11 @@ run;
 %tfltitle(num=14.3.5.3, type=Figure,
    text=%str(Mean (+/-SE) Change from Baseline in QTcF by Visit),
    pop=Safety Population,
-   foot=%str(QTcF = Fridericia-corrected QT (ADaM). Points = mean change from baseline (CHG); whiskers = +/-1 standard error. One series per treatment arm (parallel-group). Reference lines at 0 and +10 ms.));
+   foot=%str(QTcF = Fridericia-corrected QT (ADaM). Points = mean change from baseline (CHG); whiskers = +/-1 standard error. One series per treatment arm (parallel-group). Reference lines at 0, 30 and 60 ms (ICH E14 categorical thresholds for an increase from baseline: >30 ms and >60 ms).));
 proc sgplot data=_stat;
-  refline 0  / lineattrs=(pattern=solid);
-  refline 10 / lineattrs=(pattern=shortdash) label='+10 ms';
+  refline 0  / axis=y lineattrs=(pattern=solid);
+  refline 30 / axis=y lineattrs=(pattern=shortdash) label='30 ms';   /* ICH E14 categorical: change >30 ms */
+  refline 60 / axis=y lineattrs=(pattern=shortdash) label='60 ms';   /* ICH E14 categorical: change >60 ms */
   series  x=AVISITN y=mean / group=&TRTVAR markers
                              markerattrs=(symbol=circlefilled);
   scatter x=AVISITN y=mean / group=&TRTVAR yerrorlower=lo yerrorupper=hi
