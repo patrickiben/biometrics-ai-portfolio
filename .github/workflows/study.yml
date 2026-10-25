@@ -36,7 +36,8 @@ jobs:
           git status --porcelain -- study ':(exclude)study/**/*.png' ':(exclude)study/04_analysis/report/report.html' > changed.txt
           if [ -s changed.txt ]; then
             echo "::error::run_all.R changed committed outputs:"; cat changed.txt
-            git --no-pager diff --stat -- study; exit 1
+            git --no-pager diff --stat -- study
+            git --no-pager diff -- study ':(exclude)study/**/*.png' | head -300; exit 1
           fi
           echo "All committed outputs regenerate unchanged."
       - name: sim_lifecycle still regenerates its committed outputs

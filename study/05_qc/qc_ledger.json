@@ -15,7 +15,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 0,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -27,7 +27,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 0,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -39,7 +39,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 0,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -51,7 +51,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 0,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -63,7 +63,7 @@
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 5.456968211e-12,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -75,7 +75,7 @@
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 5.684341886e-12,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -87,7 +87,7 @@
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 3.552713679e-14,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -99,7 +99,7 @@
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 4.618527782e-14,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -111,7 +111,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 1.665334537e-16,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -135,7 +135,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 8.881784197e-16,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -147,7 +147,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 0,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -159,7 +159,7 @@
       "n_compared": 79,
       "tolerance": 1e-09,
       "mismatches": 0,
-      "max_abs_diff": 0,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -195,7 +195,7 @@
       "n_compared": 3,
       "tolerance": 1e-10,
       "mismatches": 0,
-      "max_abs_diff": 4.440892099e-16,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -207,7 +207,7 @@
       "n_compared": 3,
       "tolerance": 1e-10,
       "mismatches": 0,
-      "max_abs_diff": 4.440892099e-16,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -219,7 +219,7 @@
       "n_compared": 3,
       "tolerance": 1e-10,
       "mismatches": 0,
-      "max_abs_diff": 6.661338148e-16,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -231,7 +231,7 @@
       "n_compared": 3,
       "tolerance": 1e-10,
       "mismatches": 0,
-      "max_abs_diff": 0,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -255,7 +255,7 @@
       "n_compared": 3,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 6.661338148e-16,
+      "max_abs_diff": 1e-10,
       "status": "pass"
     },
     {
@@ -267,7 +267,7 @@
       "n_compared": 3,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 6.099348804e-10,
+      "max_abs_diff": 6.1e-10,
       "status": "pass"
     },
     {
@@ -279,7 +279,7 @@
       "n_compared": 3,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 6.862352908e-10,
+      "max_abs_diff": 6.9e-10,
       "status": "pass"
     },
     {
@@ -291,7 +291,7 @@
       "n_compared": 3,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 1.600433706e-07,
+      "max_abs_diff": 1.6e-07,
       "status": "pass"
     },
     {
@@ -327,7 +327,7 @@
       "n_compared": 1185,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 3.333333609e-09,
+      "max_abs_diff": 3.3e-09,
       "status": "pass"
     },
     {
@@ -339,7 +339,7 @@
       "n_compared": 1185,
       "tolerance": 1e-06,
       "mismatches": 0,
-      "max_abs_diff": 3.333337872e-08,
+      "max_abs_diff": 3.3e-08,
       "status": "pass"
     },
     {
@@ -471,7 +471,7 @@
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 1,
-      "max_abs_diff": 1.427903846,
+      "max_abs_diff": 1.4,
       "status": "pass"
     },
     {
@@ -483,7 +483,7 @@
       "n_compared": 79,
       "tolerance": 1e-06,
       "mismatches": 1,
-      "max_abs_diff": 69.3925,
+      "max_abs_diff": 69,
       "status": "pass"
     }
   ]

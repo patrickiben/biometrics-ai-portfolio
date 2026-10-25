@@ -45,7 +45,12 @@ cmp <- function(id, item, base, compare, keys, cols, tol, primary, qc_method) {
     ledger[[length(ledger) + 1]] <<- data.frame(
       id = id, item = item, variable = cl, primary = primary, qc = qc_method, n_compared = nrow(j),
       tolerance = tol[[cl]] %||% tol[[1]], mismatches = nmis + length(other),
-      max_abs_diff = if (all(is.na(dif))) NA_real_ else max(dif, na.rm = TRUE),
+      # Differences below 1e-10 are floating-point noise whose last digits vary by platform (macOS vs
+      # Linux BLAS/libm), so they are recorded as the bound 1e-10 to keep the ledger reproducible across
+      # platforms. Exact (tolerance 0) comparisons keep their value. Pass/fail uses diffdf, not this column.
+      max_abs_diff = if (all(is.na(dif))) NA_real_ else {
+        m <- max(dif, na.rm = TRUE); tl <- tol[[cl]] %||% tol[[1]]
+        if (tl > 0 && m < 1e-10) 1e-10 else signif(m, 2) },
       status = ifelse(nmis + length(other) == 0, "pass", "fail"))
   }
 }
@@ -212,7 +217,7 @@ write_json_det(list(label = "Same-author re-derivation by a second method; not i
 
 show <- qc_ledger %>% transmute(ID = id, Item = item, Variable = variable, `Primary route` = primary, `QC route` = qc,
                                 Compared = n_compared, Tolerance = ifelse(tolerance == 0, "exact", format(tolerance, scientific = TRUE)),
-                                Mismatches = mismatches, `Max abs diff` = ifelse(is.na(max_abs_diff), "", ifelse(max_abs_diff == 0, "0", formatC(max_abs_diff, format = "e", digits = 1))),
+                                Mismatches = mismatches, `Max abs diff` = ifelse(is.na(max_abs_diff), "", ifelse(max_abs_diff == 0, "0", ifelse(tolerance > 0 & max_abs_diff == 1e-10, "≤ 1e-10", formatC(max_abs_diff, format = "e", digits = 1)))),
                                 Status = status)
 body <- paste0(
   '<div class="note"><p><strong>Same-author re-derivation, not independent double programming.</strong> One person wrote the primary programs and these checks from the same SAP. The checks re-derive each result by a different method and compare with <code>diffdf</code> at the tolerances shown. They can catch coding slips and engine defaults; they cannot catch a misreading of the SAP that both routes share.</p></div>',
