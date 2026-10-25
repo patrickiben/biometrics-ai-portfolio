@@ -20,7 +20,7 @@
 #   Q7  control: a planted 0.1% change in one AUC(0-t) must give exactly one mismatch
 #
 # Inputs : objects adpc, adpp, adsl, nca_wide, be_results, TLF; 03_adam/sdtm/*.csv
-# Outputs: 05_qc/qc_ledger.json, qc_ledger.csv, qc_ledger.html, qc_nca_differences.csv
+# Outputs: 05_qc/qc_ledger.json, qc_ledger.csv, qc_ledger.html, qc_nca_side_by_side.csv
 ################################################################################
 suppressPackageStartupMessages({ library(diffdf); library(NonCompart) })
 SAP <- jsonlite::read_json(sp("02_sap", "analysis_parameters.json"), simplifyVector = TRUE)
@@ -168,7 +168,7 @@ qc_ledger <- do.call(rbind, ledger)
 n_pass <- sum(qc_ledger$status == "pass"); n_fail <- sum(qc_ledger$status == "fail")
 write_csv_det(qc_ledger, sp("05_qc", "qc_ledger.csv"))
 write_json_det(list(label = "Same-author re-derivation by a second method; not independent double programming",
-                    tool = paste("diffdf", packageVersion("diffdf")), checks = nrow(qc_ledger), pass = n_pass, fail = n_fail,
+                    tool = paste("diffdf", pkg_version("diffdf")), checks = nrow(qc_ledger), pass = n_pass, fail = n_fail,
                     values_compared = sum(qc_ledger$n_compared), ledger = round_df(qc_ledger)),
                sp("05_qc", "qc_ledger.json"))
 

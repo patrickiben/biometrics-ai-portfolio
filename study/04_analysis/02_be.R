@@ -90,9 +90,10 @@ pk_checks <- data.frame(
   value = c(sum(adsl$BEFL == "Y"), cov_low, sum(w$LAMZNPT < SAP$nca$min_hl_points, na.rm = TRUE),
             sum(exclusions$EMESIS), sum(exclusions$PREDOSE_X), sum(exclusions$LOWEXP)),
   denominator = c(nrow(adsl), nrow(w), nrow(w), nrow(exclusions), nrow(exclusions), nrow(exclusions)),
-  rule = c("ICH M13A: at least 12", "ICH M13A: discuss validity if more than 20% of profiles",
-           "SAP and ICH M13A: at least 3 points", "SAP rule (decided before bioanalysis)",
-           "ICH M13A: exclude the period", "ICH M13A: may exclude, at most 1 participant expected"))
+  rule = c("ICH M13A 2.2.3.1: at least 12", "ICH M13A 2.2.2.2: discuss validity if more than 20% of profiles",
+           "SAP and ICH M13A: at least 3 points", "SAP rule: documented before bioanalysis (ICH M13A 2.2.1)",
+           "ICH M13A 2.2.3.3: exclude the period (applied to the bioanalytical results)",
+           "ICH M13A 2.2.1.1: may exclude, at most 1 participant (applied to the bioanalytical results)"))
 pk_checks$pct <- round(100 * pk_checks$value / pk_checks$denominator, 1)
 pk_checks$ok <- c(pk_checks$value[1] >= SAP$exclusion_rules$min_evaluable,
                   pk_checks$pct[2] <= SAP$exclusion_rules$auc_coverage_share_pct,

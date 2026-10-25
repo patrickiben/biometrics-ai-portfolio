@@ -36,6 +36,10 @@ STUDY <- list(
   trt_levels = c("Test", "Reference")
 )
 
+## Package version as CRAN and renv.lock write it ("1.5-7"); utils::packageVersion()
+## normalizes the dash to a dot ("1.5.7"), so displayed versions use the DESCRIPTION string.
+pkg_version <- function(p) utils::packageDescription(p, fields = "Version")
+
 SYNTHETIC_NOTE <- "Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable."
 
 ## --- paths -------------------------------------------------------------------

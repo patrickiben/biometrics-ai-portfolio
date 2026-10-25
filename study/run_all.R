@@ -40,7 +40,7 @@ stage("study/04_analysis/03_tlf.R")           #   tables (RTF, HTML) and figures
 obj <- file.path(tempdir(), "study_objects.rds")
 saveRDS(list(be_results = be_results, be_supplementary = be_supplementary, be_pass = be_pass, adsl = adsl,
              exclusions = exclusions, pk_checks = pk_checks, TLF = TLF,
-             versions = c(PKNCA = as.character(packageVersion("PKNCA")))), obj)
+             versions = c(PKNCA = pkg_version("PKNCA"))), obj)
 quarto <- Sys.getenv("QUARTO", unset = Sys.which("quarto"))
 if (!nzchar(quarto)) stop("Quarto not found: set QUARTO to the quarto executable")
 Sys.setenv(R_LIBS = paste(.libPaths(), collapse = .Platform$path.sep), QUARTO_R = R.home("bin"))

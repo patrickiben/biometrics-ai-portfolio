@@ -79,10 +79,10 @@ nca_wide <- pp %>% select(USUBJID, APERIOD, TRTA, PPTESTCD, PPSTRESN) %>%
 
 write_csv_det(pp %>% select(-APERIOD, -TRTA), sp("03_adam", "sdtm", "pp.csv"))
 write_csv_det(nca_wide, sp("04_analysis", "nca_parameters.csv"))
-write_json_det(list(engine = paste("PKNCA", packageVersion("PKNCA")), options = nca_opts,
+write_json_det(list(engine = paste("PKNCA", pkg_version("PKNCA")), options = nca_opts,
                     time = SAP$nca$time_variable, profiles = nrow(nca_wide),
                     intervals = "0 to Inf, one interval per participant and period",
                     excluded_values = sort(unique(na.omit(res$exclude)))),
                sp("04_analysis", "nca_settings.json"))
 cat(sprintf("[04_analysis/nca] PKNCA %s: %d profiles, %d parameters; lambda z not estimable in %d profiles\n",
-            packageVersion("PKNCA"), nrow(nca_wide), nrow(pp), sum(is.na(nca_wide$LAMZ))))
+            pkg_version("PKNCA"), nrow(nca_wide), nrow(pp), sum(is.na(nca_wide$LAMZ))))

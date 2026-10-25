@@ -9,11 +9,14 @@
 # Adaptation: in a crossover TRTA/TRTP come from the period of the reference dose
 # (TRTxxA/TRTxxP), not from TRT01A/TRT01P as in the template.
 #
-# Exclusion rules (02_sap/analysis_parameters.json), each decided from data that exist
-# before bioanalysis in a real study (dosing, adverse events, pre-dose samples):
-#   EMESIS    emesis within 2 h of the period's dose          -> period excluded
-#   PREDOSE   pre-dose concentration > 5% of the period's Cmax  -> period excluded (M13A)
-#   LOWEXP    AUC(0-t) < 5% of the product's geometric mean AUC without the participant (M13A)
+# Period exclusion rules (02_sap/analysis_parameters.json), pre-specified in the protocol
+# and SAP (ICH M13A 2.2.1, 2.2.1.1). They apply at different times in a real study:
+#   EMESIS    emesis within 2 h of the period's dose -> period excluded. A protocol
+#             violation, documented when it happens, before bioanalysis (from ADAE).
+#   PREDOSE   pre-dose concentration > 5% of the period's Cmax -> period excluded
+#             (M13A 2.2.3.3). Applied to the bioanalytical results.
+#   LOWEXP    AUC(0-t) < 5% of the product's geometric mean AUC without the participant
+#             (M13A 2.2.1.1; at most 1 participant). Applied to the bioanalytical results.
 #
 # Inputs : 03_adam/sdtm/pp.csv, objects adsl_core, adpc, adae
 # Outputs: objects `adpp`, `adsl` (final), `adpc` (with ANL02FL), `exclusions`

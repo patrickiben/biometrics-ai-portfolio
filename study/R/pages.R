@@ -10,7 +10,7 @@ SCN <- jsonlite::read_json(sp("03_adam", "sdtm", "scenarios.json"))
 mchk <- utils::read.csv(sp("03_adam", "data", "metadata_checks.csv"))
 pkg <- c("admiral", "metacore", "metatools", "xportr", "datasetjson", "PKNCA", "NonCompart", "PowerTOST", "blockrand",
          "rtables", "tern", "formatters", "r2rtf", "diffdf", "dplyr", "ggplot2", "knitr", "rmarkdown", "openxlsx", "renv")
-VERS <- vapply(pkg, function(p) as.character(utils::packageVersion(p)), "")
+VERS <- vapply(pkg, pkg_version, "")                       # CRAN form, as in renv.lock (PowerTOST 1.5-7)
 v <- function(p) VERS[[p]]
 cm <- be_results[be_results$PARAMCD == "CMAX", ]; au <- be_results[be_results$PARAMCD == "AUCLST", ]
 p2 <- function(x) formatC(100 * x, format = "f", digits = 2)
@@ -164,7 +164,7 @@ body_idx <- paste0(
     c(L("06_csr/csr_section11.html", "csr_section11.html", "text, check results, controls"),
       L("06_csr/csr_section11.txt", "csr_section11.txt", "plain text"),
       L("06_csr/csr_check.json", "csr_check.json", "validator output")),
-    "The validator checks that numbers exist in the outputs, not that statements are correct. No language model drafted this text."),
+    "The validator checks that numbers exist in the outputs, not that statements are correct. No language model runs in this pipeline; the text is filled into fixed sentence templates (written with an AI coding assistant) and still needs a statistician's review."),
   '<h2>Rerun it</h2>',
   md("```sh",
      "Rscript -e 'install.packages(\"renv\"); renv::restore(project = \"study\", prompt = FALSE)'  # packages pinned in study/renv.lock",

@@ -33,7 +33,7 @@
     "max_running_imbalance": 2
   },
   "software": {
-    "PowerTOST": "1.5.7",
+    "PowerTOST": "1.5-7",
     "blockrand": "1.5"
   }
 }

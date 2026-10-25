@@ -8,8 +8,8 @@
 #          design_parameters.json, protocol_statistics.html
 ################################################################################
 suppressPackageStartupMessages({
-  library(PowerTOST)   # 1.5-7
-  library(blockrand)   # 1.5
+  library(PowerTOST)   # 1.5-7 (study/renv.lock)
+  library(blockrand)   # 1.5 (study/renv.lock)
 })
 
 out <- function(f) sp("01_design", f)
@@ -111,11 +111,11 @@ DESIGN <- list(
                   dropout_pct = 100 * PLAN$dropout, n_enrolled = n_enrol,
                   pa_abe_min_power = 0.80, pa_abe_cv_pct = round(100 * pa_cv, 2),
                   pa_abe_gmr_pct = round(100 * pa_th, 2), pa_abe_n = pa_n),
-  randomization = list(seed = STUDY$seed, method = "permuted blocks (blockrand 1.5)", block_size = 4L,
+  randomization = list(seed = STUDY$seed, method = paste0("permuted blocks (blockrand ", pkg_version("blockrand"), ")"), block_size = 4L,
                        n_blocks = nrow(bal_blocks), n_TR = sum(rs$SEQUENCE == "TR"), n_RT = sum(rs$SEQUENCE == "RT"),
                        max_running_imbalance = run_imb),
-  software = list(PowerTOST = as.character(packageVersion("PowerTOST")),
-                  blockrand = as.character(packageVersion("blockrand")))
+  software = list(PowerTOST = pkg_version("PowerTOST"),      # CRAN form, e.g. 1.5-7
+                  blockrand = pkg_version("blockrand"))
 )
 write_json_det(DESIGN, out("design_parameters.json"))
 
@@ -194,7 +194,12 @@ md(
 "",
 "#### 10.4.1.2 Handling of Data in Relation to Primary Estimand",
 "",
-"Exclusions are decided and documented before bioanalysis, from the pre-specified rules: a period with emesis within 2 hours of dosing (twice the expected median tmax of 1 hour) is excluded; a period with a pre-dose concentration above 5% of that period's Cmax is excluded (ICH M13A); a period whose AUC is below 5% of the geometric mean AUC of that product, calculated without the participant, may be excluded (ICH M13A). A participant without evaluable data for both products leaves the bioequivalence set but stays in the safety and PK sets.",
+"The rules for removing data are pre-specified here and in the statistical analysis plan (ICH M13A 2.2.1 and 2.2.1.1). Two kinds of rule apply at different times:",
+"",
+"- *Documented before bioanalysis.* Withdrawals, emesis and other protocol violations are recorded as they happen, and the decision to exclude is documented at the end of clinical sampling, before any concentration is known (ICH M13A 2.2.1 and 2.2.3.1). A period with emesis within 2 hours of dosing (twice the expected median tmax of 1 hour) is excluded.",
+"- *Applied to the bioanalytical results.* A period whose pre-dose concentration is above 5% of that period's Cmax is excluded (carry-over, ICH M13A 2.2.3.3). A period whose AUC is below 5% of the geometric mean AUC of that product, calculated without the participant, may be excluded as very low exposure; at most one participant is expected (ICH M13A 2.2.1.1). Both rules need the measured concentrations, so they are applied, as written here, once bioanalysis is complete.",
+"",
+"A participant without evaluable data for both products leaves the bioequivalence set but stays in the safety and PK sets.",
 "",
 "#### 10.4.1.3 Handling of Missing Data in Relation to Primary Estimand",
 "",
@@ -222,7 +227,7 @@ sprintf("No earlier study of this synthetic product exists. The planning within-
         100 * PLAN$cv, 100 * PLAN$cv, PLAN$theta0),
 "",
 sprintf("With two one-sided tests at the 5%% level, acceptance limits of 80.00%% to 125.00%%, CV %.0f%% and a ratio of %.2f, PowerTOST %s (exact method) gives **%d evaluable participants for 80%% power** (achieved %.1f%%) and **%d for 90%% power** (achieved %.1f%%). The study plans for 90%% power and allows for %.0f%% of participants not being evaluable: %d / (1 - %.2f), rounded up to an even number, gives **%d participants enrolled** (%d per sequence). ICH M13A requires at least 12 evaluable participants; the plan exceeds that.",
-        100 * PLAN$cv, PLAN$theta0, packageVersion("PowerTOST"),
+        100 * PLAN$cv, PLAN$theta0, pkg_version("PowerTOST"),
         ss$n_evaluable[1], 100 * ss$achieved_power[1], ss$n_evaluable[2], 100 * ss$achieved_power[2],
         100 * PLAN$dropout, n_eval, PLAN$dropout, n_enrol, n_enrol / 2),
 "",
@@ -237,7 +242,7 @@ html_table(pw_wide, caption = sprintf("PowerTOST power.TOST with n = %d evaluabl
 html_table(transmute(infl, `Not evaluable` = sprintf("%.0f%%", 100 * dropout), `Evaluable needed` = n_evaluable, `Enrolled (even)` = n_enrolled),
            caption = "Enrolled = evaluable / (1 - rate), rounded up to an even number for 1:1 sequences. The plan uses 5%."),
 '<h2>Randomization schedule (synthetic)</h2>',
-md(sprintf("Generated with `blockrand` %s, seed %d, permuted blocks of 4 (block size shown here only because the study is synthetic). Balance check:", packageVersion("blockrand"), STUDY$seed)),
+md(sprintf("Generated with `blockrand` %s, seed %d, permuted blocks of 4 (block size shown here only because the study is synthetic). Balance check:", pkg_version("blockrand"), STUDY$seed)),
 html_table(transmute(balance, Check = check, Result = value, Expected = expected, Status = ifelse(pass, "pass", "FAIL"))),
 md("Files: [randomization_schedule.csv](randomization_schedule.csv), [balance_check.csv](balance_check.csv), [sample_size.csv](sample_size.csv), [sensitivity_n.csv](sensitivity_n.csv), [sensitivity_power.csv](sensitivity_power.csv), [dropout_inflation.csv](dropout_inflation.csv), [design_parameters.json](design_parameters.json). Program: `study/01_design/design.R`.")
 )

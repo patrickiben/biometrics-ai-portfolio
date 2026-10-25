@@ -26,11 +26,11 @@
   },
   "exclusion_rules": {
     "emesis_window_h": 2,
-    "emesis_rule": "period excluded if emesis occurs within 2 h of dosing (twice the expected median tmax of 1 h)",
+    "emesis_rule": "period excluded if emesis occurs within 2 h of dosing (twice the expected median tmax of 1 h); a protocol violation documented when it happens, before bioanalysis (ICH M13A 2.2.1)",
     "predose_pct_cmax": 5,
-    "predose_rule": "period excluded if the pre-dose concentration is above 5% of that period's Cmax (ICH M13A)",
+    "predose_rule": "period excluded if the pre-dose concentration is above 5% of that period's Cmax; applied to the bioanalytical results (ICH M13A 2.2.3.3)",
     "low_exposure_pct": 5,
-    "low_exposure_rule": "period may be excluded if its AUC is below 5% of the product's geometric mean AUC calculated without the participant (ICH M13A)",
+    "low_exposure_rule": "period may be excluded if its AUC is below 5% of the product's geometric mean AUC calculated without the participant, at most 1 participant expected; applied to the bioanalytical results (ICH M13A 2.2.1.1)",
     "min_evaluable": 12,
     "auc_coverage_pct": 80,
     "auc_coverage_share_pct": 20
