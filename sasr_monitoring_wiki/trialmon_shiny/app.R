@@ -91,7 +91,7 @@ server <- function(input, output, session) {
       div(class="d-flex gap-2 py-1", style="border-bottom:1px solid #2a3242",
         div(style=sprintf("flex:0 0 8px;height:8px;border-radius:50%%;background:%s;margin-top:6px",col)),
         div(div(class="small", tags$b(r$id), " · ", r$check),
-            div(class="small text-muted", r$value, " — ", tags$code(r$rule))))
+            div(class="small text-muted", r$value, ": ", tags$code(r$rule))))
     }))
   })
 
@@ -133,13 +133,13 @@ server <- function(input, output, session) {
     s <- sel(); ae <- tm$aes[tm$aes$id == input$pid, ]
     scol <- c(GREEN="#43c47d", watch="#5f8aa8", AMBER="#e0a64c", RED="#e8657a")
     tagList(
-      div(class="fw-bold", sprintf("%s — %s (%d mg)", s$id, s$cohort, s$dose_mg)),
+      div(class="fw-bold", sprintf("%s: %s (%d mg)", s$id, s$cohort, s$dose_mg)),
       div(class="small text-muted mb-1", s$disposition),
       div(class="small", tags$b("eDISH: "),
-          if (s$hys) span(style="color:#e8657a;font-weight:700", sprintf("Hy's-Law position — ALT %.1fx & TBili %.1fx (R %.1f, %s)", s$alt, s$tbl, s$rratio, s$pattern))
-          else sprintf("ALT %.1fx / TBili %.1fx — not a Hy's position", s$alt, s$tbl)),
+          if (s$hys) span(style="color:#e8657a;font-weight:700", sprintf("Hy's-Law position: ALT %.1fx & TBili %.1fx (R %.1f, %s)", s$alt, s$tbl, s$rratio, s$pattern))
+          else sprintf("ALT %.1fx / TBili %.1fx, not a Hy's position", s$alt, s$tbl)),
       div(class="small", tags$b("QTcF: "), span(style=sprintf("color:%s;font-weight:700", scol[s$qsev]),
-          sprintf("%d ms (d%d) — %s", s$qt, s$dqt, s$qsev))),
+          sprintf("%d ms (d%d): %s", s$qt, s$dqt, s$qsev))),
       if (nrow(ae)) div(class="small mt-1", tags$b(sprintf("AEs (%d): ", nrow(ae))),
           paste(sprintf("%s G%d%s", ae$pt, ae$grade, ifelse(ae$serious=="Y"," SAE","")), collapse="; ")),
       if (nzchar(s$note)) div(class="small text-muted mt-1", tags$em(s$note))

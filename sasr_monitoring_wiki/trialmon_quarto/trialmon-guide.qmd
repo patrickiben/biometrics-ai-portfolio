@@ -61,7 +61,7 @@ flowchart LR
   B -->|yes| R["Hy's-Law position<br/>RED, notify monitor"]
 ```
 
-In the synthetic data, **CP101-014** (ALT 5.6x, TBili 3.1x) sits in the RED quadrant, while **CP101-009** (ALT 4.2x, TBili 1.6x) is the near-miss the AND-gate correctly keeps green.
+In the synthetic data, **CP101-014** (ALT 5.6x, TBili 3.1x) sits in the RED quadrant, while **CP101-009** (ALT 4.2x, TBili 1.6x) is the near-miss the Hy's-Law AND-gate keeps green. Known issue: the page has no separate flag for an aminotransferase above 3x ULN, which FDA's DILI guidance (2009) says calls for repeat ALT, AST, ALP and total bilirubin within 48 to 72 hours, so 009 should be flagged for review; the next revision adds that flag.
 
 ## The live screens - computed from the data {#live}
 

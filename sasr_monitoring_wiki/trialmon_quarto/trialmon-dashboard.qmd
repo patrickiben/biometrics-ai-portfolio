@@ -94,4 +94,4 @@ ggplot(g, aes(grade, soc, fill=n)) + geom_tile(colour="#141925") +
 :::
 ::::
 
-*eDISH AND-gate: (ALT or AST > 3x) AND TBili > 2x. CP101-009 (ALT 4.2x, TBili 1.6x) is the near-miss the gate keeps green. Reported safety numbers come from the validated safety database, never this screen.*
+*eDISH AND-gate: (ALT or AST > 3x) AND TBili > 2x. CP101-009 (ALT 4.2x, TBili 1.6x) is the near-miss the gate keeps green. Known issue: 009 should also carry a repeat-testing flag (ALT above 3x ULN; FDA DILI guidance, 2009), added in the next revision. Reported safety numbers come from the validated safety database, never this screen.*

@@ -35,7 +35,9 @@ QTcF (ICH E14)   : QTcF > 500 ms or dQTcF > 60 ms -> RED ; > 480/> 30  -> AMBER
 ```
 
 The **AND-gate** is the point: CP101-009 has ALT 4.2x but TBili 1.6x, so it is *not*
-a Hy's-Law position and correctly stays green - a high transaminase alone does not fire.
+a Hy's-Law position and stays green: a high transaminase alone does not fire the Hy's-Law gate.
+Known issue: there is no separate flag for ALT or AST above 3x ULN, which FDA's DILI guidance (2009)
+says needs repeat liver tests within 48 to 72 hours; the next revision adds it.
 
 ## Make it your own
 
