@@ -2233,6 +2233,7 @@ window.addEventListener(
       document.querySelectorAll("div.cell-output-display svg")
     ).filter(
       (el) =>
+        el.querySelector("desc") &&
         el.querySelector("desc").id &&
         el.querySelector("desc").id.startsWith("chart-desc-mermaid")
     )) {

@@ -2233,6 +2233,7 @@ window.addEventListener(
       document.querySelectorAll("div.cell-output-display svg")
     ).filter(
       (el) =>
+        el.querySelector("desc") &&
         el.querySelector("desc").id &&
         el.querySelector("desc").id.startsWith("chart-desc-mermaid")
     )) {
@@ -2346,14 +2347,6 @@ return!"\t\n\x0B\f\r                　\u2028\u2029
 )) {CreateMethodProperty(Array.prototype,Symbol.iterator,Array.prototype.values);}var StringIterator=function(){var t=function(e){if(!(this instanceof t))return new t(e);e=String(e),Iterator.call(this,e),Object.defineProperty(this,"__length__",{value:e.length,configurable:!1,enumerable:!1,writable:!1})};return Object.setPrototypeOf&&Object.setPrototypeOf(t,Iterator),t.prototype=Object.create(Iterator.prototype,{constructor:{value:t,configurable:!0,enumerable:!1,writable:!0},_next:{value:function(){if(this.__list__)return this.__nextIndex__<this.__length__?this.__nextIndex__++:void this._unBind()},configurable:!0,enumerable:!1,writable:!0},_resolve:{value:function(t){var e,r=this.__list__[t];return this.__nextIndex__===this.__length__?r:(e=r.charCodeAt(0),e>=55296&&e<=56319?r+this.__list__[this.__nextIndex__++]:r)},configurable:!0,enumerable:!1,writable:!0},toString:{value:function(){return"[object String Iterator]"},configurable:!0,enumerable:!1,writable:!0}}),t}();if (!("Symbol"in self&&"iterator"in self.Symbol&&!!String.prototype[self.Symbol.iterator]
 )) {CreateMethodProperty(String.prototype,Symbol.iterator,function(){var r=RequireObjectCoercible(this),t=ToString(r);return new StringIterator(t)});}})('object' === typeof window && window || 'object' === typeof self && self || 'object' === typeof global && global || {});</script>
   
-  <script>
-    (function () {
-      var script = document.createElement("script");
-      script.type = "text/javascript";
-      script.src  = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js";
-      document.getElementsByTagName("head")[0].appendChild(script);
-    })();
-  </script>
 
 
 <script type="text/javascript">
@@ -2445,7 +2438,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 <section id="the-whole-idea-in-one-line" class="level2">
 <h2 class="anchored" data-anchor-id="the-whole-idea-in-one-line">The whole idea, in one line</h2>
 <p>When a new out-of-scope ask lands, you do not immediately ask for more. First you find the hours you already have: honest under-run slack across the tasks that are tracking under plan, plus the management reserve. Only the residual becomes a change order.</p>
-<p><span class="math display">\[\textbf{Net findable} \;=\; \big(\textstyle\sum \text{Planned} \;+\; \text{Contingency}\big) \;-\; \textstyle\sum \text{EAC}\]</span></p>
+<p><strong>Net findable</strong> = (&sum; Planned + Contingency) &minus; &sum; EAC</p>
 <p>Under-run slack is the part of your planned effort you are forecast <strong>not</strong> to spend (planned minus estimate-at-completion, floored at zero). Contingency is the management reserve. Add them and you have the effort you can redirect before touching the contract.</p>
 </section>
 <section id="what-to-do-with-a-new-ask-the-decision-tree" class="level2">
@@ -3515,7 +3508,7 @@ Contingency left after this ask: 0 h.
 <span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a>When a new out-of-scope ask lands, you do not immediately ask for more. First you find the hours you already have: honest under-run slack across the tasks that are tracking under plan, plus the management reserve. Only the residual becomes a change order.</span>
 <span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>$$\textbf{Net findable} \;=\; \big(\textstyle\sum \text{Planned} \;+\; \text{Contingency}\big) \;-\; \textstyle\sum \text{EAC}$$</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a>**Net findable** = (&amp;sum; Planned + Contingency) &amp;minus; &amp;sum; EAC</span>
 <span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>Under-run slack is the part of your planned effort you are forecast **not** to spend (planned minus estimate-at-completion, floored at zero). Contingency is the management reserve. Add them and you have the effort you can redirect before touching the contract.</span>
 <span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a></span>
