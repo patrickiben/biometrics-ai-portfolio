@@ -381,7 +381,7 @@ function visClin(s,i){ // worst screening severity at visit i (hepatic AND-gate,
   return sev;
 }
 S.forEach(s=>{ s.worstByVisit=s.visits.map((vv,i)=>vv.present?visClin(s,i):'gap'); });
-const cohAgg=COH.map(([c,dose,k])=>{const ss=S.filter(s=>s.coh===c);const nd=ss.filter(s=>s.dltfl==='Y').length;const neval=ss.filter(s=>s.dlteval==='Y'||s.dltfl==='Y').length||ss.length;
+const cohAgg=COH.map(([c,dose,k])=>{const ss=S.filter(s=>s.coh===c);const nd=ss.filter(s=>s.dltfl==='Y').length;const neval=ss.filter(s=>s.dltfl==='Y'||s.dlteval==='Y'||(s.visits||[]).some((v,i)=>v&&v.present&&VDAY[i]>=DLT_WINDOW_DAY)).length; /* evaluable = DLT, or completed the 28-day window */
   return {c,dose,plannedN:k,n:ss.length,nd,neval,dltsev:nd>=2?'RED':(nd===1&&neval<6)?'AMBER':'GREEN',nsae:ss.filter(s=>s.sae).length,ng3:ss.filter(s=>s.g3).length,nae:ss.reduce((a,s)=>a+s.nae,0),aesev:ss.some(s=>s.sae||s.g3)?'AMBER':'GREEN'};});
 const sevRank={GREEN:0,watch:0,baselineWatch:0,AMBER:1,RED:2,ERROR:3,gap:0};
 function worst(...a){return a.reduce((w,x)=>sevRank[x]>sevRank[w]?x:w,'GREEN')}
