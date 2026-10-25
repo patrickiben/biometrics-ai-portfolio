@@ -1,7 +1,7 @@
 {
- "generated": "2026-10-25 13:55 EDT",
+ "generated": "2026-10-25 14:11 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 7,
+ "green": 8,
  "manual": 1,
  "unsigned": 1,
  "total": 10,
@@ -72,8 +72,8 @@
   {
    "gate": "G10 Harness sensitivity",
    "guards": "the harness's own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)",
-   "status": "stale",
-   "evidence": "stale: the last run used a different registry; changed since the last run: validation_harness/run_harness.sh, sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R, validation_harness/teeth/run_teeth.sh. registry of 18 defects frozen at sha256 e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3; last run 2026-10-25: CAUGHT 13, SURVIVED 1, EQUIVALENT 1, NOT APPLICABLE 2; survived (disclosed, not failures): D04 (exp(mean(x)) as the geometric mean in one R PK TLF program); the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
+   "status": "green",
+   "evidence": "registry of 18 defects frozen at sha256 e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3; last run 2026-10-25: CAUGHT 14, SURVIVED 1, EQUIVALENT 1, NOT APPLICABLE 2; survived (disclosed, not failures): D04 (exp(mean(x)) as the geometric mean in one R PK TLF program); the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
    "sign_off": "pending"
   }
  ]

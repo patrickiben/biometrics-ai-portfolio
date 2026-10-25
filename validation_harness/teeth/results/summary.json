@@ -2,22 +2,22 @@
  "run_date": "2026-10-25",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "registry": "validation_harness/teeth/defects.csv",
- "registry_sha256": "6693bc70198f6a68c49ce9eee80f9dc053dec88ba07fa78f407703fd1cfa4e62",
- "n_defects": 17,
- "n_run": 17,
+ "registry_sha256": "e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3",
+ "n_defects": 18,
+ "n_run": 18,
  "partial": false,
  "gate_scripts": {
-  "validation_harness/run_harness.sh": "1ce0f4ea047055678fb873aa252d79e2a5d3c7226e297a0686668336fdf95c76",
+  "validation_harness/run_harness.sh": "f4b356db3f25c1d45b3777fcbbb6c5f7eafbfe28058f9669eed0f68ac2fa85c6",
   "validation_harness/checks/conformance.R": "2338845c397bba61e22ff8dc7457e5f0b2ad8d42c14a17467fb2a7979d42e35b",
   "validation_harness/checks/independent_recompute.R": "e6d6f950d7009792544c51fda0600bda77cb4c3af6bc38502d74c50bd38e7dce",
   "package_qc.py": "7220a0252da09492e354e0013c50782e6df4d5f09a5f5349bea441ca875819eb",
   "sasr_monitoring_wiki/trialmon_tests/testthat/helper-trialmon.R": "991042b6ad58fe7cf6fb1392397919add6ef34fdb977365b7371256903393dbc",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-boundaries.R": "73b91a31b4652749d096e69508c5f621002b1605bdff2d0a987ed077a3474f7a",
-  "sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R": "5f74e6745f758c46c1be7de726fe3fc7f0f732b7c87451671b49cea6bf029f2e",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R": "6cc1ea345e1a14a50e969cecd16c165b7978dba17a3c7fe2613704857263333e",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-logic.R": "1376040d1d0cc7d76d2263f64be28e7c041cd59c2133188afdd2a9f11a97fc18",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-server.R": "ef6fa458db58c12ee188e3133d44ed6f506f4a60253feccf59ff59dd91eb4f4f",
   "uat_irt/tests/test-logic.R": "390bfb89d9dafa76ac41a1ea7f92682922918d71dbddfcefe179f942155fab12",
-  "validation_harness/teeth/run_teeth.sh": "a0a3a4e2328a29b77e683886e3be0c66bbf4251d570f05d79616cdc34ce4832d",
+  "validation_harness/teeth/run_teeth.sh": "dd29995c18b349a4dd843a5c997ac47f0cf2a26e768029356b8ef5ba06c76c78",
   "validation_harness/teeth/apply_defect.py": "45ae6c5c8041139f49cb9cb4d0d9189e9c3d8971bb8ee90c0eb34569bd671f97"
  },
  "baseline": {
@@ -42,12 +42,13 @@
   }
  },
  "counts": {
-  "CAUGHT": 13,
+  "CAUGHT": 14,
   "SURVIVED": 1,
   "EQUIVALENT": 1,
   "NOT APPLICABLE": 2
  },
- "as_predicted": 17,
+ "as_predicted": 18,
+ "as_predicted_rule": "same class as predicted, and every predicted catcher among the layers that caught it (a defect caught by more layers than predicted still matches; beyond_prediction lists the extra layers)",
  "results_csv": "validation_harness/teeth/results/teeth_2026-10-25.csv",
  "rows": [
   {
@@ -59,8 +60,9 @@
    "class": "EQUIVALENT",
    "layers": "",
    "differs": "",
-   "note": "no output or printed result differs from the unmutated copy (diff)",
-   "status": "as predicted"
+   "note": "no output or printed result differs from the unmutated copy on the shipped data (diff); not proof that the change has no effect on other data",
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D01",
@@ -72,7 +74,8 @@
    "layers": "generator error; G1",
    "differs": "printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D02",
@@ -84,7 +87,8 @@
    "layers": "driver error; G3; G9",
    "differs": "adpp.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D03",
@@ -96,7 +100,8 @@
    "layers": "G3; G9",
    "differs": "adae.csv; results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D04",
@@ -108,7 +113,8 @@
    "layers": "",
    "differs": "",
    "note": "no layer runs this program, so nothing can differ or fail",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D05",
@@ -120,7 +126,8 @@
    "layers": "G9",
    "differs": "results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D06",
@@ -132,7 +139,8 @@
    "layers": "G9",
    "differs": "results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D07",
@@ -144,7 +152,8 @@
    "layers": "G9",
    "differs": "results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D08",
@@ -156,7 +165,8 @@
    "layers": "G9",
    "differs": "results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D09",
@@ -168,7 +178,8 @@
    "layers": "G9",
    "differs": "results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D10",
@@ -180,7 +191,8 @@
    "layers": "G9",
    "differs": "adpp.csv; results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D11",
@@ -192,7 +204,8 @@
    "layers": "G9",
    "differs": "adpp.csv; results_summary.csv; printed driver output",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D12",
@@ -204,7 +217,8 @@
    "layers": "trialmon/test-boundaries.R; trialmon/test-hyslaw-grid.R; trialmon/test-logic.R; trialmon/test-server.R",
    "differs": "TRIALMON screening outputs",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": "trialmon/test-boundaries.R; trialmon/test-server.R"
   },
   {
    "id": "D13",
@@ -216,7 +230,8 @@
    "layers": "trialmon/test-boundaries.R; trialmon/test-hyslaw-grid.R; trialmon/test-logic.R; trialmon/test-server.R",
    "differs": "TRIALMON screening outputs",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": "trialmon/test-boundaries.R; trialmon/test-server.R"
   },
   {
    "id": "D14",
@@ -228,7 +243,8 @@
    "layers": "trialmon/test-hyslaw-grid.R",
    "differs": "TRIALMON screening outputs",
    "note": "",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D15",
@@ -240,7 +256,8 @@
    "layers": "",
    "differs": "",
    "note": "ADPC has 80 predose records, 0 above zero, so a 5% predose exclusion never fires; actual-time variables in ADPC: none (only nominal ATPTN)",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
   },
   {
    "id": "D16",
@@ -252,8 +269,22 @@
    "layers": "",
    "differs": "",
    "note": "ADPC has 80 predose records, 0 above zero, so a 5% predose exclusion never fires; actual-time variables in ADPC: none (only nominal ATPTN)",
-   "status": "as predicted"
+   "status": "as predicted",
+   "beyond_prediction": ""
+  },
+  {
+   "id": "D17",
+   "defect": "Grid window lower bound made strict (> for >=) in hys_grid_cell()",
+   "defect_class": "screening rule",
+   "file": "sasr_monitoring_wiki/trialmon_shiny/R/hyslaw_grid.R",
+   "predicted": "CAUGHT: trialmon/test-hyslaw-grid.R",
+   "class": "CAUGHT",
+   "layers": "trialmon/test-hyslaw-grid.R",
+   "differs": "",
+   "note": "",
+   "status": "as predicted",
+   "beyond_prediction": ""
   }
  ],
- "note": "Counts by class for this hand-picked, pre-registered list; they estimate nothing beyond it (no detection rate, no interval). Survivors are disclosures, not failures."
+ "note": "Counts by class for this hand-picked, pre-registered list; they estimate nothing beyond it (no detection rate, no interval). Survivors are disclosures, not failures. EQUIVALENT is decided by diff on the shipped data, so it is not proof that a change has no effect."
 }
