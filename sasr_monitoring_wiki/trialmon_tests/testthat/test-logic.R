@@ -11,6 +11,12 @@ test_that("the synthetic study has 18 dosed participants in four cohorts, C5 pla
   expect_equal(TM$cohorts$STATUS[TM$cohorts$COHORT == "C5"], "Planned; not dosed")
 })
 
+test_that("empty character fields load as empty strings, not NA", {
+  expect_false(anyNA(TM$adsl$DCTREAS)); expect_false(anyNA(TM$adsl$DLTDESC)); expect_false(anyNA(TM$adsl$DLTFL))
+  expect_equal(TM$adsl$DCTREAS[TM$adsl$USUBJID == "CP101-009"], "")
+  expect_equal(TM$adsl$DCTREAS[TM$adsl$USUBJID == "CP101-014"], "ADVERSE EVENT")
+})
+
 test_that("CP101-009 (ALT 4.2x, AST 3.6x, TBL 1.6x ULN) is flagged for confirmation, not green", {
   r <- row("CP101-009")
   expect_equal(c(r$peak_alt, r$peak_ast, r$peak_tbl), c(4.2, 3.6, 1.6))

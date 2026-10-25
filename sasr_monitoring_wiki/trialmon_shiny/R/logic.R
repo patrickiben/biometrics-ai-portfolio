@@ -26,8 +26,9 @@
 #     only AST reached 3x in that draw: >= 5 hepatocellular, 2 < R < 5 mixed, <= 2 cholestatic.
 #   QTcF (ICH E14 categorical analysis; E14/S7B Q&As): post-baseline QTcF > 450, > 480, > 500 ms;
 #     change from baseline > 30 and > 60 ms. Screen tiers: RED > 500 or change > 60;
-#     AMBER > 480 or change > 30; watch > 450.
-#   Lab grades: NCI CTCAE v6.0 by default, v5.0 when the protocol says so (ctcae_grade()).
+#     AMBER > 480 or change > 30; watch > 450 (a worklist row, so it reaches the roll-up too).
+#   Lab grades: NCI CTCAE v6.0 by default, v5.0 when the protocol says so (ctcae_grade()). AE grades
+#     are data, as recorded by the investigator (`ae_ctcae`, v6.0 here); they are never re-derived.
 #   DLT tally against 3+3, shown only as an illustrative rule reference (tpt_state()).
 #   Roll-up: worst-of at every level (participant, cohort, study tier, overall), watch included.
 #     Never an average.
@@ -41,10 +42,13 @@ worst <- function(v) {
   SEV_LEVELS[max(sev_rank(v))]
 }
 
-trialmon_settings <- function(ctcae = "6.0", hys_window = 30, alp_convention = FALSE, meddra = "29.1") {
+# ctcae: the version lab grades are derived under. ae_ctcae: the version the investigator recorded
+# AE grades under (a property of the data, shown in footnotes; changing `ctcae` does not change it).
+trialmon_settings <- function(ctcae = "6.0", hys_window = 30, alp_convention = FALSE, meddra = "29.1",
+                              ae_ctcae = "6.0") {
   ctcae <- match.arg(as.character(ctcae), c("6.0", "5.0"))
   list(ctcae = ctcae, hys_window = as.numeric(hys_window), alp_convention = isTRUE(alp_convention),
-       meddra = as.character(meddra))
+       meddra = as.character(meddra), ae_ctcae = as.character(ae_ctcae))
 }
 
 trialmon_load <- function(dir = NULL) {
@@ -55,7 +59,7 @@ trialmon_load <- function(dir = NULL) {
   rd <- function(f) utils::read.csv(file.path(base, f), stringsAsFactors = FALSE, na.strings = "")
   tm <- list(adsl = rd("adsl.csv"), adlb = rd("adlb.csv"), adeg = rd("adeg.csv"), adae = rd("adae.csv"),
              cohorts = rd("cohorts.csv"), kri = rd("study_kri.csv"), notes = rd("notes.csv"))
-  tm$adsl$DLTFL[is.na(tm$adsl$DLTFL)] <- ""
+  for (v in c("DLTFL", "DCTREAS", "DLTDESC")) tm$adsl[[v]][is.na(tm$adsl[[v]])] <- ""   # empty, not NA
   tm
 }
 
@@ -495,6 +499,9 @@ liver_trajectory <- function(tm, id) {
   long$test <- factor(long$test, levels = c("ALT", "AST", "ALP", "BILI"), labels = c("ALT", "AST", "ALP", "TBL"))
   long[!is.na(long$xuln), ]
 }
+
+# the label every exported file carries
+SYNTHETIC_LABEL <- "SYNTHETIC (study CP-101 does not exist)"
 
 # CSV text for a client-side download (no downloadHandler, so the app runs under Shinylive)
 as_csv_text <- function(df) {

@@ -19,6 +19,8 @@ tm <- trialmon_load("data")
 STUDY0 <- study_signals(tm)
 KRI0 <- STUDY0$ID[STUDY0$LEVEL != "GREEN"][1]          # first firing indicator opens selected
 LEVELS <- c("GREEN", "AMBER", "RED")
+E6R3 <- paste("ICH E6(R3) (Step 4 6 Jan 2025; EU effective 23 Jul 2025; FDA final guidance Sep 2025);",
+              "Annex 2 Step 4 3 Jun 2026 (CHMP 25 Jun 2026, EU effective 15 Jan 2027; FDA: draft guidance Dec 2024, not final)")
 
 # a few lines of JavaScript: turn a CSV string sent from R into a file the browser saves
 DOWNLOAD_JS <- "
@@ -34,6 +36,12 @@ SEV_CSS <- "
 .sev-RED{color:#b42318}.sev-AMBER{color:#8a5300}.sev-watch{color:#2f5f8a}.sev-GREEN{color:#1d6b3a}
 [data-bs-theme=dark] .sev-RED{color:#ff9b8f}[data-bs-theme=dark] .sev-AMBER{color:#f3c169}
 [data-bs-theme=dark] .sev-watch{color:#9cc3ea}[data-bs-theme=dark] .sev-GREEN{color:#8fd8a8}
+[data-bs-theme=dark] .btn-outline-primary{--bs-btn-color:#9cc3ea;--bs-btn-border-color:#9cc3ea;--bs-btn-hover-color:#12171d;
+ --bs-btn-hover-bg:#9cc3ea;--bs-btn-hover-border-color:#9cc3ea;--bs-btn-active-color:#12171d;--bs-btn-active-bg:#9cc3ea;
+ --bs-btn-active-border-color:#9cc3ea;--bs-btn-focus-shadow-rgb:156,195,234}
+[data-bs-theme=dark] .btn-outline-secondary{--bs-btn-color:#c9d1d9;--bs-btn-border-color:#8b949e;--bs-btn-hover-color:#12171d;
+ --bs-btn-hover-bg:#c9d1d9;--bs-btn-hover-border-color:#c9d1d9;--bs-btn-active-color:#12171d;--bs-btn-active-bg:#c9d1d9;
+ --bs-btn-active-border-color:#c9d1d9;--bs-btn-focus-shadow-rgb:201,209,217}
 .packet dt{font-weight:600;margin-top:.4rem}.packet dd{margin:0}
 .foot{font-size:.85rem;color:var(--bs-secondary-color)}
 .tm-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:.5rem;margin:.5rem 0 .9rem}
@@ -57,8 +65,10 @@ ui <- page_sidebar(
     uiOutput("packet"),
     hr(),
     h6("SAP settings"),
-    radioButtons("ctcae", "Lab grading", choices = c("NCI CTCAE v6.0" = "6.0", "v5.0 (per protocol)" = "5.0"),
+    radioButtons("ctcae", "Lab grading (derived from the lab values)", choices = c("NCI CTCAE v6.0" = "6.0", "v5.0 (per protocol)" = "5.0"),
                  selected = "6.0"),
+    p(class = "foot", sprintf(paste("This setting re-derives lab grades only. AE grades stay as the investigator",
+                                    "recorded them (NCI CTCAE v%s in these data)."), trialmon_settings()$ae_ctcae)),
     numericInput("window", "Potential Hy's Law: days after the AT elevation", value = 30, min = 1, max = 90),
     checkboxInput("alp", "Also require ALP < 2x ULN (an SAP convention)", value = FALSE),
     textInput("meddra", "MedDRA version (label)", value = "29.1")
@@ -82,7 +92,7 @@ ui <- page_sidebar(
     nav_panel("Worklist",
       div(class = "d-flex flex-wrap gap-2 align-items-center mb-2",
           actionButton("dl", "Download the worklist (CSV)", class = "btn-sm btn-outline-primary"),
-          span(class = "foot", "Ranked RED, then AMBER. The file is built in your browser.")),
+          span(class = "foot", "Ranked RED, then AMBER, then watch. The file is built in your browser and labeled synthetic.")),
       DTOutput("worklist")),
     nav_panel("Liver (eDISH)",
       plotOutput("edish", height = "420px", click = "edish_click"),
@@ -112,7 +122,7 @@ ui <- page_sidebar(
         "alternative; this demo does not implement them. The committee adjudicates DLTs and decides.")),
     nav_panel("Study tier",
       p(class = "small", "Study-level indicators from the operational feed, plus two computed from the data. ",
-        "Exceeding a pre-specified range triggers evaluation, not an automatic stop (ICH E6(R3) 3.10.1.3). ",
+        "Exceeding a pre-specified range triggers evaluation, not an automatic stop (ICH E6(R3) section 3.10.1.3). ",
         "Try a what-if: pick an indicator and set its level; the tiers re-roll worst-of."),
       div(class = "d-flex flex-wrap gap-3 align-items-end",
           selectInput("kri", "Indicator", choices = setNames(STUDY0$ID, paste(STUDY0$ID, STUDY0$INDICATOR, sep = ": ")),
@@ -120,7 +130,8 @@ ui <- page_sidebar(
           radioButtons("kri_level", "Level (what-if)", choices = LEVELS, inline = TRUE,
                        selected = STUDY0$LEVEL[STUDY0$ID == KRI0]),
           actionButton("kri_reset", "Reset to the feed", class = "btn-sm btn-outline-secondary mb-3")),
-      DTOutput("study_tbl"))
+      DTOutput("study_tbl"),
+      p(class = "foot mt-2", paste0("Guidance: ", E6R3, ".")))
   )
 )
 
@@ -173,8 +184,8 @@ server <- function(input, output, session) {
   # client-side download: R builds the CSV text, the browser saves it (works under Shinylive)
   dl_payload <- reactiveVal(NULL)
   observeEvent(input$dl, {
-    p <- list(filename = sprintf("trialmon_worklist_CTCAEv%s.csv", settings()$ctcae),
-              type = "text/csv", content = as_csv_text(roll()$worklist))
+    p <- list(filename = sprintf("SYNTHETIC_trialmon_worklist_CTCAEv%s.csv", settings()$ctcae),
+              type = "text/csv", content = as_csv_text(cbind(data_source = SYNTHETIC_LABEL, roll()$worklist)))
     dl_payload(p)
     session$sendCustomMessage("trialmon-download", p)
   })
@@ -258,7 +269,9 @@ server <- function(input, output, session) {
   }, striped = TRUE, spacing = "s")
   output$ae_note <- renderUI(p(class = "foot", sprintf(paste0(
     "Treatment-emergent AEs, participants counted once per row; N = dosed participants. Coded with MedDRA v%s ",
-    "(primary SOC). Grades as recorded (NCI CTCAE v6.0)."), settings()$meddra)))
+    "(primary SOC). AE grades as recorded by the investigator (NCI CTCAE v%s); the lab-grade setting ",
+    "(now v%s) re-derives lab grades only and does not change a recorded AE grade."),
+    settings()$meddra, settings()$ae_ctcae, settings()$ctcae)))
 
   output$dlt_tbl <- renderTable({
     d <- dlt_state(tm)
@@ -307,7 +320,7 @@ server <- function(input, output, session) {
       div(class = "fw-bold", sprintf("%s: %s, %g mg", id, s$COHORT, s$DOSEMG), " ", sev_span(pstat()[[id]])),
       tags$dl(
         tags$dt("Disposition"), tags$dd(sprintf("Treatment %s%s; study %s", tolower(s$EOTSTT),
-          if (nzchar(s$DCTREAS)) paste0(" (", tolower(s$DCTREAS), ")") else "", tolower(s$EOSSTT))),
+          if (!is.na(s$DCTREAS) && nzchar(s$DCTREAS)) paste0(" (", tolower(s$DCTREAS), ")") else "", tolower(s$EOSSTT))),
         tags$dt("DLT"), tags$dd(if (s$DLTADJ == "Pending") paste("Pending adjudication:", s$DLTDESC)
                                 else if (s$DLTFL == "Y") s$DLTDESC else "No DLT"),
         tags$dt("Liver"), tags$dd(hep, if (!is.na(h$r_at3)) sprintf(" (R %.1f, %s)", h$r_at3, h$pattern)),

@@ -77,15 +77,41 @@ test_that("CP101-009 is AMBER in the running app", {
   })
 })
 
-test_that("the download is built in the browser from a CSV string (no downloadHandler)", {
+test_that("the participant packet never prints NA", {
+  shiny::testServer(APP_DIR, {
+    session$setInputs(ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
+    for (id in TM$adsl$USUBJID) {
+      session$setInputs(pid = id)
+      expect_false(grepl("\\bNA\\b", output$packet$html), info = id)
+    }
+    session$setInputs(pid = "CP101-009")
+    expect_match(output$packet$html, "Treatment completed; study completed")
+    session$setInputs(pid = "CP101-014")
+    expect_match(output$packet$html, "Treatment discontinued \\(adverse event\\)")
+  })
+})
+
+test_that("footnotes name the CTCAE version: lab grades follow the setting, recorded AE grades do not", {
+  shiny::testServer(APP_DIR, {
+    session$setInputs(ctcae = "5.0", window = 30, alp = FALSE, meddra = "29.1")
+    expect_match(output$shift_note$html, "Lab grades: NCI CTCAE v5.0")
+    expect_match(output$ae_note$html, "AE grades as recorded by the investigator \\(NCI CTCAE v6.0\\)")
+    expect_match(output$ae_note$html, "\\(now v5.0\\) re-derives lab grades only")
+    expect_match(output$ae_note$html, "MedDRA v29.1")
+  })
+})
+
+test_that("the download is built in the browser from a CSV string (no downloadHandler), labeled synthetic", {
   shiny::testServer(APP_DIR, {
     session$setInputs(ctcae = "6.0", window = 30, alp = FALSE)
     expect_null(dl_payload())
     session$setInputs(dl = 1)
     p <- dl_payload()
-    expect_equal(p$filename, "trialmon_worklist_CTCAEv6.0.csv")
+    expect_equal(p$filename, "SYNTHETIC_trialmon_worklist_CTCAEv6.0.csv")
     expect_equal(p$type, "text/csv")
     back <- utils::read.csv(text = p$content, stringsAsFactors = FALSE)
+    expect_equal(names(back)[1], "data_source")
+    expect_true(all(back$data_source == "SYNTHETIC (study CP-101 does not exist)"))
     expect_equal(back$id, roll()$worklist$id)
   })
 })
