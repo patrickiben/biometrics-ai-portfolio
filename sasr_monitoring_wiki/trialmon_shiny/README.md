@@ -68,6 +68,12 @@ against the NCI v6.0 workbook here. The v5.0 cut points follow the NCI v5.0 work
 Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R   # needs testthat (>= 3.0)
 ```
 
+## Moved pages
+
+The hand-built pages `TRIALMON_Dashboard.html` and `TRIALMON_Dashboard_Wiki.html` were retired. Small
+redirect stubs at those paths in `sasr_monitoring_wiki/` send old links to the
+[TRIALMON landing page](../index.html).
+
 The [visual guide](../trialmon_quarto/trialmon-guide.html), the [snapshot](../trialmon_quarto/trialmon-dashboard.html),
 the [run-and-build page](../trialmon_quarto/trialmon-build.html) and the
 [SRC safety packet](../trialmon_quarto/trialmon-src-packet.html) are rendered from this same code.
