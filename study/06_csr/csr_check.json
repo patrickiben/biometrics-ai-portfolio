@@ -40,10 +40,10 @@
     },
     {
       "paragraph": "11.4.1b",
-      "numbers_checked": 12,
+      "numbers_checked": 14,
       "unmatched": "",
       "claims_flagged": "",
-      "words": 44,
+      "words": 57,
       "sentences": 3,
       "status": "DRAFT_OK"
     },
@@ -57,12 +57,30 @@
       "status": "DRAFT_OK"
     },
     {
-      "paragraph": "11.4.2.2",
-      "numbers_checked": 12,
+      "paragraph": "11.4.2a",
+      "numbers_checked": 28,
       "unmatched": "",
       "claims_flagged": "",
-      "words": 78,
-      "sentences": 5,
+      "words": 83,
+      "sentences": 3,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.2.2a",
+      "numbers_checked": 8,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 76,
+      "sentences": 4,
+      "status": "DRAFT_OK"
+    },
+    {
+      "paragraph": "11.4.2.2b",
+      "numbers_checked": 14,
+      "unmatched": "",
+      "claims_flagged": "",
+      "words": 69,
+      "sentences": 3,
       "status": "DRAFT_OK"
     },
     {
@@ -78,11 +96,11 @@
   "controls": [
     {
       "control": "C1",
-      "what": "One number altered (upper Cmax limit changed to 108.31)",
+      "what": "One number altered (upper Cmax limit changed to 108.47)",
       "expected": "REJECTED",
       "status": "REJECTED",
-      "unmatched": "108.31",
-      "text": "The adjusted geometric mean Cmax was 103.3 ng/mL for Test and 102.2 ng/mL for Reference. The ratio of geometric means (Test/Reference) was 101.07% with a 90% confidence interval of 98.89% to 108.31%. For AUC(0-t) the adjusted geometric means were 1204.9 and 1158.7 h*ng/mL, and the ratio was 103.99% (90% CI 98.52% to 109.75%). Both intervals lie within 80.00% to 125.00% (Table 14.4.3.1).",
+      "unmatched": "108.47",
+      "text": "The adjusted geometric mean Cmax was 103.3 ng/mL for Test and 102.2 ng/mL for Reference. The ratio of geometric means (Test/Reference) was 101.07% with a 90% confidence interval of 98.89% to 108.47%. For AUC(0-t) the adjusted geometric means were 1204.9 and 1158.7 h*ng/mL, and the ratio was 103.99% (90% CI 98.52% to 109.75%). Both intervals lie within 80.00% to 125.00% (Table 14.4.3.1).",
       "as_expected": true
     },
     {
