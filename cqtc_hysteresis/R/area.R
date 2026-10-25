@@ -2,7 +2,9 @@
 # cqtc_hysteresis/R/area.R
 # The C-QTc hysteresis check: signed loop area of each participant's
 # (scaled concentration, residual ddQTcF) path, computed on residuals from the
-# prespecified direct-effect model, with a participant-level sign-flip test.
+# prespecified direct-effect model, with a test of the mean area whose standard
+# error includes the time-matched placebo mean that every active participant's
+# ddQTcF shares (and an exact sign-flip test for designs without that sharing).
 # Base R; nlme (a recommended package that ships with R) only for the optional
 # random-intercept comparison fit. Synthetic data only.
 #
@@ -13,6 +15,10 @@
 #     A_i > 0 = counterclockwise = effect lags concentration
 #   * direct-effect model, no time factor: y_ij = f(C_ij; theta) + b_i + e_ij,
 #     f linear (theta0 + theta1 C) or Emax (E0 + Emax C / (EC50 + C))
+#   * ddQTcF_ij = dQTcF_ij - pbar_j, pbar = time-matched mean of the pooled placebo
+#     group. Because the area is bilinear, mean_i A_i = mean_i area(x_i, dQTcF_i - f)
+#     - mean_k area(x-bar, P_k): the placebo participants enter A-bar through their
+#     areas against the active mean x profile, so their spread enters its variance.
 ################################################################################
 
 ## ---- signed area ------------------------------------------------------------
@@ -159,6 +165,10 @@ resid_areas <- function(C, Y, fit, X = scale_conc(C)) {
 ## Participant-level sign-flip test of mean(A). Exact enumeration of all 2^n sign
 ## vectors when n <= exact_max; otherwise B random sign vectors with
 ## p = (1 + #{T* >= T}) / (B + 1). One-sided (counterclockwise) and two-sided (|T|).
+## Exact only when the A_i are independent and each symmetric about 0 under the
+## null, as when each participant's ddQTcF uses their own placebo period. With a
+## pooled time-matched placebo mean the A_i share -area(x_i, u-bar) and this test is
+## too liberal; use pbo_t_test() there.
 signflip_test <- function(A, B = 9999L, exact_max = 20L) {
   n <- length(A); Tobs <- mean(A)
   tol <- 1e-10 * (sum(abs(A)) / n + .Machine$double.xmin)
@@ -177,13 +187,56 @@ signflip_test <- function(A, B = 9999L, exact_max = 20L) {
        method = "monte carlo", nvec = B)
 }
 
+## Placebo participants' signed areas h_k: each placebo participant's deviation
+## from the time-matched placebo mean, P_k - pbar, against the mean scaled
+## concentration profile of the active participants in the comparison. Their
+## mean is 0 by construction; their spread is what the shared pbar adds to A-bar.
+placebo_areas <- function(X, P) {
+  loop_areas(matrix(colMeans(X), nrow(P), ncol(P), byrow = TRUE), sweep(P, 2, colMeans(P)))
+}
+
+## Primary test when ddQTcF uses a pooled placebo mean: t = A-bar / SE with
+## SE^2 = var(A_i) / n + var(h_k) / n_pbo and Welch-Satterthwaite degrees of freedom.
+## (The shared term, -area(x_i, u-bar), is nearly the same for every participant, so
+## it nearly drops out of var(A_i); var(h_k) / n_pbo is the variance it adds to A-bar.)
+## With h = NULL it is the one-sample t-test (independent ddQTcF errors).
+## Returns one- and two-sided p values and the matching 95% CI for A-bar.
+pbo_t_test <- function(A, h = NULL) {
+  n <- length(A); va <- var(A) / n
+  if (is.null(h)) { vh <- 0; df <- n - 1 } else {
+    np <- length(h); vh <- var(h) / np
+    df <- (va + vh)^2 / (va^2 / (n - 1) + vh^2 / (np - 1))
+  }
+  se <- sqrt(va + vh); tt <- mean(A) / se
+  list(stat = mean(A), se = se, df = df, t = tt,
+       p_one = pt(tt, df, lower.tail = FALSE), p_two = 2 * pt(-abs(tt), df),
+       ci95 = mean(A) + c(-1, 1) * qt(0.975, df) * se,
+       method = if (is.null(h)) "one-sample t" else "placebo-adjusted t")
+}
+
 ## Secondary test: parametric bootstrap from the fitted direct-effect model
-## (no delay by construction). y* = f-hat(C) + b-hat_i + e*, e* ~ N(0, sigma-hat^2);
-## f is refitted to each y* and its residual mean area is the null draw.
-param_boot_test <- function(C, Y, fit, B = 999L, X = scale_conc(C)) {
+## (no delay by construction). y* = f-hat(C) + b-hat_i + e* - u-bar*, with
+## e* ~ N(0, sigma-hat^2) per active participant and time, and, when the pooled
+## placebo series P is given, a shared u-bar* ~ N(0, sigma-hat_p^2 / n_pbo) per time
+## for the time-matched placebo mean. sigma-hat comes from the residuals with their
+## time-point means removed (so the shared placebo-mean noise is not counted
+## twice) and sigma-hat_p from the doubly centered placebo series. f is refitted to
+## each y* and its residual mean area is the null draw.
+param_boot_test <- function(C, Y, fit, B = 999L, X = scale_conc(C), P = NULL) {
   n <- nrow(Y); m <- ncol(Y)
   Tobs <- mean(resid_areas(C, Y, fit, X))
-  E <- matrix(rnorm(B * n * m, 0, fit$sigma), B, n * m)   # each row = one e* (as.vector)
+  if (is.null(P)) sig <- fit$sigma else {
+    R <- Y - fit$fitted; R <- sweep(R, 2, colMeans(R))      # rows already have mean 0
+    k <- if (fit$form == "linear") 1 else 2
+    sig <- sqrt(sum(R^2) / ((n - 1) * (m - 1) - k))
+    Pc <- sweep(P - rowMeans(P), 2, colMeans(P - rowMeans(P)))
+    sig_p <- sqrt(sum(Pc^2) / ((nrow(P) - 1) * (m - 1)))
+  }
+  E <- matrix(rnorm(B * n * m, 0, sig), B, n * m)          # each row = one e* (as.vector)
+  if (!is.null(P)) {                                       # shared placebo-mean draw per time
+    U <- matrix(rnorm(B * m, 0, sig_p / sqrt(nrow(P))), B, m)
+    E <- E - U[, rep(seq_len(m), each = n), drop = FALSE]
+  }
   j <- c(seq_len(m)[-1], 1L)
   area_rows <- function(R) {                              # B x N -> B x n areas
     out <- matrix(0, nrow(R), n)
@@ -214,7 +267,8 @@ param_boot_test <- function(C, Y, fit, B = 999L, X = scale_conc(C)) {
     }, numeric(1))
   }
   list(stat = Tobs, p_one = (1 + sum(Ts >= Tobs)) / (B + 1),
-       p_two = (1 + sum(abs(Ts) >= abs(Tobs))) / (B + 1), B = B)
+       p_two = (1 + sum(abs(Ts) >= abs(Tobs))) / (B + 1), B = B,
+       sigma = sig, sigma_pbo = if (is.null(P)) NA_real_ else sig_p)
 }
 
 ## tmax gap, reported beside the test. Two conventions:
@@ -229,24 +283,34 @@ tmax_gap <- function(times, C, Y) {
 }
 
 ## ---- the check as an SAP would run it ---------------------------------------------
+## Y is ddQTcF (active participants). P is the pooled placebo group's dQTcF whose
+## time-matched mean was subtracted to make Y; with P the test is the
+## placebo-adjusted t-test. P = NULL declares that ddQTcF errors are independent
+## across participants (each participant corrected by their own placebo period, as
+## in a crossover); then the participant-level sign-flip test is exact.
 ## form: "linear", "emax", or "select" (linearity check chooses). D1 (optional) is the
-## Day -1 time-matched QTcF, centered within participant, paired with Day 1 x.
-hysteresis_check <- function(times, C, Y, form = "linear", B = 9999L, boot_B = 999L,
-                             D1 = NULL, exact_max = 20L) {
+## Day -1 series corrected the same way as Day 1 (paired with Day 1 x), and D1P the
+## placebo group's centered Day -1 series whose time-matched mean corrected it.
+hysteresis_check <- function(times, C, Y, P = NULL, form = "linear", B = 9999L, boot_B = 999L,
+                             D1 = NULL, D1P = NULL, exact_max = 20L) {
   X <- scale_conc(C)
   fit <- fit_direct(C, Y, form)
   A <- resid_areas(C, Y, fit, X)
   n <- length(A)
-  sf <- signflip_test(A, B, exact_max)
-  half <- qt(0.975, n - 1) * sd(A) / sqrt(n)
-  out <- list(n = n, model = fit$form, theta = fit$theta, A = A,
-              Abar = mean(A), ci95 = mean(A) + c(-1, 1) * half,
-              p_one = sf$p_one, p_two = sf$p_two, test = sf$method, nvec = sf$nvec,
+  tt <- pbo_t_test(A, if (is.null(P)) NULL else placebo_areas(X, P))
+  out <- list(n = n, n_pbo = if (is.null(P)) NA_integer_ else nrow(P), model = fit$form,
+              theta = fit$theta, A = A, Abar = mean(A), se = tt$se, df = tt$df, ci95 = tt$ci95,
               tmax_gap = tmax_gap(times, C, Y))
-  if (boot_B > 0) out$boot <- param_boot_test(C, Y, fit, boot_B, X)
+  if (is.null(P)) {
+    sf <- signflip_test(A, B, exact_max)
+    out[c("p_one", "p_two", "test", "nvec")] <- list(sf$p_one, sf$p_two, paste("sign-flip,", sf$method), sf$nvec)
+  } else {
+    out[c("p_one", "p_two", "test", "nvec")] <- list(tt$p_one, tt$p_two, tt$method, NA_integer_)
+  }
+  if (boot_B > 0) out$boot <- param_boot_test(C, Y, fit, boot_B, X, P)
   if (!is.null(D1)) {
     A1 <- loop_areas(X, D1)
-    s1 <- signflip_test(A1, B, exact_max)
+    s1 <- if (is.null(D1P)) signflip_test(A1, B, exact_max) else pbo_t_test(A1, placebo_areas(X, D1P))
     out$day_m1 <- list(Abar = mean(A1), p_one = s1$p_one, p_two = s1$p_two)
   }
   out

@@ -1,7 +1,7 @@
 ################################################################################
 # cqtc_hysteresis/tests/test_area.R
-# Tests for the signed loop area, the sign-flip test, the direct-effect fits and
-# the TLF shells' gates. Base R (+ nlme, which ships with R). Synthetic data only.
+# Tests for the signed loop area, the placebo-adjusted and sign-flip tests, the
+# direct-effect fits and the TLF shells' gates. Base R (+ nlme, which ships with R). Synthetic data only.
 # Run from the repository root:  Rscript cqtc_hysteresis/tests/test_area.R
 # Exits non-zero if any check fails. About 1 minute.
 ################################################################################
@@ -63,6 +63,29 @@ gaps <- vapply(1:25, function(k) {
 check("exact enumeration matches Monte Carlo (B = 9,999) within 3 MCSE at n = 10 (25 datasets)",
       max(gaps) <= 3, sprintf("largest gap %.2f MCSE; %d of 25 within 1 MCSE", max(gaps), sum(gaps <= 1)))
 
+## ---- the shared placebo mean ------------------------------------------------------------
+set.seed(21)
+dp <- sim_trial(32, 8, model = "emax", ke0 = 0.7)
+Xp <- scale_conc(dp$C); fp <- fit_emax(dp$C, dp$Y)
+lhs <- mean(resid_areas(dp$C, dp$Y, fp, Xp))
+rhs <- mean(loop_areas(Xp, dp$dY - fp$fitted)) -
+       mean(loop_areas(matrix(colMeans(Xp), 8, ncol(Xp), byrow = TRUE), dp$P))
+check("A-bar = mean active dQTcF area - mean placebo area against the active mean x profile (1e-10)",
+      abs(lhs - rhs) < 1e-10, sprintf("difference %.1e", lhs - rhs))
+check("placebo areas about the placebo mean sum to zero (1e-10)", abs(sum(placebo_areas(Xp, dp$P))) < 1e-10)
+set.seed(22); d0 <- sim_trial(32, 8, common_amp = 0)
+set.seed(22); d9 <- sim_trial(32, 8, common_amp = 9, common_phi = 5)
+check("time-matched placebo correction removes a common rhythm exactly (Day 1 and Day -1, 1e-12)",
+      max(abs(d0$Y - d9$Y)) < 1e-12 && max(abs(d0$D1 - d9$D1)) < 1e-12)
+Ap <- loop_areas(Xp, dp$Y); hp <- placebo_areas(Xp, dp$P)
+tp <- pbo_t_test(Ap, hp); tw <- t.test(Ap, hp, alternative = "greater")
+check("placebo-adjusted t equals Welch's two-sample t of active areas against placebo areas",
+      abs(tp$t - unname(tw$statistic)) < 1e-10 && abs(tp$df - unname(tw$parameter)) < 1e-8 &&
+      abs(tp$p_one - tw$p.value) < 1e-12)
+t1 <- pbo_t_test(Ap); to <- t.test(Ap)
+check("without placebo areas it is the one-sample t-test (p and CI)",
+      abs(t1$p_two - to$p.value) < 1e-12 && max(abs(t1$ci95 - as.numeric(to$conf.int))) < 1e-10)
+
 ## ---- the model matters --------------------------------------------------------------
 set.seed(7)
 d <- sim_trial(32, model = "linear", ke0 = 0.7)
@@ -91,36 +114,54 @@ fr_fit <- list(form = "emax", theta = fr, fitted = fr[["E0"]] + fr[["Emax"]] * d
 dA <- abs(mean(resid_areas(de$C, de$Y, fw, Xe)) - mean(loop_areas(Xe, de$Y - fr_fit$fitted)))
 check("within (fixed-intercept) and nlme random-intercept Emax fits give mean residual areas within 0.1 ms",
       dA < 0.1, sprintf("difference %.3f ms; EC50 %.3f vs %.3f", dA, fw$theta[["EC50"]], fr[["EC50"]]))
-## parametric bootstrap: the linear shortcut equals an explicit refit
+## parametric bootstrap: the linear shortcut equals an explicit refit, without and with
+## the shared placebo-mean draw
 set.seed(5)
-db <- sim_trial(12, model = "linear"); fb <- fit_linear(db$C, db$Y); Xb <- scale_conc(db$C)
-set.seed(99); pb <- param_boot_test(db$C, db$Y, fb, B = 50L, X = Xb)
-set.seed(99); E <- matrix(rnorm(50 * length(db$Y), 0, fb$sigma), 50)
-brute <- vapply(1:50, function(b) {
-  ys <- fb$fitted + matrix(E[b, ], nrow(db$Y)); f2 <- fit_linear(db$C, ys)
-  mean(resid_areas(db$C, ys, f2, Xb)) }, 0)
-check("parametric bootstrap: linear shortcut equals refitting each draw",
-      pb$p_one == (1 + sum(brute >= pb$stat)) / 51)
+db <- sim_trial(12, 8, model = "linear"); fb <- fit_linear(db$C, db$Y); Xb <- scale_conc(db$C)
+for (pooled in c(FALSE, TRUE)) {
+  PP <- if (pooled) db$P else NULL
+  set.seed(99); pb <- param_boot_test(db$C, db$Y, fb, B = 50L, X = Xb, P = PP)
+  set.seed(99); E <- matrix(rnorm(50 * length(db$Y), 0, pb$sigma), 50)
+  U <- if (pooled) matrix(rnorm(50 * ncol(db$Y), 0, pb$sigma_pbo / sqrt(nrow(db$P))), 50) else NULL
+  brute <- vapply(1:50, function(b) {
+    ys <- fb$fitted + matrix(E[b, ], nrow(db$Y))
+    if (pooled) ys <- ys - matrix(U[b, ], nrow(db$Y), ncol(db$Y), byrow = TRUE)
+    f2 <- fit_linear(db$C, ys)
+    mean(resid_areas(db$C, ys, f2, Xb)) }, 0)
+  check(sprintf("parametric bootstrap (%s): linear shortcut equals refitting each draw",
+                if (pooled) "pooled placebo" else "no shared placebo mean"),
+        pb$p_one == (1 + sum(brute >= pb$stat)) / 51)
+}
 
-## ---- known answers at 300 replicates -------------------------------------------------
-oc <- function(model, R = 300L, B = 1999L) {
-  rej <- matrix(NA, R, 2)
+## ---- known answers at 300 replicates (32 active, 8 pooled placebo) ------------------------
+## columns: placebo-adjusted t on the raw area, one-sample sign-flip on the raw area,
+## placebo-adjusted t on the Emax-residual area
+oc <- function(model, R = 300L, B = 1999L, placebo = "pooled") {
+  rej <- matrix(NA, R, 3)
   for (r in seq_len(R)) {
-    s <- sim_trial(32, model = model); Xr <- scale_conc(s$C)
-    rej[r, 1] <- signflip_test(loop_areas(Xr, s$Y), B)$p_one <= 0.05
-    if (model == "emax") rej[r, 2] <- signflip_test(resid_areas(s$C, s$Y, fit_emax(s$C, s$Y), Xr), B)$p_one <= 0.05
+    s <- sim_trial(32, 8, placebo = placebo, model = model); Xr <- scale_conc(s$C)
+    h <- if (placebo == "pooled") placebo_areas(Xr, s$P) else NULL
+    A <- loop_areas(Xr, s$Y)
+    rej[r, 1] <- pbo_t_test(A, h)$p_one <= 0.05
+    rej[r, 2] <- signflip_test(A, B)$p_one <= 0.05
+    if (model == "emax") rej[r, 3] <- pbo_t_test(resid_areas(s$C, s$Y, fit_emax(s$C, s$Y), Xr), h)$p_one <= 0.05
   }
   colMeans(rej)
 }
 mc300 <- sqrt(0.05 * 0.95 / 300)
 set.seed(20261025 + 101); k1 <- oc("linear")
-check("KA1: linear direct effect, size within 0.05 +/- 3 MCSE (300 replicates)",
+check("KA1: linear direct effect, placebo-adjusted t size within 0.05 +/- 3 MCSE (300 replicates)",
       abs(k1[1] - 0.05) <= 3 * mc300, sprintf("rate %.3f, 3 MCSE = %.3f", k1[1], 3 * mc300))
+check("KA1: the one-sample sign-flip test is too liberal with a pooled placebo mean (> 0.10)",
+      k1[2] > 0.10, sprintf("rate %.3f", k1[2]))
+set.seed(20261025 + 103); kw <- oc("linear", placebo = "within")
+check("KA1 crossover (own placebo period): sign-flip size within 0.05 +/- 3 MCSE (300 replicates)",
+      abs(kw[2] - 0.05) <= 3 * mc300, sprintf("rate %.3f", kw[2]))
 set.seed(20261025 + 102); k2 <- oc("emax")
-check("KA2: Emax direct effect, raw area inflated (> 0.5) (300 replicates)", k2[1] > 0.5,
+check("KA2: Emax direct effect, raw area inflated (> 0.15) (300 replicates)", k2[1] > 0.15,
       sprintf("raw %.3f", k2[1]))
-check("KA2: Emax-residual area at most 0.05 + 3 MCSE (300 replicates)", k2[2] <= 0.05 + 3 * mc300,
-      sprintf("residual %.3f", k2[2]))
+check("KA2: Emax-residual area at most 0.05 + 3 MCSE (300 replicates)", k2[3] <= 0.05 + 3 * mc300,
+      sprintf("residual %.3f", k2[3]))
 
 ## ---- gates on the TLF shells (G1 parse, G4 parity, G7 scan) ------------------------------
 rfiles <- list.files(REPO, pattern = "[.]R$", recursive = TRUE, full.names = TRUE)

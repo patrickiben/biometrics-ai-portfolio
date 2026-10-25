@@ -42,6 +42,7 @@ figcaption { color: var(--muted); font-size: .9rem; margin-top: 6px; }
 .legend-inline .key { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin: 0 6px 0 0; }
 .legend-inline .key.k1 { background: var(--c-s1); }
 .legend-inline .key.k2 { background: var(--c-s2); margin-left: 14px; }
+.legend-inline .key.k1d { background: repeating-linear-gradient(90deg, var(--c-s1) 0 6px, transparent 6px 10px); margin-left: 14px; }
 
 /* tables */
 .tblwrap { overflow-x: auto; margin: 12px 0 18px; }
@@ -51,7 +52,7 @@ table.oc th, table.oc td { text-align: left; vertical-align: top; padding: 6px 1
 table.oc thead th { font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); background: var(--surface-2); }
 table.oc td.num, table.oc th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 table.oc tr.grp th { background: var(--surface-2); font-weight: 700; font-size: .88rem; color: var(--text); }
-table.oc.ex td.num { white-space: normal; }
+table.oc.ex td.num, table.oc.ex th.num { white-space: normal; }
 @media (max-width: 600px) {
   table.oc { font-size: .84rem; }
   table.oc th, table.oc td { padding: 5px 6px; }
