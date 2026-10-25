@@ -100,6 +100,10 @@ cat(sprintf(" any-AE rate %5.3f vs 0.430\n", round(length(unique(cal$adae$USUBJI
 ## --- 7. persist the simulated study ----------------------------------------
 dir.create("sim_lifecycle/out", showWarnings = FALSE)
 for (nm in c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg"))
- write.csv(adam[[nm]], sprintf("sim_lifecycle/out/%s.csv", nm), row.names = FALSE)
+ { d <- adam[[nm]]; dbl <- vapply(d, is.double, logical(1))
+   # 12 significant digits: the 15th-16th digits of derived doubles differ between macOS and
+   # Linux libm, which broke the byte-for-byte regeneration check in CI.
+   d[dbl] <- lapply(d[dbl], signif, digits = 12)
+   write.csv(d, sprintf("sim_lifecycle/out/%s.csv", nm), row.names = FALSE) }
 cat("\nSimulated ADaM written to sim_lifecycle/out/ (adsl,adex,adpc,adpp,adae,advs,adlb,adeg)\n")
 cat("================ END SIMULATED LIFE CYCLE ================\n")
