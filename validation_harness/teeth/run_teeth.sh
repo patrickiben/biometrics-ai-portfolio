@@ -71,7 +71,7 @@ LOGS="$WORK/logs"
 
 # the scripts whose behavior the results describe; G10 turns stale when any of them changes
 GATE_SCRIPTS="validation_harness/run_harness.sh validation_harness/checks/conformance.R
-validation_harness/checks/independent_recompute.R package_qc.py
+validation_harness/checks/g2_geo.py validation_harness/checks/independent_recompute.R package_qc.py
 sasr_monitoring_wiki/trialmon_tests/testthat/helper-trialmon.R
 sasr_monitoring_wiki/trialmon_tests/testthat/test-boundaries.R
 sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R

@@ -45,6 +45,8 @@ proc means data=rac noprint;
   output out=_racg n=n mean=gmean_log std=gsd_log;
 run;
 data _racd; set _racg; length stat $20 value $30;
+  geomean = exp(gmean_log);                    /* geometric mean: exp(mean of logs)  */
+  geocv   = 100*sqrt(exp(gsd_log**2)-1);       /* geometric CV% from the log-scale SD */
   /* Geo Mean = exp(gmean_log); Geo CV% = 100*sqrt(exp(gsd_log**2)-1)         */
   /* emit rows: n / Geo Mean (Rac) / Geo CV% ; (optionally 95% CI of Rac)     */
 run;
@@ -67,6 +69,8 @@ proc means data=trough noprint;
   output out=_trg n=n mean=gmean_log std=gsd_log;
 run;
 data _trgd; set _trg; length stat $20 value $30;
+  geomean = exp(gmean_log);                    /* geometric mean: exp(mean of logs)  */
+  geocv   = 100*sqrt(exp(gsd_log**2)-1);       /* geometric CV% from the log-scale SD */
   /* Geo Mean trough = exp(gmean_log); Geo CV%; one row per dosing day        */
   /* steady state supported when successive troughs plateau (no further rise) */
 run;

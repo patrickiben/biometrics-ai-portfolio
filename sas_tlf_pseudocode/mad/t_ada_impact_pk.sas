@@ -63,6 +63,8 @@ proc means data=pp(where=(AVAL>0)) noprint;
 run;
 data _cont; merge _nmm _geo; by &TRTVAR ADAGRP PARAMCD;
   length stat $14 value $30;
+  geomean = exp(gmean_log);                    /* geometric mean: exp(mean of logs)  */
+  geocv   = 100*sqrt(exp(gsd_log**2)-1);       /* geometric CV% from the log-scale SD */
   /* back-transform geometric stats; build display rows:
      n / Geo Mean (=exp(gmean_log)) / Geo CV% (=100*sqrt(exp(gsd_log**2)-1)) /
      Median / Min / Max                                                       */

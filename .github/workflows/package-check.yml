@@ -16,3 +16,5 @@ jobs:
         run: python package_qc.py
       - name: Check that generated pages, partials, readouts and tokens match their sources
         run: python build_pages.py --check
+      - name: Unit tests for the G2 per-program geometric-statistics check
+        run: python validation_harness/checks/tests/test_g2_geo.py -v

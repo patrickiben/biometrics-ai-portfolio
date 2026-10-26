@@ -59,6 +59,49 @@ proc transpose data=_stat out=_wide; by PARAM PARAMCD AVISITN AVISIT ATPTN measu
   id &TRTNVAR; var value;
 run;
 
+/*--- MAD-SPECIFIC: PD steady-state read on the PRE-DOSE (trough) value -----
+* Mirrors the R twin. Pre-dose records (ATPTN<=0 or ATPT='PRE-DOSE') on active
+* dose levels; trough geometric mean by dose x study day on the log scale
+* (values > 0), then a log-linear trough-vs-day slope per active dose with a
+* random participant intercept. A 95% CI for the day slope that INCLUDES 0
+* supports a PD plateau. Descriptive support.                                */
+data trough;
+  set pd(where=(not missing(AVAL) and &TRTNVAR>0 and
+                ((not missing(ATPTN) and ATPTN<=0) or upcase(ATPT)='PRE-DOSE')));
+  if AVAL>0 then lntr = log(AVAL);             /* log trough value             */
+run;
+proc means data=trough(where=(AVAL>0)) noprint;
+  class &TRTVAR &TRTNVAR ADY; var lntr;
+  output out=_trgeo n=n mean=gmean_log;
+run;
+data _trgeo; set _trgeo;
+  geomean = exp(gmean_log);                    /* trough geometric mean        */
+run;
+proc sort data=trough(where=(AVAL>0 and ADY>0)) out=_trss; by &TRTNVAR; run;
+proc mixed data=_trss method=reml;
+  by &TRTNVAR;
+  class USUBJID;
+  model lntr = ADY / solution cl;              /* log-linear trough slope      */
+  random intercept / subject=USUBJID;
+  ods output SolutionF=_trslope;               /* ADY slope + 95% CI           */
+run;
+
+/*--- OPTIONAL dose-response of a steady-state PD metric (power model) ------
+* Peak PD value per participant on active doses (metric > 0), fitted on the
+* log-log scale as in the dose-proportionality power model; slope + 90% CI.  */
+proc means data=pd(where=(not missing(AVAL) and &TRTNVAR>0)) noprint nway;
+  class USUBJID &TRTNVAR; var AVAL;
+  output out=_metric max=metric;
+run;
+data _metric; set _metric(where=(metric>0));
+  lnmetric = log(metric);
+  lndose   = log(&TRTNVAR);
+run;
+proc reg data=_metric;
+  model lnmetric = lndose / clb alpha=0.10;    /* slope beta + 90% CI          */
+  ods output ParameterEstimates=_drfit;
+run;
+
 %tfltitle(num=14.4.6.1, type=Table,
    text=%str(Summary of Pharmacodynamic Biomarker Results and Change from Baseline by Dose Level, Study Day and Time),
    pop=Pharmacodynamic Analysis Population,

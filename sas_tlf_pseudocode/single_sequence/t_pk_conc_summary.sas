@@ -49,6 +49,8 @@ run;
 data _cont;
   merge _arith _geo; by &BYPERIOD &TRTVAR ATPTN PARAMCD;
   length stat $14 value $30;
+  geomean = exp(gmean_log);                    /* geometric mean: exp(mean of logs)  */
+  geocv   = 100*sqrt(exp(gsd_log**2)-1);       /* geometric CV% from the log-scale SD */
   /* round to ADPC decimal hints; build display strings stacked as rows:     */
   /* n / Mean / SD / CV% / Geo Mean / Geo CV% / Median / Min / Max           */
   /* number of BLQ shown as n(BLQ) footnote-driven count = nmiss/blq tally   */
