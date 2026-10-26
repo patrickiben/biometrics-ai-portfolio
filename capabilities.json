@@ -1,24 +1,6 @@
 {
  "schema": 1,
  "updated": "2026-10-25",
- "labels": {
-  "led": {
-   "name": "Led",
-   "meaning": "owned, wrote or led the work in a job"
-  },
-  "sup": {
-   "name": "Supported",
-   "meaning": "reviewed, contributed, or created or reviewed"
-  },
-  "tools": {
-   "name": "Tools built",
-   "meaning": "shown only by independent work (code on this site or public drafts), not by job experience"
-  },
-  "gap": {
-   "name": "Gap",
-   "meaning": "no job experience or no worked artifact yet"
-  }
- },
  "not_covered_html": "<strong>Not covered here:</strong> define.xml and ADRG authoring, conformant SDTM, submission packages, DMC charters, BOIN/CRM dose escalation, adaptive and group-sequential designs, and independent double programming.",
  "featured": [
   "study",
@@ -53,47 +35,21 @@
    "id": "design",
    "n": 1,
    "name": "Design",
-   "experience": "Owned protocol statistical sections and randomization schedules for first-in-human, SAD/MAD, crossover and bioequivalence studies (Syneos Health); wrote protocol sections (Emmes); advised on design and sample size (CU Anschutz).",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built: runs"
-    },
-    {
-     "k": "gap",
-     "text": "Gap: BOIN/CRM dose escalation, adaptive and group-sequential designs"
-    }
-   ],
-   "on_site_html": "The <a href=\"study/index.html#stage1\">worked example, stage 1</a>: an exact-method sample size (PowerTOST), a sensitivity grid, a permuted-block randomization schedule and an <a href=\"study/01_design/protocol_statistics.html\">ICH M11-headed protocol statistics excerpt</a> (synthetic). Research on cluster randomized trial design under spatial interference (<em>Statistics in Medicine</em>, submitted), via the <a href=\"https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md\">research map</a>. Related: an <a href=\"uat_irt/quarto/uat-guide.html\">IRT/RTSM acceptance-test library</a> for randomization logic.",
+   "on_site_html": "The <a href=\"study/index.html#stage1\">worked example, stage 1</a>: an exact-method sample size (PowerTOST), a sensitivity grid, a permuted-block randomization schedule and an <a href=\"study/01_design/protocol_statistics.html\">ICH M11-headed protocol statistics excerpt</a> (synthetic). Related: an <a href=\"uat_irt/quarto/uat-guide.html\">IRT/RTSM acceptance-test library</a> for randomization logic.",
    "strongest": {
     "text": "Worked example, stage 1: sample size and randomization",
-    "href": "study/index.html#stage1",
-    "note": "related: cluster randomized trial design research"
+    "href": "study/index.html#stage1"
    },
    "modules": [
     "study-1",
     "uat"
-   ]
+   ],
+   "limits": "BOIN/CRM dose escalation, adaptive and group-sequential designs"
   },
   {
    "id": "sap",
    "n": 2,
    "name": "SAP and mock shells",
-   "experience": "Owned analysis plans and mock tables, listings and figures (Syneos Health); wrote analysis-plan sections (Emmes).",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built"
-    }
-   ],
    "on_site_html": "The <a href=\"study/index.html#stage2\">worked example, stage 2</a>: an estimand with the five ICH E9(R1) attributes, a <a href=\"study/02_sap/sap_excerpt.html\">statistical methods excerpt</a> and <a href=\"study/02_sap/mock_shells.html\">six mock shells</a>, with settings the analysis code reads. TLF template libraries for five early-phase designs, in <a href=\"sas_tlf_pseudocode/index.html\">SAS</a> and <a href=\"r_tlf_pseudocode/index.html\">R</a> (pseudocode). A <a href=\"cqtc_hysteresis/index.html\">prespecified C-QTc hysteresis check</a> with its operating characteristics (synthetic).",
    "strongest": {
     "text": "Worked example, stage 2: SAP excerpt and six mock shells",
@@ -110,21 +66,6 @@
    "id": "standards",
    "n": 3,
    "name": "Data standards",
-   "experience": "Created or reviewed CDISC analysis specifications; reviewed annotated CRFs and database designs against analysis requirements (Syneos Health).",
-   "labels": [
-    {
-     "k": "sup",
-     "text": "Supported"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built: runs"
-    },
-    {
-     "k": "gap",
-     "text": "Gap: define.xml, ADRG, SDTM mapping"
-    }
-   ],
    "on_site_html": "The <a href=\"study/index.html#stage3\">worked example, stage 3</a>: ADSL, ADPC, ADPP and ADAE with admiral 1.5.0 from SDTM-like inputs, a specification in Pinnacle 21 layout, 24 of 24 metadata checks and SAS XPORT v5 files (not conformant SDTM; no Pinnacle 21 or CDISC CORE run). The <a href=\"sim_lifecycle/index.html\">sandbox</a> writes eight ADaM-shaped domains with home-grown structural checks.",
    "strongest": {
     "text": "Worked example, stage 3: ADaM (admiral), P21-layout specification, XPT",
@@ -133,23 +74,13 @@
    "modules": [
     "study-3",
     "sandbox"
-   ]
+   ],
+   "limits": "define.xml, ADRG, SDTM mapping"
   },
   {
    "id": "programming",
    "n": 4,
    "name": "Programming and TLFs",
-   "experience": "Built SAS and R tools (Emmes); reviewed outputs (Syneos Health).",
-   "labels": [
-    {
-     "k": "sup",
-     "text": "Supported"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built"
-    }
-   ],
    "on_site_html": "The <a href=\"study/index.html#stage4\">worked example, stage 4</a>: six tables with rtables and tern, each exported to RTF and HTML, three figures and a <a href=\"study/04_analysis/report/report.html\">Quarto results report</a>. SAS and R TLF template libraries (pseudocode; SAS not executed).",
    "strongest": {
     "text": "Table 14.4.3.1 (rtables) and the SAS and R template libraries",
@@ -166,21 +97,6 @@
    "id": "qc",
    "n": 5,
    "name": "QC and validation",
-   "experience": "Reviewed outputs (Syneos Health).",
-   "labels": [
-    {
-     "k": "sup",
-     "text": "Supported"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built: same-author re-derivation"
-    },
-    {
-     "k": "gap",
-     "text": "Gap: independent double programming"
-    }
-   ],
    "on_site_html": "The <a href=\"study/index.html#stage5\">worked example, stage 5</a>: <a href=\"study/05_qc/qc_ledger.html\">40 of 40 re-derivation checks</a> by a second method (same-author re-derivation, not independent double programming). A <a href=\"validation_harness/index.html\">QC harness</a> that separates structural checks from executed ones, including a separately written, same-author recomputation of the <a href=\"sim_lifecycle/index.html\">sandbox</a>'s NCA, bioequivalence and adverse-event counts (G9); the eCRF apps' test suite runs in CI. A <a href=\"validation_harness/index.html#teeth\">seeded-defect check</a> reports which planted programming defects the harness catches and which survive.",
    "strongest": {
     "text": "QC harness and seeded-defect check",
@@ -190,27 +106,13 @@
     "harness",
     "teeth",
     "study-5"
-   ]
+   ],
+   "limits": "independent double programming"
   },
   {
    "id": "monitoring",
    "n": 6,
    "name": "Monitoring and interim review",
-   "experience": "Wrote DSMB reports for federally sponsored trials (Emmes); reviewed interim study data (Syneos Health).",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led: DSMB reports"
-    },
-    {
-     "k": "sup",
-     "text": "Supported: interim review"
-    },
-    {
-     "k": "gap",
-     "text": "Gap: DMC charters, group-sequential interim design"
-    }
-   ],
    "on_site_html": "A safety-review worked example, <a href=\"sasr_monitoring_wiki/index.html\">TRIALMON</a>, on synthetic data (runs; tests pass), with a <a href=\"apps/trialmon/\">console that runs in the browser</a>. eCRF assist apps for participant risk screening and central statistical monitoring that run in the browser. SAS/R <a href=\"sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html\">monitoring coverage wiki</a> and <a href=\"sas_r_automation/SAS_R_Trial_Monitoring_Automation.html\">automation macros</a> (SAS not executed).",
    "strongest": {
     "text": "TRIALMON safety review",
@@ -221,23 +123,13 @@
     "ecrf",
     "monitoring-wiki",
     "monitoring-macros"
-   ]
+   ],
+   "limits": "DMC charters, group-sequential interim design"
   },
   {
    "id": "pk",
    "n": 7,
    "name": "PK and clinical pharmacology",
-   "experience": "Lead biostatistician on first-in-human, SAD/MAD, crossover, bioequivalence and bioavailability studies; performed PK/PD analyses (Syneos Health).",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built: runs"
-    }
-   ],
    "on_site_html": "An executable <a href=\"sim_lifecycle/index.html\">sandbox</a>: one-compartment PK, NCA and a 2x2 bioequivalence analysis with a 90% confidence interval. A <a href=\"sim_lifecycle/carryover_oc/index.html\">residual-carryover study</a> measures how the M13A 5% predose rule performs when washout is borderline (synthetic).",
    "strongest": {
     "text": "Worked example, stage 4: NCA and the ICH M13A analysis",
@@ -254,21 +146,6 @@
    "id": "reporting",
    "n": 8,
    "name": "Reporting and CSR",
-   "experience": "Wrote final statistical reports (Emmes); contributed to clinical study reports (Syneos Health).",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led: final statistical reports"
-    },
-    {
-     "k": "sup",
-     "text": "Supported: CSRs"
-    },
-    {
-     "k": "gap",
-     "text": "Gap: submission packages"
-    }
-   ],
    "on_site_html": "The <a href=\"study/index.html#stage6\">worked example, stage 6</a>: CSR section 11-style text in which every number is checked against the outputs (10 of 10 paragraphs); the check confirms that numbers exist, not that statements are correct. A <a href=\"tlf_interpret/index.html\">number-grounding check</a> for drafted TLF text: its self-test runs; the language-model step is a stub.",
    "strongest": {
     "text": "Worked example, stage 6: CSR section 11-style text, number-checked",
@@ -277,45 +154,13 @@
    "modules": [
     "study-6",
     "tlf-interpret"
-   ]
-  },
-  {
-   "id": "rwd",
-   "n": 9,
-   "name": "Real-world data",
-   "experience": "Harmonized multi-clinic EHR data and supported external research partners (Emmes); harmonized hospital databases with millions of records (CU Anschutz).",
-   "labels": [
-    {
-     "k": "sup",
-     "text": "Supported"
-    },
-    {
-     "k": "gap",
-     "text": "Gap: no artifact here"
-    }
    ],
-   "on_site_html": "See the <a href=\"https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md\">research map</a>.",
-   "strongest": {
-    "text": "None on this site; see the research map",
-    "href": "https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md"
-   },
-   "modules": []
+   "limits": "submission packages"
   },
   {
    "id": "operations",
-   "n": 10,
+   "n": 9,
    "name": "Operations and delivery",
-   "experience": "Built dynamic study-progress reporting (Emmes).",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led: study-progress reporting"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built"
-    }
-   ],
    "on_site_html": "A <a href=\"sasr_onleave_wiki/Continuity_Toolkit.html\">continuity and handoff toolkit</a> that runs in the browser. A <a href=\"lifecycle_dashboard/quarto/lifecycle-guide.html\">study lifecycle monitor</a> and a <a href=\"smartsheet_sasr/Smartsheet_SASR.html\">tracker sync example</a> (synthetic).",
    "strongest": {
     "text": "Continuity and handoff toolkit",
@@ -331,15 +176,8 @@
   },
   {
    "id": "ai",
-   "n": 11,
+   "n": 10,
    "name": "AI and automation",
-   "experience": "Built AI-evaluation tools with deterministic numeric and phrase checks (independent research engineering).",
-   "labels": [
-    {
-     "k": "tools",
-     "text": "Tools built: synthetic data only"
-    }
-   ],
    "on_site_html": "Four eCRF assist apps whose evaluation reports measured failure rates.",
    "strongest": {
     "text": "eCRF assist apps and their evaluation",
@@ -350,29 +188,6 @@
     "sibling",
     "tlf-interpret"
    ]
-  },
-  {
-   "id": "teaching",
-   "n": 12,
-   "name": "Teaching",
-   "experience": "Taught graduate biostatistics review sessions and held office hours (CU Anschutz); wrote twelve educational editions that pair with the research manuscripts.",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led: graduate review sessions"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built: educational editions"
-    }
-   ],
-   "on_site_html": "Education companions, via the <a href=\"https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md\">research map</a>.",
-   "strongest": {
-    "text": "Education companions",
-    "href": "https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md",
-    "note": "research map"
-   },
-   "modules": []
   }
  ],
  "pages": {
@@ -386,7 +201,7 @@
      "uat",
      "lifecycle-monitor"
     ],
-    "disclosure_html": "The site's publishing workflow exports these three R Shiny apps with Shinylive, so R starts inside your browser and the console takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. Exported and checked in headless Chrome locally; Safari and Firefox not checked. A <strong>Run in browser</strong> link appears on a card here only once a dated first-visit check is recorded for that app; until then each card links its read-only snapshot, its guide and the command that runs it in local R."
+    "disclosure_html": "The site's publishing workflow exports these three R Shiny apps with Shinylive, so R starts inside your browser and the console takes several seconds to appear. The first visit downloads about 65 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. Before each deploy, the workflow opens every app's launch page in headless Chrome with a fresh profile, as a first-time visitor, and deploys nothing unless each app reaches Ready, fills the panels its launch.json lists with the expected values, shows no error, follows the site's theme toggle (R gets the theme and redraws its plots) and starts again after a reload (<a href=\"https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml\" rel=\"noopener\">run history</a> ↗). The same test passed on a local build on 26 October 2026. It runs on the build machine, not on the live site, and only in Chrome: Safari and Firefox are not checked. <strong>Run in browser</strong> opens an app's launch page, which reports each step of starting R."
    },
    {
     "id": "py-browser",
@@ -428,7 +243,7 @@
      "cqtc",
      "sibling"
     ],
-    "intro": "Two checks adapted from my research (the seeded-defect check and the within-sibling evaluation) and two operating-characteristics studies, all on synthetic data."
+    "intro": "Two checks adapted from the author's research (the seeded-defect check and the within-sibling evaluation) and two operating-characteristics studies, all on synthetic data."
    },
    {
     "id": "libraries",
@@ -513,7 +328,6 @@
    ],
    "thumb": "study",
    "source": "README.md, study/ row",
-   "labels": [],
    "published": true
   },
   {
@@ -543,7 +357,6 @@
     }
    ],
    "source": "study/index.html, stage 1 (study/R/pages.R)",
-   "labels": [],
    "published": true
   },
   {
@@ -573,7 +386,6 @@
     }
    ],
    "source": "study/index.html, stage 2 (study/R/pages.R)",
-   "labels": [],
    "published": true
   },
   {
@@ -603,7 +415,6 @@
     }
    ],
    "source": "study/index.html, stage 3 (study/R/pages.R)",
-   "labels": [],
    "published": true
   },
   {
@@ -633,7 +444,6 @@
     }
    ],
    "source": "study/index.html, stage 4 (study/R/pages.R)",
-   "labels": [],
    "published": true
   },
   {
@@ -663,7 +473,6 @@
     }
    ],
    "source": "study/index.html, stage 5 (study/R/pages.R)",
-   "labels": [],
    "published": true
   },
   {
@@ -693,7 +502,6 @@
     }
    ],
    "source": "study/index.html, stage 6 (study/R/pages.R)",
-   "labels": [],
    "published": true
   },
   {
@@ -705,24 +513,6 @@
     "monitoring"
    ],
    "eyebrow": "Monitoring and interim review",
-   "labels": [
-    {
-     "k": "led",
-     "text": "Led: DSMB reports (Emmes)"
-    },
-    {
-     "k": "sup",
-     "text": "Supported: interim data review (Syneos Health)"
-    },
-    {
-     "k": "tools",
-     "text": "Tools built: this module (runs; tests pass)"
-    },
-    {
-     "k": "gap",
-     "text": "Gap: DMC charters, group-sequential interim design, BOIN or CRM design"
-    }
-   ],
    "status": [
     {
      "k": "runs",
@@ -767,11 +557,12 @@
    "browser": {
     "runtime": "shinylive",
     "href": "apps/trialmon/",
-    "verified": null,
-    "how": null
+    "verified": "2026-10-26",
+    "how": "Smoke test (.github/pages/smoke/smoke.mjs): a first visit in headless Chrome with a fresh profile, on a local build of the site served under the site path; the Pages workflow runs it before every deploy"
    },
    "source": "sasr_monitoring_wiki/index.html (page head and run panel)",
-   "published": true
+   "published": true,
+   "limits": "DMC charters, group-sequential interim design, BOIN or CRM design"
   },
   {
    "id": "ecrf",
@@ -841,7 +632,6 @@
     "how": null
    },
    "source": "index.html (eCRF assist apps card)",
-   "labels": [],
    "published": true
   },
   {
@@ -876,7 +666,6 @@
     "how": null
    },
    "source": "index.html (continuity and handoff toolkit card)",
-   "labels": [],
    "published": true
   },
   {
@@ -888,12 +677,6 @@
     "qc"
    ],
    "eyebrow": "QC and validation",
-   "labels": [
-    {
-     "k": "tools",
-     "text": "Tools built"
-    }
-   ],
    "status": [
     {
      "k": "runs",
@@ -927,12 +710,6 @@
     "pk"
    ],
    "eyebrow": "PK and clinical pharmacology",
-   "labels": [
-    {
-     "k": "tools",
-     "text": "Tools built: runs"
-    }
-   ],
    "status": [
     {
      "k": "synthetic",
@@ -971,12 +748,6 @@
     "pk"
    ],
    "eyebrow": "SAP and mock shells",
-   "labels": [
-    {
-     "k": "tools",
-     "text": "Tools built"
-    }
-   ],
    "status": [
     {
      "k": "runs",
@@ -1014,12 +785,6 @@
     "ai"
    ],
    "eyebrow": "AI and automation",
-   "labels": [
-    {
-     "k": "tools",
-     "text": "Tools built"
-    }
-   ],
    "status": [
     {
      "k": "synthetic",
@@ -1076,7 +841,6 @@
    ],
    "thumb": "sandbox",
    "source": "index.html (sandbox card)",
-   "labels": [],
    "published": true
   },
   {
@@ -1110,7 +874,6 @@
     }
    ],
    "source": "index.html (TLF libraries card) and README.md",
-   "labels": [],
    "published": true
   },
   {
@@ -1145,7 +908,6 @@
    ],
    "thumb": "tlf-lib",
    "source": "index.html (TLF libraries card) and r_tlf_pseudocode/index.html",
-   "labels": [],
    "published": true
   },
   {
@@ -1188,7 +950,6 @@
    ],
    "thumb": "harness",
    "source": "validation_harness/index.html and README.md",
-   "labels": [],
    "published": true
   },
   {
@@ -1221,7 +982,6 @@
     }
    ],
    "source": "index.html (Reporting row) and tlf_interpret/index.html",
-   "labels": [],
    "published": true
   },
   {
@@ -1255,7 +1015,6 @@
     }
    ],
    "source": "sas_r_automation/SAS_R_Trial_Monitoring_Automation.html and README.md",
-   "labels": [],
    "published": true
   },
   {
@@ -1283,7 +1042,6 @@
     }
    ],
    "source": "sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html",
-   "labels": [],
    "published": true
   },
   {
@@ -1316,7 +1074,6 @@
     }
    ],
    "source": "sasr_onleave_wiki/On_Leave_Coverage_Playbook.html and README.md",
-   "labels": [],
    "published": true
   },
   {
@@ -1353,7 +1110,6 @@
     }
    ],
    "source": "smartsheet_sasr/Smartsheet_SASR.html, CP101_Tracker_Demo.html and README.md",
-   "labels": [],
    "published": true
   },
   {
@@ -1414,11 +1170,10 @@
    "browser": {
     "runtime": "shinylive",
     "href": "apps/uat_irt/",
-    "verified": null,
-    "how": null
+    "verified": "2026-10-26",
+    "how": "Smoke test (.github/pages/smoke/smoke.mjs): a first visit in headless Chrome with a fresh profile, on a local build of the site served under the site path; the Pages workflow runs it before every deploy"
    },
    "source": "uat_irt/README.md and README.md, uat_irt/ row",
-   "labels": [],
    "published": true
   },
   {
@@ -1474,11 +1229,10 @@
    "browser": {
     "runtime": "shinylive",
     "href": "apps/lifecycle_dashboard/",
-    "verified": null,
-    "how": null
+    "verified": "2026-10-26",
+    "how": "Smoke test (.github/pages/smoke/smoke.mjs): a first visit in headless Chrome with a fresh profile, on a local build of the site served under the site path; the Pages workflow runs it before every deploy"
    },
    "source": "lifecycle_dashboard/README.md and README.md, lifecycle_dashboard/ row",
-   "labels": [],
    "published": true
   },
   {
@@ -1537,7 +1291,6 @@
    "run_local": "shiny::runApp(\"budget_reconciliation/shiny\")",
    "thumb": "hours",
    "source": "budget_reconciliation/README.md",
-   "labels": [],
    "published": true
   },
   {
@@ -1578,7 +1331,6 @@
     }
    ],
    "source": "README.md, biostat_pipeline/ row, and EarlyPhase_Biostat_Pipeline.md",
-   "labels": [],
    "published": true
   },
   {

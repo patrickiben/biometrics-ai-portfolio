@@ -7,9 +7,14 @@
 # then the build job still runs and checks everything, the deploy job is skipped with a notice, and
 # the branch build keeps serving the site as before.
 #
+# Before anything is deployed, a smoke test opens every app's launch page in headless Chrome and
+# fails the job unless each app starts, fills the outputs listed in apps/<name>/launch.json and
+# shows no error (.github/pages/smoke/smoke.mjs).
+#
 # Action majors checked against their GitHub releases on 2026-10-25: actions/checkout v7,
-# actions/setup-python v7, r-lib/actions v2, actions/configure-pages v6,
-# actions/upload-pages-artifact v5, actions/deploy-pages v5.
+# actions/setup-python v7, r-lib/actions v2, actions/setup-node v7, browser-actions/setup-chrome v2,
+# actions/upload-artifact v7, actions/configure-pages v6, actions/upload-pages-artifact v5,
+# actions/deploy-pages v5.
 name: Pages (static site and Shinylive apps)
 on:
   push:
@@ -23,7 +28,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     permissions:
       contents: read
       pages: read          # to read the Pages source below
@@ -57,10 +62,38 @@ jobs:
           Rscript lifecycle_dashboard/tests/test-server.R
           Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R
       - name: Build the site (static pages, then shinylive::export for each app)
-        # Copies the tracked files into _site/, exports each app into _site/apps/<name>/ with
-        # shinylive 0.5.0 (assets 0.10.12), gives each wrapper page a data: URI favicon, and
-        # stops if any app, the shared assets or a favicon link is missing.
+        # Copies the tracked files into _site/, exports each app listed by apps/<name>/launch.json
+        # into _site/apps/<name>/ with shinylive 0.5.0 (assets 0.10.12), with the shared R helper
+        # next to app.R and the launch page (apps/_shared/launch_template/) as its page, and stops
+        # if any app, the shared assets, the helper or a launch page field is missing.
         run: Rscript .github/pages/build_site.R _site
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: stable
+      - name: Install the smoke test's browser driver (puppeteer-core, pinned by its package-lock.json)
+        run: npm ci --prefix .github/pages/smoke --no-audit --no-fund
+      - name: Smoke test every app in headless Chrome (nothing is deployed unless every app passes)
+        # Serves _site under /biometrics-ai-portfolio/ as Pages does and opens each launch page with
+        # a fresh browser profile. Fails unless the page text shows at once, the app reaches ready,
+        # the outputs listed in apps/<name>/launch.json have content (and the expected values), no
+        # panel shows an error, each listed tab fills in, and a reload reaches ready again.
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+        run: >-
+          node .github/pages/smoke/smoke.mjs _site
+          --shots "${RUNNER_TEMP}/smoke" --report "${RUNNER_TEMP}/smoke/report.json"
+      - name: Keep the smoke test's screenshots and report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: smoke-test
+          path: ${{ runner.temp }}/smoke
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Read the Pages source
         id: source
         env:

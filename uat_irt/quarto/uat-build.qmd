@@ -38,9 +38,10 @@ Select a test and mark it Pass/Fail, close a defect, and the KPIs and the go-liv
 sign-off gate recompute live. Download your results to CSV from the sidebar to drop
 into the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) and the eTMF.
 
-It is also exported as a Shinylive build: [open the Shinylive build](../../apps/uat_irt/)
-(not yet checked in a real browser; Shinylive and webR, so R starts in the browser, the first visit
-downloads about 55 MB, and it works best in Chrome or Edge; Safari support may vary). The app folder carries a copy of the three CSVs in `shiny/templates/`,
+It is also exported as a Shinylive build: [open it in your browser](../../apps/uat_irt/)
+(smoke-tested in headless Chrome before each deploy, [run history](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml); Shinylive and webR, so R
+starts in the browser, the first visit downloads about 65 MB, and it works best in Chrome or Edge;
+Safari support may vary). The app folder carries a copy of the three CSVs in `shiny/templates/`,
 because Shinylive exports only the app folder, and the download is built in the browser (a Blob)
 rather than by a `downloadHandler`.
 
@@ -64,11 +65,13 @@ the by-area bar. Nothing here depends on Shiny, so you can test it in a plain co
 ```{r logic, code=readLines("../shiny/R/logic.R"), eval=FALSE, echo=TRUE}
 ```
 
-Read the gate: it counts three things and requires all three to be zero. A Critical
-test not yet Pass, an open Critical or Major defect, or a requirement with no test,
-any one of them holds the gate. That is the whole meaning of "conjunctive", written
-as `go <- crit_fail == 0 && open_cm == 0 && trace_gap == 0`. Change that line and you
-have changed what "ready" means, everywhere, at once.
+Read the gate: `uat_blockers()` lists what blocks each of three criteria, and `uat_gate()`
+requires every list to be empty. A Critical test not yet Pass; an open Critical or Major
+defect, a closed defect whose test has not passed its retest, or a failing test with no
+open defect; a requirement with no test, or a test not run yet: any one of them holds the
+gate. That is the whole meaning of "conjunctive", written as
+`go <- n[["tests"]] == 0 && defects_ok && trace_ok`. Change those lines and you have changed
+what "ready" means, everywhere, at once.
 
 ## The complete app: shiny/app.R
 
@@ -148,7 +151,7 @@ Rscript uat_irt/tests/test-logic.R      # prints: UAT logic: all tests passed
 
 ## Make it yours
 
-- Change the rule: edit `uat_gate()` in `shiny/R/logic.R`, for example to allow a Minor-defect waiver. Nothing else changes, because everything calls that one function.
+- Change the rule: edit `uat_blockers()` and `uat_gate()` in `shiny/R/logic.R`, for example to require every test to pass, not only the critical ones. Nothing else changes, because everything calls those functions.
 - Change the data: edit the three CSVs in `templates/`, then copy them into `shiny/templates/`.
 - Add a column: add it to the CSV and to the `datatable()` column list in `app.R`.
 - Add a panel: another `card()` in the UI and a matching `render*` in the server.

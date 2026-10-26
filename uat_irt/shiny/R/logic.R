@@ -7,6 +7,7 @@
 # ---------------------------------------------------------------------------
 
 STATUSES  <- c("Pass", "Fail", "Blocked", "In Progress", "Not Run")
+RUN_STATUSES <- c("Pass", "Fail")    # executed; the other three mean the test has not been run
 SEVERITIES <- c("Critical", "Major", "Minor")
 
 uat_load <- function(dir = NULL) {
@@ -21,14 +22,24 @@ uat_load <- function(dir = NULL) {
        trace   = rd("traceability_matrix.csv"))
 }
 
-# The go-live sign-off gate. READY only when: every Critical test passes,
-# there are zero OPEN Critical/Major defects, and traceability is complete.
+# The go-live sign-off gate: three criteria, all of which must hold (conjunctive).
+#   1. Every Critical test passes.
+#   2. No open Critical or Major defect, and every fix was retested: a closed defect's test
+#      (FoundInTest) passes, and a failing test has an open defect logged against it. Open Minor
+#      defects do not block; the person who signs fixes them or waives them with a rationale.
+#   3. Every requirement has a test, and every test has been run (Pass or Fail): none is still
+#      Not Run, In Progress or Blocked, including a draft test added to close a traceability gap.
+# crit_fail, open_cm and trace_gap keep their earlier meaning (the Quarto pages print them).
 uat_gate <- function(tests, defects, trace) {
-  crit_fail <- sum(tests$Priority == "Critical" & tests$Status != "Pass")
-  open_cm   <- sum(defects$Status == "Open" & defects$Severity %in% c("Critical", "Major"))
-  trace_gap <- sum(trace$Covered != "Y")
-  go <- crit_fail == 0 && open_cm == 0 && trace_gap == 0
-  list(crit_fail = crit_fail, open_cm = open_cm, trace_gap = trace_gap, go = go,
+  b <- uat_blockers(tests, defects, trace)
+  n <- vapply(b[c("tests", "defects", "unretested", "untracked", "gaps", "not_run")], nrow, 0L)
+  defects_ok <- n[["defects"]] + n[["unretested"]] + n[["untracked"]] == 0
+  trace_ok   <- n[["gaps"]] + n[["not_run"]] == 0
+  go <- n[["tests"]] == 0 && defects_ok && trace_ok
+  list(crit_fail = n[["tests"]], open_cm = n[["defects"]], unretested = n[["unretested"]],
+       untracked = n[["untracked"]], trace_gap = n[["gaps"]], not_run = n[["not_run"]],
+       tests_ok = n[["tests"]] == 0, defects_ok = defects_ok, trace_ok = trace_ok,
+       minor_open = b$minor_open$DefectID, go = go,
        verdict = if (go) "READY for sign-off" else "NOT ready - blocked")
 }
 
@@ -36,12 +47,15 @@ uat_summary <- function(tests, defects, trace) {
   total    <- nrow(tests)
   pass     <- sum(tests$Status == "Pass")
   fail     <- sum(tests$Status == "Fail")
-  open_now <- sum(tests$Status %in% c("Blocked", "In Progress", "Not Run"))
-  run      <- sum(tests$Status %in% c("Pass", "Fail"))
+  open_now <- sum(!tests$Status %in% RUN_STATUSES)
+  run      <- sum(tests$Status %in% RUN_STATUSES)
   open_def <- sum(defects$Status == "Open")
   traced   <- sum(trace$Covered == "Y")
+  run_ids  <- tests$TestID[tests$Status %in% RUN_STATUSES]
+  covering <- uat_covering_tests(trace)
+  req_run  <- sum(trace$Covered == "Y" & vapply(covering, function(t) length(t) > 0 && all(t %in% run_ids), NA))
   list(total = total, pass = pass, fail = fail, open_now = open_now,
-       open_def = open_def, traced = traced, n_urs = nrow(trace),
+       open_def = open_def, traced = traced, req_run = req_run, n_urs = nrow(trace),
        cov = round(100 * traced / nrow(trace)),
        pass_rate = if (run > 0) round(100 * pass / run) else 0)
 }
@@ -50,4 +64,101 @@ uat_summary <- function(tests, defects, trace) {
 uat_area_counts <- function(tests) {
   df <- as.data.frame(table(Area = tests$Area, Status = factor(tests$Status, levels = STATUSES)))
   df[df$Freq > 0, ]
+}
+
+# The test IDs that cover each requirement ("RAND-01" or "RAND-01; RAND-07"), one vector per row.
+uat_covering_tests <- function(trace) {
+  x <- ifelse(is.na(trace$CoveringTests), "", as.character(trace$CoveringTests))
+  lapply(strsplit(x, "[;,[:space:]]+"), function(v) v[nzchar(v)])
+}
+
+# The status of the test each defect was found in (NA when the defect names no test in the table).
+defect_test_status <- function(tests, defects) {
+  tests$Status[match(defects$FoundInTest, tests$TestID)]
+}
+
+# What keeps the gate blocked, criterion by criterion, so the app can name each item.
+#   tests       critical tests that do not pass                                  (criterion 1)
+#   defects     open critical or major defects                                   (criterion 2)
+#   unretested  closed defects whose test does not pass: the fix was not retested (criterion 2)
+#   untracked   failing tests with no defect logged against them: none open, and none
+#               closed (a closed one is listed under unretested instead)       (criterion 2)
+#   gaps        requirements without a test                                      (criterion 3)
+#   not_run     tests not run yet: Not Run, In Progress or Blocked               (criterion 3)
+#   minor_open  open minor defects: they do not block, but the signer must fix or waive them
+uat_blockers <- function(tests, defects, trace) {
+  found_st <- defect_test_status(tests, defects)
+  is_open  <- defects$Status == "Open"
+  named    <- !is.na(defects$FoundInTest) & nzchar(defects$FoundInTest)
+  linked   <- ifelse(is.na(tests$LinkedDefect), "", tests$LinkedDefect)
+  open_for <- unique(c(defects$FoundInTest[is_open], tests$TestID[linked %in% defects$DefectID[is_open]]))
+  unret    <- defects$Status == "Closed" & named & !(found_st %in% "Pass")   # a missing test counts too
+  list(
+    tests      = tests[tests$Priority == "Critical" & tests$Status != "Pass", c("TestID", "Status"), drop = FALSE],
+    defects    = defects[is_open & defects$Severity %in% c("Critical", "Major"),
+                         c("DefectID", "Severity", "FoundInTest"), drop = FALSE],
+    unretested = cbind(defects[unret, c("DefectID", "Severity", "FoundInTest"), drop = FALSE],
+                       TestStatus = found_st[unret]),
+    untracked  = tests[tests$Status == "Fail" & !tests$TestID %in% c(open_for, defects$FoundInTest[unret]),
+                       c("TestID", "Status"), drop = FALSE],
+    gaps       = trace[trace$Covered != "Y", c("RequirementID", "RequirementDescription"), drop = FALSE],
+    not_run    = tests[!tests$Status %in% RUN_STATUSES, c("TestID", "Status", "RequirementID"), drop = FALSE],
+    minor_open = defects[is_open & defects$Severity == "Minor", c("DefectID", "FoundInTest"), drop = FALSE])
+}
+
+# May this defect be closed now? Only once the test it was found in passes on retest. A defect
+# that names no test (found outside a script) can be closed at any time.
+uat_can_close <- function(tests, defects, id) {
+  r <- match(id, defects$DefectID)
+  if (is.na(r)) return(list(ok = FALSE, test = NA_character_, status = NA_character_))
+  test <- defects$FoundInTest[r]
+  if (is.na(test) || !nzchar(test)) return(list(ok = TRUE, test = NA_character_, status = NA_character_))
+  st <- tests$Status[match(test, tests$TestID)]
+  list(ok = identical(st, "Pass"), test = test, status = st)
+}
+
+# Read a defect status typed by a person: "closed", " Close ", "OPEN" -> "Closed" / "Open"; else NA.
+uat_defect_status <- function(x) {
+  x <- tolower(trimws(as.character(x)))
+  ifelse(x %in% c("open", "reopen", "reopened"), "Open",
+         ifelse(x %in% c("closed", "close", "fixed"), "Closed", NA_character_))
+}
+
+# Close a traceability gap the way a UAT lead would: write a draft test script for the
+# requirement and record it in the matrix. The draft is Not Run, so the gate stays blocked
+# (criterion 3) until someone writes its steps and runs it.
+# The new ID follows the requirement's area, e.g. URS-SUP-005 -> SUP-05 in "Resupply / inventory".
+uat_cover_gap <- function(tests, trace, req_id) {
+  i <- match(req_id, trace$RequirementID)
+  if (is.na(i)) stop("No requirement ", req_id, " in the traceability matrix")
+  if (identical(trace$Covered[i], "Y")) return(list(tests = tests, trace = trace, test_id = NA_character_))
+  stem <- sub("-[0-9]+$", "-", req_id)                                # "URS-SUP-"
+  kin <- tests[startsWith(tests$RequirementID, stem), , drop = FALSE]
+  area <- if (nrow(kin)) names(sort(table(kin$Area), decreasing = TRUE))[1] else "Unassigned"
+  pre <- if (nrow(kin)) sub("-[0-9]+$", "", kin$TestID[1]) else sub("^URS-|-[0-9]+$", "", stem)
+  num <- suppressWarnings(as.integer(sub("^.*-", "", tests$TestID[startsWith(tests$TestID, paste0(pre, "-"))])))
+  new_id <- sprintf("%s-%02d", pre, max(c(0L, num), na.rm = TRUE) + 1L)
+  desc <- trace$RequirementDescription[i]
+  row <- tests[NA_integer_, , drop = FALSE]                           # one row of NAs, same columns
+  row$TestID <- new_id; row$Area <- area; row$RequirementID <- req_id
+  row$TestTitle <- sub("\\.$", "", sub(" shall be ", " is ", desc))
+  row$Priority <- "High"
+  row$Steps <- "Draft script added to close the traceability gap: write the steps, then execute it."
+  row$ExpectedResult <- desc
+  row$Status <- "Not Run"
+  row$LinkedDefect <- ""
+  trace$CoveringTests[i] <- new_id
+  trace$Covered[i] <- "Y"
+  tests <- rbind(tests, row)
+  rownames(tests) <- NULL
+  list(tests = tests, trace = trace, test_id = new_id)
+}
+
+# How far the current state is from the seed: changed test statuses, added tests, changed defects.
+uat_changes <- function(tests, defects, seed) {
+  m <- match(seed$tests$TestID, tests$TestID)
+  d <- match(seed$defects$DefectID, defects$DefectID)
+  sum(!is.na(m) & tests$Status[m] != seed$tests$Status) +
+    sum(!tests$TestID %in% seed$tests$TestID) +
+    sum(!is.na(d) & defects$Status[d] != seed$defects$Status)
 }
