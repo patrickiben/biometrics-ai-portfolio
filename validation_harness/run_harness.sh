@@ -23,7 +23,7 @@ green(){ [ "$1" = green ] && echo green || echo red; }
 echo "== Trial-Management Validation Harness =="
 
 # ---- G1 Reproducibility & environment --------------------------------------
-read RTOT RBAD < <(Rscript -e 'f<-list.files(c("'$R'","sim_lifecycle","'$SAS'/.."),pattern="[.]R$",recursive=TRUE,full.names=TRUE); f<-unique(f); b<-sum(vapply(f,function(x)inherits(try(parse(x),silent=TRUE),"try-error"),logical(1))); cat(length(f),b)' 2>/dev/null)
+read RTOT RBAD < <(Rscript -e 'f<-list.files(c("'$R'","sim_lifecycle","'$SAS'/.."),pattern="[.]R$",recursive=TRUE,full.names=TRUE); f<-unique(normalizePath(f)); b<-sum(vapply(f,function(x)inherits(try(parse(x),silent=TRUE),"try-error"),logical(1))); cat(length(f),b)' 2>/dev/null)
 # doubles are written at 12 significant digits, exactly as run_lifecycle.R writes them
 REPRO=$(Rscript -e 'setwd("'"$REPO"'"); suppressWarnings(source("sim_lifecycle/simulate_adam.R")); set.seed(2026); s<-simulate_study(sample_design("BE",N=40),seed=2026); td<-tempfile(); dir.create(td); for(nm in c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg")) { d<-s[[nm]]; dbl<-vapply(d,is.double,logical(1)); d[dbl]<-lapply(d[dbl],signif,digits=12); write.csv(d,file.path(td,paste0(nm,".csv")),row.names=FALSE) }; same<-vapply(c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg"),function(nm) identical(readLines(file.path(td,paste0(nm,".csv"))),readLines(file.path("sim_lifecycle/out",paste0(nm,".csv")))),logical(1)); cat(sum(same))' 2>/dev/null)
 G1=green; [ "${RBAD:-1}" = 0 ] && [ "${REPRO:-0}" = 8 ] || G1=red
@@ -31,12 +31,16 @@ add "G1 Reproducibility & environment" "the sandbox's eight committed output fil
     "$RTOT R programs parse (${RBAD:-?} fail); the synthetic study regenerates ${REPRO:-0} of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)"
 
 # ---- G2 Numeric-provenance (numbers <- validated tool) ---------------------
-GEO=$(grep -rl 'exp(mean(log' $R 2>/dev/null | wc -l | tr -d ' ')
+# Per-program check (replaces a repo-wide grep that one file anywhere could satisfy):
+# every R PK program must take geometric statistics from the log scale (via pkstats(),
+# whose own body is checked, or an explicit log()), no program may assign geomean from
+# a non-log expression, and every SAS twin must use log().
+read -r GEO GEOTOT GEOE < <(python3 validation_harness/checks/g2_geo.py "$R" "$SAS")
 NDIST=$(( $(grep -rl 'n_distinct(USUBJID)' $R 2>/dev/null | wc -l) + $(grep -rl 'CLASS USUBJID\|distinct USUBJID' $SAS 2>/dev/null | wc -l) ))
 DRAFT=$(grep -rilE 'hallucinat|reject.*number|number.*not (in|from)|selftest|self-test' tlf_interpret 2>/dev/null | wc -l | tr -d ' ')
-G2=green; { [ "$GEO" -gt 0 ] && [ "$NDIST" -gt 0 ] && [ "$DRAFT" -gt 0 ]; } || G2=red
+G2=green; { [ "${GEOTOT:-0}" -gt 0 ] && [ "${GEO:-0}" = "${GEOTOT:-x}" ] && [ "$NDIST" -gt 0 ] && [ "$DRAFT" -gt 0 ]; } || G2=red
 add "G2 PK and count convention scans" "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)" "$G2" \
-    "static scans: the log-scale geometric-mean pattern appears in $GEO files under $R (programs, helpers and documentation alike; the scan needs only one, so it would pass even if no PK program used it); distinct-participant counting in $NDIST programs; drafter number-validation self-test present ($DRAFT)"
+    "per-program scans: ${GEOE:-the per-program check did not run}; distinct-participant counting in $NDIST programs; drafter number-validation self-test present ($DRAFT)"
 
 # ---- G3 Data conformance & integrity (CDISC + no PHI) ----------------------
 CONF=$(Rscript validation_harness/checks/conformance.R sim_lifecycle/out 2>/dev/null | grep G3_VERDICT | awk '{print $2}')
