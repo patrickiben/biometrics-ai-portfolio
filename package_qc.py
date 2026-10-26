@@ -46,7 +46,7 @@ CORE_PAGES = [HOME, '404.html', 'README.md', 'Operations.html', 'Biostatistics.h
 # course, the narrated videos and the hybrid / on-device AI program wikis (their deterministic macro
 # library stays in slm_wiki/macro_library/).
 REMOVED = ['New_Hire_Start_Here.html', 'hybrid_ops_wiki/', 'slm_operating_wiki/', 'slm_wiki/SLM_SASR_TrialOps.html',
-           'smartsheet_nocode/', 'courses/', 'netlify.toml', 'risk_monitor/narration/', 'Management.html',
+           'smartsheet_nocode/', 'study_kb_nogui/', 'knowledge_vault/', 'courses/', 'netlify.toml', 'risk_monitor/narration/', 'Management.html',
            'risk_monitor/Trial_Risk_EarlyWarning_Dashboard.html', 'risk_monitor/Advanced_Engine_Manager_Slide.pdf']
 RETIRED_FRAMING = re.compile(
     r'AI for Biometrics|pending management approval|our in[- ]house team|in-house capability|'

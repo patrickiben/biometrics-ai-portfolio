@@ -55,9 +55,8 @@ are **synthetic**; there is no PHI and no participant-level clinical data.
   checklist per job, and a printable or downloadable handoff packet. Data stays in the browser (localStorage +
   JSON/CSV export); no network requests; ships with a clearly fictional example.
   → [`sasr_onleave_wiki/`](sasr_onleave_wiki/Continuity_Toolkit.html) · [playbook](sasr_onleave_wiki/On_Leave_Coverage_Playbook.html) · [CSV template](sasr_onleave_wiki/continuity_jobs_template.csv)
-- **Self-updating trackers and knowledge bases:** Smartsheet from SAS/R, a no-GUI Outlook→KB pipeline, and a
-  navigable knowledge-graph vault.
-  → [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html) · [`study_kb_nogui/`](study_kb_nogui/index.html) · [`knowledge_vault/`](knowledge_vault/quarto/kg-guide.html)
+- **Self-updating Smartsheet trackers:** Smartsheet kept current from scheduled SAS/R; code owns the data and
+  Smartsheet owns the alerts. → [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html)
 - **IRT / RTSM user acceptance testing:** UAT of the randomization and supply system from the biostatistics
   lens: a test-script library, traceability matrix, defect log, and an execution tracker with a live go-live
   sign-off gate. → **[fillable Excel workbook](uat_irt/UAT_IRT_RTSM_Workbook.xlsx)** · [`uat_irt/`](uat_irt/quarto/uat-guide.html)
