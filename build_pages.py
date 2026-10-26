@@ -515,7 +515,7 @@ def app_theme_block(T, mode):
 # The apps' shared component rules: the site's panels, controls, tables and focus ring on Bootstrap
 # and bslib. Token variables only; build_pages.py --check fails on a color literal in app sources.
 APP_RULES = r'''
-html{background:var(--bg)}
+html{background:var(--bg);--shiny-pulse-background:linear-gradient(120deg,transparent,var(--accent),var(--blue),transparent);--shiny-spinner-color:var(--accent)}
 body{font-family:var(--sans);background:var(--bg);color:var(--text)}
 h1,h2,h3,h4,h5,h6{color:var(--ink)}
 a{color:var(--accent)}a:hover{color:var(--accent-ink)}
