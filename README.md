@@ -50,7 +50,7 @@ worked artifact yet).
 | [`sas_r_automation/`](sas_r_automation/SAS_R_Trial_Monitoring_Automation.html) | Deterministic SAS/R monitoring macro library and wiki | Not executed (no SAS license) |
 | [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html) | Tracker updates from SAS/R through the Smartsheet API | R companion run against a local mock API; SAS not executed |
 | [`lifecycle_dashboard/`](lifecycle_dashboard/quarto/lifecycle-guide.html) | Deliverable status report for a synthetic study portfolio (Shiny console, local R or in the browser), with a [field guide](lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html) | Unit and `shiny::testServer()` tests pass locally; static snapshots |
-| `apps/` | Where the site serves three Shiny apps in the browser: TRIALMON, the UAT tracker and the lifecycle console. The Pages workflow (`.github/workflows/pages.yml`) builds them with Shinylive; the committed pages are placeholders, and the build output is not committed | Exported and checked in headless Chrome locally; Safari and Firefox not checked |
+| [`apps/`](apps/_shared/README.md) | Where the site serves three Shiny apps in the browser: TRIALMON, the UAT tracker and the lifecycle console. The Pages workflow (`.github/workflows/pages.yml`) builds them with Shinylive, each behind a launch page with the site's top bar and theme that says what the app shows and reports each step of starting R, and smoke-tests every app in headless Chrome before it deploys: a first visit with a fresh profile must reach Ready, fill the listed panels with the expected values, show no error, follow the site's theme toggle (R gets the theme and redraws its plots) and start again after a reload ([run history](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml)); the committed pages are placeholders, and the build output is not committed | Smoke test passed on a local build on 2026-10-26, with four error states re-run; the workflow repeats it before each deploy; Safari and Firefox not checked |
 | [`budget_reconciliation/`](budget_reconciliation/quarto/hours-guide.html) | Effort (hours) reconciliation example | Illustration on synthetic data |
 
 Research and teaching (six manuscripts and twelve educational editions) are on the
@@ -115,7 +115,12 @@ locally, with shinylive 0.5.0 and the apps' packages installed (build outside th
 ```sh
 Rscript .github/pages/build_site.R ../portfolio-site             # static pages plus the three apps
 python3 -m http.server 8000 --directory ../portfolio-site        # then open http://localhost:8000/apps/trialmon/
+npm ci --prefix .github/pages/smoke                              # the smoke test the workflow runs before it deploys
+CHROME_PATH=/path/to/chrome node .github/pages/smoke/smoke.mjs ../portfolio-site
 ```
+
+The launch page, the shared R helpers and the smoke test are described in
+[`apps/_shared/README.md`](apps/_shared/README.md).
 
 The SAS programs are written for SAS 9.4M8 or later (9.4M9, June 2025, is current) and have not been
 executed here.
@@ -131,15 +136,17 @@ Every page shares one look, dark by default with a light theme, chosen with the 
 | `site.css` | The stylesheet for every page that links it: a generated token region, the shared bar and canvas ("chrome"), the shared components and the page components |
 | `assets/ui.js` | Theme toggle, the phone menu, the filter on the hub pages (with an empty state and a reset), the foldable lifecycle stages, copy buttons; no network |
 | `capabilities.json` | The lifecycle stages (experience, labels and on-site text) and every module (status, summary, links, thumbnail), the single source for the home page, `lifecycle.html`, `apps.html` and `methods.html` |
-| `build_pages.py` | Writes the generated files and regions from those sources (Python 3 standard library). `--check` writes nothing and fails on drift, a stale render, a diagram whose CSS shows as page text, a readout that disagrees with its source, a contrast floor or a thumbnail budget |
-| `_partials/` | The bar and head that `study/R/common.R`, `cqtc_hysteresis/R/page.R` and the Quarto pages read |
+| `build_pages.py` | Writes the generated files and regions from those sources (Python 3 standard library). `--check` writes nothing and fails on drift, a stale render, a diagram whose CSS shows as page text, a readout that disagrees with its source, a contrast floor (the apps' tones included), a color literal in an app's source or its launch page, a Quarto page without the mermaid guard, or a thumbnail budget |
+| `_partials/` | The bar and head that `study/R/common.R`, `cqtc_hysteresis/R/page.R` and the Quarto pages read, and the head, bar and footer that `.github/pages/build_site.R` puts on the apps' launch pages |
 | `_quarto-tokens-dark.scss`, `_quarto-tokens-light.scss`, `_quarto-site.scss` | The Quarto theme, generated from the tokens and `site.css` |
-| `assets/theme/theme.R` | The same tokens for the Shiny apps (bslib; no app uses it yet) and for the Quarto figures, which render once per theme (`renderings: [light, dark]`) |
+| `assets/theme/theme.R` | The same tokens in R: the Shiny apps' theme (the tokens as CSS variables on precompiled Bootstrap, the site's theme choice reported as `input$bp_theme`, series tones such as RAG levels, shared component rules), which `build_pages.py` also writes into `apps/_shared/portfolio_app.R` for the apps to use, and the Quarto figures' ink, which render once per theme (`renderings: [light, dark]`) |
 | `assets/thumbs/` | Screenshots in a 16:10 frame, with `manifest.json` recording each one's source, size and alt text; a view of a site page has a light-theme twin (`-light`), served with `<picture>` |
 
 After editing a token, `site.css`, `ui.js` or `capabilities.json`, run `python3 build_pages.py`, then
 `Rscript study/run_all.R`, `Rscript cqtc_hysteresis/R/run_oc.R --page-only` and `quarto render` on the
-Quarto pages that `build_pages.py --check` lists as stale.
+Quarto pages that `build_pages.py --check` lists as stale, then `python3 build_pages.py` once more:
+Quarto 1.10.19's mermaid post-processing throws on a chart SVG without a `<desc>`, every render
+brings that back, and `build_pages.py` applies the guard (which `--check` requires).
 
 Cards carry one execution-status chip; other statuses follow as a quiet line, and lifecycle labels with
 qualifiers read as rows (label name in its hue, then the qualifier), so the words of every label stay

@@ -30,7 +30,7 @@ execute:
 The interactive tool is a real R Shiny app. From the package root:
 
 ```r
-install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
+install.packages(c("shiny", "bslib", "ggplot2"))   # once
 shiny::runApp("lifecycle_dashboard/shiny")
 ```
 
@@ -38,11 +38,14 @@ Pick a study, then move the what-if sliders (open queries, double-programmed %) 
 watch that study's row in the risk heatmap re-color. The scoring is transparent, so
 every number is defensible.
 
-It is also exported as a Shinylive build: [open the Shinylive build](../../apps/lifecycle_dashboard/)
-(not yet checked in a real browser; Shinylive and webR, so R starts in the browser, the first visit
-downloads about 55 MB, and it works best in Chrome or Edge; Safari support may vary).
+It is also exported as a Shinylive build: [open it in your browser](../../apps/lifecycle_dashboard/)
+(smoke-tested in headless Chrome before each deploy, [run history](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml); Shinylive and webR, so R
+starts in the browser, the first visit downloads about 65 MB, and it works best in Chrome or Edge;
+Safari support may vary).
 
-The whole console is three R files, shown here in full, nothing elided:
+The whole console is three R files, shown here in full, nothing elided (plus the site's shared
+startup and error helper, [`apps/_shared/portfolio_app.R`](../../apps/_shared/portfolio_app.R), which
+`app.R` sources):
 
 - **shiny/R/logic.R**: the pure scoring and signal logic (no Shiny). The [visual guide](lifecycle-guide.html), the [dashboard](lifecycle-dashboard.html), and the unit tests call these same functions.
 - **shiny/R/gen_data.R**: the deterministic synthetic portfolio, the four CSVs the app reads.
@@ -70,9 +73,12 @@ console.
 
 Read the score: `score_study()` builds four sub-scores, then blends them as
 `overall <- clamp(0.30 * timeline + 0.28 * data + 0.27 * tlf + 0.15 * resource)`, and
-`score_portfolio()` turns that into a RAG band with
-`st$rag <- ifelse(st$overall > 66, "red", ifelse(st$overall > 33, "amber", "green"))`.
+`score_portfolio()` turns that into a RAG band with `rag_of()`:
+`ifelse(score > 66, "red", ifelse(score > 33, "amber", "green"))`.
 Change those two lines and you have changed what "at risk" means, everywhere, at once.
+`lifecycle_context()` reads each study's place in its schedule from `milestones.csv`: before the
+database lock, the Timeline's deadline is the lock and the TLF score counts the TLFs QC'd as dry
+runs; after it, the deadline is the next report due and the TLF score counts the finalized TLFs.
 
 ## The complete data generator: shiny/R/gen_data.R
 
@@ -116,12 +122,15 @@ defaults into a study.
 `kpi <- reactive(lifecycle_kpis(st(), data_now()))` rolls it up. These re-run automatically
 whenever `rv$studies` changes. You never call the scorer by hand.
 
-**Every output just reads the reactives.** The value boxes read `kpi()`, the heatmap reads
-`st()` through `heat_long()`, the ranked signals read `lifecycle_signals(st(), data_now())`,
-and the per-study milestone track and TLF funnel read `rv$studies` for the selected `input$study`.
+**Every output just reads the reactives.** The value boxes read `kpi()`, the heatmap and the
+inputs table read `st()`, the ranked signals read `sg <- reactive(lifecycle_signals(st(), data_now()))`,
+and the selected study's header, score breakdown and TLF funnel read `cur()`, its row of `st()`.
+The heatmap, the signals, the breakdown, the funnel, the deliverables register and the inputs table
+are plain HTML; only the milestone track and the query trend are ggplot2.
 
-**Clicking the heatmap selects a study.** The observer on `input$heat_click` rounds the click
-y-position to a row index into `rev(x$id)` and calls `updateSelectInput()` so the detail
+**Clicking a study selects it.** Every study id in the heatmap, the signals and the inputs table
+is a button carrying `data-study`. A few lines of JavaScript (`LC_JS`) set the sidebar's picker to
+that study in the browser, so R hears of the switch before any later slider move, and the detail
 panels follow. Nothing recomputes by hand; changing `rv` (or the selection) triggers the
 reactive that does.
 

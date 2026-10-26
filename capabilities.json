@@ -386,7 +386,7 @@
      "uat",
      "lifecycle-monitor"
     ],
-    "disclosure_html": "The site's publishing workflow exports these three R Shiny apps with Shinylive, so R starts inside your browser and the console takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. Exported and checked in headless Chrome locally; Safari and Firefox not checked. A <strong>Run in browser</strong> link appears on a card here only once a dated first-visit check is recorded for that app; until then each card links its read-only snapshot, its guide and the command that runs it in local R."
+    "disclosure_html": "The site's publishing workflow exports these three R Shiny apps with Shinylive, so R starts inside your browser and the console takes several seconds to appear. The first visit downloads about 65 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. Before each deploy, the workflow opens every app's launch page in headless Chrome with a fresh profile, as a first-time visitor, and deploys nothing unless each app reaches Ready, fills the panels its launch.json lists with the expected values, shows no error, follows the site's theme toggle (R gets the theme and redraws its plots) and starts again after a reload (<a href=\"https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml\" rel=\"noopener\">run history</a> ↗). The same test passed on a local build on 26 October 2026. It runs on the build machine, not on the live site, and only in Chrome: Safari and Firefox are not checked. <strong>Run in browser</strong> opens an app's launch page, which reports each step of starting R."
    },
    {
     "id": "py-browser",
@@ -767,8 +767,8 @@
    "browser": {
     "runtime": "shinylive",
     "href": "apps/trialmon/",
-    "verified": null,
-    "how": null
+    "verified": "2026-10-26",
+    "how": "Smoke test (.github/pages/smoke/smoke.mjs): a first visit in headless Chrome with a fresh profile, on a local build of the site served under the site path; the Pages workflow runs it before every deploy"
    },
    "source": "sasr_monitoring_wiki/index.html (page head and run panel)",
    "published": true
@@ -1414,8 +1414,8 @@
    "browser": {
     "runtime": "shinylive",
     "href": "apps/uat_irt/",
-    "verified": null,
-    "how": null
+    "verified": "2026-10-26",
+    "how": "Smoke test (.github/pages/smoke/smoke.mjs): a first visit in headless Chrome with a fresh profile, on a local build of the site served under the site path; the Pages workflow runs it before every deploy"
    },
    "source": "uat_irt/README.md and README.md, uat_irt/ row",
    "labels": [],
@@ -1474,8 +1474,8 @@
    "browser": {
     "runtime": "shinylive",
     "href": "apps/lifecycle_dashboard/",
-    "verified": null,
-    "how": null
+    "verified": "2026-10-26",
+    "how": "Smoke test (.github/pages/smoke/smoke.mjs): a first visit in headless Chrome with a fresh profile, on a local build of the site served under the site path; the Pages workflow runs it before every deploy"
    },
    "source": "lifecycle_dashboard/README.md and README.md, lifecycle_dashboard/ row",
    "labels": [],

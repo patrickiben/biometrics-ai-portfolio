@@ -77,14 +77,14 @@
     <h2 id="browser-h">The console as a Shinylive build</h2>
     <div class="run">
       <figure>
-        <a href="../apps/trialmon/"><img src="screenshots/trialmon-console.png" width="1280" height="800" loading="lazy" alt="The TRIALMON console as it opens: overall RED, study tier AMBER, 5 RED and 7 AMBER flags for 18 dosed participants, the ranked worklist, and the packet for participant CP101-014 in the sidebar."></a>
+        <a href="../apps/trialmon/"><picture><source srcset="screenshots/trialmon-console-light.png" media="(prefers-color-scheme: light)"><img src="screenshots/trialmon-console.png" width="1280" height="800" loading="lazy" alt="The TRIALMON console as it opens: the packet for participant CP101-014 (RED) in the sidebar, the Start here card with what each color means, seven value boxes (overall RED, study tier AMBER, 5 RED and 7 AMBER flags for 18 dosed participants) and the top of the ranked worklist."></picture></a>
         <figcaption>The console as it opens, on synthetic data. If the app does not load, this screenshot and the <a href="trialmon_quarto/trialmon-dashboard.html">read-only snapshot</a> show the same screens.</figcaption>
       </figure>
       <div>
         <p>The same R Shiny code is exported with Shinylive, which runs R compiled to WebAssembly (webR) in the browser. There is no server: the screens are computed in your browser from the synthetic data, and everything the app needs loads from this site.</p>
-        <p class="small"><span class="st st-note">Not yet checked in a real browser</span> The export was checked in headless Chrome from a local server (see What was executed below); no dated check in a visitor's browser is recorded, so the <a href="../apps.html#r-browser">Apps page</a> lists no Run in browser link for it yet.</p>
-        <div class="note"><p><strong>Before you open it:</strong> R starts inside your browser, so the console takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary.</p></div>
-        <ul class="go"><li><a href="../apps/trialmon/" data-type="run">Shinylive build (not yet checked in a real browser)</a></li><li><a href="trialmon_quarto/trialmon-dashboard.html" data-type="snapshot">Read-only snapshot</a></li></ul>
+        <p class="small"><span class="st st-runs">Smoke-tested before each deploy</span> Before each deploy, the site's publishing workflow opens the console in headless Chrome as a first-time visitor and deploys nothing unless it starts, fills its panels and tabs with the expected values, shows no error and follows the site's theme (<a href="https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml" rel="noopener">run history</a> ↗). The same check passed on a local build on 26 October 2026 (see What was executed below). It runs on the build machine, not on the live site; Safari and Firefox are not checked.</p>
+        <div class="note"><p><strong>Before you open it:</strong> R starts inside your browser, so the console takes several seconds to appear. The first visit downloads about 65 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary.</p></div>
+        <ul class="go"><li><a href="../apps/trialmon/" data-type="run">Run in browser</a></li><li><a href="trialmon_quarto/trialmon-dashboard.html" data-type="snapshot">Read-only snapshot</a></li></ul>
       </div>
     </div>
   </section>
@@ -117,8 +117,8 @@
 
       <article class="card">
         <h3>Shiny console and tests</h3>
-        <p class="meta"><span class="st st-runs">R Shiny: runs in local R</span><span class="st st-note">Shinylive build: not yet checked in a real browser</span></p>
-        <p>The console runs in local R; its Shinylive build is above. It needs only shiny, bslib, DT and ggplot2, keeps its data in the app folder and builds downloads in the browser. The run-and-build page lists every line, including the testthat and <code>shiny::testServer()</code> tests.</p>
+        <p class="meta"><span class="st st-runs">R Shiny: runs in local R</span><span class="st st-note">Shinylive build: smoke-tested before each deploy</span></p>
+        <p>The console runs in local R; its Shinylive build is above. It needs only shiny, bslib and DT, keeps its data in the app folder and builds downloads in the browser. The run-and-build page lists every line, including the testthat and <code>shiny::testServer()</code> tests.</p>
         <ul class="go"><li><a href="trialmon_quarto/trialmon-build.html">Run and build</a></li></ul>
       </article>
 
@@ -141,9 +141,9 @@
     <h2 id="status-h">What was executed</h2>
     <table class="status">
       <tr><th scope="row">Data</th><td>Synthetic, ADaM-shaped CSVs written from one seed: 18 participants in four dosed cohorts, with planted cases for each rule.</td></tr>
-      <tr><th scope="row">Rules and console</th><td>One R file of rules drives the console, the guide, the snapshot and the packet. Tested with testthat and <code>shiny::testServer()</code> on R 4.6.0: 215 expectations in 42 tests pass, including each rule at its exact threshold and a second aminotransferase elevation that opens its own window.</td></tr>
+      <tr><th scope="row">Rules and console</th><td>One R file of rules drives the console, the guide, the snapshot and the packet. Tested with testthat and <code>shiny::testServer()</code> on R 4.6.0: 654 expectations in 69 tests pass, including each rule at its exact threshold and a second aminotransferase elevation that opens its own window.</td></tr>
       <tr><th scope="row">Pages</th><td>Rendered with Quarto 1.10.19 on 25 October 2026; checked in headless Chrome in light and dark at desktop and phone widths.</td></tr>
-      <tr><th scope="row">In the browser</th><td>The site's publishing workflow exports the console with shinylive 0.5.0 (assets 0.10.12, webR 0.6.0). Checked in headless Chrome on 25 October 2026, served under the site path: the console rendered in about 8 seconds from a local server, a setting change and the CSV download worked, there were no page errors, and every request stayed on the site. Not checked in Safari, Firefox or on a phone's own browser.</td></tr>
+      <tr><th scope="row">In the browser</th><td>The site's publishing workflow exports the console with shinylive 0.5.0 (assets 0.10.12, webR 0.6.0). Before each deploy, the workflow's smoke test opens it in headless Chrome as a first-time visitor (<a href="https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml" rel="noopener">run history</a> ↗). On a local build on 26 October 2026, served under the site path, the console was ready about 7 seconds after the page opened, filled every listed panel with the expected values and every tab, followed the site's theme toggle both ways (R had the theme each time, and on the Liver tab both plots were drawn again), showed a focus outline on the tab strip from the keyboard and started again after a reload, with no page errors. Not checked in Safari, Firefox or on a phone's own browser.</td></tr>
       <tr><th scope="row">Not done</th><td>No validated system, no independent programming, no review by a medical monitor. The CTCAE v6.0 cut points follow admiral 1.5.0's metadata and were not re-checked against the NCI workbook. Drafted with AI assistance; the author's sign-off has not been given yet.</td></tr>
     </table>
     <p class="small">Related: the scheduled-monitoring jobs behind these checks are described, as SAS and R macros that have not been executed, in the <a href="SASR_Monitoring_Coverage_Wiki.html">monitoring and coverage wiki</a>.</p>

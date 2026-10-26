@@ -1,0 +1,47 @@
+{
+  "source": "uat_irt/shiny",
+  "title": "IRT/RTSM UAT tracker",
+  "summary": "A user acceptance testing tracker for a synthetic interactive response technology (IRT/RTSM) build: 29 test scripts traced to 30 requirements, a defect log, and a go-live sign-off gate that recomputes as you record test results, close defects and add a test for the one untraced requirement. The gate turns READY only when every critical test passes, no critical or major defect is open and every fix has passed its retest, and every requirement has a test that has been run. It packages the evidence for a named tester or biostatistician to sign; it does not grant approval. Operations data only, with no participant data.",
+  "try": [
+    "RAND-04 opens selected: a critical test that failed, with critical defect DEF-01 open. In the Selected test card, record its retest as Pass, then close DEF-01 (a defect closes only after its test passes): the counts, the plot and the gate update.",
+    "Work down the go-live gate: each ID opens that test. Retest SUP-03 (mark it Pass) before closing DEF-03, run the five tests not run yet, then add a draft test for URS-SUP-005 and run it too. With every blocker cleared, the gate turns READY.",
+    "Search the test-script table, or double-click a Status cell in the defect log, type Open or Closed and press Enter.",
+    "Download the results as a CSV built in your browser, or Reset to seed to start over."
+  ],
+  "screenshot": {"src": "uat-tracker-app.webp", "src_light": "uat-tracker-app-light.webp", "width": 1280, "height": 800,
+                 "alt": "The UAT tracker on first load: the Start here guide with the color key and three things to try; five KPI boxes reading 29 test scripts, 22 passed, 2 failed (RAND-04 and SUP-03), 3 open defects and 97% of requirements traced; the start of the test-script table; and the go-live gate reading NOT ready - blocked, its first criterion naming RAND-04 and COH-03.",
+                 "caption": "The app on first load. It follows the site's light or dark theme. Synthetic data."},
+  "links": [
+    {"t": "guide", "label": "Guide", "href": "../../uat_irt/quarto/uat-guide.html"},
+    {"t": "snapshot", "label": "Read-only snapshot", "href": "../../uat_irt/quarto/uat-dashboard.html"}
+  ],
+  "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "smoke": {
+    "timeout_s": 150,
+    "outputs": ["changes", "v_total", "v_pass", "v_fail", "v_def", "v_cov",
+                "v_total_note", "v_pass_note", "v_fail_note", "v_def_note", "v_cov_note",
+                "tests", "gate", "detail", "plot", "defects"],
+    "expect": {"changes": "Seed data, no changes yet", "v_total": "29", "v_pass": "22", "v_fail": "2",
+               "v_def": "3", "v_cov": "97%", "v_fail_note": "RAND-04 and SUP-03",
+               "v_cov_note": "29 of 30 have a test; 24 tested"},
+    "tabs": [],
+    "interactions": [
+      {"name": "Try this, as written: double-click DEF-04's Status, type Closed, press Enter",
+       "steps": [{"dblclick": "#defects tbody tr:nth-child(4) td:nth-child(3) .uat-pill"}, {"type": "Closed"}, {"key": "Enter"}],
+       "expect": [{"text": ["#defects tbody tr:nth-child(4) td:nth-child(3)", "Closed"]}, {"text": ["#v_def", "2"]}],
+       "after": [{"dblclick": "#defects tbody tr:nth-child(4) td:nth-child(3) .uat-pill"}, {"type": "Open"}, {"key": "Enter"}]},
+      {"name": "DEF-01 cannot close before RAND-04 passes its retest",
+       "steps": [],
+       "expect": [{"visible": "#detail [data-uat-defect='DEF-01'][disabled]"}]},
+      {"name": "adding the draft test from page 1 selects its row and pages the table to it",
+       "steps": [{"click": "#gate [data-uat-cover='URS-SUP-005']"}],
+       "expect": [{"text": ["#detail .uat-detail-id", "SUP-05"]},
+                  {"text": ["#tests tbody tr.selected td.uat-id", "SUP-05"]},
+                  {"text": ["#gate .uat-verdict-title", "NOT ready - blocked"]}]},
+      {"name": "on a phone, the confirmation after a click lies inside the screen",
+       "viewport": [390, 844],
+       "steps": [{"click": "#detail [data-uat-test='SUP-05'][data-uat-status='Pass']"}],
+       "expect": [{"inViewport": "#shiny-notification-panel .shiny-notification"}]}
+    ]
+  }
+}

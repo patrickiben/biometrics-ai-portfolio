@@ -1,0 +1,40 @@
+{
+  "source": "sasr_monitoring_wiki/trialmon_shiny",
+  "title": "TRIALMON safety review console",
+  "summary": "A one-screen safety review of a synthetic first-in-human multiple ascending dose study, CP-101, at its Cohort 4 (120 mg) data cut with 18 dosed participants. Participant, cohort and study-level flags roll up worst-of into one ranked worklist, beside an eDISH liver plot, QTcF categories, CTCAE lab shifts, adverse events by system organ class, a DLT tally against an illustrative 3+3 rule and a study tier with a what-if. A Start here card inside the app says what each color means. The console flags positions for the medical monitor and the Safety Review Committee; it does not adjudicate cases or make a dose-escalation decision.",
+  "try": [
+    "Click CP101-004's row (the first AMBER) in the worklist: the sidebar packet switches to CP101-004, and the line above the worklist says which participant is open.",
+    "Open Liver (eDISH): two points sit in the shaded box. Click CP101-014 (potential Hy's Law), then CP101-004 (its TBL peaked 18 days before its ALT, so not Hy's Law), and compare their liver tests by study day.",
+    "Switch Lab grading to v5.0 in the sidebar: CP101-013's neutrophil count becomes grade 3 and the AMBER count rises from 7 to 8.",
+    "On Study tier, set an indicator to RED: the study tier turns RED, and Reset to the feed undoes it."
+  ],
+  "screenshot": {"src": "trialmon-app.webp", "src_light": "trialmon-app-light.webp", "width": 1280, "height": 800,
+                 "alt": "The TRIALMON console as it opens: the packet for participant CP101-014 (RED) in the sidebar; the Start here card with what the console shows, every rule behind RED, AMBER and watch, and four things to try; seven value boxes (overall RED, participants and cohorts RED, study tier AMBER, 5 RED and 7 AMBER flags, 2 watch, 18 dosed participants); and the top of the ranked worklist.",
+                 "caption": "The console as it opens: the Start here card, the worst-of value boxes and the ranked worklist. It follows the site's light or dark theme. Synthetic data."},
+  "links": [
+    {"t": "open", "label": "About TRIALMON", "href": "../../sasr_monitoring_wiki/index.html"},
+    {"t": "snapshot", "label": "Read-only snapshot", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html"},
+    {"t": "guide", "label": "Guide", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html"}
+  ],
+  "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "smoke": {
+    "timeout_s": 150,
+    "outputs": ["v_overall", "v_part", "v_study", "v_red", "v_amber", "v_watch", "v_n", "worklist", "packet", "window_note"],
+    "expect": {"v_overall": "RED", "v_part": "RED", "v_study": "AMBER", "v_red": "5", "v_amber": "7", "v_watch": "2", "v_n": "18"},
+    "tabs": [
+      {"tab": "Liver (eDISH)", "outputs": ["edish", "traj", "liver_tbl"], "theme": true},
+      {"tab": "Convention grid", "outputs": ["grid_tbl", "grid_note"]},
+      {"tab": "QTcF", "outputs": ["qtc_cat", "qtc_tbl"]},
+      {"tab": "Labs (CTCAE)", "outputs": ["shift", "shift_note"]},
+      {"tab": "Adverse events", "outputs": ["ae_tbl", "ae_note"]},
+      {"tab": "Dose escalation", "outputs": ["dlt_tbl", "ladder"]},
+      {"tab": "Study tier", "outputs": ["study_tbl"]}
+    ],
+    "interactions": [
+      {"name": "the keyboard moving along the tab strip shows a focus ring",
+       "steps": [{"focus": ".nav-tabs .nav-link.active"}, {"key": "ArrowLeft"}],
+       "expect": [{"focused": ".nav-tabs .nav-link"}, {"style": [".nav-tabs .nav-link:focus", "outlineStyle", "^solid$"]},
+                  {"style": [".nav-tabs .nav-link:focus", "outlineWidth", "^2px$"]}]}
+    ]
+  }
+}

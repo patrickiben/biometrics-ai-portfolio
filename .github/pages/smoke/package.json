@@ -1,0 +1,9 @@
+{
+  "name": "portfolio-pages-smoke",
+  "private": true,
+  "description": "Headless Chrome smoke test for the in-browser Shiny apps (run by .github/workflows/pages.yml).",
+  "type": "module",
+  "engines": { "node": ">=22.12.0" },
+  "scripts": { "smoke": "node smoke.mjs" },
+  "dependencies": { "puppeteer-core": "25.16.0" }
+}
