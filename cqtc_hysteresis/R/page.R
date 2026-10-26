@@ -125,8 +125,31 @@ loop_panel <- function(x_ind, y_ind, x_mean, y_mean, y_se, title, id, standalone
                       if (j < m) sprintf('marker-end="url(#%s-a)" ', id) else 'stroke-dasharray="2 3" ',
                       xs(x_mean[j]), ys(y_mean[j]), xs(x_mean[k]), ys(y_mean[k])))
   }
-  b <- c(b, sprintf('<circle class="f1 ring" cx="%.1f" cy="%.1f" r="4"><title>0 h (predose)</title></circle>', xs(x_mean[1]), ys(y_mean[1])),
-         sprintf('<text class="tx" x="%.1f" y="%.1f">0 h</text>', xs(x_mean[1]) + 7, ys(y_mean[1]) + 15))
+  ## "0 h" goes at the first spot around the point that no loop segment, whisker or typical-participant line
+  ## crosses, clear of the gridlines too when there is room
+  px <- xs(x_mean[1]); py <- ys(y_mean[1]); nxt <- c(seq_len(m)[-1], 1)
+  data_segs <- rbind(cbind(xs(x_mean), ys(y_mean), xs(x_mean[nxt]), ys(y_mean[nxt])),
+                     cbind(xs(x_mean), ys(y_mean - y_se), xs(x_mean), ys(y_mean + y_se)),
+                     cbind(head(xs(x_ind), -1), head(ys(y_ind), -1), xs(x_ind)[-1], ys(y_ind)[-1]))
+  grid_segs <- cbind(L, ys(tk), L + pw, ys(tk))
+  crossed <- function(S, x0, x1, y0, y1) {
+    t <- seq(0, 1, length.out = 200)
+    any(apply(S, 1, function(s) any(s[1] + t * (s[3] - s[1]) >= x0 & s[1] + t * (s[3] - s[1]) <= x1 &
+                                    s[2] + t * (s[4] - s[2]) >= y0 & s[2] + t * (s[4] - s[2]) <= y1)))
+  }
+  spots <- list(c(7, 15, 0), c(9, 4, 0), c(7, -8, 0), c(7, 30, 0), c(20, 15, 0), c(20, -8, 0), c(7, -22, 0),
+                c(-7, 15, 1), c(-9, 4, 1), c(-7, -8, 1), c(0, 22, 0.5), c(0, -11, 0.5))
+  fits <- function(sp, S) {
+    lx <- px + sp[1]; ly <- py + sp[2]; x0 <- lx - sp[3] * 22
+    x0 >= L + 2 && x0 + 22 <= L + pw && ly - 12 >= T && ly + 3 <= T + ph && !crossed(S, x0 - 1, x0 + 23, ly - 12, ly + 3)
+  }
+  lab <- Find(function(sp) fits(sp, rbind(data_segs, grid_segs)), spots)
+  if (is.null(lab)) lab <- Find(function(sp) fits(sp, data_segs), spots)
+  if (is.null(lab)) lab <- spots[[1]]
+  anchor <- c("start", "middle", "end")[match(lab[3], c(0, 0.5, 1))]
+  b <- c(b, sprintf('<circle class="f1 ring" cx="%.1f" cy="%.1f" r="4"><title>0 h (predose)</title></circle>', px, py),
+         sprintf('<text class="tx" x="%.1f" y="%.1f"%s>0 h</text>', px + lab[1], py + lab[2],
+                 if (anchor == "start") "" else sprintf(' text-anchor="%s"', anchor)))
   svg_wrap(paste(b, collapse = ""), W, H, title,
            "Mean loop in time order with arrows and plus or minus one standard error, and the noise-free typical participant as a dashed line.",
            id, standalone)
