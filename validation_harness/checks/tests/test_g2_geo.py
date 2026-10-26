@@ -171,6 +171,17 @@ DEFECTS = {
     'string-literal-only log in R': (
         [(PARF, GEO_LINE, 'gm = exp(mean(AVAL[AVAL > 0])), note = "log(AVAL)",')],
         'parallel/f_pk_conc_mean.R', 'no log() call'),
+    'HD1 second pkstats() definition (R runs the last one)': (
+        [(R + '/00_setup_helpers.R', '## --- titles / footnotes banner',
+          'pkstats <- function(df, var = "AVAL", by) {\n  df %>% group_by(across(all_of(by))) %>%\n'
+          '    summarise(geomean = exp(mean(.data[[var]])), geocv = 100 * sd(.data[[var]]) / mean(.data[[var]]),'
+          ' .groups = "drop")\n}\n\n## --- titles / footnotes banner')],
+        'crossover/t_pk_param_summary.R', 'defined 2 times'),
+    'HD2 second %pkstats macro definition (SAS compiles the last one)': (
+        [(MAC, '%mend pkstats;',
+          '%mend pkstats;\n%macro pkstats(ds=, var=AVAL, class=TRTA PARAMCD, where=%str(1), out=_pk);\n'
+          '  proc means data=&ds noprint; class &class; var &var; output out=&out mean=geomean; run;\n%mend pkstats;')],
+        MACRO_USER, 'defined 2 times'),
     'S01 data step geomean = exp(amean) next to a %pkstats call': (
         [(SAS + '/crossover/t_ada_impact_pk.sas', '%pkstats(', 'data _x; set _pk; geomean = exp(amean); run;\n%pkstats(')],
         'crossover/t_ada_impact_pk.R', 'SAS geomean = exp(amean)'),

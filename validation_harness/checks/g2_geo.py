@@ -1393,6 +1393,8 @@ def check_r_helper(path):
     defs = [r for r in rf.recs if 'pkstats' in r.targets and r.expr and is_name(r.expr[0], 'function')]
     if not defs:
         return False, ['no pkstats <- function(...) definition']
+    if len(defs) > 1:  # R uses the last definition; only one may exist so the checked body is the one that runs
+        return False, [f'pkstats() is defined {len(defs)} times in 00_setup_helpers.R; exactly one definition is allowed']
     lo, hi = defs[0].span
     prob, seen = [], {'geomean': 0, 'geocv': 0}
     for r in rf.recs:
@@ -1703,7 +1705,11 @@ def check_sas_macro(path):
     """(ok, problems, SasCode of the %pkstats body)"""
     if not os.path.isfile(path):
         return False, ['00_setup_macros.sas not found'], None
-    m = re.search(r'%macro\s+pkstats\b.*?%mend\b', sas_code(path), re.S)
+    code = sas_code(path)
+    n_def = len(re.findall(r'%macro\s+pkstats\b', code, re.I))
+    if n_def > 1:  # SAS compiles the last definition; only one may exist so the checked body is the one that runs
+        return False, [f'%pkstats is defined {n_def} times in 00_setup_macros.sas; exactly one definition is allowed'], None
+    m = re.search(r'%macro\s+pkstats\b.*?%mend\b', code, re.S)
     if not m:
         return False, ['no %macro pkstats ... %mend'], None
     sc = SasCode(m.group(0))
