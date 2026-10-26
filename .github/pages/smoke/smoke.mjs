@@ -320,6 +320,30 @@ async function checkApp(spec) {
         const stage = await page.$("#app .app-stage");
         if (stage) await stage.screenshot({ path: path.join(SHOTS, `${spec.name}-app.png`) });
       }
+      // optional: elements that must fit without sideways scrolling at a window width, for
+      // example a table at phone width ({"selector": ".lc-heat", "width": 390})
+      for (const fit of smoke.fit || []) {
+        await page.setViewport({ width: fit.width, height: 900 });
+        await sleep(1000);   // the app lays out again inside its frame
+        const got = await appFrame(page).evaluate((sel) => [...document.querySelectorAll(sel)].map((e) => {
+          let box = e.parentElement;
+          while (box && box !== document.body && getComputedStyle(box).overflowX === "visible") box = box.parentElement;
+          return { w: Math.ceil(e.getBoundingClientRect().width), room: box.clientWidth, right: Math.ceil(e.getBoundingClientRect().right),
+                   frame: innerWidth, scrolls: box.scrollWidth > box.clientWidth + 1 };
+        }), fit.selector).catch((e) => String(e));
+        if (!Array.isArray(got) || !got.length) fail(`fit: ${fit.selector} is not on the page at ${fit.width} px (${got})`);
+        else for (const g of got) {
+          if (g.scrolls || g.w > g.room + 1 || g.right > g.frame + 1)
+            fail(`fit: ${fit.selector} is ${g.w} px wide in a ${g.room} px box at a ${fit.width} px window (right edge ${g.right} of ${g.frame})`);
+          else say(`${spec.name}: ${fit.selector} fits at ${fit.width} px (${g.w} of ${g.room} px)`);
+        }
+        if (SHOTS) {
+          await page.evaluate(() => document.getElementById("app").scrollIntoView());
+          const stage = await page.$("#app .app-stage");
+          if (stage) await stage.screenshot({ path: path.join(SHOTS, `${spec.name}-fit-${fit.width}.png`) });
+        }
+      }
+      if ((smoke.fit || []).length) { await page.setViewport({ width: 1440, height: 900 }); await sleep(500); }
       // the tabs
       for (const tab of smoke.tabs || []) {
         const fr = appFrame(page);

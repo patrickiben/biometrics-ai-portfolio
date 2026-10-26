@@ -396,8 +396,13 @@
     doc.on('shiny:disconnected', function () { log('shiny', 'disconnected'); showProblem('disconnected'); });
     doc.on('shiny:busy', function () { setBusy(true); });
     doc.on('shiny:idle', function () { setBusy(false); });
-    // recount as each value arrives (after Shiny has drawn it), not only on the 500 ms tick
-    doc.on('shiny:value', function () { L.values = (L.values || 0) + 1; setTimeout(function () { countOutputs(w); }, 0); });
+    // count again just after each value is drawn (Shiny draws it right after this event), so the
+    // status line never says "0 of N panels filled" while the app already shows its panels
+    var recount = null;
+    doc.on('shiny:value shiny:error', function () {
+      L.values = (L.values || 0) + 1;
+      if (!recount) recount = setTimeout(function () { recount = null; countOutputs(w); }, 0);
+    });
     doc.on('shiny:error', function (ev) {
       var e = ev.error || {}, types = [].concat(e.type || []);
       if (e.message && types.indexOf('validation') < 0) log('output-error', (ev.name || 'output') + ': ' + e.message);
