@@ -72,6 +72,16 @@ margin: 0 0.8em 0.2em -1em;  vertical-align: middle;
     else if (b.hasAttribute("data-theme-reset")) apply(null, true);
     else menu(b, b.getAttribute("aria-expanded") !== "true");
   });
+  // the site's command-bar readout (as site.js adds on Home and Operations): status and a UTC clock
+  var bar = d.querySelector(".top > .wrap"), tog = bar && bar.querySelector(".theme-toggle");
+  if (bar && tog && !bar.querySelector(".mc-status")) {
+    var st = d.createElement("span"); st.className = "mc-status"; st.innerHTML = '<span class="dot"></span> All sectors nominal';
+    var ck = d.createElement("span"); ck.className = "mc-clock";
+    bar.insertBefore(st, tog); bar.insertBefore(ck, tog);
+    var pad = function (n) { return String(n).padStart(2, "0"); };
+    var tick = function () { var t = new Date(); ck.textContent = pad(t.getUTCHours()) + ":" + pad(t.getUTCMinutes()) + ":" + pad(t.getUTCSeconds()) + " UTC"; };
+    tick(); setInterval(tick, 1000);
+  }
   window.addEventListener("storage", function (e) { if (e.key === KEY) apply(saved(), false); });
   if (mq && mq.addEventListener) mq.addEventListener("change", function () { if (!saved()) apply(null, false); });
 
@@ -422,7 +432,7 @@ body > p:last-child { padding-bottom: 40px; }
   </ul>
 </nav>
 <div class="synthetic">
-<p>Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable. Every number below is computed by <code>study/run_all.R</code> from code in this repository.</p>
+<p>Synthetic data only: simulated for this worked example; not real trial data and not a regulatory deliverable. Every number below is computed by <code>study/run_all.R</code> from code in this repository.</p>
 </div>
 <h2 id="summary">Summary</h2>
 <p>Bioequivalence of the test tablet (T) to the reference tablet (R) was <strong>shown</strong> for both primary parameters in 38 participants (bioequivalence set). The ratio of geometric means T/R was 101.07% for Cmax (90% CI 98.89% to 103.30%) and 103.99% for AUC(0-t) (90% CI 98.52% to 109.75%), both within 80.00% to 125.00% (ICH M13A). The supportive AUC(0-inf) ratio was 104.62% (98.63% to 110.97%) in the 37 participants whose AUC(0-inf) met the SAP parameter rules in both periods.</p>
