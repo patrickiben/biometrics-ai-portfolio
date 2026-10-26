@@ -46,7 +46,7 @@ ledger view.
 - **Automatable:** table‑vs‑source numeric diff; a scan that every PK program uses the log‑scale geometric convention; a scan that counts use `n_distinct(USUBJID)` / `CLASS USUBJID`; confirmation that the narrative drafter's self‑test **rejects any number it did not receive from the pipeline**.
 - **Human judgment:** whether a difference sits within Monte‑Carlo noise (a 1–2 MCSE move is not a finding).
 - **Pass criterion:** zero LLM‑sourced numbers; the log‑scale geometric convention present in every PK mean program; counts distinct‑participant; the drafter's number‑validation self‑test is present.
-- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer. The scan counts files, not programs: it passes while the log-scale pattern appears in any file under `r_tlf_pseudocode`, documentation included (14 files today: 11 R programs, the shared helpers in `00_setup_helpers.R`, `README.md` and `index.html`), so it would pass even if no R program used the log scale. The seeded-defect run (G10, defect D04) planted exp(mean(x)) in one PK program and G2 stayed green. Restricting G2 to the PK programs and requiring the pattern in each one would be a separate gate change; it is not made here.
+- **As implemented here:** the ledger calls this gate "PK and count convention scans" because that is all it checks: log-scale geometric statistics in the PK programs, distinct-participant counting, and the presence of the drafter's self-test. Pattern scans cannot show where a reported number comes from; that takes the study's validated programs and a reviewer. Since 2026-10-26 the log-scale check runs per program (`checks/g2_geo.py`): each of the 27 PK programs in the R library must take its geometric statistics from the log scale (through `pkstats()`, whose own body must compute `exp(mean(log(x)))` and the geometric CV from `var(log(x))`, or through an explicit `log()`), may assign `geomean` only from a log-scale expression, and must have a SAS twin that uses `log()` or the `%pkstats` macro (whose body must work on the log scale). Comments do not count. Four negative controls each turn G2 red: D04's `exp(mean(x))`, a `pkstats()` helper without logs, a `%pkstats` macro without logs, and a program with no `log()` call. Before that change the scan counted files, not programs, and the registry-v2 seeded-defect run below records that it missed D04.
 
 ### G3: Data conformance & integrity gate (CDISC + no PHI)
 **Claim it defends:** *"The analysis data is CDISC‑conformant, referentially intact across domains, correctly termed, and carries no PHI/PII or unblinded content."*
@@ -188,7 +188,9 @@ What the run shows:
 - **D04 survived.** G2 counts files, not programs: it passes while the log-scale pattern appears
   in any file under `r_tlf_pseudocode`, documentation included, so it would pass even if no R
   program used the log scale; and no layer runs the TLF libraries on data. This is a disclosure of
-  what the harness misses, not a failure of the run.
+  what the harness missed, not a failure of the run. G2 has since been changed to check each PK
+  program (2026-10-26); D04 will be re-scored in the next seeded-defect run under a new registry
+  version, frozen before that run.
 - **D01 was caught earlier than the build spec predicted.** `simulate_study()` asserts that the
   ADSL period-1 TRT01A equals the ADEX period-1 TRTA, so the generator stops before G3's
   TRT01A-tracks-TRTSEQP check sees any data; that G3 check is not exercised by this list.
