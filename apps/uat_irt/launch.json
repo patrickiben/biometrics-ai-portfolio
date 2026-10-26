@@ -12,8 +12,8 @@
                  "alt": "The UAT tracker on first load: a Start here guide; five KPI boxes reading 29 test scripts, 22 passed, 2 failed, 3 open defects and 97% of requirements traced; the start of the test-script table; and the go-live gate reading NOT ready - blocked, its first criterion naming RAND-04 and COH-03.",
                  "caption": "The app on first load, light theme (it follows your system setting). Synthetic data."},
   "links": [
-    {"label": "Guide", "href": "../../uat_irt/quarto/uat-guide.html"},
-    {"label": "Read-only snapshot", "href": "../../uat_irt/quarto/uat-dashboard.html"}
+    {"t": "guide", "label": "Guide", "href": "../../uat_irt/quarto/uat-guide.html"},
+    {"t": "snapshot", "label": "Read-only snapshot", "href": "../../uat_irt/quarto/uat-dashboard.html"}
   ],
   "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
   "smoke": {

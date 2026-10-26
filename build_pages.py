@@ -20,7 +20,8 @@ Sources and what is generated from them (Python 3 standard library only):
                                the readouts on quality.html
   ledger.json, teeth summary.json, the study outputs -> the status strip and the glance panel
   _partials/               <-  the top bar, head and Quarto head partials that the R page generators
-                               (study/R/common.R, cqtc_hysteresis/R/page.R) and the Quarto pages read
+                               (study/R/common.R, cqtc_hysteresis/R/page.R) and the Quarto pages read,
+                               and the footer that .github/pages/build_site.R puts on the apps' launch pages
 Hand text outside the <!-- gen:NAME --> ... <!-- /gen:NAME --> markers (and # gen:NAME:begin ...
 # gen:NAME:end in R files) is never touched.
 Synthetic data only.
@@ -386,6 +387,8 @@ for dep in (1, 2, 3):
 for dep in (2, 3):
     put(f'_partials/_quarto-head-d{dep}.html', quarto_head())
 put('_partials/_quarto-skip.html', '<a class="skip" href="#quarto-document-content">Skip to content</a>\n')
+put('_partials/_footer-d2.html', site_footer(2))   # the launch pages of the in-browser apps
+
 # ---------------------------------------------------------------------------------------------
 # 5b. the Shiny apps: series tones, the app CSS and the R helpers. One generated file,
 #     assets/theme/theme.R, and its copy in apps/_shared/portfolio_app.R (Shinylive apps cannot
@@ -764,9 +767,10 @@ if exists(PORTFOLIO_APP):
 else:
     fail(f'{PORTFOLIO_APP} is missing')
 
-# No hand-copied colors in the apps: every color comes from the tokens, through bp_tokens, bp_tones
-# and the CSS variables above.
-APP_SOURCES = ['apps/_shared/portfolio_app.R']
+# No hand-copied colors in the apps or their launch pages: every color comes from the tokens, through
+# bp_tokens, bp_tones and the CSS variables above (or site.css on the launch page).
+APP_SOURCES = ['apps/_shared/portfolio_app.R', 'apps/_shared/launch.css', 'apps/_shared/launch.js',
+               'apps/_shared/launch_template/index.html']
 for d in sorted(os.listdir(os.path.join(ROOT, 'apps'))):
     spec = os.path.join('apps', d, 'launch.json')
     if d.startswith('_') or not exists(spec):

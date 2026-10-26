@@ -11,8 +11,8 @@
                  "alt": "The Study Lifecycle Monitor running in the browser: KPI boxes reading 8 active studies, 1 at risk (CP-108), 3 on watch, 135 open queries, 46% of deliverables done and the next DB lock in 8 days (CP-105); the portfolio risk heatmap with CP-108 selected; and the ranked early-warning signals, red first.",
                  "caption": "The app in the browser, scrolled past its Start here card: the KPIs, the risk heatmap with CP-108 selected, and the ranked signals. Synthetic data."},
   "links": [
-    {"label": "Guide", "href": "../../lifecycle_dashboard/quarto/lifecycle-guide.html"},
-    {"label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
+    {"t": "guide", "label": "Guide", "href": "../../lifecycle_dashboard/quarto/lifecycle-guide.html"},
+    {"t": "snapshot", "label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
   ],
   "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
   "smoke": {

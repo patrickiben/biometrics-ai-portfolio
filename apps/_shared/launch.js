@@ -15,6 +15,10 @@
    "ServiceWorker controller was not found" viewer error (reloads once), a loader or app.json that
    did not download, an R error while starting the app, the webR worker stopping, a lost connection,
    no result after 60 s of visible time, and R busy for more than 45 s after the app was ready.
+   The app follows the site's theme: the toggle in the site's top bar on this page (assets/ui.js,
+   saved as bp-theme) or the system setting. The app's page reads the same saved choice when it
+   loads (bp_theme_head() in portfolio_app.R) and hears later changes; this page also sets the
+   theme on the app's page directly, so the two never disagree.
    State for tests and bug reports: window.launchStatus, and data-state on #app. */
 (function () {
   'use strict';
@@ -363,6 +367,10 @@
       showProblem(lost ? 'engine-died' : 'r-start', lost && L.downloadError ? L.downloadError : said);
     }
     var f = root.querySelector('iframe');
+    if (f && !f.hasAttribute('title')) {   // the viewer's frame has no name of its own
+      var h1 = document.getElementById('launch-title');
+      f.setAttribute('title', (h1 ? h1.textContent.trim() : 'The app') + ': the live app');
+    }
     if (f && !frame && /app_/.test(f.getAttribute('src') || '')) {
       frame = f;
       log('frame', 'app address ' + f.getAttribute('src'));
@@ -381,6 +389,7 @@
     attachedTo = w;
     L.times.frameLoaded = +now().toFixed(2);
     log('frame', 'loaded');
+    pushTheme();
     setStage('compute');
     attachShiny(w, 0);
   }
@@ -392,6 +401,7 @@
       return;
     }
     var doc = $(w.document);
+    pushTheme();
     doc.on('shiny:connected', onConnected);
     doc.on('shiny:disconnected', function () { log('shiny', 'disconnected'); showProblem('disconnected'); });
     doc.on('shiny:busy', function () { setBusy(true); });
@@ -473,6 +483,27 @@
     forgetAutoReload();
     setStage('ready');
   }
+
+  // ---- the site's theme, in the app too -----------------------------------------------------------
+  var docEl = document.documentElement;
+  var mqLight = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+  function siteTheme() {
+    var t = docEl.getAttribute('data-theme');
+    return t === 'light' || t === 'dark' ? t : (mqLight && mqLight.matches ? 'light' : 'dark');
+  }
+  function pushTheme() {
+    L.theme = siteTheme();
+    if (!frame) return;
+    try {
+      var r = frame.contentDocument && frame.contentDocument.documentElement;
+      if (r && /app_/.test(frame.contentWindow.location.pathname) && r.getAttribute('data-bs-theme') !== L.theme) {
+        r.setAttribute('data-bs-theme', L.theme);
+        log('theme', 'app set to ' + L.theme);
+      }
+    } catch (e) { /* the app's page is not readable yet */ }
+  }
+  new MutationObserver(pushTheme).observe(docEl, { attributes: true, attributeFilter: ['data-theme'] });
+  if (mqLight && mqLight.addEventListener) mqLight.addEventListener('change', pushTheme);
 
   // ---- when the start stalls: are the app's main files reachable? ---------------------------------
   var diagnosed = false;

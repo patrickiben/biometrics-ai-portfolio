@@ -1,94 +1,83 @@
 /* Launch pages for the in-browser Shiny apps (apps/<name>/index.html, built from
-   apps/_shared/launch_template/). Uses the site.css tokens, so light and dark follow the
-   visitor's system setting like the rest of the site. Replaces Shinylive's own page styles:
-   only the few viewer rules it needs are repeated at the end. */
-
-:root {
-  --ok-fg: #1D5E35;
-  --warn-fg: #8A3A10;
-  --err-fg: #A1261B; --err-bg: #FDECEA; --err-line: #E5A39B;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --ok-fg: #93DBAE;
-    --warn-fg: #F5B48A;
-    --err-fg: #FFB4A9; --err-bg: #3A1D1A; --err-line: #7A3A33;
-  }
-}
+   apps/_shared/launch_template/ by .github/pages/build_site.R). The page carries the site's head,
+   top bar and footer and links site.css, so its colors, type and controls are the site's, in light
+   and dark, with the theme toggle; this file only lays out the intro and the app area, from the
+   site's tokens. No color is written here: build_pages.py --check fails on a color literal.
+   Replaces Shinylive's own page styles: only the few viewer rules it needs are repeated at the end. */
 
 /* intro: shown before any R loads */
-.launch-intro { padding: 28px 16px 8px; }
-.launch-intro h1 { margin: 0 0 10px; font-size: clamp(1.6rem, 5vw, 2.2rem); }
-.launch-intro .kicker .lab { margin-left: 6px; text-transform: none; letter-spacing: .02em; vertical-align: 1px; }
-.launch-intro .lede { font-size: 1.05rem; max-width: 52em; }
-.launch-go { margin: 4px 0 16px; }
-.launch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px 16px; align-items: start; }
+.launch .crumbs { margin: 22px 0 0; }
+.launch-intro { padding-top: 16px; }
+.launch-intro .chips { gap: 6px; margin: 0 0 14px; }
+.launch-intro .chips .st { margin: 0; }
+.launch-intro .lede { margin: 0 0 18px; }
+.launch-go { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0 0 22px; }
+.launch-go ul.go { margin: 0; padding: 0; }
+.launch-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; align-items: start; }
 .launch-grid .panel { margin: 0; }
-.launch-grid h2 { font-size: 1rem; margin: 0 0 8px; }
+.launch-grid h2 { margin: 0 0 12px; font: 600 var(--fs-label)/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .launch-try ol { margin: 0; padding-left: 1.3em; }
-.launch-try li, .launch-facts li { margin: 0 0 6px; }
-.launch-facts ul { list-style: none; padding: 0; }
-.launch-facts li { color: var(--text); font-size: .95rem; }
-.launch-shot { padding: 8px; }
-.launch-shot img { display: block; width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--line); }
-.launch-shot figcaption { margin-top: 6px; color: var(--muted); font-size: .85rem; line-height: 1.35; }
-.launch-foot { padding-top: 8px; padding-bottom: 32px; }
+.launch-try li, .launch-facts li { margin: 0 0 8px; font-size: 15px; line-height: 1.55; }
+.launch-try li::marker { color: var(--accent); font: 600 13px var(--mono); }
+.launch-facts ul { list-style: none; margin: 0; padding: 0; }
+.launch-shot { padding: 10px; }
+.launch-shot picture { display: block; }
+.launch-shot img { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--line); }
+.launch-shot figcaption { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
 
 /* status, used in the intro pill and the app bar */
 .dot { display: inline-block; flex: 0 0 auto; width: .7rem; height: .7rem; border-radius: 50%; background: var(--accent); }
-[data-tone="progress"] .dot { background: transparent; border: 2px solid var(--line); border-top-color: var(--accent); animation: launch-spin .8s linear infinite; }
-[data-tone="ok"] .dot { background: var(--ok-fg); }
-[data-tone="warn"] .dot { background: var(--warn-fg); }
-[data-tone="error"] .dot { background: var(--err-fg); }
+[data-tone="progress"] .dot { background: transparent; border: 2px solid var(--line-2); border-top-color: var(--accent); animation: launch-spin .8s linear infinite; }
+[data-tone="ok"] .dot { background: var(--green); }
+[data-tone="warn"] .dot { background: var(--amber); }
+[data-tone="error"] .dot { background: var(--red); }
 @keyframes launch-spin { to { transform: rotate(360deg); } }
-.status-pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 999px;
-  background: var(--surface); color: var(--text); text-decoration: none; font-size: .92rem; font-weight: 600; }
-.status-pill:hover { border-color: var(--accent); }
-.status-pill[data-tone="error"] { border-color: var(--err-line); background: var(--err-bg); color: var(--err-fg); }
+.status-pill { display: inline-flex; align-items: center; gap: 9px; min-height: 40px; padding: 8px 14px; border: 1px solid var(--line-2); border-radius: var(--r-pill);
+  background: var(--surface); color: var(--ink); text-decoration: none; font: 600 14px/1.2 var(--sans); box-shadow: var(--shadow-1); }
+.status-pill:hover { color: var(--ink); border-color: var(--accent); }
+.status-pill[data-tone="ok"] { border-color: color-mix(in srgb, var(--green) 45%, transparent); }
+.status-pill[data-tone="error"] { border-color: color-mix(in srgb, var(--red) 45%, transparent); background: var(--red-soft); color: var(--red); }
 
 /* the app area */
-.launch-app { max-width: 1680px; margin: 20px auto 0; padding: 0 16px; scroll-margin-top: 8px; }
+.launch-app { max-width: 1680px; margin: 32px auto 0; padding: 0 16px; scroll-margin-top: calc(var(--bar-h) + 8px); }
 .launch-app:focus { outline: none; }
-.app-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px; background: var(--surface);
-  border: 1px solid var(--line); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; }
-.app-status { display: flex; align-items: center; gap: 10px; flex: 1 1 320px; min-width: 0; font-size: .93rem; line-height: 1.4; }
+.app-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 12px 8px 14px; background: var(--surface-2);
+  border: 1px solid var(--line-2); border-bottom: 0; border-radius: var(--r-lg) var(--r-lg) 0 0; }
+.app-status { display: flex; align-items: center; gap: 10px; flex: 1 1 320px; min-width: 0; font-size: 14px; line-height: 1.4; }
 .status-text { min-width: 0; }
-.status-stage { font-weight: 700; }
+.status-stage { font-weight: 700; color: var(--ink); }
 .status-detail { color: var(--muted); }
-.app-status[data-tone="error"] .status-stage { color: var(--err-fg); }
-.app-status[data-tone="warn"] .status-stage { color: var(--warn-fg); }
-.app-status[data-tone="ok"] .status-stage { color: var(--ok-fg); }
-.status-clock { margin-left: auto; color: var(--muted); font-variant-numeric: tabular-nums; font-size: .88rem; white-space: nowrap; }
+.app-status[data-tone="error"] .status-stage { color: var(--red); }
+.app-status[data-tone="warn"] .status-stage { color: var(--amber); }
+.app-status[data-tone="ok"] .status-stage { color: var(--green); }
+.status-clock { margin-left: auto; color: var(--faint); font: 500 12px/1.3 var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .app-tools { display: flex; gap: 8px; }
-.btn { font: inherit; font-size: .9rem; font-weight: 600; line-height: 1.2; padding: 7px 12px; border-radius: 6px; cursor: pointer;
-  color: var(--text); background: var(--surface-2); border: 1px solid var(--line); }
-.btn:hover { border-color: var(--accent); }
-.btn-primary { color: #FFFFFF; background: var(--accent); border-color: var(--accent); }
-@media (prefers-color-scheme: dark) { .btn-primary { color: #12171D; } }
+.app-tools .btn { min-height: 34px; padding: 6px 12px; font-size: 13px; }
 .btn[hidden] { display: none; }
 
-.app-stage { position: relative; height: clamp(560px, calc(100vh - 70px), 1200px); height: clamp(560px, calc(100svh - 70px), 1200px);
-  border: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius); background: var(--surface); overflow: hidden; }
+.app-stage { position: relative; height: clamp(560px, calc(100vh - var(--bar-h) - 70px), 1200px); height: clamp(560px, calc(100svh - var(--bar-h) - 70px), 1200px);
+  border: 1px solid var(--line-2); border-radius: 0 0 var(--r-lg) var(--r-lg); background: var(--bg); overflow: hidden; box-shadow: var(--shadow-1); }
 .app-root { position: absolute; inset: 0; }
 .app-cover { position: absolute; inset: 0; z-index: 2; display: flex; align-items: flex-start; justify-content: center;
   padding: 8vh 16px 16px; overflow: auto; background: var(--bg); }
 .launch-app[data-state="compute"] .app-cover,
 .launch-app[data-state="ready"] .app-cover { display: none; }
 .launch-app.has-problem .app-cover { display: flex; background: color-mix(in srgb, var(--bg) 92%, transparent); }
-.cover-card { width: 100%; max-width: 40rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px 22px; }
-.cover-title { font-size: 1.15rem; margin: 0 0 12px; }
+.cover-card { width: 100%; max-width: 40rem; padding: 20px 22px; border: 1px solid var(--line-2); border-radius: var(--r-lg);
+  background: linear-gradient(180deg, var(--surface-2), var(--surface) 40%); box-shadow: var(--shadow-1); }
+.cover-title { margin: 0 0 14px; font: 600 var(--fs-label)/1.3 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .steps { list-style: none; margin: 0; padding: 0; }
-.steps li { position: relative; padding: 4px 0 4px 30px; color: var(--muted); }
-.steps li::before { content: ""; position: absolute; left: 4px; top: .55em; width: .85rem; height: .85rem; border-radius: 50%; border: 2px solid var(--line); box-sizing: border-box; }
-.steps li.active { color: var(--text); font-weight: 600; }
+.steps li { position: relative; padding: 5px 0 5px 30px; color: var(--muted); }
+.steps li::before { content: ""; position: absolute; left: 4px; top: .6em; width: .85rem; height: .85rem; border-radius: 50%; border: 2px solid var(--line-2); box-sizing: border-box; }
+.steps li.active { color: var(--ink); font-weight: 600; }
 .steps li.active::before { border-top-color: var(--accent); animation: launch-spin .8s linear infinite; }
 .steps li.done { color: var(--text); }
-.steps li.done::before { content: "\2713"; border: 0; color: var(--ok-fg); font-weight: 700; top: .2em; left: 5px; width: auto; height: auto; }
-.steps li.failed { color: var(--err-fg); font-weight: 600; }
-.steps li.failed::before { content: "\2715"; border: 0; color: var(--err-fg); font-weight: 700; top: .2em; left: 5px; width: auto; height: auto; }
-.steps .step-time { color: var(--muted); font-weight: 400; font-size: .85rem; margin-left: 6px; }
-.cover-problem { margin-top: 14px; padding: 12px 14px; border: 1px solid var(--err-line); background: var(--err-bg); border-radius: 6px; }
-.cover-problem .problem-text { font-weight: 600; color: var(--err-fg); margin: 0 0 8px; }
+.steps li.done::before { content: "\2713"; border: 0; color: var(--green); font-weight: 700; top: .25em; left: 5px; width: auto; height: auto; }
+.steps li.failed { color: var(--red); font-weight: 600; }
+.steps li.failed::before { content: "\2715"; border: 0; color: var(--red); font-weight: 700; top: .25em; left: 5px; width: auto; height: auto; }
+.steps .step-time { color: var(--faint); font: 400 12px/1.3 var(--mono); margin-left: 8px; }
+.cover-problem { margin-top: 14px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--red) 45%, transparent); background: var(--red-soft); border-radius: var(--r-md); }
+.cover-problem .problem-text { font-weight: 600; color: var(--red); margin: 0 0 8px; }
 .cover-problem.tone-warn { border-color: var(--gap-line); background: var(--gap-bg); }
 .cover-problem.tone-warn .problem-text { color: var(--gap-fg); }
 .problem-said { font-family: var(--mono); font-size: .85rem; overflow-wrap: anywhere; margin: 0 0 8px; }
@@ -100,26 +89,30 @@
 .problem-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; margin: 0; }
 .problem-details { margin-top: 10px; font-size: .88rem; }
 .problem-details pre { max-height: 14rem; overflow: auto; margin: 6px 0 0; font-size: .78rem; }
+.launch-note { max-width: 80ch; margin: 12px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 
-/* full screen: the app area covers the window */
+/* full screen: the app area covers the window, the site's top bar included */
 .launch-app.is-full { position: fixed; inset: 0; z-index: 100; max-width: none; margin: 0; padding: 0; background: var(--bg); }
 .launch-app.is-full .app-bar { border-radius: 0; border-left: 0; border-right: 0; }
-.launch-app.is-full .app-stage { height: calc(100vh - 54px); height: calc(100dvh - 54px); border-radius: 0; border-left: 0; border-right: 0; border-bottom: 0; }
+.launch-app.is-full .app-stage { height: calc(100vh - 54px); height: calc(100dvh - 54px); border-radius: 0; border-left: 0; border-right: 0; border-bottom: 0; box-shadow: none; }
+.launch-app.is-full .launch-note { display: none; }
 body.launch-full { overflow: hidden; }
 
 /* the Shinylive viewer (from shinylive.css, which this page does not load) */
 .app-root .shinylive-container { width: 100%; height: 100%; }
 .shinylive-viewer { position: relative; width: 100%; height: 100%; }
-.shinylive-viewer iframe, .app-frame { display: block; width: 100%; height: 100%; border: 0; background: var(--surface); }
+.shinylive-viewer iframe, .app-frame { display: block; width: 100%; height: 100%; border: 0; background: var(--bg); }
 .shinylive-viewer .loading-wrapper { position: absolute; inset: 0; display: none; }
 /* Shinylive's own spinner and error panel stay hidden: the cover above reports both */
 
 @media (max-width: 720px) {
-  .launch-intro { padding-top: 20px; }
-  .launch-app { padding: 0 8px; }
+  .launch-intro { padding-top: 8px; }
+  .launch-app { margin-top: 24px; padding: 0 8px; }
+  .app-bar { padding: 8px 10px; }
   .status-clock { margin-left: 0; }
-  .app-stage { height: calc(100vh - 110px); height: calc(100svh - 110px); min-height: 520px; }
+  .app-stage { height: calc(100vh - var(--bar-h) - 110px); height: calc(100svh - var(--bar-h) - 110px); min-height: 520px; }
   .app-cover { padding-top: 16px; }
+  .launch-note { padding: 0 4px; }
 }
 @media (prefers-reduced-motion: reduce) {
   [data-tone="progress"] .dot, .steps li.active::before { animation: none; }

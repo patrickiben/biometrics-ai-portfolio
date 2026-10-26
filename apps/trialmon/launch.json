@@ -12,9 +12,9 @@
                  "alt": "The TRIALMON console in light mode: the Start here card with what the console shows, every rule behind RED, AMBER and watch, and four things to try; seven value boxes in one row (overall RED, participants and cohorts RED, study tier AMBER, 5 RED and 7 AMBER flags, 2 watch, 18 dosed participants); and the ranked worklist with CP101-014's row highlighted, the participant whose packet is in the sidebar.",
                  "caption": "The console as it opens: the Start here card, the worst-of value boxes and the ranked worklist, with the open participant's row highlighted. Synthetic data."},
   "links": [
-    {"label": "About TRIALMON", "href": "../../sasr_monitoring_wiki/index.html"},
-    {"label": "Read-only snapshot", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html"},
-    {"label": "Guide", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html"}
+    {"t": "open", "label": "About TRIALMON", "href": "../../sasr_monitoring_wiki/index.html"},
+    {"t": "snapshot", "label": "Read-only snapshot", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html"},
+    {"t": "guide", "label": "Guide", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html"}
   ],
   "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
   "smoke": {
