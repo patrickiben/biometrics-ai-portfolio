@@ -43,12 +43,14 @@ add "G1 Reproducibility & environment" "the sandbox's eight committed output fil
 # exp() of a log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one),
 # so exp(log(mean(x))) and mean(exp(log(x))) fail; each branch of every geocv and Geo CV% column must
 # be NA, a geometric-CV name or function, or exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a
-# natural-log variance. Every model response
+# natural-log variance. NA counts only as a branch of the column or statistic being checked: a name
+# assigned only NA (an empty-data row, say) is not a geometric name. Every model response
 # must be log-derived, and each program must use log() or pkstats(), whose body is held to the same
 # rules. Each SAS twin at the same path (assignments read also after else, when or otherwise, and
 # round() unwrapped) must assign geomean only as missing, a geometric name, or exp() of a PROC MEANS
 # mean of a natural-log variable (10** for log10), geocv only as missing, a geometric-CV name or
-# [100*]sqrt(exp(V)-1) of a natural-log variance or squared SD, and every MODEL response must be
+# [100*]sqrt(exp(V)-1) of a natural-log variance or squared SD (a variable assigned only missing is
+# not a geometric name), and every MODEL response must be
 # log-derived; it must also call a passing %pkstats or back-transform its own such mean in the same
 # base (a model-only program's twin must fit a MODEL). The script prints
 # <passing> <checked> <evidence>; G2 is green only when the two counts are equal and not 0.

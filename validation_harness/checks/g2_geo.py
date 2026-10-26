@@ -41,16 +41,19 @@ anywhere in the file, qualifies (fixed points).
     magrittr pipes are rewritten as nested calls, and a function definition contributes its body
     (the last statement of a braced body).
   - geomean, and every Geo Mean column: every leaf is NA, a geometric name (geomean, or a name
-    with an assignment whose every leaf passes this rule), a call of a function defined in the
-    file whose every leaf passes, or exactly exp(<natural-log mean>), 10^<log10 mean> or
-    2^<log2 mean> with nothing around it. So exp(log(mean(x))), mean(exp(log(x))),
-    exp(mean(log(x)) + var(log(x))/2), exp(<a name assigned from log()>) and an arithmetic
-    fallback in any branch fail.
-  - geocv, and every Geo CV column: every leaf is NA, a geometric-CV name, a call of a function
-    defined in the file whose every leaf passes, or exactly [100 *] sqrt(exp(V) - 1) [* 100] or
-    sqrt(expm1(V)), where V is a natural-log variance: var(L), sd(L)^2 or sigma(model)^2 with L
-    natural-log-derived, a name assigned from one of these, or the square of a name assigned from
-    sd(L) or sigma(model).
+    with an assignment whose every leaf passes this rule and at least one leaf is not NA), a call
+    of a function defined in the file whose every leaf passes in the same way, or exactly
+    exp(<natural-log mean>), 10^<log10 mean> or 2^<log2 mean> with nothing around it. So
+    exp(log(mean(x))), mean(exp(log(x))), exp(mean(log(x)) + var(log(x))/2), exp(<a name
+    assigned from log()>) and an arithmetic fallback in any branch fail. NA is accepted only as a
+    leaf of the geomean, geocv or Geo column being checked: an assignment of NA alone (an
+    empty-data row such as tibble(mean = NA_real_, cv = NA_real_), or x$mean[n == 0] <- NA)
+    makes no name geometric.
+  - geocv, and every Geo CV column: every leaf is NA, a geometric-CV name (found the same way), a
+    call of a function defined in the file whose every leaf passes in the same way, or exactly
+    [100 *] sqrt(exp(V) - 1) [* 100] or sqrt(expm1(V)), where V is a natural-log variance: var(L),
+    sd(L)^2 or sigma(model)^2 with L natural-log-derived, a name assigned from one of these, or the
+    square of a name assigned from sd(L) or sigma(model).
   - a column whose name matches both (Geo Mean (Geo CV%)): every leaf passes one of the two rules.
   - every model fitted has a log-derived response (the formula's left side; a formula held in a
     name is followed to its assignment; a formula that cannot be found fails; one-sided formulas
@@ -70,9 +73,10 @@ read also after `else`, `if ... then`, `else if ... then`, `when (...)` and `oth
     or AUTONAME, or ODS OUTPUT SUMMARY=) geometric-mean names of that base; STD=/STDDEV= and VAR=
     give log-scale SD and variance names of that base.
   - every geomean assignment, with round(x, unit) unwrapped, is missing (.), a geometric name
-    (geomean, or a variable with an assignment that passes this rule), exp(<natural-log mean
-    name>), 10**<log10 mean name> or 2**<log2 mean name>. Every geocv assignment, round()
-    unwrapped, is missing, a geometric-CV name, or [100*]sqrt(exp(V)-1)[*100] where V is SD**2 or
+    (geomean, or a variable with an assignment other than a missing value that passes this rule:
+    `mean = .;` makes no name geometric), exp(<natural-log mean name>), 10**<log10 mean name> or
+    2**<log2 mean name>. Every geocv assignment, round() unwrapped, is missing, a geometric-CV
+    name (found the same way), or [100*]sqrt(exp(V)-1)[*100] where V is SD**2 or
     SD*SD of a natural-log SD name, a natural-log variance name, or a log10 (log2) SD or variance
     scaled by log(10)**2 (log(2)**2). A twin that calls %pkstats may use the macro's names. Every
     MODEL statement in a PROC MIXED, GLM, REG, GLIMMIX, GENMOD, ANOVA or HPMIXED step has a
@@ -85,9 +89,11 @@ read also after `else`, `if ... then`, `else if ... then`, `when (...)` and `oth
 
 Disclosed limits: log(x + c) counts as log-derived (the shift is not detected). The analysis is
 flow-insensitive and stays within one file (the helper and the macro excepted): a name counts as
-geometric when any one of its assignments qualifies, although every geomean and geocv assignment
-is checked. A formula built from strings fails. Display rows built by row index, or by
-case_when() on a statistic label, are not seen. Plot mappings (aes(), SGPLOT) and the GMR, its
+geometric when any one of its assignments, other than NA (R) or missing (SAS) alone, qualifies,
+although every geomean and geocv assignment is checked. Requiring every assignment to qualify
+would flag the library as it stands, where a data frame and one of its columns share a name (rac
+in mad/t_accumulation.R). A formula built from strings fails. Display rows built by row index, or
+by case_when() on a statistic label, are not seen. Plot mappings (aes(), SGPLOT) and the GMR, its
 confidence limits, Rac confidence limits and intra-participant CV columns are not checked.
 Package geometric-mean functions (DescTools::Gmean(), psych::geometric.mean()) and exp() of an
 emmeans column are not recognized and fail, as does an R geocv computed from log10 values. A
@@ -779,10 +785,13 @@ class RCtx:
         return ch
 
     def _add_geo(self, r, f, lv):
+        """targets join G (GCV) when every leaf passes and at least one leaf is not NA: an
+        assignment of NA alone (an empty-data shell row, say) makes no name geometric"""
         ch = False
-        if lv and all(self.leaf_mean(x) for x in lv):
+        real = [x for x in lv if not is_na(x)]
+        if real and all(self.leaf_mean(x) for x in real):
             ch |= self._grow(self.G, r.targets)
-        if lv and all(self.leaf_cv(x) for x in lv):
+        if real and all(self.leaf_cv(x) for x in real):
             ch |= self._grow(self.GCV, r.targets)
         return ch
 
@@ -1192,13 +1201,14 @@ class SasCode:
                                         or all(self.logbases(v) for v in resp.replace('/', ' ').split())))
 
     def aliases(self, ok, start):
-        """start plus every variable with an assignment that ok() accepts given the names so far"""
+        """start plus every variable with an assignment, other than a missing value (.), that ok()
+        accepts given the names so far: `mean = .;` makes no name geometric"""
         names = set(start)
         changed = True
         while changed:
             changed = False
             for tg, ex in self.assigns:
-                if tg not in names and ok(ex, names):
+                if tg not in names and sas_unround(ex) != '.' and ok(ex, names):
                     names.add(tg)
                     changed = True
         return names
@@ -1390,12 +1400,14 @@ def run(R, SAS):
           f'branch (if/else, ifelse, if_else, coalesce, case_when, pmin, pmax) inside display wrappers such as '
           f'sprintf() and round() is NA, a geometric name or function of the file, or exactly exp() of a '
           f'log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one), for a CV '
-          f'exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a natural-log variance; {tot["model"]} '
+          f'exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a natural-log variance (a name assigned '
+          f'only NA is not geometric); {tot["model"]} '
           f'models have a log-derived response; and each program '
           f'uses log() (or log10/log2) or calls pkstats() ({helper}). SAS twin at the same path: every geomean '
           f'(round() unwrapped) is missing, a geometric name, or exp() of a PROC MEANS mean of a natural-log '
           f'variable (10** for log10), every geocv missing, a geometric-CV name or [100*]sqrt(exp(V)-1) with V '
-          f'a natural-log variance or squared SD, every MODEL response log-derived; '
+          f'a natural-log variance or squared SD (a variable assigned only missing is not geometric), every '
+          f'MODEL response log-derived; '
           f'{count(routes["pkstats"], "twin calls", "twins call")} %pkstats ({mac}), '
           f'{count(routes["means"], "back-transforms its", "back-transform their")} own such mean in the same '
           f'base, {count(routes["model"], "model-only twin fits", "model-only twins fit")} a MODEL. Static '

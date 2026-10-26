@@ -7,11 +7,13 @@ run_harness.sh does (python3 g2_geo.py <R dir> <SAS dir>), restores the file and
   - the unmodified libraries pass every program;
   - every planted defect turns G2 red and names the program it is in;
   - every legitimate variant stays green.
-The defect cases are the ones found in the two 2026-10-26 reviews of the per-program G2 (R01 to
-R18, S01 to S05, U01 to U05; then N01 to N08, N12 and N13, with N09, N18, N19, N27 and N28 from
-the same probe), registry defect D04, a pkstats() helper and a %pkstats macro without logs, and
-logs that appear only in comments or string literals. The legitimate variants include P01 to
-P09 and L01, L02, L04 to L09 from the reviews. The known limit (log(x + c) counts as log-scale)
+The defect cases are the ones found in the three 2026-10-26 reviews of the per-program G2 (R01
+to R18, S01 to S05, U01 to U05; then N01 to N08, N12 and N13, with N09, N18, N19, N27 and N28 from
+the same probe; then E01 to E03 and the SAS missing-value cases, where an assignment of NA or `.`
+alone made the arithmetic mean or CV count as geometric), registry defect D04, a pkstats() helper
+and a %pkstats macro without logs, and logs that appear only in comments or string literals. The
+legitimate variants include P01 to P09 and L01, L02, L04 to L09 from the reviews, and names that
+have an NA shell row and a geometric assignment. The known limit (log(x + c) counts as log-scale)
 is pinned as a passing case so the docs and the code cannot drift apart.
 
 Run: python3 validation_harness/checks/tests/test_g2_geo.py -v
@@ -63,6 +65,10 @@ SAD_GROUPS = SAD_GEO + '\n            .groups = "drop") %>%'
 HELP_GM = 'geomean = exp(mean(log(.data[[var]]))),'
 HELP_CV = 'geocv   = 100 * sqrt(exp(stats::var(log(.data[[var]]))) - 1),'
 PKSTATS_USERS = 'relies on the failing pkstats() helper'
+# an empty-data shell row: every value NA, so it must not make mean, sd or cv geometric names
+SHELL = ('empty_cont <- tibble(n = 0L, mean = NA_real_, sd = NA_real_, cv = NA_real_, geomean = NA_real_, '
+         'geocv = NA_real_)\n')
+CXP_TMAX = '## --- Tmax: Median (Min, Max) ONLY'
 MACRO_USER = 'crossover/t_ada_impact_pk.R'
 
 
@@ -247,6 +253,32 @@ DEFECTS = {
          (CXP_SAS, SAS_GM, 'geomean = 10**gmean_log;')], 'crossover/t_pk_param_summary.R', 'SAS geocv'),
     'SAS macro geomean = exp(log(amean))': (
         [(MAC, 'geomean = exp(meanlog);', 'geomean = exp(log(amean));')], MACRO_USER, 'the macro FAILS'),
+    # third review, 2026-10-26: an assignment of NA (R) or . (SAS) alone made its target geometric
+    'E01 empty-data shell row of NA values, Geo Mean column shows the arithmetic mean': (
+        [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS), (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", mean)')],
+        'crossover/t_pk_param_summary.R', '"Geo Mean"'),
+    'E02 empty-data shell row of NA values, Geo CV% column shows the arithmetic CV': (
+        [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS), (CXP, CXP_CV, '`Geo CV%`       = sprintf("%.1f", cv)')],
+        'crossover/t_pk_param_summary.R', '"Geo CV%"'),
+    'E03 cont$mean[cont$n == 0] <- NA_real_, Geo Mean column shows the arithmetic mean': (
+        [(CXP, CXP_TMAX, 'cont$mean[cont$n == 0] <- NA_real_\n' + CXP_TMAX),
+         (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", mean)')],
+        'crossover/t_pk_param_summary.R', '"Geo Mean"'),
+    'E04 empty-data shell row, then mutate(geomean = mean, geocv = cv) after pkstats()': (
+        [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS[:-4] + ' %>% mutate(geomean = mean, geocv = cv) %>%')],
+        'crossover/t_pk_param_summary.R', 'geomean at line'),
+    'E05 across(c(mean, cv), ~ NA_real_), Geo Mean column shows the arithmetic mean': (
+        [(CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(across(c(mean, cv), ~ NA_real_)) %>%'),
+         (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", mean)')],
+        'crossover/t_pk_param_summary.R', '"Geo Mean"'),
+    'E06 SAS if n=0 then mean = .; then the N13 fallback else geomean = mean': (
+        [(CXP_SAS, '  ' + SAS_GM, '  if n=0 then mean = .;\n  if n>=3 then geomean = exp(gmean_log); else geomean = mean;')],
+        'crossover/t_pk_param_summary.R', 'SAS geomean = mean'),
+    'E07 SAS if n<2 then cv = .; then geocv = cv': (
+        [(CXP_SAS, SAS_CV, 'if n<2 then cv = .;\n  geocv = cv;')], 'crossover/t_pk_param_summary.R', 'SAS geocv = cv'),
+    'E08 SAS mean = round(., 0.01) for empty groups, then geomean = mean': (
+        [(CXP_SAS, '  ' + SAS_GM, '  if n=0 then mean = round(., 0.01);\n  geomean = mean;')],
+        'crossover/t_pk_param_summary.R', 'SAS geomean = mean'),
 }
 
 VARIANTS = {
@@ -302,11 +334,27 @@ VARIANTS = {
         (SADF_SAS, 'logv = log(AVAL);', 'logv = log10(AVAL);'), (SADF_SAS, SAS_GM, 'geomean = 10**gmean_log;')],
     'L09 SAS if/else with missing': [(SADF_SAS, SAS_GM, 'if n>0 then geomean = exp(gmean_log); else geomean = .;')],
     'L09b SAS geomean = gm where gm = exp(gmean_log)': [(SADF_SAS, SAS_GM, 'gm = exp(gmean_log); geomean = gm;')],
+    'a name with an NA shell row and a geometric assignment stays geometric': [
+        (SADF, GEO_LINE, 'gm = exp(mean(log(AVAL[AVAL > 0]))), geomean = gm,'),
+        (SADF, 'prof <- pc %>%', 'empty_prof <- tibble(gm = NA_real_, geomean = NA_real_)\nprof <- pc %>%')],
+    'Geo Mean column from a name with a geometric branch and an NA branch': [
+        (CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(gm = if_else(n >= 3, geomean, NA_real_)) %>%'),
+        (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", gm)')],
+    'empty-data shell row next to the unchanged Geo Mean and Geo CV% columns': [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS)],
+    'SAS gm missing for empty groups, else exp(gmean_log); geomean = gm': [
+        (SADF_SAS, SAS_GM, 'if n=0 then gm = .; else gm = exp(gmean_log); geomean = gm;')],
     'SAS log10 logs with 10** mean and the log(10)-scaled geocv': [
         (CXP_SAS, 'if AVAL>0 then logv = log(AVAL);', 'if AVAL>0 then logv = log10(AVAL);'),
         (CXP_SAS, SAS_GM, 'geomean = 10**gmean_log;'),
         (CXP_SAS, SAS_CV, 'geocv   = 100*sqrt(exp((log(10)*gsd_log)**2)-1);')],
 }
+
+
+def load_g2():
+    spec = importlib.util.spec_from_file_location('g2_geo', CHECK)
+    g2 = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(g2)
+    return g2
 
 
 class G2GeoTest(unittest.TestCase):
@@ -354,11 +402,26 @@ class G2GeoTest(unittest.TestCase):
         self.assertNotIn('failing', ev)
 
     def test_program_set_is_derived_from_content(self):
-        spec = importlib.util.spec_from_file_location('g2_geo', CHECK)
-        g2 = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(g2)
+        g2 = load_g2()
         found = [rel.replace(os.sep, '/') for rel, _, _ in g2.find_programs(os.path.join(self.tmp, R))]
         self.assertEqual(found, EXPECTED)
+
+    def test_na_only_assignments_make_no_geometric_name(self):
+        """names the library assigns only NA (R) or . (SAS) are not geometric; real ones still are"""
+        g2 = load_g2()
+        acc = g2.RFile(os.path.join(self.tmp, ACC)).ctx
+        for names in (acc.G, acc.GCV):
+            self.assertFalse({'lo', 'hi', 'slope', 'includes0', '95% CI'} & names, names)
+        self.assertTrue({'rac', 'Rac (Geo Mean)', 'Trough Geo Mean'} <= acc.G, acc.G)
+        self.assertIn('Trough Geo CV%', acc.GCV)
+        pd = g2.RFile(os.path.join(self.tmp, PD)).ctx
+        for names in (pd.G, pd.GCV):
+            self.assertFalse({'beta', 'lcl90', 'ucl90', 'lcl95', 'ucl95', 'slope', 'ss_attained'} & names, names)
+        for f, var in (('crossover/f_pk_conc_mean.sas', 'lo'), ('crossover/t_be_anova.sas', 'intracv')):
+            sc = g2.SasCode(g2.sas_code(os.path.join(self.tmp, SAS, f)))
+            g = sc.aliases(lambda ex, names: g2.sas_mean_ok(ex, sc.GM, names), {'geomean'})
+            gcv = sc.aliases(lambda ex, names: g2.sas_cv_ok(ex, sc.LSD, sc.LV, names), {'geocv'})
+            self.assertNotIn(var, g | gcv, f)
 
     def test_every_review_defect_is_caught(self):
         base_n = len(EXPECTED)
