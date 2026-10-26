@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ADaM Datasets and Specification | Patrick Iben</title>
+<title>ADaM Datasets and Specification | Trial biostatistics toolkit</title>
 <meta name="description" content="Synthetic SDTM-like domains, ADaM datasets derived with admiral 1.5.0, a metacore-readable specification, metatools checks and XPT v5 from xportr.">
 <meta name="color-scheme" content="dark light">
 <meta name="theme-color" content="#0b0f15" media="(prefers-color-scheme: dark)">
@@ -18,7 +18,7 @@
 <a class="skip" href="#main">Skip to content</a>
 <header class="top">
   <div class="wrap">
-    <a class="name" href="../../index.html"><span class="mark" aria-hidden="true"></span>Patrick Iben</a>
+    <a class="name" href="../../index.html"><span class="mark" aria-hidden="true"></span>Trial biostatistics toolkit</a>
     <nav class="nav" id="site-nav" aria-label="Site">
       <a href="../../index.html">Home</a>
       <a href="../../lifecycle.html">Lifecycle</a>
@@ -38,7 +38,7 @@
   <section class="page-head">
     <p class="kicker">Stage 3: data standards</p>
     <h1>SDTM-like inputs, ADaM with admiral, specification checks and XPT</h1>
-    <p class="meta"><span class="lab sup">Supported (job): created or reviewed CDISC analysis specifications</span><span class="st st-runs">Executed here</span><span class="lab gap">Gap: define.xml and ADRG not authored</span></p>
+    <p class="meta"><span class="st st-runs">Executed here</span><span class="st st-note">Not covered: define.xml, ADRG</span></p>
     <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
   </section>
 <p>SDTM-like source domains are simulated by <code>03_adam/01_sdtm.R</code>, which reuses the <code>sim_lifecycle/</code> priors and one-compartment model (N = 40, seed 2026) and takes each participant's sequence from the stage 1 randomization schedule. ADaM datasets are derived with admiral 1.5.0 following its <code>ad_adsl.R</code>, <code>ad_adpc.R</code>, <code>ad_adpp.R</code> and <code>ad_adae.R</code> templates, checked against the specification with metacore 0.3.0 and metatools 0.3.0, and written as SAS XPORT v5 with xportr 0.6.0.</p>

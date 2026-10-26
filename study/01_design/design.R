@@ -251,7 +251,7 @@ write_text(page_html(
   title = "Protocol Statistics Excerpt", kicker = "Stage 1: design",
   h1 = "Protocol statistical sections: sample size and randomization",
   description = "Protocol statistical-section excerpt for a synthetic 2x2 bioequivalence study, with ICH M11 headings, a PowerTOST sample size and a seeded randomization schedule.",
-  labels = paste0(lab("led", "Led (job): protocol statistical sections and randomization schedules"), lab("tools", "Runs here: PowerTOST, blockrand")),
+  labels = paste0(lab("tools", "Runs here: PowerTOST, blockrand")),
   body = body, depth = 1), out("protocol_statistics.html"))
 
 cat(sprintf("[01_design] n evaluable 80%%/90%%: %d/%d; enrolled %d; schedule TR:RT %d:%d; balance %s\n",

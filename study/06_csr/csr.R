@@ -232,7 +232,7 @@ body <- paste0(
 write_text(page_html(title = "CSR Section 11 Text", kicker = "Stage 6: reporting",
                      h1 = "CSR section 11-style statistical text, checked against the outputs",
                      description = "CSR section 11-style statistical text for a synthetic BE study, generated from executed outputs and checked by a number-grounding validator.",
-                     labels = paste0(lab("sup", "Supported (job): statistical input to CSRs"), lab("led", "Led (job): final statistical reports"), lab("tools", "Executed here: number check")),
+                     labels = paste0(lab("tools", "Executed here: number check")),
                      body = body, depth = 1), sp("06_csr", "csr_section11.html"))
 cat(sprintf("[06_csr] %d paragraphs, %d DRAFT_OK; controls as expected: %s\n", nrow(val), sum(val$status == "DRAFT_OK"),
             if (all(ctrl$as_expected)) "yes" else "NO"))

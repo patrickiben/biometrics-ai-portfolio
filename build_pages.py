@@ -294,6 +294,7 @@ NAV = [('home', 'index.html', 'Home'), ('lifecycle', 'lifecycle.html', 'Lifecycl
        ('example', 'study/index.html', 'Worked example'), ('apps', 'apps.html', 'Apps'),
        ('methods', 'methods.html', 'Methods'), ('quality', 'quality.html', 'Quality and AI use'),
        ('about', 'about.html', 'About')]
+SITE = 'Trial biostatistics toolkit'   # the site's name in the bar and in page titles; the author is credited in the footer
 SECTION_NAME = {k: t for k, _, t in NAV}
 SECTION_HREF = {k: h for k, h, _ in NAV}
 BOOT = ('<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}'
@@ -336,7 +337,7 @@ def topbar(section, depth, current='page'):
         cur = f' aria-current="{current}"' if key == section else ''
         links.append(f'      <a href="{u}{href}"{cur}>{text}</a>')
     return ('<header class="top">\n  <div class="wrap">\n'
-            f'    <a class="name" href="{u}index.html"><span class="mark" aria-hidden="true"></span>Patrick Iben</a>\n'
+            f'    <a class="name" href="{u}index.html"><span class="mark" aria-hidden="true"></span>{SITE}</a>\n'
             '    <nav class="nav" id="site-nav" aria-label="Site">\n' + '\n'.join(links) + '\n    </nav>\n'
             '    <span class="bar-facts">Synthetic data only</span>\n'
             f'    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme">{MOON}{SUN}<span class="sr">Dark theme</span></button>\n'
@@ -355,11 +356,12 @@ def quarto_head():
     return METAS + '\n' + BOOT + '\n' + QUARTO_BRIDGE + '\n' + inline_ui()
 
 
-CONTACT = ('<ul class="contact">\n'
-           '        <li><span class="k">Email</span>patrickiben@gmail.com</li>\n'
-           '        <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>\n'
-           '        <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>\n'
-           '        <li><span class="k">Location</span>St. Petersburg, FL / Remote US</li>\n      </ul>')
+def author_block(depth=0):
+    u = up(depth)
+    return ('<p class="fine">Built by Patrick Iben. <a href="' + u + 'about.html#author">About the author</a></p>\n'
+            '      <ul class="contact">\n'
+            '        <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>\n'
+            '        <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>\n      </ul>')
 FINE = ('Every dataset on this site is synthetic. Nothing here is real trial data, and no output here is a validated '
         'or regulatory deliverable. Last updated October 2026.')
 
@@ -367,7 +369,7 @@ FINE = ('Every dataset on this site is synthetic. Nothing here is real trial dat
 def site_footer(depth=0):
     u = up(depth)
     return ('<footer id="contact" class="site">\n  <div class="wrap foot-grid">\n'
-            '    <div>\n      <h2>Contact</h2>\n      ' + CONTACT + '\n    </div>\n'
+            '    <div>\n      <h2>Author</h2>\n      ' + author_block(depth) + '\n    </div>\n'
             f'    <div>\n      <h2>This site</h2>\n      <p class="fine">{FINE}</p>\n    </div>\n'
             '    <div>\n      <h2>More</h2>\n      <ul class="foot-links">\n'
             f'        <li><a href="{u}about.html">About</a></li>\n'
@@ -819,21 +821,17 @@ STAGES = CAPS['stages']
 STAGE = {s['id']: s for s in STAGES}
 MODS = OrderedDict((m['id'], m) for m in CAPS['modules'])
 PUB = OrderedDict((k, m) for k, m in MODS.items() if m.get('published', True))
-LAB_KINDS = ('led', 'sup', 'tools', 'gap')
 ST_KINDS = ('runs', 'parse', 'notrun', 'struct', 'manual', 'revision', 'synthetic', 'note', 'fail')
 for s in STAGES:
-    for l in s['labels']:
-        if l['k'] not in LAB_KINDS:
-            fail(f'capabilities.json: stage {s["id"]} has an unknown label kind {l["k"]}')
+    for k in ('experience', 'labels'):
+        if k in s:
+            fail(f'capabilities.json: stage {s["id"]} has "{k}"; the site describes the resources, not the author\'s jobs')
     for mid in s['modules']:
         if mid not in PUB:
             fail(f'capabilities.json: stage {s["id"]} lists an unknown or unpublished module {mid}')
 for m in PUB.values():
-    for l in m.get('labels', []):
-        if l['k'] not in LAB_KINDS:
-            fail(f'capabilities.json: module {m["id"]} has an unknown label kind {l["k"]}')
-        if not re.match(r'(Led|Supported|Tools built|Gap)\b', l['text']):
-            fail(f'capabilities.json: module {m["id"]} label "{l["text"]}" does not start with its label name')
+    if 'labels' in m:
+        fail(f'capabilities.json: module {m["id"]} has job labels; describe what it does, what ran and its limits')
     for x in m.get('status', []):
         if x['k'] not in ST_KINDS:
             fail(f'capabilities.json: module {m["id"]} has an unknown status kind {x["k"]}')
@@ -884,8 +882,8 @@ if 'same-author' not in QC.get('label', '').lower():
     fail('study/05_qc/qc_ledger.json: the QC label no longer says same-author; update the readout wording')
 R_VER = MANIFEST.get('r_version', '?')
 
-led_n = sum(1 for s in STAGES if any(l['k'] == 'led' for l in s['labels']))
-gap_n = sum(1 for s in STAGES if any(l['k'] == 'gap' for l in s['labels']))
+worked_n = sum(1 for s in STAGES if any(i.startswith('study') for i in s['modules']))   # stages with a worked-example step
+lim_n = sum(1 for s in STAGES if s.get('limits'))
 gates = LEDGER.get('gates', [])
 signed = [g for g in gates if g.get('sign_off') not in (None, '', 'pending')]
 teeth_c = TEETH.get('counts', {})
@@ -969,54 +967,6 @@ def img(tid, eager=False, priority=False, large=False, depth=0):
 # ---------------------------------------------------------------------------------------------
 # 8. components
 # ---------------------------------------------------------------------------------------------
-SEG = {'led': 'var(--led-fg)', 'sup': 'var(--sup-fg)', 'tools': 'var(--violet)', 'gap': 'var(--gap-fg)'}
-
-
-def seg_style(kinds):
-    kinds = [k for k in kinds if k in SEG]
-    if not kinds:
-        return ''
-    n = len(kinds)
-    if n == 1:
-        return f' style="--seg:{SEG[kinds[0]]}"'
-    parts = []
-    for i, k in enumerate(kinds):
-        a, b = round(100 * i / n), round(100 * (i + 1) / n)
-        parts.append(f'{SEG[k]} {a}% {b}%')
-    return ' style="--seg:linear-gradient(90deg,' + ','.join(parts) + ')"'
-
-
-def mod_kinds(m):
-    if m.get('labels'):
-        return [l['k'] for l in m['labels']]
-    if len(m.get('stages', [])) == 1:
-        return [l['k'] for l in STAGE[m['stages'][0]]['labels']]
-    return []
-
-
-def lab(l):
-    return f'<span class="lab {l["k"]}">{esc(l["text"])}</span>'
-
-
-def labs_dl(labels):
-    """Lifecycle labels as a compact definition list: the label name in its hue, then its qualifier.
-    The words are the label text itself, split at its first colon ("Led: DSMB reports" -> Led | DSMB reports)."""
-    rows = []
-    for l in labels:
-        name, _, q = l['text'].partition(':')
-        rows.append(f'<div class="{l["k"]}"><dt>{esc(name.strip())}</dt><dd>{esc(q.strip())}</dd></div>')
-    return '<dl class="labs-dl">' + ''.join(rows) + '</dl>'
-
-
-def labels_block(labels, always_dl=False):
-    """Several labels with qualifiers read as rows; one label, or bare names, stay as pills."""
-    if not labels:
-        return ''
-    if always_dl or (len(labels) >= 2 and any(':' in l['text'] for l in labels)):
-        return labs_dl(labels)
-    return '<p class="labs">' + ''.join(lab(l) for l in labels) + '</p>'
-
-
 def st(x, text=None, title=None):
     t = f' title="{esc(title)}"' if title else ''
     return f'<span class="st st-{x["k"]}"{t}>{esc(fill(x["text"]) if text is None else text)}</span>'
@@ -1059,12 +1009,7 @@ def go(links):
 
 
 def chips(m):
-    """Status line plus labels: simple labels ride in the chip row, labels with qualifiers become rows
-    (placed after the summary by card())."""
-    labels = m.get('labels', [])
-    simple = labels and not (len(labels) >= 2 and any(':' in l['text'] for l in labels))
-    pills = ''.join(lab(l) for l in labels) if simple else ''
-    return status_line(m, pills)
+    return status_line(m)
 
 
 def browser_links(m):
@@ -1091,9 +1036,6 @@ def card(m, cls='card', thumb=True, eager=False, priority=False, large=False, ru
     parts.append(f'<{heading}>{title_link}</{heading}>')
     parts.append(chips(m))
     parts.append(f'<p class="sum">{esc(m["summary"])}</p>')
-    labels = m.get('labels', [])
-    if len(labels) >= 2 and any(':' in l['text'] for l in labels):
-        parts.append(labs_dl(labels))
     if m.get('shots'):
         figs = []
         for s in m['shots']:
@@ -1104,21 +1046,18 @@ def card(m, cls='card', thumb=True, eager=False, priority=False, large=False, ru
     f = fact_of(m)
     if f:
         parts.append(f'<p class="fact">{esc(f)}</p>')
+    if m.get('limits'):
+        parts.append(f'<p class="fact">Not covered: {esc(m["limits"])}</p>')
     if run_local and m.get('run_local'):
         parts.append(f'<pre class="cmd" aria-label="Run in local R"><code>{esc(m["run_local"])}</code></pre>')
     parts.append(go((browser_links(m) + m['links'])[:max_links]))
     attrs = ''
     if item:
-        attrs = f' data-item data-stages="{" ".join(m.get("stages", []))}" data-labels="{" ".join(sorted(set(mod_kinds(m))))}"'
+        attrs = f' data-item data-stages="{" ".join(m.get("stages", []))}"'
     body = ''.join(p for p in parts if p)
     if 'card--feature' in cls:
-        return f'<article class="{cls}"{seg_style(mod_kinds(m))}{attrs}>{th}<div class="body">{body}</div></article>'
-    return f'<article class="{cls}"{seg_style(mod_kinds(m))}{attrs}>{th}{body}</article>'
-
-
-def legend():
-    return ('<ul class="legend">' + ''.join(
-        f'<li><span class="lab {k}">{esc(v["name"])}</span>{esc(v["meaning"])}</li>' for k, v in CAPS['labels'].items()) + '</ul>')
+        return f'<article class="{cls}"{attrs}>{th}<div class="body">{body}</div></article>'
+    return f'<article class="{cls}"{attrs}>{th}{body}</article>'
 
 
 def glance():
@@ -1172,7 +1111,7 @@ def tlf_counts():
 def status_strip():
     upd = esc(CAPS['updated'])
     r = [readout('Lifecycle', f'{len(STAGES)} <span class="u">stages</span>',
-                 f'{led_n} Led in a job · <span class="c-gap">{gap_n} with a stated gap</span>', f'Updated {upd}', 'lifecycle.html')]
+                 f'{worked_n} with a worked-example step · {lim_n} with stated limits', f'Updated {upd}', 'lifecycle.html')]
     ac, builds = app_counts()
     n_apps = sum(ac.values())
     by_lang = ' · '.join(f'{v} {k}' for k, v in ac.items() if v)
@@ -1216,10 +1155,10 @@ def strongest_link(s):
 
 
 def stage_card(s):
-    return (f'<article class="card card--stage"{seg_style([l["k"] for l in s["labels"]])}>'
+    lim = f'<p class="strong"><span class="k">Not covered</span>{esc(s["limits"])}</p>' if s.get('limits') else ''
+    return (f'<article class="card card--stage">'
             f'<h3><span class="num">{s["n"]:02d}</span><a href="lifecycle.html#{s["id"]}">{esc(s["name"])}</a></h3>'
-            + labs_dl(s['labels']) +
-            f'<p class="strong"><span class="k">Strongest here</span>{strongest_link(s)}</p></article>')
+            f'<p class="strong"><span class="k">Use here</span>{strongest_link(s)}</p>{lim}</article>')
 
 
 def sec_head(n, key, h_id, title, intro='', more=''):
@@ -1278,6 +1217,8 @@ def fill_hand(path, kind, section, depth):
         t = home_regions(t)
     if path == 'quality.html':
         t = quality_regions(t)
+    if path == 'about.html' and '<!-- gen:research -->' in t:
+        t = about_regions(t)
     if kind != '404' and 'head' not in present:
         fail(f'{path}: no gen:head region')
     if 'topbar' not in present and kind != '404':
@@ -1297,16 +1238,18 @@ def home_regions(t):
     t = set_region(t, 'featured', '<div class="grid-12">' + ''.join(g) + '</div>', 'html', 'index.html')
     tr = ''.join(card(PUB[i], 'card card--compact span-3') for i in CAPS['transfers'])
     t = set_region(t, 'transfers', '<div class="grid-12">' + tr + '</div>', 'html', 'index.html')
-    lc = (legend() + '<div class="stage-grid">' + ''.join(stage_card(s) for s in STAGES) + '</div>'
+    lc = ('<div class="stage-grid">' + ''.join(stage_card(s) for s in STAGES) + '</div>'
           f'<p class="not-covered">{CAPS["not_covered_html"]}</p>')
     t = set_region(t, 'lifecycle', lc, 'html', 'index.html')
-    R = CAPS['research']
-    rs = ('<div><p class="eyebrow"><span class="n">04</span> · Research and teaching</p><h2 id="research-h">Research and teaching</h2>'
-          f'<p class="chips">' + ''.join(f'<span class="st st-note">{esc(x)}</span>' for x in R.get('chips', [])) + '</p>'
-          f'<p>{R["sentence"]}</p></div><div><ul class="topics" aria-label="Research topics">' + ''.join(f'<li>{esc(x)}</li>' for x in R['topics']) +
-          f'</ul><p class="more"><a href="{esc(R["href"])}" rel="noopener">Research map</a> ↗</p></div>')
-    t = set_region(t, 'research', rs, 'html', 'index.html')
     return t
+
+
+def about_regions(t):
+    R = CAPS['research']
+    rs = ('<p class="chips">' + ''.join(f'<span class="st st-note">{esc(x)}</span>' for x in R.get('chips', [])) + '</p>'
+          f'<p>{R["sentence"]}</p><ul class="topics" aria-label="Research topics">' + ''.join(f'<li>{esc(x)}</li>' for x in R['topics']) +
+          f'</ul><p class="more"><a href="{esc(R["href"])}" rel="noopener">Research map</a> ↗</p>')
+    return set_region(t, 'research', rs, 'html', 'about.html')
 
 
 def gate_rows():
@@ -1344,7 +1287,7 @@ def quality_regions(t):
 def page(title, desc, section, main):
     return ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-            f'<title>{esc(title)} | Patrick Iben</title>\n<meta name="description" content="{esc(desc)}">\n'
+            f'<title>{esc(title)} | {SITE}</title>\n<meta name="description" content="{esc(desc)}">\n'
             + head_block(0) +
             '<!-- generated by build_pages.py from capabilities.json; edit the data or the generator, not this file -->\n'
             '</head>\n<body>\n<a class="skip" href="#main">Skip to content</a>\n'
@@ -1371,35 +1314,19 @@ def empty_state(noun):
 
 
 def matrix():
-    head = ('<thead><tr><th scope="col">Stage</th>' + ''.join(f'<th scope="col">{esc(v["name"])}</th>' for v in CAPS['labels'].values())
-            + '<th scope="col">Strongest here</th></tr></thead>')
+    head = '<thead><tr><th scope="col">Stage</th><th scope="col">Use here</th><th scope="col">Not covered here</th></tr></thead>'
     rows = []
     for s in STAGES:
-        cells = []
-        for k, v in CAPS['labels'].items():
-            ls = [l for l in s['labels'] if l['k'] == k]
-            if not ls:
-                cells.append('<td></td>')
-                continue
-            inner = []
-            for l in ls:
-                txt = l['text'] if l['text'] != v['name'] else f'<span class="sr">{esc(l["text"])}</span>'
-                if txt == l['text']:
-                    txt = esc(txt)
-                inner.append(f'<span class="mk {k}" aria-hidden="true"></span>{txt}')
-            cells.append('<td>' + '<br>'.join(inner) + '</td>')
-        cells.append(f'<td class="best"><span class="k">Strongest here</span>{strongest_link(s)}</td>')
-        rows.append(f'<tr><th scope="row"><a href="#{s["id"]}"><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</a></th>' + ''.join(cells) + '</tr>')
-    return ('<p class="matrix-cap" id="matrix-cap">Lifecycle snapshot, October 2026: every stage with its labels, gaps included. '
-            'A marker shows the label applies; text shows its qualifier. The last column links the strongest artifact for the stage.</p>'
+        rows.append(f'<tr><th scope="row"><a href="#{s["id"]}"><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</a></th>'
+                    f'<td class="best">{strongest_link(s)}</td><td>{esc(s.get("limits", ""))}</td></tr>')
+    return ('<p class="matrix-cap" id="matrix-cap">Every stage, the strongest worked example or tool on this site for it, and what it does not cover.</p>'
             '<div class="tblwrap" tabindex="0" role="region" aria-label="Coverage matrix, scrolls sideways on small screens">'
-            '<table class="matrix" aria-describedby="matrix-cap"><caption class="sr">Coverage matrix: stages, labels and the strongest artifact</caption>'
+            '<table class="matrix" aria-describedby="matrix-cap"><caption class="sr">Coverage matrix: stages, what to use and what is not covered</caption>'
             + head + '<tbody>' + ''.join(rows) + '</tbody></table></div>')
 
 
 def lifecycle_page():
     chips_st = ''.join(f'<button type="button" aria-pressed="false" data-f-stage="{s["id"]}">{s["n"]:02d} {esc(s["name"])}</button>' for s in STAGES)
-    chips_lb = ''.join(f'<button type="button" aria-pressed="false" data-f-label="{k}">{esc(v["name"])}</button>' for k, v in CAPS['labels'].items())
     secs = []
     for s in STAGES:
         own = [i for i in s['modules'] if primary_stage(i) == s['id']]
@@ -1417,32 +1344,29 @@ def lifecycle_page():
         mods = (f'<div class="mod-grid">{mods}</div>' if mods else '') + also_html
         if not s['modules']:
             mods = '<p class="small none">No module on this site for this stage.</p>'
-        kinds = ' '.join(sorted({l['k'] for l in s['labels']}))
         n_mod = len(s['modules'])
         count = f'{n_mod} module{"s" if n_mod != 1 else ""}' if n_mod else 'no module'
         # a disclosure: open by default (and without script); ui.js folds the stages on phones
-        secs.append(f'<details class="stage-sec" id="{s["id"]}" data-item data-stages="{s["id"]}" data-labels="{kinds}" open>'
+        secs.append(f'<details class="stage-sec" id="{s["id"]}" data-item data-stages="{s["id"]}" open>'
                     f'<summary><h2 id="{s["id"]}-h"><span class="num">{s["n"]:02d}</span>{esc(s["name"])}</h2>'
-                    + labs_dl(s['labels']) +
                     f'<span class="fold" aria-hidden="true"><span class="count-m">{count}</span></span></summary>'
                     f'<div class="stage-body"><div class="stage-text">'
-                    f'<h3 class="sub">Experience (from the resume)</h3><p>{s["experience"]}</p>'
-                    f'<h3 class="sub">On this site</h3><p>{s["on_site_html"]}</p></div>'
+                    f'<h3 class="sub">What you can use here</h3><p>{s["on_site_html"]}</p>'
+                    + (f'<h3 class="sub">Not covered here</h3><p>{esc(s["limits"])}</p>' if s.get('limits') else '') + '</div>'
                     f'<div class="mods"><h3 class="sub">Modules ({n_mod})</h3>{mods}</div></div></details>')
     main = ('<section class="page-head"><p class="eyebrow">Lifecycle</p><h1>Across the trial lifecycle</h1>'
-            '<p class="lede">Each stage pairs what the resume supports with what this site can show today. Labels are deliberately narrow:</p>'
-            + legend() + '</section>'
+            '<p class="lede">For each stage of an early-phase clinical trial: what you can use on this site, the strongest worked example or tool, '
+            'and what it does not cover. Every dataset is synthetic, and each page says what was actually run.</p></section>'
             '<section id="matrix" aria-labelledby="matrix-h">' + sec_head('01', 'Coverage', 'matrix-h', 'Coverage matrix') + matrix() + '</section>'
             '<section id="stages" aria-labelledby="stages-h">' + sec_head('02', 'Stages', 'stages-h', 'Every stage and its work') +
             '<div class="filter" data-filter="#stages-list" data-noun="stages" role="search" aria-label="Filter the stages">'
             f'<div class="group" role="group" aria-label="Stage"><span class="k">Stage</span>{chips_st}</div>'
-            f'<div class="group" role="group" aria-label="Label"><span class="k">Label</span>{chips_lb}</div>'
             '<div class="group"><label for="f-q">Search</label><input id="f-q" type="search" placeholder="Press / to search" autocomplete="off"></div>'
             '<button type="button" class="fold-all" data-f-expand>Fold all stages</button>'
             '<span class="count" role="status" aria-live="polite"></span></div>'
             '<div id="stages-list">' + empty_state('stages') + ''.join(secs) + '</div>'
             f'<p class="not-covered">{CAPS["not_covered_html"]}</p></section>')
-    return page('Lifecycle', 'Every stage of the clinical trial lifecycle: what the resume supports, what this site shows, the labels and the gaps.',
+    return page('Lifecycle', 'Every stage of an early-phase clinical trial: what you can use on this site, the strongest worked example or tool, and what is not covered.',
                 'lifecycle', main)
 
 

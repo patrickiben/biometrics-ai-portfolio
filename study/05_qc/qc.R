@@ -258,6 +258,6 @@ body <- paste0(
     "- No Pinnacle 21 or CDISC CORE conformance run; the metadata checks in stage 3 are metatools and xportr checks against this study's own specification."))
 write_text(page_html(title = "QC Ledger", kicker = "Stage 5: QC and validation", h1 = "Executed QC ledger: re-derivation by a second method",
                      description = "Executed QC ledger for a synthetic BE study: NonCompart vs PKNCA, two refits of the BE model, and base-R re-derivations, compared with diffdf.",
-                     labels = paste0(lab("sup", "Supported (job): reviewed outputs"), lab("tools", "Executed here: same-author re-derivation")),
+                     labels = paste0(lab("tools", "Executed here: same-author re-derivation")),
                      body = body, depth = 1), sp("05_qc", "qc_ledger.html"))
 cat(sprintf("[05_qc] %d checks: %d pass, %d fail (%d values compared)\n", nrow(qc_ledger), n_pass, n_fail, sum(qc_ledger$n_compared)))

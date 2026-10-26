@@ -303,7 +303,7 @@ PAGE_TEMPLATE <- r"---(<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>C-QTc Hysteresis Check | Patrick Iben</title>
+<title>C-QTc Hysteresis Check | Trial biostatistics toolkit</title>
 <meta name="description" content="A prespecified C-QTc hysteresis check: the signed area of each participant's concentration-ddQTcF loop on residuals from the direct-effect model, tested with a standard error that allows for the shared placebo mean, with its operating characteristics on synthetic data.">
 {{HEAD}}
 <link rel="stylesheet" href="cqtc.css">
