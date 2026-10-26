@@ -5,8 +5,11 @@ lead biostatistician on early-phase clinical pharmacology studies, shown here th
 and tools on synthetic data across the clinical trial lifecycle.
 
 **Site:** <https://patrickiben.github.io/biometrics-ai-portfolio/>. Start at the home page: it carries
-the lifecycle snapshot, labels each stage, and states the gaps (define.xml and ADRG authoring,
-submission packages, DMC charters, group-sequential interim design).
+a status strip read from this repository's files, the featured work and the lifecycle grid. The
+[lifecycle page](lifecycle.html) lists every stage with its labels and states the gaps (define.xml
+and ADRG authoring, submission packages, DMC charters, group-sequential interim design); the
+[apps](apps.html), [methods](methods.html), [quality and AI use](quality.html) and [about](about.html)
+pages cover the rest.
 
 Every dataset here is **synthetic**. Nothing is real trial data, and nothing here is a validated or
 regulatory deliverable.
@@ -38,7 +41,7 @@ worked artifact yet).
 | [`sas_tlf_pseudocode/`](sas_tlf_pseudocode/index.html) | 221 SAS TLF programs across five early-phase designs | Not executed (no SAS license) |
 | [`r_tlf_pseudocode/`](r_tlf_pseudocode/index.html) | The R twin: 221 scripts | Parse-checked (R 4.6.0); not run on data |
 | [`cqtc_hysteresis/`](cqtc_hysteresis/index.html) | A prespecified C-QTc hysteresis check: the signed area of each participant's concentration-ddQTcF loop on residuals from the direct-effect model, a test whose standard error allows for the shared time-matched placebo mean, its operating characteristics and the SAD/MAD mock shells | Runs (R 4.6.0, base R; nlme in the tests); tests pass; exploratory (synthetic) |
-| [`validation_harness/`](validation_harness/index.html) | Ten-gate QC harness and evidence ledger, with a seeded-defect check of what the gates catch | Structural checks, a re-run of the sandbox (G1) and an independent recomputation of its results (G9); G5 is a manual record; G7 is not signed; no gate signed yet |
+| [`validation_harness/`](validation_harness/index.html) | Ten-gate QC harness and evidence ledger, with a seeded-defect check of what the gates catch | Structural checks, a re-run of the sandbox (G1) and a separately written, same-author recomputation of its results (G9); G5 is a manual record; G7 is not signed; no gate signed yet |
 | [`tlf_interpret/`](tlf_interpret/index.html) | Number-grounding check for drafted TLF text | Self-test runs without a model; the language-model step is a stub |
 | [`sasr_onleave_wiki/`](sasr_onleave_wiki/Continuity_Toolkit.html) | Continuity and handoff toolkit, and the coverage playbook | Toolkit runs in the browser; the SAS/R macros are not executed |
 | [`uat_irt/`](uat_irt/quarto/uat-guide.html) | IRT/RTSM acceptance-test library: workbook, Shiny tracker (local R or in the browser), static guide | Unit and `shiny::testServer()` tests pass locally; synthetic test data |
@@ -122,13 +125,41 @@ The launch page, the shared R helpers and the smoke test are described in
 The SAS programs are written for SAS 9.4M8 or later (9.4M9, June 2025, is current) and have not been
 executed here.
 
+## Design system
+
+Every page shares one look, dark by default with a light theme, chosen with the toggle in the top bar
+(saved in the browser under `bp-theme`) or following the system setting.
+
+| File | What it is |
+|---|---|
+| `assets/theme/tokens.css` | The design tokens: the only place a color is written. Every text pair meets WCAG 2.2 AA in both themes |
+| `site.css` | The stylesheet for every page that links it: a generated token region, the shared bar and canvas ("chrome"), the shared components and the page components |
+| `assets/ui.js` | Theme toggle, the phone menu, the filter on the hub pages (with an empty state and a reset), the foldable lifecycle stages, copy buttons; no network |
+| `capabilities.json` | The lifecycle stages (experience, labels and on-site text) and every module (status, summary, links, thumbnail), the single source for the home page, `lifecycle.html`, `apps.html` and `methods.html` |
+| `build_pages.py` | Writes the generated files and regions from those sources (Python 3 standard library). `--check` writes nothing and fails on drift, a stale render, a diagram whose CSS shows as page text, a readout that disagrees with its source, a contrast floor or a thumbnail budget |
+| `_partials/` | The bar and head that `study/R/common.R`, `cqtc_hysteresis/R/page.R` and the Quarto pages read |
+| `_quarto-tokens-dark.scss`, `_quarto-tokens-light.scss`, `_quarto-site.scss` | The Quarto theme, generated from the tokens and `site.css` |
+| `assets/theme/theme.R` | The same tokens for the Shiny apps (bslib; no app uses it yet) and for the Quarto figures, which render once per theme (`renderings: [light, dark]`) |
+| `assets/thumbs/` | Screenshots in a 16:10 frame, with `manifest.json` recording each one's source, size and alt text; a view of a site page has a light-theme twin (`-light`), served with `<picture>` |
+
+After editing a token, `site.css`, `ui.js` or `capabilities.json`, run `python3 build_pages.py`, then
+`Rscript study/run_all.R`, `Rscript cqtc_hysteresis/R/run_oc.R --page-only` and `quarto render` on the
+Quarto pages that `build_pages.py --check` lists as stale.
+
+Cards carry one execution-status chip; other statuses follow as a quiet line, and lifecycle labels with
+qualifiers read as rows (label name in its hue, then the qualifier), so the words of every label stay
+as written. Mermaid diagrams on the Quarto pages are drawn by mermaid.js, which follows the site theme:
+Quarto 1.10.19's SVG output (`mermaid-format: svg`) drops the stylesheet of a diagram that carries
+`accTitle`/`accDescr` and prints it as page text, which `build_pages.py --check` now reports.
+
 ## Package check
 
 `python3 package_qc.py` checks local links (HTML and Markdown), retired content, empty link cards,
 navigation and this README's inventory, terminology, framing and count drift. It also reads the text
 of every published spreadsheet, Word file, slide deck, PDF (with `pdftotext`) and JSON file for the
-same framing, terminology and spelling checks. GitHub Actions runs it
-on every push and pull request. Add `--external` to also request each external link once. It checks
+same framing, terminology and spelling checks. `python3 build_pages.py --check` confirms that the
+generated pages and readouts match their sources. GitHub Actions runs both on every push and pull
+request. Add `--external` to also request each external link once. It checks
 the package, not the statistics.
 
 ## Contact

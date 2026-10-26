@@ -12,9 +12,10 @@ format:
       - ../../../site.css
       - ../../study.css
       - report.css
-    include-before-body: _topbar.html
-    include-in-header:
-      text: '<link rel="icon" href="data:,">'
+    include-before-body:
+      - _skip.html
+      - ../../../_partials/_topbar-example-d3.html
+    include-in-header: ../../../_partials/_quarto-head-d3.html
 execute:
   echo: false
   warning: false
@@ -95,11 +96,11 @@ knitr::kable(pk, format = "html", table.attr = 'class="data"', caption = "ICH M1
 
 ## Concentrations
 
-![Mean concentrations (linear), nominal times](../tlf/f_14_4_2_1a_mean_linear.png){width=100%}
+![Mean concentrations (linear), nominal times](../tlf/f_14_4_2_1a_mean_linear.png){width=100% fig-alt="Mean (SD) plasma concentrations of the test and reference products against nominal time after dose, 0 to 48 hours, on a linear scale. Synthetic data."}
 
-![Mean concentrations (semi-log), nominal times](../tlf/f_14_4_2_1b_mean_semilog.png){width=100%}
+![Mean concentrations (semi-log), nominal times](../tlf/f_14_4_2_1b_mean_semilog.png){width=100% fig-alt="The same mean concentration profiles of the test and reference products on a semi-log scale against nominal time. Synthetic data."}
 
-![Individual concentrations (semi-log), actual times](../tlf/f_14_4_2_2_individual.png){width=100%}
+![Individual concentrations (semi-log), actual times](../tlf/f_14_4_2_2_individual.png){width=100% fig-alt="Each participant's concentration profile for the test and reference products on a semi-log scale against actual sampling time. Synthetic data."}
 
 ```{r conc}
 tbl("t_14_4_1_1")

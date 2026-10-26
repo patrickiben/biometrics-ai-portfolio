@@ -1,7 +1,7 @@
-# Change Order — Effort (Hours) Request
+# Change Order: Effort (Hours) Request
 
 > Use when out-of-scope work cannot be fully funded from internal headroom (under-run slack +
-> contingency) per the find-hours worksheet. Reason in HOURS/effort — no dollars, rates, or headcount.
+> contingency) per the find-hours worksheet. Reason in HOURS/effort: no dollars, rates, or headcount.
 
 | Field | Value |
 |---|---|
@@ -20,8 +20,8 @@ _New deliverable / added analysis population / unplanned interim / recurring "on
 | Item | Hours |
 |---|---|
 | Estimated effort for the new work | ___ |
-| Found internally — under-run slack reallocated | ___ |
-| Found internally — contingency drawn | ___ |
+| Found internally: under-run slack reallocated | ___ |
+| Found internally: contingency drawn | ___ |
 | Freed by deferring lower-priority work | ___ |
 | **Shortfall requiring this change order** | **___** |
 
@@ -29,7 +29,7 @@ _New deliverable / added analysis population / unplanned interim / recurring "on
 _Does absorbing or deferring push any critical-path deliverable past its date? New dates if work is re-sequenced._
 
 ## 5. Disposition
-- [ ] Absorbed internally (no CO needed) — record the reallocation in the effort ledger
+- [ ] Absorbed internally (no CO needed); record the reallocation in the effort ledger
 - [ ] Change order raised for the shortfall hours
 - [ ] Work deferred / declined
 

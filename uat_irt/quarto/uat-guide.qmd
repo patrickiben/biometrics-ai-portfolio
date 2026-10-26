@@ -4,9 +4,13 @@ subtitle: "A visual, runnable guide, from the biostatistics lens"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
+      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
+      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
+    respect-user-color-scheme: true
+    include-in-header: ../../_partials/_quarto-head-d2.html
+    include-before-body:
+      - ../../_partials/_quarto-skip.html
+      - ../../_partials/_topbar-apps-d2.html
     toc: true
     toc-location: left
     toc-title: On this page
@@ -15,7 +19,6 @@ format:
     code-fold: true
     fig-width: 8
     fig-height: 4
-mermaid-format: svg
 execute:
   echo: false
   warning: false
@@ -28,6 +31,7 @@ knitr:
 ```{r setup}
 library(ggplot2); library(knitr)
 source("../shiny/R/logic.R")
+source("../../assets/theme/theme.R")   # bp_tokens and bp_ggplot_theme: figure ink per site theme
 d <- uat_load("../templates")
 g <- uat_gate(d$tests, d$defects, d$trace)
 s <- uat_summary(d$tests, d$defects, d$trace)
@@ -45,7 +49,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 :::
 
 ::: {.callout-tip appearance="simple"}
-**Run the tracker in your browser.** [**Open the UAT tracker in your browser**](../../apps/uat_irt/). It is the same R Shiny app, running on R compiled to WebAssembly (Shinylive and webR) with no server: everything it needs loads from this site, and what you click stays in your browser. Synthetic data only.
+**A Shinylive build of the tracker (not yet checked in a real browser).** [Open the Shinylive build](../../apps/uat_irt/). It is the same R Shiny app, exported to run on R compiled to WebAssembly (Shinylive and webR) with no server: everything it needs loads from this site, and what you click stays in your browser. Synthetic data only. The export was checked in headless Chrome locally; no dated check in a visitor's browser is recorded yet, so the [Apps page](../../apps.html#r-browser) lists no Run in browser link for it.
 
 **Before you open it:** R starts inside your browser, so the tracker takes several seconds to appear. The first visit downloads about 55 MB, shared with the other two apps on this site; later visits reuse the browser cache. It works best in Chrome or Edge; Safari support may vary. If it does not load, the screenshot below and the [read-only snapshot](uat-dashboard.html) show the same screens.
 
@@ -57,8 +61,9 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 You are confirming, in a test environment, that the vendor's randomization and drug-supply build does **exactly** what your specs say, before a single real participant is randomized.
 
 ```{mermaid}
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','tertiaryBorderColor':'#7d9bd6','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
+  accTitle: UAT process
+  accDescr: Requirements and specifications become test cases, which are executed in the staging IRT and recorded with screenshots; a failure is logged as a defect and retested, a pass feeds traceability, and the go-live gate promotes the build to production only when it reads ready and a human signs.
   URS["URS + specs"] --> TC["Derive<br/>test cases"] --> EX["Execute in<br/>staging IRT"]
   EX --> REC["Record +<br/>screenshot"] --> DEC{"Pass?"}
   DEC -->|No| DEF["Log defect,<br/>retest build"] --> EX
@@ -72,8 +77,9 @@ flowchart LR
 The tracker you see below is a **picture**. The real UAT happens across three live places, and the workbook is the paper trail that ties them together.
 
 ```{mermaid}
-%%{init: {'theme':'base','themeVariables':{'primaryColor':'#28344f','primaryTextColor':'#eef2fb','primaryBorderColor':'#7d9bd6','lineColor':'#aab8d6','clusterBkg':'#161d33','clusterBorder':'#3a476a','tertiaryColor':'#20406a','tertiaryTextColor':'#eef2fb','secondaryColor':'#20406a','secondaryTextColor':'#eef2fb'}}}%%
 flowchart LR
+  accTitle: Where UAT runs
+  accDescr: The biostatistician operates the vendor staging IRT in a browser, keeps dated screenshots and exports in the Excel workbook that is the record, and files the signed package in the eTMF; defects go to the vendor tracker and come back as a fixed build.
   subgraph vendor["Vendor systems"]
     IRT["Staging IRT / RTSM<br/>(test list)"]
     VDEF["Vendor defect<br/>tracker"]
@@ -98,14 +104,14 @@ This is the same logic the Shiny app and the Excel gate use, rendered here from 
 
 ```{r kpis, results='asis'}
 box <- function(label, value, col) sprintf(
-  '<div style="flex:1 1 120px;background:#222630;border:1px solid #3a4157;border-radius:10px;padding:14px 16px"><div style="font-size:30px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:11px;color:#94a1c0;text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
+  '<div style="flex:1 1 120px;background:var(--surface);border:1px solid var(--line-2);border-radius:10px;padding:14px 16px"><div style="font-size:30px;font-weight:700;color:%s;font-family:monospace;line-height:1">%s</div><div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-top:6px">%s</div></div>',
   col, value, label)
 cat('<div style="display:flex;flex-wrap:wrap;gap:10px;margin:6px 0 18px">')
-cat(box("Test scripts", s$total, "#e9edf7"))
-cat(box("Passed", s$pass, "#43c47d"))
-cat(box("Failed", s$fail, "#e8657a"))
-cat(box("Open defects", s$open_def, "#e0a64c"))
-cat(box("Requirements traced", paste0(s$cov, "%"), "#3fd0c9"))
+cat(box("Test scripts", s$total, "var(--ink)"))
+cat(box("Passed", s$pass, "var(--green)"))
+cat(box("Failed", s$fail, "var(--red)"))
+cat(box("Open defects", s$open_def, "var(--amber)"))
+cat(box("Requirements traced", paste0(s$cov, "%"), "var(--accent)"))
 cat('</div>')
 ```
 
@@ -114,33 +120,31 @@ cat('</div>')
 ### Go-live gate
 
 ```{r gate, results='asis'}
-tick <- function(ok, txt) sprintf('<div style="margin:6px 0;font-size:15px;color:#e9edf7"><span style="color:%s;font-weight:700;margin-right:6px">%s</span>%s</div>',
-  if (ok) "#43c47d" else "#e8657a", if (ok) "&#10004;" else "&#10008;", txt)
-bg <- if (g$go) "#152b1e" else "#2b1519"; bd <- if (g$go) "#43c47d" else "#e8657a"
+tick <- function(ok, txt) sprintf('<div style="margin:6px 0;font-size:15px;color:var(--ink)"><span style="color:%s;font-weight:700;margin-right:6px">%s</span>%s</div>',
+  if (ok) "var(--green)" else "var(--red)", if (ok) "&#10004;" else "&#10008;", txt)
+bg <- if (g$go) "var(--green-soft)" else "var(--red-soft)"; bd <- if (g$go) "var(--green)" else "var(--red)"
 cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:12px;padding:16px 18px;max-width:660px">', bg, bd))
-cat(sprintf('<div style="font-size:22px;font-weight:700;margin-bottom:8px;color:#e9edf7">%s</div>', g$verdict))
+cat(sprintf('<div style="font-size:22px;font-weight:700;margin-bottom:8px;color:var(--ink)">%s</div>', g$verdict))
 cat(tick(g$crit_fail == 0, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
 cat(tick(g$open_cm == 0,  sprintf("<b>%d</b> open critical/major defect(s)", g$open_cm)))
 cat(tick(g$trace_gap == 0, sprintf("<b>%d</b> requirement(s) without a test", g$trace_gap)))
-cat('<div style="font-size:12px;color:#94a1c0;margin-top:10px">The gate packages the evidence; a named human signs. It does not grant approval.</div></div>')
+cat('<div style="font-size:12px;color:var(--muted);margin-top:10px">The gate packages the evidence; a named human signs. It does not grant approval.</div></div>')
 ```
 
 The gate is deliberately **conjunctive**: all three conditions must hold. In the seed data it reads *blocked* because a critical test is still failing, two critical/major defects are open, and one requirement has no test yet. Fix those in the app and watch it flip.
 
 ### Execution by area
 
-```{r plot}
+```{r plot, fig.alt="Test scripts by test area, stacked by status: pass, fail, blocked, in progress and not run."}
+#| renderings: [light, dark]
 df <- uat_area_counts(d$tests)
-ggplot(df, aes(Freq, Area, fill = Status)) +
-  geom_col(width = 0.7) +
-  scale_fill_manual(values = c("Pass"="#43c47d","Fail"="#e8657a","Blocked"="#e0a64c",
-    "In Progress"="#5b8cff","Not Run"="#6b7794"), drop = FALSE) +
-  labs(x = "Tests", y = NULL, fill = NULL) +
-  theme_minimal(base_size = 12) +
-  theme(legend.position = "top", plot.background = element_rect(fill="#222630", colour=NA),
-        panel.background = element_rect(fill="#222630", colour=NA),
-        text = element_text(colour="#e9edf7"), axis.text = element_text(colour="#c5cee4"),
-        panel.grid = element_line(colour="#3a4157"))
+for (mode in c("light", "dark")) print(
+  ggplot(df, aes(Freq, Area, fill = Status)) +
+    geom_col(width = 0.7) +
+    scale_fill_manual(values = c("Pass"="#43c47d","Fail"="#e8657a","Blocked"="#e0a64c",
+      "In Progress"="#5b8cff","Not Run"="#6b7794"), drop = FALSE) +
+    labs(x = "Tests", y = NULL, fill = NULL) +
+    bp_ggplot_theme(mode) + theme(legend.position = "top"))
 ```
 
 ### Open defects

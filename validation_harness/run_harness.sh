@@ -218,7 +218,7 @@ scanned=$((n-manual-unsigned))
 {
   echo "# Evidence Ledger: Trial-Management Validation Harness"
   echo
-  echo "_Generated $STAMP · $RVER · $greens of $scanned scan-based gates green, $manual manual record, $unsigned not signed · run on this repo's synthetic deliverables · human sign-off pending on every gate._"
+  echo "_Generated $STAMP · $RVER · $greens of $scanned automated gates green, $manual manual record, $unsigned not signed · run on this repo's synthetic deliverables · human sign-off pending on every gate._"
   echo
   echo "| Gate | Guards (the fragile object) | Status | Evidence (automated) | Human sign-off |"
   echo "|---|---|:--:|---|---|"
@@ -255,4 +255,4 @@ p="validation_harness/index.html"; h=open(p,encoding="utf-8").read()
 h=re.sub(r'(<script id="ledger" type="application/json">\n).*?(\n</script>)',lambda m:m.group(1)+txt+m.group(2),h,count=1,flags=re.S)
 open(p,"w",encoding="utf-8").write(h)
 PY
-echo; echo "Ledger: $greens of $scanned scan-based gates green, $manual manual, $unsigned not signed -> validation_harness/EVIDENCE_LEDGER.md + ledger.json (+ index.html copy)"
+echo; echo "Ledger: $greens of $scanned automated gates green, $manual manual, $unsigned not signed -> validation_harness/EVIDENCE_LEDGER.md + ledger.json (+ index.html copy)"

@@ -35,11 +35,12 @@ npct <- function(n, N) {
   ifelse(N > 0, sprintf("%d (%.0f%%)", n, 100 * n / N), "0")
 }
 
-# light and dark versions of every figure (Quarto shows the one that matches the reader's setting)
+# light and dark versions of every figure (Quarto shows the one that matches the reader's theme);
+# text and grid colors are the site tokens --text and --line (light) / --line-2 (dark)
 TM_LOOK <- list(
-  light = list(fg = "#18212B", grid = "#D5DBE1", pal = c(GREEN = "#1D6B3A", watch = "#2F5F8A", AMBER = "#A86400", RED = "#B42318"),
+  light = list(fg = "#1F2A37", grid = "#D7DEE7", pal = c(GREEN = "#1D6B3A", watch = "#2F5F8A", AMBER = "#A86400", RED = "#B42318"),
                tests = c(ALT = "#B42318", AST = "#A86400", ALP = "#4F5B67", TBL = "#0757BF")),
-  dark = list(fg = "#E6EAEE", grid = "#323C47", pal = c(GREEN = "#8FD8A8", watch = "#9CC3EA", AMBER = "#F3C169", RED = "#FF9B8F"),
+  dark = list(fg = "#C9D3E1", grid = "#2E3A4D", pal = c(GREEN = "#8FD8A8", watch = "#9CC3EA", AMBER = "#F3C169", RED = "#FF9B8F"),
               tests = c(ALT = "#FF9B8F", AST = "#F3C169", ALP = "#A9B3BD", TBL = "#7DB5FF")))
 
 tm_theme <- function(look, base_size = 12) {

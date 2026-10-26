@@ -30,7 +30,8 @@ report with Quarto 1.10.19. Two consecutive runs on R 4.6.0 (macOS) produced byt
 XPT, XLSX and Dataset-JSON files carry write timestamps, so they are replaced only when their
 content changes. `.github/workflows/study.yml` runs the script on Ubuntu with r-lib/actions v2 and
 fails if a committed output changes (figures and the rendered report are excluded from that byte
-check because PNG rendering depends on system fonts); it has not yet run on GitHub.
+check because PNG rendering depends on system fonts). It runs on GitHub on every push and pull
+request that touches `study/` or `sim_lifecycle/`; it first passed on main on 25 October 2026.
 `R/snapshot_lock.R` rewrites `renv.lock`.
 
 ## Builds on `sim_lifecycle/`

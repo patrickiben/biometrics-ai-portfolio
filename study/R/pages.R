@@ -20,6 +20,8 @@ v <- function(p) VERS[[p]]
 cm <- be_results[be_results$PARAMCD == "CMAX", ]; au <- be_results[be_results$PARAMCD == "AUCLST", ]
 p2 <- function(x) formatC(100 * x, format = "f", digits = 2)
 n_csr_ok <- sum(vapply(CSR$paragraphs, function(x) identical(x$status, "DRAFT_OK"), logical(1)))
+n_shells <- lengths(regmatches(paste(readLines(sp("02_sap", "mock_shells.html"), warn = FALSE), collapse = "\n"),
+                               gregexpr('<section class="shell"', paste(readLines(sp("02_sap", "mock_shells.html"), warn = FALSE), collapse = "\n"), fixed = TRUE)))
 
 ## --- 03_adam/index.html ---------------------------------------------------------------------------
 sdtm_n <- vapply(c("dm", "ex", "pc", "ae", "vs", "ds", "pp"), function(d) nrow(utils::read.csv(sp("03_adam", "sdtm", paste0(d, ".csv")))), integer(1))
@@ -110,10 +112,15 @@ stage_sec <- function(num, name, labels, executed, links, gap = NULL) paste0(
 L <- function(href, text, d) sprintf('<a href="%s">%s</a><span class="d">%s</span>', href, esc(text), esc(d))
 P <- DES$planning
 body_idx <- paste0(
-  md("One synthetic early-phase bioequivalence study, taken from sample size to clinical study report text. Every number on this page and on the pages it links to comes from one script, `study/run_all.R`, run on synthetic data. The study builds on the `sim_lifecycle/` sandbox (same priors and model, a 2x2 crossover, N = 40, seed 2026)."),
+  md("One synthetic early-phase bioequivalence study, taken from sample size to clinical study report text. Every number on this page and on the pages it links to comes from one script, `study/run_all.R`, run on synthetic data. The study builds on the [`sim_lifecycle/` sandbox](../sim_lifecycle/index.html) (same priors and model, a 2x2 crossover, N = 40, seed 2026)."),
   '<ol class="flow">',
-  '<li><a href="#stage1">Design</a></li><li><a href="#stage2">SAP and shells</a></li><li><a href="#stage3">ADaM</a></li>',
-  '<li><a href="#stage4">Analysis and TLFs</a></li><li><a href="#stage5">QC</a></li><li><a href="#stage6">CSR text</a></li></ol>',
+  sprintf('<li><a href="#stage1">Design</a><span class="v">%s enrolled; %s evaluable for 90%% power</span></li>', P$n_enrolled, P$n_evaluable_90),
+  sprintf('<li><a href="#stage2">SAP and shells</a><span class="v">%d table shells</span></li>', n_shells),
+  sprintf('<li><a href="#stage3">ADaM</a><span class="v">%d of %d metadata checks passed</span></li>', sum(mchk$pass), nrow(mchk)),
+  sprintf('<li><a href="#stage4">Analysis and TLFs</a><span class="v">Cmax %s%% (90%% CI %s to %s)</span></li>', p2(cm$ratio), p2(cm$lower), p2(cm$upper)),
+  sprintf('<li><a href="#stage5">QC</a><span class="v">%d of %d checks (same-author)</span></li>', QC$pass, QC$checks),
+  sprintf('<li><a href="#stage6">CSR text</a><span class="v">%d of %d paragraphs number-checked</span></li>', n_csr_ok, length(CSR$paragraphs)),
+  '</ol>',
   '<ul class="legend"><li><span class="lab led">Led</span> the resume says owned, wrote or led</li><li><span class="lab sup">Supported</span> reviewed, contributed, or created or reviewed</li>',
   '<li><span class="lab tools">Tools built</span> shown only by code here</li><li><span class="lab gap">Gap</span> no job evidence and no artifact</li></ul>',
   stage_sec(1, "Design: sample size and randomization",
@@ -189,8 +196,10 @@ body_idx <- paste0(
      "Rscript study/run_all.R        # from the repository root; regenerates every output above",
      "```",
      "",
-     sprintf("[run_all.R](run_all.R) runs the stages in order and renders the report with Quarto. [renv.lock](renv.lock) pins R %s and the package versions below. Two consecutive local runs produced byte-identical files. The CI workflow `.github/workflows/study.yml` (r-lib/actions v2) runs it on Ubuntu and fails if a committed output changes; the figures and the rendered report are excluded from that byte check because PNG rendering depends on system fonts. The workflow has not yet run on GitHub.", paste(R.version$major, R.version$minor, sep = "."))),
+     sprintf("[run_all.R](run_all.R) runs the stages in order and renders the report with Quarto. [renv.lock](renv.lock) pins R %s and the package versions below. Two consecutive local runs produced byte-identical files. The CI workflow `.github/workflows/study.yml` (r-lib/actions v2) runs it on Ubuntu and fails if a committed output changes; the figures and the rendered report are excluded from that byte check because PNG rendering depends on system fonts. Its [run history](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/study.yml) is public; it first passed on main on 25 October 2026.", paste(R.version$major, R.version$minor, sep = "."))),
+  '<details class="versions"><summary>Package versions (renv.lock)</summary>',
   html_table(data.frame(Package = names(VERS), Version = unname(VERS)), caption = "Package versions used by this run (pinned in renv.lock)."),
+  '</details>',
   '<div class="not-covered"><p><strong>Not covered by this example.</strong> define.xml and ADRG authoring; Pinnacle 21 or CDISC CORE conformance; conformant SDTM; independent double programming by a second person; a validated (21 CFR Part 11) system; a regulatory submission package; interim analyses and a DMC. The study, product and every participant are simulated.</p></div>')
 write_text(page_html(title = "Flagship Worked Example", kicker = "Worked example: one synthetic BE study",
                      h1 = "A synthetic bioequivalence study, from sample size to CSR text",
