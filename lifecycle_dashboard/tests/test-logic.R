@@ -150,10 +150,11 @@ qdir <- Find(function(x) file.exists(file.path(x, "lifecycle-dashboard.html")),
 stopifnot("found the rendered Quarto pages" = !is.null(qdir))
 page_of <- function(f) paste(readLines(file.path(qdir, f), warn = FALSE, encoding = "UTF-8"), collapse = "\n")
 kpi_boxes <- function(html) {
+  # the value (28px) and its label (11px, or 12px since the site redesign) of each box
   m <- regmatches(html, gregexpr(paste0('font-size:28px[^>]*>\\s*([^<]*?)\\s*</div>\\s*',
-                                        '<div style="font-size:11px[^>]*>\\s*([^<]*?)\\s*</div>'), html, perl = TRUE))[[1]]
+                                        '<div style="font-size:1[12]px[^>]*>\\s*([^<]*?)\\s*</div>'), html, perl = TRUE))[[1]]
   vals <- sub('(?s).*font-size:28px[^>]*>\\s*([^<]*?)\\s*</div>.*', "\\1", m, perl = TRUE)
-  stats::setNames(vals, sub('(?s).*font-size:11px[^>]*>\\s*([^<]*?)\\s*</div>$', "\\1", m, perl = TRUE))
+  stats::setNames(vals, sub('(?s).*font-size:1[12]px[^>]*>\\s*([^<]*?)\\s*</div>$', "\\1", m, perl = TRUE))
 }
 want <- c("Active studies" = as.character(k$n), "At risk" = as.character(k$at_risk), "On watch" = as.character(k$watch),
           "Open queries" = as.character(k$open_q), "Avg deliverables" = paste0(k$avg_del, "%"),
