@@ -357,6 +357,7 @@ dialog .dhead button{margin-left:auto}
 .foot{font-family:var(--mono);color:var(--dim);font-size:12px;line-height:1.7;margin-top:34px;border-top:1px solid var(--line);padding-top:14px}
 .foot b{color:var(--mut)}
 .sub a,.foot a{text-decoration:underline;text-underline-offset:2px}   /* links inside text are told apart by more than color */
+td[data-l="Runbook"] code{overflow-wrap:anywhere}   /* an example address shown as text wraps inside its cell */
 .empty{color:var(--mut);font-style:italic;padding:12px}
 
 @media(max-width:1000px){.kpis{grid-template-columns:repeat(3,1fr)}.scen{grid-template-columns:repeat(2,1fr)}}
@@ -1651,20 +1652,35 @@ window.__cct = { state: function () { return state; }, risks: allRisks, effectiv
     });
   }
 
-  /* keyboard access: a box that scrolls takes focus; Quarto's and reveal.js's icon-only links get a name */
+  /* keyboard access: a box that scrolls and holds nothing tabbable takes focus, with a name unique on the page.
+     data-scroll-focus lists the attributes this script added; only those are removed when the box stops
+     scrolling. A table or list keeps its native role. */
+  var TABBABLE = 'a[href]:not([tabindex^="-"]), button:not([tabindex^="-"]), input:not([tabindex^="-"]), select:not([tabindex^="-"]), textarea:not([tabindex^="-"]), summary:not([tabindex^="-"]), [tabindex]:not([tabindex^="-"])';
+  function scrollName(el, used) {
+    var kind = el.matches("pre, div.sourceCode") ? "Code" : el.matches("table") || el.querySelector("table") ? "Table" : "Scrolling region";
+    var cap = el.querySelector("caption"), t = cap ? cap.textContent : "";
+    if (!t) { var hs = d.querySelectorAll("h1, h2, h3, h4, h5, h6"); for (var i = hs.length - 1; i >= 0; i--) if (hs[i].compareDocumentPosition(el) & 4) { t = hs[i].textContent; break; } }
+    t = t.replace(/\s+/g, " ").trim().slice(0, 80);
+    var base = kind + (t ? ": " + t : ""), name = base, n = 1;
+    while (used[name]) name = base + " (" + (++n) + ")";
+    used[name] = 1; return name;
+  }
   function scrollers() {
     if (!d.body) return;
+    var used = {};
+    d.querySelectorAll("[aria-label]").forEach(function (x) { used[x.getAttribute("aria-label")] = 1; });
     [].forEach.call(d.body.getElementsByTagName("*"), function (el) {
-      var over = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1, mine = el.hasAttribute("data-scroll-focus");
+      var mine = el.getAttribute("data-scroll-focus"), over = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
       if (over) { var cs = getComputedStyle(el); over = /auto|scroll/.test(cs.overflowX + " " + cs.overflowY); }
-      if (over && !mine && !el.hasAttribute("tabindex") && !el.matches("a[href], button, input, select, textarea, summary") &&
-          !el.querySelector("a[href], button, input, select, textarea, summary, [tabindex]")) {   /* a box with focusable content already scrolls by keyboard */
-        el.setAttribute("tabindex", "0"); el.setAttribute("data-scroll-focus", "");
-        if (!el.hasAttribute("role")) el.setAttribute("role", "region");
-        if (!el.hasAttribute("aria-label") && !el.hasAttribute("aria-labelledby"))
-          el.setAttribute("aria-label", el.matches("pre, div.sourceCode") ? "Code, scrolls" : el.querySelector("table") || el.matches("table") ? "Table, scrolls" : "Scrolling region");
-      } else if (!over && mine) {
-        el.removeAttribute("tabindex"); el.removeAttribute("data-scroll-focus");
+      if (over && mine === null && !el.hasAttribute("tabindex") && !el.matches(TABBABLE) && !el.querySelector(TABBABLE)) {
+        var added = ["tabindex"];
+        el.setAttribute("tabindex", "0");
+        if (!el.hasAttribute("role") && !el.matches("table, ul, ol, dl, figure, nav, main, aside, form, fieldset, section, header, footer")) { el.setAttribute("role", "region"); added.push("role"); }
+        if (!el.hasAttribute("aria-label") && !el.hasAttribute("aria-labelledby")) { el.setAttribute("aria-label", scrollName(el, used)); added.push("aria-label"); }
+        el.setAttribute("data-scroll-focus", added.join(" "));
+      } else if (!over && mine !== null) {
+        mine.split(" ").forEach(function (a) { if (a) el.removeAttribute(a); });
+        el.removeAttribute("data-scroll-focus");
       }
     });
   }
@@ -1681,8 +1697,12 @@ window.__cct = { state: function () { return state; }, risks: allRisks, effectiv
     d.querySelectorAll("[data-filter]").forEach(filter);
     copyButtons();
     names(); scrollers();
-    var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(scrollers, 200); });
-    window.addEventListener("load", function () { names(); scrollers(); });
+    /* boxes that appear or change later: a resize, an opened <details>, a tab switch, a re-render */
+    var rt, again = function () { clearTimeout(rt); rt = setTimeout(function () { names(); scrollers(); }, 150); };
+    window.addEventListener("resize", again);
+    window.addEventListener("load", again);
+    d.addEventListener("toggle", again, true);
+    if (window.MutationObserver) new MutationObserver(again).observe(d.body, { subtree: true, childList: true, attributes: true, attributeFilter: ["hidden", "open", "aria-selected", "aria-expanded"] });
   }
   window.addEventListener("beforeprint", function () { d.querySelectorAll("details:not([open])").forEach(function (x) { x.setAttribute("open", ""); x.setAttribute("data-print-open", ""); }); });
   window.addEventListener("afterprint", function () { d.querySelectorAll("details[data-print-open]").forEach(function (x) { x.removeAttribute("open"); x.removeAttribute("data-print-open"); }); });

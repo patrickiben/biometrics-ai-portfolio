@@ -65,7 +65,7 @@
     },
     {
      "k": "gap",
-     "text": "Gap: dose-escalation, adaptive and group-sequential designs"
+     "text": "Gap: BOIN/CRM dose escalation, adaptive and group-sequential designs"
     }
    ],
    "on_site_html": "The <a href=\"study/index.html#stage1\">worked example, stage 1</a>: an exact-method sample size (PowerTOST), a sensitivity grid, a permuted-block randomization schedule and an <a href=\"study/01_design/protocol_statistics.html\">ICH M11-headed protocol statistics excerpt</a> (synthetic). Research on cluster randomized trial design under spatial interference (<em>Statistics in Medicine</em>, submitted), via the <a href=\"https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md\">research map</a>. Related: an <a href=\"uat_irt/quarto/uat-guide.html\">IRT/RTSM acceptance-test library</a> for randomization logic.",
@@ -115,6 +115,10 @@
     {
      "k": "sup",
      "text": "Supported"
+    },
+    {
+     "k": "tools",
+     "text": "Tools built: runs"
     },
     {
      "k": "gap",
@@ -170,10 +174,14 @@
     },
     {
      "k": "tools",
-     "text": "Tools built"
+     "text": "Tools built: same-author re-derivation"
+    },
+    {
+     "k": "gap",
+     "text": "Gap: independent double programming"
     }
    ],
-   "on_site_html": "The <a href=\"study/index.html#stage5\">worked example, stage 5</a>: <a href=\"study/05_qc/qc_ledger.html\">40 of 40 re-derivation checks</a> by a second method (same-author re-derivation, not independent double programming). A <a href=\"validation_harness/index.html\">QC harness</a> that separates structural checks from executed ones, including an independent recomputation of the NCA (G9); the eCRF apps' test suite runs in CI. A <a href=\"validation_harness/index.html#teeth\">seeded-defect check</a> reports which planted programming defects the harness catches and which survive.",
+   "on_site_html": "The <a href=\"study/index.html#stage5\">worked example, stage 5</a>: <a href=\"study/05_qc/qc_ledger.html\">40 of 40 re-derivation checks</a> by a second method (same-author re-derivation, not independent double programming). A <a href=\"validation_harness/index.html\">QC harness</a> that separates structural checks from executed ones, including a separately written, same-author recomputation of the <a href=\"sim_lifecycle/index.html\">sandbox</a>'s NCA, bioequivalence and adverse-event counts (G9); the eCRF apps' test suite runs in CI. A <a href=\"validation_harness/index.html#teeth\">seeded-defect check</a> reports which planted programming defects the harness catches and which survive.",
    "strongest": {
     "text": "QC harness and seeded-defect check",
     "href": "validation_harness/index.html"
