@@ -17,8 +17,9 @@
 #
 # Shinylive-ready: all data sit in data/, the packages are shiny, bslib and DT (the plots are
 # base graphics), and the CSV download is built in the browser (a Blob), not by a
-# downloadHandler. The look comes from the site's color tokens on the precompiled Bootstrap
-# theme (R/app_view.R), so the browser compiles no Sass. Results that never change while the
+# downloadHandler. The look comes from the site's color tokens (bp_theme_head() in portfolio_app.R,
+# generated from assets/theme/tokens.css) on the precompiled Bootstrap theme, so the browser
+# compiles no Sass; it follows the site's light or dark choice. Results that never change while the
 # app runs are computed once at startup; on a fast laptop all of app.R's own computation takes
 # about 0.3 s in the browser, and the rest of the start is R and its packages loading.
 # Run:  shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
@@ -59,9 +60,10 @@ Shiny.addCustomMessageHandler('trialmon-download', function(m) {
 ui <- page_sidebar(
   title = div(class = "d-flex flex-wrap align-items-center gap-2 w-100",
               span("TRIALMON: safety review console"),
-              span(class = "badge text-bg-warning", "synthetic data"),
-              div(class = "ms-auto", input_dark_mode(id = "mode"))),
-  theme = bs_theme(version = 5),                        # precompiled; the site colors come from tm_css()
+              span(class = "bp-chip synthetic", "Synthetic data"),
+              div(class = "ms-auto", bp_theme_toggle())),
+  theme = bp_theme(),                                   # precompiled; the site's tokens come from bp_theme_head()
+  lang = "en",
   fillable = FALSE,
   sidebar = sidebar(
     width = 340,
@@ -176,7 +178,7 @@ server <- function(input, output, session) {
                                                 QTC$sev[QTC$USUBJID == i])), character(1))
   })
   pid <- reactive(if (!is.null(input$pid) && input$pid %in% tm$adsl$USUBJID) input$pid else NA_character_)
-  dark <- reactive(identical(input$mode, "dark"))
+  dark <- reactive(identical(input$bp_theme, "dark"))
   pal <- reactive(tm_palette(dark()))
 
   output$window_note <- renderText({

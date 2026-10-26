@@ -15,8 +15,9 @@
 #
 # First load: every panel has content. RAND-04 (a failing critical test with an open critical
 # defect) is selected, so the Selected test card shows something to act on; each empty state
-# says why it is empty and what to do. Colors come from the portfolio site's tokens (site.css),
-# in light and dark; input_dark_mode() follows the visitor's system setting.
+# says why it is empty and what to do. Colors come from the portfolio site's tokens
+# (assets/theme/tokens.css, through bp_theme_head() in portfolio_app.R), in light and dark; the app
+# follows the site's saved theme, then the system setting.
 # ===========================================================================
 suppressPackageStartupMessages({
   library(shiny)
@@ -37,10 +38,9 @@ TEST_NAMES   <- c("ID", "Status", "Title", "Priority", "Area", "Requirement", "D
 DEFECT_COLS  <- c("DefectID", "Severity", "Status", "FoundInTest", "Description")
 PAGE_LEN     <- 10
 
-# bar colors for the area plot; the same hues as the status pills below (light and dark)
-STATUS_FILL <- list(
-  light = c(Pass = "#2E8B57", Fail = "#C8402F", Blocked = "#D07A1F", `In Progress` = "#3D7FD9", `Not Run` = "#97A3AF"),
-  dark  = c(Pass = "#5DBB84", Fail = "#F07A6A", Blocked = "#E9A55A", `In Progress` = "#7DB5FF", `Not Run` = "#76828E"))
+# the site tone of each test status: the area plot's bars and the status pills (UAT_CSS) share them
+STATUS_TONE <- c(Pass = "green", Fail = "red", Blocked = "orange", `In Progress` = "blue", `Not Run` = "neutral")
+status_fill <- function(mode) vapply(STATUS_TONE, function(t) bp_tones[[mode]][[t]][["fill"]], "")
 
 n_of <- function(n, one, many = paste0(one, "s")) sprintf("%d %s", n, if (n == 1) one else many)
 and_list <- function(x) {
@@ -58,26 +58,26 @@ gate_text <- function(g) {
   paste0("The gate is still blocked: ", and_list(left), ".")
 }
 pill <- function(x) span(class = paste0("uat-pill s-", gsub("[^a-z]", "", tolower(x))), x)
+# a Font Awesome icon as decoration: its button or heading already says what it does
+deco_icon <- function(name) {
+  i <- icon(name)
+  i$attribs[c("role", "aria-label")] <- NULL
+  i$attribs[["aria-hidden"]] <- "true"
+  i
+}
 nw   <- function(x) span(class = "uat-nw", x)   # an ID that never breaks at its hyphen
 and_ids <- function(ids, last = " and ") {      # and_list() as tags, each ID kept on one line
   n <- length(ids)
   tagList(lapply(seq_len(n), function(k) tagList(nw(ids[k]), if (k < n - 1) ", " else if (k == n - 1) last)))
 }
 
-# ---- styles: the site tokens for status colors, a calm header, readable tables -----------------
-UAT_CSS <- "
-:root{--uat-pass-fg:#1D5E35;--uat-pass-bg:#E3F2E8;--uat-pass-line:#9CCBAD;--uat-pass-fill:#2E8B57;
- --uat-fail-fg:#A1261B;--uat-fail-bg:#FDECEA;--uat-fail-line:#E5A39B;--uat-fail-fill:#C8402F;
- --uat-blocked-fg:#8A3A10;--uat-blocked-bg:#FBEBDF;--uat-blocked-line:#E3B796;--uat-blocked-fill:#D07A1F;
- --uat-progress-fg:#0B4F9C;--uat-progress-bg:#E5EEFA;--uat-progress-line:#A7C3E8;--uat-progress-fill:#3D7FD9;
- --uat-notrun-fg:#4F5B67;--uat-notrun-bg:#EEF1F4;--uat-notrun-line:#D5DBE1;--uat-notrun-fill:#97A3AF;
- --uat-accent:#0757BF;--uat-accent-soft:#E7EFFA;--uat-muted:#4F5B67;--uat-line:#D5DBE1}
-[data-bs-theme=dark]{--uat-pass-fg:#93DBAE;--uat-pass-bg:#17301F;--uat-pass-line:#2F6B45;--uat-pass-fill:#5DBB84;
- --uat-fail-fg:#FFB4A9;--uat-fail-bg:#3A1D1A;--uat-fail-line:#7A3A33;--uat-fail-fill:#F07A6A;
- --uat-blocked-fg:#F5B48A;--uat-blocked-bg:#3A2416;--uat-blocked-line:#7A4B2C;--uat-blocked-fill:#E9A55A;
- --uat-progress-fg:#A9CCFF;--uat-progress-bg:#1A2B40;--uat-progress-line:#36557D;--uat-progress-fill:#7DB5FF;
- --uat-notrun-fg:#A9B3BD;--uat-notrun-bg:#212A34;--uat-notrun-line:#323C47;--uat-notrun-fill:#76828E;
- --uat-accent:#7DB5FF;--uat-accent-soft:#1E2B3B;--uat-muted:#A9B3BD;--uat-line:#323C47}
+# ---- styles: the site's tones for status colors, a calm header, readable tables ---------------
+# --uat-<status>-* name the site tone of each status (STATUS_TONE): CSS variables from bp_theme_head()
+UAT_CSS <- paste0("html{", paste(vapply(names(STATUS_TONE), function(s) {
+  k <- gsub("[^a-z]", "", sub("In Progress", "progress", tolower(s), ignore.case = TRUE))
+  paste(sprintf("--uat-%s-%s:var(--tone-%s-%s);", k, c("fg", "bg", "line", "fill"), STATUS_TONE[[s]], c("fg", "bg", "line", "fill")), collapse = "")
+}, ""), collapse = ""), "--uat-accent:var(--accent);--uat-accent-text:var(--accent-ink);--uat-accent-soft:var(--accent-soft);",
+"--uat-muted:var(--muted);--uat-line:var(--line-2)}", "
 .uat-page{max-width:1640px;padding:14px 18px 28px}
 .uat-page .card{margin-bottom:0}
 .uat-page .card-header{font-weight:600;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px}
@@ -86,8 +86,6 @@ UAT_CSS <- "
 .uat-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin:0 0 12px}
 .uat-brand{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin-right:auto}
 .uat-title{font-size:1.3rem;font-weight:700;margin:0;line-height:1.25}
-.uat-badge{display:inline-block;font-size:.75rem;font-weight:600;padding:.15rem .55rem;border-radius:999px;
- color:var(--uat-blocked-fg);background:var(--uat-blocked-bg);border:1px solid var(--uat-blocked-line)}
 .uat-sub{font-size:.85rem;color:var(--uat-muted)}
 .uat-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
 .uat-changes{font-size:.85rem;color:var(--uat-muted);margin-right:4px}
@@ -131,8 +129,6 @@ UAT_CSS <- "
 @media (max-width:991.98px){.uat-row>.bslib-grid-item,.uat-row>.bslib-grid-item>.uat-stack{display:contents}
  .uat-row .uat-stack>.card{grid-column:1/-1}
  .uat-c-gate{order:1}.uat-c-tests{order:2}.uat-c-sel{order:3}.uat-c-plot{order:4}}
-.uat-page table.dataTable{--dt-row-selected:231,239,250;--dt-row-selected-text:24,33,43;--dt-row-selected-link:7,87,191}
-[data-bs-theme=dark] .uat-page table.dataTable{--dt-row-selected:30,43,59;--dt-row-selected-text:230,234,238;--dt-row-selected-link:125,181,255}
 .uat-page table.dataTable>tbody>tr.selected>td:first-child{box-shadow:inset 4px 0 0 var(--uat-accent),inset 0 0 0 9999px rgb(var(--dt-row-selected))}
 .uat-page table.dataTable>tbody>tr{cursor:pointer}
 .uat-page #defects table.dataTable>tbody>tr{cursor:default}
@@ -152,7 +148,7 @@ UAT_CSS <- "
 .uat-page div.dataTables_wrapper div.dataTables_paginate{margin:0}
 .uat-page div.dataTables_wrapper div.dataTables_paginate ul.pagination{margin:0}
 .uat-page td.dataTables_empty{color:var(--uat-muted);font-style:normal;padding:1rem}
-.uat-link{background:none;border:0;padding:0;font:inherit;color:var(--uat-accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
+.uat-link{background:none;border:0;padding:0;font:inherit;color:var(--uat-accent-text);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .uat-verdict{border-radius:.5rem;padding:.65rem .85rem;margin-bottom:.7rem;border:1px solid}
 .uat-verdict.go{color:var(--uat-pass-fg);background:var(--uat-pass-bg);border-color:var(--uat-pass-line)}
 .uat-verdict.no{color:var(--uat-fail-fg);background:var(--uat-fail-bg);border-color:var(--uat-fail-line)}
@@ -168,7 +164,7 @@ UAT_CSS <- "
 .uat-crit-detail{font-size:.86rem;color:var(--uat-muted);line-height:1.4}
 .uat-chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:.3rem}
 .uat-chip{font-size:.8rem;font-weight:600;padding:.12rem .5rem;border-radius:999px;cursor:pointer;
- color:var(--uat-accent);background:var(--uat-accent-soft);border:1px solid var(--uat-line)}
+ color:var(--uat-accent-text);background:var(--uat-accent-soft);border:1px solid var(--uat-line)}
 .uat-chip:hover,.uat-chip:focus-visible{border-color:var(--uat-accent)}
 .uat-fine{font-size:.82rem;color:var(--uat-muted);margin:.6rem 0 0;line-height:1.4}
 .uat-detail-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin-bottom:.15rem}
@@ -192,11 +188,9 @@ UAT_CSS <- "
 .uat-stack-sm{display:flex;flex-direction:column;gap:8px}
 .uat-btn{color:var(--bs-body-color);background:var(--bs-tertiary-bg);border:1px solid var(--uat-line)}
 .uat-btn:hover,.uat-btn:focus-visible{color:var(--bs-body-color);background:var(--bs-tertiary-bg);border-color:var(--uat-accent)}
-.uat-btn-accent{color:var(--uat-accent);border-color:var(--uat-accent)}
-.uat-btn-accent:hover{color:var(--uat-accent)}
-#shiny-notification-panel .shiny-notification{font-size:.9rem;line-height:1.45;opacity:1;color:var(--bs-body-color);
- background:var(--bs-body-bg);border:1px solid var(--uat-line);border-left:4px solid var(--uat-accent);border-radius:.5rem;
- box-shadow:0 6px 22px rgba(0,0,0,.16)}
+.uat-btn-accent{color:var(--uat-accent-text);border-color:var(--uat-accent)}
+.uat-btn-accent:hover{color:var(--uat-accent-text)}
+#shiny-notification-panel .shiny-notification{font-size:.9rem;line-height:1.45}
 #shiny-notification-panel .shiny-notification-warning{border-left-color:var(--uat-blocked-fill)}
 #shiny-notification-panel,#shiny-notification-panel .shiny-notification{pointer-events:none}
 #shiny-notification-panel .shiny-notification-close{pointer-events:auto}
@@ -213,7 +207,7 @@ UAT_CSS <- "
 .uat-swipe{display:none;font-size:.82rem;color:var(--uat-muted);margin:0 0 .45rem}
 .uat-defect-note{font-size:.84rem;color:var(--uat-muted);margin-top:.35rem;line-height:1.4}
 @media (max-width:600px){.uat-swipe{display:block}.uat-wide{display:none}.uat-changes{flex-basis:100%}}
-"
+")
 
 # ---- browser side: the CSV download, and buttons that carry the test or defect they act on ------
 UAT_JS <- "
@@ -295,7 +289,8 @@ DT_PRELOAD <- htmltools::attachDependencies(
 
 ui <- page_fluid(
   title = "IRT/RTSM UAT tracker (synthetic data)",
-  theme = portfolio_theme(),
+  theme = bp_theme(),   # precompiled Bootstrap; the site's tokens come from bp_theme_head()
+  lang = "en",
   class = "uat-page",
   tags$head(tags$style(HTML(UAT_CSS)), tags$script(HTML(UAT_JS))),
   DT_PRELOAD,
@@ -304,21 +299,21 @@ ui <- page_fluid(
   div(class = "uat-top",
       div(class = "uat-brand",
           h1(class = "uat-title", "IRT / RTSM UAT tracker"),
-          span(class = "uat-badge", "Synthetic data"),
+          span(class = "bp-chip synthetic", "Synthetic data"),
           span(class = "uat-sub", "Operations data only, no participant data")),
       div(class = "uat-actions",
           span(class = "uat-changes", textOutput("changes", inline = TRUE)),
           # on phones the labels shorten (the .uat-wide words hide) so the three controls share a row
           actionButton("dl_tests", tagList("Download", span(class = "uat-wide", " results"), " (CSV)"),
-                       icon = icon("download"), class = "btn-sm uat-btn", title = "Download the test results as a CSV file"),
+                       icon = deco_icon("download"), class = "btn-sm uat-btn", title = "Download the test results as a CSV file"),
           actionButton("reset", tagList("Reset", span(class = "uat-wide", " to seed")),
-                       icon = icon("rotate-left"), class = "btn-sm uat-btn", title = "Reset to the seed data"),
-          input_dark_mode(id = "mode"))),
+                       icon = deco_icon("rotate-left"), class = "btn-sm uat-btn", title = "Reset to the seed data"),
+          bp_theme_toggle())),
 
   accordion(
     id = "guide", open = "start", class = "uat-guide",
     accordion_panel(
-      "Start here: what this shows and what to try", value = "start", icon = icon("circle-info"),
+      "Start here: what this shows and what to try", value = "start", icon = deco_icon("circle-info"),
       layout_columns(
         col_widths = breakpoints(sm = 12, lg = c(4, 4, 4)), fill = FALSE,
         div(h3("What this shows"),
@@ -389,7 +384,7 @@ server <- function(input, output, session) {
   gate     <- reactive(uat_gate(rv$tests, rv$defects, rv$trace))
   summ     <- reactive(uat_summary(rv$tests, rv$defects, rv$trace))
   blockers <- reactive(uat_blockers(rv$tests, rv$defects, rv$trace))
-  dark     <- reactive(identical(input$mode, "dark"))
+  dark     <- reactive(identical(input$bp_theme, "dark"))
 
   # the selected test: the table's selection once the table is drawn; before that (and in the
   # headless tests) the default, so the Selected test card never starts empty
@@ -707,8 +702,9 @@ server <- function(input, output, session) {
   output$plot <- renderPlot(guard("the execution-by-area plot", {
     t <- rv$tests
     explain_empty(nrow(t) > 0, "No test scripts are loaded, so there is nothing to plot. Reset to seed to load them.")
-    pal <- STATUS_FILL[[if (dark()) "dark" else "light"]]
-    col <- portfolio_colors(dark())
+    mode <- if (dark()) "dark" else "light"
+    pal <- status_fill(mode)
+    col <- bp_palette(mode)
     areas <- unique(t$Area)
     df <- uat_area_counts(t)
     df$Area <- factor(as.character(df$Area), levels = rev(areas))
@@ -728,14 +724,11 @@ server <- function(input, output, session) {
       scale_x_continuous(breaks = function(l) seq(0, max(1, floor(l[2])), by = if (l[2] > 12) 2 else 1),
                          expand = expansion(mult = c(0, 0.42))) +
       labs(x = "Test scripts", y = NULL) +
-      theme_minimal(base_size = if (narrow) 11 else 13) +
+      bp_ggplot_theme(mode, base_size = if (narrow) 11 else 13) +
       theme(legend.position = "top", legend.justification = "left", legend.location = "plot",
             legend.margin = margin(0, 0, 0, 0),
             legend.text = element_text(colour = col$text, size = if (narrow) 9.5 else 11),
-            plot.background = element_rect(fill = col$surface, colour = NA),
             panel.background = element_rect(fill = col$surface, colour = NA),
-            text = element_text(colour = col$text),
-            axis.text = element_text(colour = col$muted),
             axis.text.y = element_text(colour = col$text, size = if (narrow) 9.5 else 11.5, lineheight = 0.9),
             axis.title.x = element_text(colour = col$muted, size = 11, margin = margin(t = 6)),
             panel.grid.major.y = element_blank(),

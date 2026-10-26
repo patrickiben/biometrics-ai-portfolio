@@ -1,33 +1,34 @@
 # ---------------------------------------------------------------------------
-# app_view.R: how the TRIALMON console looks, on SYNTHETIC data. The palette (the site's color
-# tokens plus the four review levels), the page CSS and its few lines of JavaScript, the level
-# chips, the "Start here" card, small table helpers and the three plots. No screening rule lives
-# here: those are in logic.R (the color legend is built from its WORKLIST_RULES).
+# app_view.R: how the TRIALMON console looks, on SYNTHETIC data. The four review levels and the
+# liver tests as site tones, the page CSS and its few lines of JavaScript, the level chips, the
+# "Start here" card, small table helpers and the three plots. No screening rule lives here: those
+# are in logic.R (the color legend is built from its WORKLIST_RULES).
 #
-# Needs portfolio_app.R first (PORTFOLIO_TOKENS, PORTFOLIO_SANS, PORTFOLIO_MONO: the site.css
-# tokens) and logic.R before start_here_ui() is called. Uses shiny tags and base graphics only.
+# Needs portfolio_app.R first (bp_palette(), bp_tones and the CSS variables of bp_theme_head(): the
+# site's tokens, generated from assets/theme/tokens.css) and logic.R before start_here_ui() is
+# called. Uses shiny tags and base graphics only. No color is written here: each level names a
+# site tone, and build_pages.py --check fails on a color literal.
 #
 # Why plain CSS over the precompiled Bootstrap theme, and base graphics: in the browser (webR),
 # a custom bslib theme is compiled with Sass every time the app starts (about 0.6 s on a fast
 # laptop, measured 2026-10-25) and loading ggplot2 takes about 0.65 s more, before any result
-# shows. Bootstrap 5.3 reads its colors from CSS variables, so the site tokens below restyle the
+# shows. Bootstrap 5.3 reads its colors from CSS variables, so the site tokens restyle the
 # precompiled theme at no cost, and the three plots draw in base graphics, which R has loaded
 # already.
 # ---------------------------------------------------------------------------
 
 TM_LEVELS <- c("RED", "AMBER", "watch", "GREEN")     # worst first, as the worklist ranks them
 
-# the four review levels: fg for text and plot marks, bg and line for the chips (WCAG AA or
-# better against the chip and the page surfaces in both modes)
-TM_SEV <- list(
-  light = list(RED = c(fg = "#B42318", bg = "#FDECEA", line = "#EFB1A9"),
-               AMBER = c(fg = "#8A5300", bg = "#FCF1DD", line = "#E6C68A"),
-               watch = c(fg = "#0B4F9C", bg = "#E5EEFA", line = "#A7C3E8"),
-               GREEN = c(fg = "#1D5E35", bg = "#E3F2E8", line = "#9CCBAD")),
-  dark = list(RED = c(fg = "#FF9B8F", bg = "#3A1D1B", line = "#7A3B34"),
-              AMBER = c(fg = "#F3C169", bg = "#33280F", line = "#7A6024"),
-              watch = c(fg = "#A9CCFF", bg = "#1A2B40", line = "#36557D"),
-              GREEN = c(fg = "#93DBAE", bg = "#17301F", line = "#2F6B45")))
+# the site tone of each review level, and of each liver test in the plots
+TM_TONE <- c(RED = "red", AMBER = "amber", watch = "blue", GREEN = "green")
+TM_LAB_TONE <- c(ALT = "blue", AST = "violet", ALP = "neutral", TBL = "orange")
+
+# the four review levels: fg for text, bg and line for the chips, from the tones (build_pages.py
+# checks fg at 4.5:1 or better on the chip and on every page surface, in both themes). Delayed:
+# Shiny sources R/ by itself before app.R runs, so this file can load before portfolio_app.R has
+# defined bp_tones.
+delayedAssign("TM_SEV", lapply(c(light = "light", dark = "dark"), function(m)
+  lapply(TM_TONE, function(t) bp_tones[[m]][[t]][c("fg", "bg", "line")])))
 
 # what each level asks of the reviewer (the Start here card); the rules that give each level
 # come from WORKLIST_RULES in logic.R, so the legend lists every rule that can fire
@@ -41,85 +42,31 @@ tm_level_text <- function(level) {
     paste0(paste(rules, collapse = ", "), "."))
 }
 
-# colors for plots: the site tokens, the level colors and one color per liver test
+# colors for plots: the site tokens, the level fills and one fill per liver test
 tm_palette <- function(dark = FALSE) {
-  t <- portfolio_colors(dark)
-  sev <- vapply(TM_SEV[[if (isTRUE(dark)) "dark" else "light"]], function(s) s[["fg"]], "")
-  lab <- if (isTRUE(dark)) c(ALT = "#7DB5FF", AST = "#C9A8F5", ALP = "#A9B3BD", TBL = "#E0935F")
-         else c(ALT = "#0757BF", AST = "#7A4FB3", ALP = "#5F6B78", TBL = "#B5561F")
-  list(fg = t$text, muted = t$muted, line = t$line, surface = t$surface, accent = t$accent, sev = sev, lab = lab)
+  k <- bp_palette(if (isTRUE(dark)) "dark" else "light")
+  fill <- function(tones) vapply(tones, function(t) k$tone[[t]][["fill"]], "")
+  list(fg = k$text, muted = k$muted, line = k$line_2, surface = k$surface, accent = k$accent,
+       sev = fill(TM_TONE), lab = fill(TM_LAB_TONE))
 }
 
 # ---- page CSS ---------------------------------------------------------------------------------
-.tm_rgb <- function(h) paste(col2rgb(h), collapse = ",")
-
+# The console's names for the site tokens (CSS variables from bp_theme_head()), then its own rules.
 tm_css <- function() {
-  mode_vars <- function(mode) {
-    t <- PORTFOLIO_TOKENS[[mode]]; s <- TM_SEV[[mode]]
-    hover <- if (mode == "dark") "#A9CCFF" else "#05479C"
-    ink <- if (mode == "dark") "#12171D" else "#FFFFFF"
-    sev <- paste(vapply(names(s), function(k) sprintf("--tm-%s:%s;--tm-%s-bg:%s;--tm-%s-line:%s;",
-                                                    k, s[[k]][["fg"]], k, s[[k]][["bg"]], k, s[[k]][["line"]]), ""),
-                 collapse = "")
-    paste0(
-      "--tm-bg:", t[["bg"]], ";--tm-surface:", t[["surface"]], ";--tm-surface2:", t[["surface2"]],
-      ";--tm-text:", t[["text"]], ";--tm-muted:", t[["muted"]], ";--tm-line:", t[["line"]],
-      ";--tm-accent:", t[["accent"]], ";--tm-accent-rgb:", .tm_rgb(t[["accent"]]),
-      ";--tm-accent-hover:", hover, ";--tm-accent-ink:", ink, ";", sev,
-      "--bs-body-bg:", t[["bg"]], ";--bs-body-bg-rgb:", .tm_rgb(t[["bg"]]),
-      ";--bs-body-color:", t[["text"]], ";--bs-body-color-rgb:", .tm_rgb(t[["text"]]),
-      ";--bs-emphasis-color:", t[["text"]], ";--bs-emphasis-color-rgb:", .tm_rgb(t[["text"]]),
-      ";--bs-secondary-color:", t[["muted"]], ";--bs-tertiary-color:", t[["muted"]],
-      ";--bs-border-color:", t[["line"]], ";--bs-border-color-translucent:", t[["line"]],
-      ";--bs-secondary-bg:", t[["surface2"]], ";--bs-tertiary-bg:", t[["surface2"]],
-      ";--bs-primary:", t[["accent"]], ";--bs-primary-rgb:", .tm_rgb(t[["accent"]]),
-      ";--bs-link-color:", t[["accent"]], ";--bs-link-color-rgb:", .tm_rgb(t[["accent"]]),
-      ";--bs-link-hover-color:", hover, ";--bs-link-hover-color-rgb:", .tm_rgb(hover),
-      ";--bs-focus-ring-color:rgba(", .tm_rgb(t[["accent"]]), ",.3);",
-      "--tm-sel:", .tm_rgb(t[["accent"]]), ";--tm-sel-text:", .tm_rgb(ink), ";--tm-ink:", ink, ";")
-  }
+  sev <- paste(vapply(names(TM_TONE), function(l) sprintf("--tm-%s:var(--tone-%s-fg);--tm-%s-bg:var(--tone-%s-bg);--tm-%s-line:var(--tone-%s-line);",
+                                                          l, TM_TONE[[l]], l, TM_TONE[[l]], l, TM_TONE[[l]]), ""), collapse = "")
   paste0(
-    "html:root,html[data-bs-theme=light]{", mode_vars("light"), "--tm-sans:", PORTFOLIO_SANS,
-    ";--tm-mono:", PORTFOLIO_MONO, ";--bs-body-font-family:var(--tm-sans);--bs-font-sans-serif:var(--tm-sans);",
-    "--bs-font-monospace:var(--tm-mono)}\n",
-    "html[data-bs-theme=dark]{", mode_vars("dark"), "}\n", TM_CSS_RULES)
+    "html{--tm-bg:var(--bg);--tm-surface:var(--surface);--tm-surface2:var(--surface-2);--tm-text:var(--text);",
+    "--tm-ink:var(--ink);--tm-muted:var(--muted);--tm-line:var(--line-2);--tm-accent:var(--accent);",
+    "--tm-accent-text:var(--accent-ink);--tm-sans:var(--sans);--tm-mono:var(--mono);", sev, "}\n", TM_CSS_RULES)
 }
 
 TM_CSS_RULES <- "
-body{font-family:var(--tm-sans);background:var(--tm-bg);color:var(--tm-text)}
-.bslib-page-sidebar{--bslib-page-sidebar-title-bg:var(--tm-surface);--bslib-page-sidebar-title-color:var(--tm-text)}
-.bslib-page-sidebar .bslib-page-title{border-bottom:1px solid var(--tm-line)}
 .bslib-page-title{font-size:1.15rem;font-weight:700}
-.bslib-sidebar-layout{--bslib-sidebar-bg:var(--tm-surface);--bslib-sidebar-fg:var(--tm-text);--bslib-sidebar-border:1px solid var(--tm-line)}
-.card{--bs-card-bg:var(--tm-surface);--bs-card-border-color:var(--tm-line);--bs-card-cap-bg:var(--tm-surface)}
-.nav-tabs{--bs-nav-tabs-border-color:var(--tm-line);--bs-nav-tabs-link-active-bg:var(--tm-surface);--bs-nav-tabs-link-active-color:var(--tm-text);
- --bs-nav-tabs-link-active-border-color:var(--tm-line) var(--tm-line) var(--tm-surface);--bs-nav-tabs-link-hover-border-color:var(--tm-line)}
-.nav-link{--bs-nav-link-color:var(--tm-accent);--bs-nav-link-hover-color:var(--tm-accent-hover)}
 .nav-tabs .nav-link{padding:.5rem .7rem;white-space:nowrap}
-.nav-tabs .nav-link.active{font-weight:600}
 @media (max-width:1399.98px){.nav-tabs .nav-link{padding:.45rem .5rem;font-size:.92rem}}
 @media (max-width:575.98px){.nav-tabs .nav-link{padding:.4rem .55rem;font-size:.9rem}}
-.btn-primary{--bs-btn-color:var(--tm-accent-ink);--bs-btn-bg:var(--tm-accent);--bs-btn-border-color:var(--tm-accent);
- --bs-btn-hover-color:var(--tm-accent-ink);--bs-btn-hover-bg:var(--tm-accent-hover);--bs-btn-hover-border-color:var(--tm-accent-hover);
- --bs-btn-active-color:var(--tm-accent-ink);--bs-btn-active-bg:var(--tm-accent-hover);--bs-btn-active-border-color:var(--tm-accent-hover);
- --bs-btn-focus-shadow-rgb:var(--tm-accent-rgb)}
-.btn-outline-primary{--bs-btn-color:var(--tm-accent);--bs-btn-border-color:var(--tm-accent);--bs-btn-hover-color:var(--tm-accent-ink);
- --bs-btn-hover-bg:var(--tm-accent);--bs-btn-hover-border-color:var(--tm-accent);--bs-btn-active-color:var(--tm-accent-ink);
- --bs-btn-active-bg:var(--tm-accent);--bs-btn-active-border-color:var(--tm-accent);--bs-btn-focus-shadow-rgb:var(--tm-accent-rgb)}
-.btn-outline-secondary{--bs-btn-color:var(--tm-text);--bs-btn-border-color:var(--tm-line);--bs-btn-hover-color:var(--tm-text);
- --bs-btn-hover-bg:var(--tm-surface2);--bs-btn-hover-border-color:var(--tm-muted);--bs-btn-active-color:var(--tm-text);
- --bs-btn-active-bg:var(--tm-surface2);--bs-btn-active-border-color:var(--tm-muted);--bs-btn-focus-shadow-rgb:var(--tm-accent-rgb)}
-.form-control,.form-select,.selectize-input,.selectize-control.single .selectize-input{background-color:var(--tm-surface);border-color:var(--tm-line);color:var(--tm-text)}
-.selectize-dropdown,.selectize-dropdown.form-control{background-color:var(--tm-surface);color:var(--tm-text);border-color:var(--tm-line)}
-.selectize-dropdown .active:not(.selected){background:rgba(var(--tm-accent-rgb),.12);color:var(--tm-text)}
-.selectize-dropdown .selected{background:var(--tm-accent);color:var(--tm-accent-ink)}
-.form-control:focus,.form-select:focus,.selectize-input.focus,.form-check-input:focus{border-color:var(--tm-accent);box-shadow:0 0 0 .2rem rgba(var(--tm-accent-rgb),.25)}
-.form-check-input:checked,.shiny-input-container .checkbox input:checked,.shiny-input-container .radio input:checked,
-.shiny-input-container .radio-inline input:checked,.shiny-input-container .checkbox-inline input:checked{background-color:var(--tm-accent);border-color:var(--tm-accent)}
 .form-label,.control-label{font-weight:600;font-size:.9rem}
-.table{--bs-table-bg:transparent;--bs-table-color:var(--tm-text);--bs-table-border-color:var(--tm-line);
- --bs-table-striped-bg:rgba(var(--bs-emphasis-color-rgb),.035);--bs-table-striped-color:var(--tm-text);
- --bs-table-hover-bg:rgba(var(--tm-accent-rgb),.07);--bs-table-hover-color:var(--tm-text)}
 table.dataTable,.shiny-table{font-size:.9rem}
 table.dataTable caption,.dataTables_wrapper caption,.tm-table caption{caption-side:bottom;font-size:.82rem;color:var(--tm-muted);padding:.4rem 0 0}
 table.dataTable thead th,.shiny-table thead th{font-size:.8rem;font-weight:700;color:var(--tm-muted);vertical-align:bottom}
@@ -127,8 +74,6 @@ table.dataTable td.dt-right,table.dataTable th.dt-right,.tm-table .tm-num{text-a
 #worklist table.dataTable tbody tr{cursor:pointer}
 #study_tbl td:first-child,#qtc_tbl td:first-child,#liver_tbl td:first-child,#worklist td:nth-child(2){white-space:nowrap}
 .tm-check{display:block;font-weight:600}.tm-rule{display:block;font-size:.8rem;color:var(--tm-muted);line-height:1.3}
-table.dataTable tbody tr.selected .tm-rule{color:inherit}
-html .table.dataTable{--dt-row-selected:var(--tm-sel);--dt-row-selected-text:var(--tm-sel-text);--dt-row-selected-link:var(--tm-sel-text)}
 .bslib-sidebar-layout>.sidebar hr{margin:.9rem 0 .6rem}.bslib-sidebar-layout>.sidebar h6{font-weight:700;margin-bottom:.4rem}
 .dataTables_wrapper .dataTables_paginate{font-size:.85rem}
 .sev{display:inline-block;font-weight:700;font-size:.78rem;letter-spacing:.02em;line-height:1.3;padding:.08rem .5rem;
@@ -137,7 +82,7 @@ html .table.dataTable{--dt-row-selected:var(--tm-sel);--dt-row-selected-text:var
 .sev-AMBER{color:var(--tm-AMBER);background:var(--tm-AMBER-bg);border-color:var(--tm-AMBER-line)}
 .sev-watch{color:var(--tm-watch);background:var(--tm-watch-bg);border-color:var(--tm-watch-line)}
 .sev-GREEN{color:var(--tm-GREEN);background:var(--tm-GREEN-bg);border-color:var(--tm-GREEN-line)}
-.tm-whatif{display:inline-block;font-size:.72rem;font-weight:700;color:var(--tm-accent);border:1px dashed var(--tm-accent);border-radius:999px;padding:0 .45rem;margin-left:.3rem}
+.tm-whatif{display:inline-block;font-size:.72rem;font-weight:700;color:var(--tm-accent-text);border:1px dashed var(--tm-accent);border-radius:999px;padding:0 .45rem;margin-left:.3rem}
 .tm-kpis-wrap{container-type:inline-size;margin:0 0 .9rem}
 .tm-kpis{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:.5rem}
 .tm-kpi{grid-column:span 3}.tm-kpi.kpi-tier{grid-column:span 4}
@@ -164,12 +109,12 @@ html .table.dataTable{--dt-row-selected:var(--tm-sel);--dt-row-selected-text:var
 .tm-start>summary:focus-visible{outline:3px solid var(--tm-accent);outline-offset:2px;border-radius:.4rem}
 .tm-start .t{font-weight:700;font-size:1rem;order:1}
 .tm-start .s{color:var(--tm-muted);font-size:.88rem;order:2;flex:1 1 14rem;min-width:0}
-.tm-start .tog{order:3;margin-left:auto;font-size:.82rem;font-weight:600;color:var(--tm-accent)}
+.tm-start .tog{order:3;margin-left:auto;font-size:.82rem;font-weight:600;color:var(--tm-accent-text)}
 .tm-start .tog:after{content:'Show'}.tm-start[open] .tog:after{content:'Hide'}
 @media (max-width:575.98px){.tm-start .s{order:4;flex-basis:100%;font-size:.84rem;line-height:1.4}}
 .tm-start-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.2rem 1.3rem;padding:0 .95rem .55rem}
 @media (min-width:1100px){.tm-start-grid{grid-template-columns:minmax(0,.74fr) minmax(0,1.3fr) minmax(0,1.04fr)}}
-.tm-start h3{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--tm-muted);margin:.3rem 0 .3rem}
+.tm-start h3{font:600 .72rem/1.3 var(--tm-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--tm-muted);margin:.3rem 0 .3rem}
 .tm-start p,.tm-start li{font-size:.83rem;line-height:1.38}
 .tm-start p{margin:0 0 .35rem}
 .tm-start ol{margin:0;padding-left:1.15rem}.tm-start ol li{margin:0 0 .25rem}
@@ -182,10 +127,9 @@ html .table.dataTable{--dt-row-selected:var(--tm-sel);--dt-row-selected-text:var
 .tm-status strong{color:var(--tm-text)}
 .tm-status strong,.tm-plot-note strong,.shiny-notification strong{white-space:nowrap}
 .tm-status .btn-link{font-size:inherit;vertical-align:baseline;padding:0;border:0}
-#shiny-notification-panel .shiny-notification{background:var(--tm-surface);color:var(--tm-text);border:1px solid var(--tm-line);
- border-left:4px solid var(--tm-accent);border-radius:.5rem;opacity:1;box-shadow:0 .4rem 1.2rem rgba(0,0,0,.25);font-size:.9rem}
+#shiny-notification-panel .shiny-notification{font-size:.9rem}
 .shiny-notification-close{color:var(--tm-muted)}.shiny-notification-action a{font-weight:600}
-.packet dl{margin:.4rem 0 0}.packet dt{font-weight:700;margin-top:.45rem;font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:var(--tm-muted)}
+.packet dl{margin:.4rem 0 0}.packet dt{font:600 .72rem/1.3 var(--tm-mono);margin-top:.5rem;text-transform:uppercase;letter-spacing:.08em;color:var(--tm-muted)}
 .packet dd{margin:0}
 .packet-head{font-weight:700;font-size:.98rem}
 .packet .note{font-style:italic;margin:.5rem 0 0;padding:.4rem .6rem;border-left:3px solid var(--tm-line);color:var(--tm-muted)}
@@ -203,12 +147,12 @@ table.dataTable td.tm-ref,table.dataTable th.tm-ref{border-left:3px solid var(--
 #ae_tbl td:first-child{min-width:11rem}
 .tm-xscroll{overflow-x:auto;max-width:100%}
 .tm-xhint{display:none;font-size:.8rem;color:var(--tm-muted);margin:.15rem 0 .35rem}
-.tm-xhint:before{content:'\\2194';margin-right:.35rem;color:var(--tm-accent);font-weight:700}
+.tm-xhint:before{content:'\\2194';margin-right:.35rem;color:var(--tm-accent-text);font-weight:700}
 .tm-wide.tm-overflow .tm-xhint{display:block}
-.tm-more-right{-webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 3rem),rgba(0,0,0,.22));mask-image:linear-gradient(90deg,#000 calc(100% - 3rem),rgba(0,0,0,.22))}
-.tm-more-left{-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.22),#000 3rem);mask-image:linear-gradient(90deg,rgba(0,0,0,.22),#000 3rem)}
-.tm-more-left.tm-more-right{-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.22),#000 3rem,#000 calc(100% - 3rem),rgba(0,0,0,.22));
- mask-image:linear-gradient(90deg,rgba(0,0,0,.22),#000 3rem,#000 calc(100% - 3rem),rgba(0,0,0,.22))}
+.tm-more-right{-webkit-mask-image:linear-gradient(90deg,black calc(100% - 3rem),rgba(0,0,0,.22));mask-image:linear-gradient(90deg,black calc(100% - 3rem),rgba(0,0,0,.22))}
+.tm-more-left{-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.22),black 3rem);mask-image:linear-gradient(90deg,rgba(0,0,0,.22),black 3rem)}
+.tm-more-left.tm-more-right{-webkit-mask-image:linear-gradient(90deg,rgba(0,0,0,.22),black 3rem,black calc(100% - 3rem),rgba(0,0,0,.22));
+ mask-image:linear-gradient(90deg,rgba(0,0,0,.22),black 3rem,black calc(100% - 3rem),rgba(0,0,0,.22))}
 .tm-table{width:100%}.tm-table td,.tm-table th{vertical-align:top}
 .tm-stack-only{display:none}
 @media (max-width:575.98px){
@@ -219,7 +163,7 @@ table.dataTable td.tm-ref,table.dataTable th.tm-ref{border-left:3px solid var(--
   border-bottom:1px solid var(--tm-line)}
  #worklist table.dataTable tbody tr>td{display:block;padding:0!important;border:0!important;box-shadow:none!important;background:none!important;min-width:0}
  #worklist table.dataTable tbody tr.odd{background:rgba(var(--bs-emphasis-color-rgb),.035)}
- #worklist table.dataTable tbody tr.selected{background:rgb(var(--tm-sel))}
+ #worklist table.dataTable tbody tr.selected{background:rgb(var(--dt-row-selected));box-shadow:inset 3px 0 0 var(--tm-accent)}
  #worklist table.dataTable tbody tr.selected>td{color:var(--tm-ink)!important}
  #worklist table.dataTable tbody tr.selected .tm-rule{color:inherit}
  #worklist td:nth-child(1){grid-area:tier;color:var(--tm-muted);font-size:.78rem;align-self:center}

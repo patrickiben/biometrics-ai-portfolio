@@ -27,7 +27,8 @@ stopifnot(
   "the header says the data are synthetic, with the snapshot date" =
     grepl("Synthetic data", ui, fixed = TRUE) && grepl("Snapshot 21 Jun 2026", ui, fixed = TRUE),
   "the shared startup card is on the page" = grepl('id="pf-startup"', ui, fixed = TRUE),
-  "light and dark follow the visitor" = grepl("bslib-input-dark-mode", ui, fixed = TRUE)
+  "light and dark follow the site's choice" = grepl('class="bp-theme-input"', ui, fixed = TRUE) &&
+    grepl('class="bp-theme-toggle"', ui, fixed = TRUE) && !grepl("bslib-input-dark-mode", ui, fixed = TRUE)
 )
 
 seed <- e$seed   # app.R's globals are not visible inside testServer, so pass the seed in

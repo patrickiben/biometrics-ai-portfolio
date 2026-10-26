@@ -28,9 +28,10 @@ AS_OF <- lifecycle_as_of(seed)
 MS_ORDER <- c("Protocol", "SAP", "FPFV", "LPLV", "DBL", "TLFs", "CSR")
 STATUS_LABEL <- c(done = "Done", wip = "In progress", risk = "Overdue", todo = "Planned")
 STATUS_SHAPE <- c(done = 16, wip = 18, risk = 17, todo = 1)
-STATUS_COLORS <- list(light = c(done = "#1D7A46", wip = "#0757BF", risk = "#B42318", todo = "#5F6B77"),
-                      dark  = c(done = "#93DBAE", wip = "#7DB5FF", risk = "#FF8A7A", todo = "#A9B3BD"))
-STUDY_LINE <- c(light = "#6B3FA0", dark = "#D3BCF7")
+# the site tone of each milestone status, and of the selected study's line in the query trend
+STATUS_TONE <- c(done = "green", wip = "blue", risk = "red", todo = "neutral")
+STUDY_TONE <- "violet"
+tone_fill <- function(tones, mode) vapply(tones, function(t) bp_tones[[mode]][[t]][["fill"]], "")
 RAG_WORD <- c(red = "At risk", amber = "Watch", green = "On track")
 SEV_WORD <- c(red = "Red", amber = "Amber")
 
@@ -46,52 +47,16 @@ STUDY_CHOICES <- local({
 })
 chip <- function(tone, text, ...) tags$span(class = paste("lc-chip", tone), text, ...)
 
-# ---- styles: the site's tokens plus this app's RAG colors, light and dark ----
-# The site's color tokens (PORTFOLIO_TOKENS in portfolio_app.R, from site.css) go onto Bootstrap's
-# own CSS variables on top of the precompiled Bootstrap 5 theme. portfolio_theme() gives the same
-# look but compiles Bootstrap's Sass when the page is served, which in the browser (webR) adds
-# about 0.9 s to every start; this needs no compiling at all.
-SITE_CSS <- local({
-  L <- PORTFOLIO_TOKENS$light; D <- PORTFOLIO_TOKENS$dark
-  rgb <- function(h) paste(grDevices::col2rgb(h), collapse = ",")
-  vars <- function(k, hover, soft, on_primary) paste0(
-    "--bs-body-bg:", k[["bg"]], ";--bs-body-bg-rgb:", rgb(k[["bg"]]), ";--bs-body-color:", k[["text"]],
-    ";--bs-body-color-rgb:", rgb(k[["text"]]), ";--bs-emphasis-color:", k[["text"]],
-    ";--bs-emphasis-color-rgb:", rgb(k[["text"]]), ";--bs-border-color:", k[["line"]],
-    ";--bs-secondary-color:", k[["muted"]], ";--bs-secondary-color-rgb:", rgb(k[["muted"]]),
-    ";--bs-secondary-bg:", k[["surface2"]], ";--bs-tertiary-bg:", k[["surface2"]],
-    ";--bs-tertiary-bg-rgb:", rgb(k[["surface2"]]), ";--bs-primary:", k[["accent"]],
-    ";--bs-primary-rgb:", rgb(k[["accent"]]), ";--bs-link-color:", k[["accent"]],
-    ";--bs-link-color-rgb:", rgb(k[["accent"]]), ";--bs-link-hover-color:", hover,
-    ";--bs-link-hover-color-rgb:", rgb(hover), ";--bs-primary-text-emphasis:", hover,
-    ";--bs-primary-bg-subtle:", soft, ";--bs-focus-ring-color:rgba(", rgb(k[["accent"]]), ",.3)",
-    ";--lc-surface:", k[["surface"]], ";--lc-on-primary:", on_primary, ";")
-  paste0(
-    ":root,[data-bs-theme=light]{--bs-body-font-family:", PORTFOLIO_SANS, ";--bs-font-sans-serif:", PORTFOLIO_SANS,
-    ";--bs-font-monospace:", PORTFOLIO_MONO, ";", vars(L, "#05469A", "#E7EFFA", "#FFFFFF"), "}\n",
-    "[data-bs-theme=dark]{", vars(D, "#A9CCFF", "#1E2B3B", "#12171D"), "}\n")
-})
-
+# ---- styles: the site's tokens (CSS variables from bp_theme_head() in portfolio_app.R, generated
+# from assets/theme/tokens.css) on the precompiled Bootstrap 5 theme, plus this app's RAG levels as
+# site tones. A custom bslib theme would compile Bootstrap's Sass when the page is served, which in
+# the browser (webR) adds about 0.9 s to every start; this needs no compiling at all.
 LC_CSS <- "
-.card,.bslib-card{--bs-card-bg:var(--lc-surface);--bs-card-cap-bg:transparent;--bs-card-border-color:var(--bs-border-color)}
-.btn-primary{--bs-btn-color:var(--lc-on-primary);--bs-btn-bg:var(--bs-primary);--bs-btn-border-color:var(--bs-primary);
- --bs-btn-hover-color:var(--lc-on-primary);--bs-btn-hover-bg:var(--bs-link-hover-color);--bs-btn-hover-border-color:var(--bs-link-hover-color);
- --bs-btn-active-color:var(--lc-on-primary);--bs-btn-active-bg:var(--bs-link-hover-color);--bs-btn-active-border-color:var(--bs-link-hover-color)}
-.btn-outline-primary{--bs-btn-color:var(--bs-primary);--bs-btn-border-color:var(--bs-primary);--bs-btn-hover-color:var(--lc-on-primary);
- --bs-btn-hover-bg:var(--bs-primary);--bs-btn-hover-border-color:var(--bs-primary);--bs-btn-active-color:var(--lc-on-primary);
- --bs-btn-active-bg:var(--bs-primary);--bs-btn-active-border-color:var(--bs-primary);--bs-btn-focus-shadow-rgb:var(--bs-primary-rgb)}
-.form-select,.form-control{background-color:var(--lc-surface);border-color:var(--bs-border-color);color:var(--bs-body-color)}
-.form-select:focus,.form-control:focus{border-color:var(--bs-primary);box-shadow:0 0 0 .2rem var(--bs-focus-ring-color)}
-.accordion{--bs-accordion-bg:var(--lc-surface);--bs-accordion-border-color:var(--bs-border-color);--bs-accordion-active-color:var(--bs-body-color);
- --bs-accordion-active-bg:var(--lc-surface);--bs-accordion-btn-focus-box-shadow:0 0 0 .2rem var(--bs-focus-ring-color)}
-:root,[data-bs-theme=light]{--lc-red-fg:#A1261B;--lc-red-bg:#FDECEA;--lc-red-line:#E5A39B;--lc-red-tile:#F4AFA6;
- --lc-amb-fg:#704700;--lc-amb-bg:#FDF3D8;--lc-amb-line:#E2C26A;--lc-amb-tile:#F5D88E;
- --lc-grn-fg:#1D5E35;--lc-grn-bg:#E3F2E8;--lc-grn-line:#9CCBAD;--lc-grn-tile:#B4DFC3;
- --lc-tile-text:#18212B;--lc-soft:#E7EFFA;--lc-what:#6B3FA0;--lc-what-bg:#EFE9F8}
-[data-bs-theme=dark]{--lc-red-fg:#FFB4A9;--lc-red-bg:#3A1D1A;--lc-red-line:#7A3A33;--lc-red-tile:#73302A;
- --lc-amb-fg:#F5D27A;--lc-amb-bg:#33280F;--lc-amb-line:#76602A;--lc-amb-tile:#66501A;
- --lc-grn-fg:#93DBAE;--lc-grn-bg:#17301F;--lc-grn-line:#2F6B45;--lc-grn-tile:#245A3A;
- --lc-tile-text:#F2F4F6;--lc-soft:#1E2B3B;--lc-what:#D3BCF7;--lc-what-bg:#2A2140}
+html{--lc-surface:var(--surface);--lc-soft:var(--accent-soft);--lc-tile-text:var(--ink);
+ --lc-red-fg:var(--tone-red-fg);--lc-red-bg:var(--tone-red-bg);--lc-red-line:var(--tone-red-line);--lc-red-tile:var(--tone-red-tile);--lc-red-fill:var(--tone-red-fill);
+ --lc-amb-fg:var(--tone-amber-fg);--lc-amb-bg:var(--tone-amber-bg);--lc-amb-line:var(--tone-amber-line);--lc-amb-tile:var(--tone-amber-tile);--lc-amb-fill:var(--tone-amber-fill);
+ --lc-grn-fg:var(--tone-green-fg);--lc-grn-bg:var(--tone-green-bg);--lc-grn-line:var(--tone-green-line);--lc-grn-tile:var(--tone-green-tile);--lc-grn-fill:var(--tone-green-fill);
+ --lc-what:var(--tone-violet-fg);--lc-what-line:var(--tone-violet-line);--lc-what-bg:var(--tone-violet-bg)}
 body{font-size:.95rem}
 .bslib-page-sidebar>.navbar{border-bottom:1px solid var(--bs-border-color);background:var(--lc-surface)}
 .bslib-sidebar-layout{--_sidebar-bg:var(--lc-surface);--bslib-sidebar-bg:var(--lc-surface)}
@@ -104,8 +69,7 @@ body{font-size:.95rem}
 .lc-chip.red{color:var(--lc-red-fg);background:var(--lc-red-bg);border-color:var(--lc-red-line)}
 .lc-chip.amber{color:var(--lc-amb-fg);background:var(--lc-amb-bg);border-color:var(--lc-amb-line)}
 .lc-chip.green{color:var(--lc-grn-fg);background:var(--lc-grn-bg);border-color:var(--lc-grn-line)}
-.lc-chip.synthetic{color:var(--bs-secondary-color);background:var(--bs-tertiary-bg);border-color:var(--bs-border-color)}
-.lc-chip.whatif{color:var(--lc-what);background:var(--lc-what-bg);border-color:var(--lc-what)}
+.lc-chip.whatif{color:var(--lc-what);background:var(--lc-what-bg);border-color:var(--lc-what-line)}
 .card-header{font-weight:600}
 .lc-sub{display:block;font-weight:400;font-size:.82rem;color:var(--bs-secondary-color)}
 .lc-start .accordion-button{font-weight:700;padding:.65rem 1rem}
@@ -155,7 +119,7 @@ body{font-size:.95rem}
 .lc-bars{display:grid;grid-template-columns:auto 1fr auto;gap:.35rem .6rem;align-items:center;font-size:.88rem;font-variant-numeric:tabular-nums}
 .lc-bar{height:.8rem;background:var(--bs-tertiary-bg);border-radius:999px;overflow:hidden;min-width:3rem}
 .lc-bar>span{display:block;height:100%;background:var(--bs-primary);border-radius:999px}
-.lc-bar>span.red{background:var(--lc-red-fg)}.lc-bar>span.amber{background:var(--lc-amb-fg)}.lc-bar>span.green{background:var(--lc-grn-fg)}
+.lc-bar>span.red{background:var(--lc-red-fill)}.lc-bar>span.amber{background:var(--lc-amb-fill)}.lc-bar>span.green{background:var(--lc-grn-fill)}
 .lc-num{text-align:right;white-space:nowrap}
 .lc-why{grid-column:1/-1;font-size:.78rem;color:var(--bs-secondary-color);margin:-.2rem 0 .25rem}
 .lc-total{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem .6rem;margin-top:.5rem;padding-top:.5rem;border-top:1px solid var(--bs-border-color)}
@@ -190,11 +154,9 @@ body{font-size:.95rem}
 .lc-scroll-wrap.is-clipped .lc-scroll-hint{display:block}
 .lc-side-head{font-weight:700;font-size:.9rem;margin:.25rem 0 .2rem}
 .lc-whatif{font-size:.83rem;line-height:1.4;border-radius:6px;padding:.45rem .6rem;border:1px dashed var(--bs-border-color);color:var(--bs-secondary-color)}
-.lc-whatif.on{border:1px solid var(--lc-what);color:var(--bs-body-color);background:var(--lc-what-bg)}
+.lc-whatif.on{border:1px solid var(--lc-what-line);color:var(--bs-body-color);background:var(--lc-what-bg)}
 .lc-whatif ul{margin:.2rem 0 0;padding-left:1.1rem}
 .bslib-sidebar-layout>.sidebar .shiny-input-container{margin-bottom:.6rem}
-.irs--shiny .irs-bar,.irs--shiny .irs-single,.irs--shiny .irs-from,.irs--shiny .irs-to{background:var(--bs-primary);border-color:var(--bs-primary)}
-[data-bs-theme=dark] .irs--shiny .irs-single,[data-bs-theme=dark] .irs--shiny .irs-from,[data-bs-theme=dark] .irs--shiny .irs-to{color:#12171D}
 .shiny-plot-output img{max-width:100%}
 
 "
@@ -269,11 +231,12 @@ start_here <- accordion(
 ui <- page_sidebar(
   title = div(class = "lc-title",
               tags$h1("Study Lifecycle Monitor"),
-              chip("synthetic", "Synthetic data"),
+              span(class = "bp-chip synthetic", "Synthetic data"),
               span(class = "lc-asof", if (is.na(AS_OF)) "Snapshot date not in the data" else paste("Snapshot", day_fmt(AS_OF))),
-              div(class = "lc-mode", input_dark_mode(id = "dark"))),
+              div(class = "lc-mode", bp_theme_toggle())),
   window_title = "Study Lifecycle Monitor",
-  theme = bs_theme(version = 5),   # precompiled; the site's tokens come from SITE_CSS below
+  theme = bp_theme(),   # precompiled; the site's tokens come from bp_theme_head() (in app_status_ui())
+  lang = "en",
   fillable = FALSE,
   sidebar = sidebar(
     width = 300, id = "controls",   # wide enough for the longest study label in the picker
@@ -297,7 +260,7 @@ ui <- page_sidebar(
       "Screening for operational health, never a reported clinical number.")
   ),
   app_status_ui("the risk scores, the heatmap, the ranked signals and the selected study's detail"),
-  tags$head(tags$style(HTML(SITE_CSS)), tags$style(HTML(LC_CSS)), tags$script(HTML(LC_JS))),
+  tags$head(tags$style(HTML(LC_CSS)), tags$script(HTML(LC_JS))),
   start_here,
   layout_columns(
     col_widths = breakpoints(sm = c(6, 6, 6, 6, 6, 6), lg = c(4, 4, 4, 4, 4, 4)), class = "mb-3",
@@ -347,10 +310,10 @@ ui <- page_sidebar(
 
 plot_theme <- function(dark) {
   pc <- portfolio_colors(dark)
-  theme_minimal(base_size = 13) + theme(
+  bp_ggplot_theme(if (isTRUE(dark)) "dark" else "light", base_size = 13) + theme(
     plot.background = element_rect(fill = "transparent", colour = NA),
     panel.background = element_rect(fill = "transparent", colour = NA),
-    text = element_text(colour = pc$text), axis.text = element_text(colour = pc$muted, size = 11.5),
+    axis.text = element_text(colour = pc$muted, size = 11.5),
     panel.grid = element_line(colour = pc$line, linewidth = 0.4), panel.grid.minor = element_blank(),
     legend.position = "bottom", legend.title = element_blank(), legend.text = element_text(colour = pc$text, size = 11),
     legend.key = element_rect(fill = "transparent", colour = NA), legend.background = element_rect(fill = "transparent", colour = NA),
@@ -359,7 +322,7 @@ plot_theme <- function(dark) {
 
 server <- function(input, output, session) {
   rv <- reactiveValues(studies = seed$studies)
-  dark <- reactive(identical(input$dark, "dark"))
+  dark <- reactive(identical(input$bp_theme, "dark"))
   sel <- reactive({ req(input$study); input$study })
 
   # Keep the what-if sliders in sync with the selected study. The sliders open on the selected
@@ -540,7 +503,7 @@ server <- function(input, output, session) {
       p <- ggplot(m, aes(date, milestone))
       if (!is.na(AS_OF)) p <- p + geom_vline(xintercept = AS_OF, linetype = "dashed", colour = pc$muted, linewidth = 0.5)
       p + geom_point(aes(colour = status, shape = status), size = 3.8, stroke = 1.2, show.legend = TRUE) +
-        scale_colour_manual(values = STATUS_COLORS[[if (d) "dark" else "light"]], labels = STATUS_LABEL, drop = FALSE) +
+        scale_colour_manual(values = tone_fill(STATUS_TONE, if (d) "dark" else "light"), labels = STATUS_LABEL, drop = FALSE) +
         scale_shape_manual(values = STATUS_SHAPE, labels = STATUS_LABEL, drop = FALSE) +
         scale_y_discrete(sec.axis = dup_axis(labels = function(b) unname(day[names(b) %||% as.character(b)]))) +
         scale_x_date(date_labels = "%b %Y", expand = expansion(mult = c(0.06, 0.06)),
@@ -592,7 +555,7 @@ server <- function(input, output, session) {
       one <- qt[qt$study_id == sel(), c("week", "open_queries")]
       lines <- rbind(data.frame(series = "Portfolio", tot), if (nrow(one)) data.frame(series = sel(), one))
       lines$series <- factor(lines$series, levels = c("Portfolio", sel()))
-      cols <- stats::setNames(c(pc$accent, STUDY_LINE[[if (d) "dark" else "light"]]), c("Portfolio", sel()))
+      cols <- stats::setNames(c(pc$accent, tone_fill(STUDY_TONE, if (d) "dark" else "light")), c("Portfolio", sel()))
       ends <- lines[lines$week == last, ]
       # a what-if changes this week's open queries: show where the last point would move
       now <- rv$studies

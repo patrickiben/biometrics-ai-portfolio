@@ -135,9 +135,10 @@ shiny::testServer(normalizePath(app), {
   session$setInputs(tests_rows_selected = which(rv$tests$TestID == "SUP-05"))
   stopifnot("a selected row shows its detail" = has(output$detail, "SUP-05") && has(output$detail, "No defect is logged"))
 
-  # the plot follows the dark-mode switch
+  # the plot follows the site's theme (input$bp_theme, set by bp_theme_head() in the browser)
+  session$setInputs(bp_theme = "light")
   light <- output$plot$src
-  session$setInputs(mode = "dark")
+  session$setInputs(bp_theme = "dark")
   stopifnot("dark plot differs" = !identical(output$plot$src, light))
 
   # reset restores the seed

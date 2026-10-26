@@ -19,7 +19,7 @@ view_env <- function() {
   v
 }
 LAUNCH <- jsonlite::read_json(file.path(APP_DIR, "..", "..", "apps", "trialmon", "launch.json"))
-START <- list(ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1", pid = "CP101-014", mode = "light",
+START <- list(ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1", pid = "CP101-014", bp_theme = "light",
               kri = "SF-RATE", kri_level = "AMBER")
 
 # a click on the eDISH plot at data point (x, y), as the browser sends it (image pixels from the
@@ -233,37 +233,51 @@ test_that("an error in one panel names what failed (guard), and req()/validate()
   expect_s3_class(tryCatch(guard("x", explain_empty(FALSE, "why")), error = function(e) e), "shiny.silent.error")
 })
 
-test_that("the look: site color tokens in light and dark, the precompiled theme, no ggplot2 to load", {
-  css <- view_env()$tm_css()
-  for (tok in c("#F6F7F8", "#FFFFFF", "#18212B", "#0757BF", "#12171D", "#1A2129", "#E6EAEE", "#7DB5FF"))
-    expect_match(css, tok, fixed = TRUE)
-  expect_match(css, "html[data-bs-theme=dark]{", fixed = TRUE)
+test_that("the look: the site's tokens in light and dark, the precompiled theme, no ggplot2 to load", {
+  e <- view_env()
+  css <- e$bp_css
+  for (m in c("light", "dark")) for (k in c("bg", "surface", "ink", "text", "accent"))
+    expect_match(css, e$bp_tokens[[m]][[k]], fixed = TRUE)
+  expect_match(css, "html:not([data-bs-theme=light]){", fixed = TRUE)   # dark unless light is chosen, as on the site
+  expect_match(css, "html[data-bs-theme=light]{", fixed = TRUE)
+  expect_false(grepl("#[0-9A-Fa-f]{3,8}\\b", e$tm_css()))   # the console's own CSS names tokens, never colors
+  expect_match(e$tm_css(), "--tm-RED:var(--tone-red-fg)", fixed = TRUE)
   code <- readLines(file.path(APP_DIR, "app.R"))
-  expect_true(any(grepl("theme = bs_theme(version = 5)", code, fixed = TRUE)))   # no Sass compile in the browser
+  expect_true(any(grepl("theme = bp_theme()", code, fixed = TRUE)))
+  expect_identical(e$bp_theme(), bslib::bs_theme(version = 5))           # no Sass compile in the browser
   expect_false(any(grepl("library(ggplot2)", code, fixed = TRUE)))
+  html <- app_ui_html()$html
+  expect_match(html, 'class="bp-theme-input"', fixed = TRUE)               # input$bp_theme follows the site's choice
+  expect_match(html, 'class="bp-theme-toggle"', fixed = TRUE)
+  expect_false(grepl("bslib-input-dark-mode", html, fixed = TRUE))
 })
 
-test_that("a selected table row keeps readable text in both modes (accent behind, ink on it)", {
+test_that("R/ loads on its own, as Shiny's autoload does before app.R (no helper defined yet)", {
+  env <- new.env(parent = globalenv())
+  expect_no_error(suppressMessages(shiny::loadSupport(APP_DIR, renv = env, globalrenv = NULL)))
+  expect_true(exists("tm_palette", envir = env, inherits = FALSE))
+})
+
+lum <- function(h) { v <- grDevices::col2rgb(h)[, 1] / 255; v <- ifelse(v <= .04045, v / 12.92, ((v + .055) / 1.055)^2.4)
+                     sum(c(.2126, .7152, .0722) * v) }
+ratio <- function(a, b) { l <- sort(c(lum(a), lum(b)), decreasing = TRUE); (l[1] + .05) / (l[2] + .05) }
+
+test_that("a selected table row keeps readable text in both modes (the accent tint behind, ink on it)", {
   e <- view_env()
-  lum <- function(h) { v <- grDevices::col2rgb(h)[, 1] / 255; v <- ifelse(v <= .03928, v / 12.92, ((v + .055) / 1.055)^2.4)
-                       sum(c(.2126, .7152, .0722) * v) }
-  ratio <- function(a, b) { l <- sort(c(lum(a), lum(b)), decreasing = TRUE); (l[1] + .05) / (l[2] + .05) }
-  css <- e$tm_css()
-  expect_match(css, "html .table.dataTable{--dt-row-selected:var(--tm-sel);--dt-row-selected-text:var(--tm-sel-text)", fixed = TRUE)
-  expect_gte(ratio(e$PORTFOLIO_TOKENS$light[["accent"]], "#FFFFFF"), 4.5)
-  expect_gte(ratio(e$PORTFOLIO_TOKENS$dark[["accent"]], "#12171D"), 4.5)
-  expect_match(css, "--tm-sel-text:18,23,29", fixed = TRUE)                    # dark ink on the light dark-mode accent
+  expect_match(e$bp_css, "html .table.dataTable,html table.dataTable{--dt-row-selected:var(--bp-sel-rgb);--dt-row-selected-text:var(--bp-sel-text-rgb)", fixed = TRUE)
+  for (m in c("light", "dark")) {
+    expect_gte(ratio(e$bp_tokens[[m]][["ink"]], e$bp_tones[[m]]$accent[["bg"]]), 4.5)
+    sel <- paste(grDevices::col2rgb(e$bp_tones[[m]]$accent[["bg"]])[, 1], collapse = ",")
+    expect_match(e$bp_css, paste0("--bp-sel-rgb:", sel), fixed = TRUE)
+  }
 })
 
 test_that("level colors meet WCAG AA (4.5:1) on their chips and on the page surfaces, in both modes", {
   e <- view_env()
   expect_length(e$TM_SEV$light, 4); expect_length(e$TM_SEV$dark, 4)
-  lum <- function(h) { v <- grDevices::col2rgb(h)[, 1] / 255; v <- ifelse(v <= .03928, v / 12.92, ((v + .055) / 1.055)^2.4)
-                       sum(c(.2126, .7152, .0722) * v) }
-  ratio <- function(a, b) { l <- sort(c(lum(a), lum(b)), decreasing = TRUE); (l[1] + .05) / (l[2] + .05) }
   for (mode in c("light", "dark")) for (lv in names(e$TM_SEV[[mode]])) {
-    s <- e$TM_SEV[[mode]][[lv]]; t <- e$PORTFOLIO_TOKENS[[mode]]
-    for (bg in c(s[["bg"]], t[["bg"]], t[["surface"]], t[["surface2"]]))
+    s <- e$TM_SEV[[mode]][[lv]]; t <- e$bp_tokens[[mode]]
+    for (bg in c(s[["bg"]], t[["bg"]], t[["surface"]], t[["surface_2"]]))
       expect_gte(ratio(s[["fg"]], bg), 4.5, label = paste(mode, lv, bg))
   }
 })
