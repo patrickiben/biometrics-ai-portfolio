@@ -9,12 +9,16 @@ failing pkstats() helper or %pkstats macro fails every program that relies on it
 number is the gating count. It reads the code and runs nothing. Unit tests:
 validation_harness/checks/tests/test_g2_geo.py.
 
-Which programs. The set is derived from content, so it cannot drift from the library: every .R
-file under the R directory (00_setup_helpers.R excepted; it is checked as the helper) whose code
-calls pkstats(), uses the name geomean or geocv (bare, backticked or quoted), assigns a column
-whose name matches "Geo Mean" or "Geometric Mean" (not "... Ratio") or "Geo CV", takes
-exp(mean(...)) or 10^mean(...), or fits a model (lm, lmer, glmer, lme, gls, glm, aov, nls) whose
-right-hand side names a dose, treatment, period or sequence term.
+Which programs. The set is derived from content: every .R file under the R directory
+(00_setup_helpers.R excepted; it is checked as the helper) whose code calls pkstats(), uses the
+name geomean or geocv (bare, backticked or quoted), assigns a column whose name matches "Geo Mean"
+or "Geometric Mean" (not "... Ratio") or "Geo CV", takes exp(mean(...)) or 10^mean(...), or fits
+a model (lm, lmer, glmer, lme, gls, glm, aov, nls) whose formula is not written in code (it then
+fails), whose right-hand side has a name that contains dose, trt, treat, period, seq or formul (or
+is per or form, or starts with arm), or in a program that reads ADPP (the name adpp in code, or a
+string that is an ADPP file name). The committed floor FLOOR (28) is the size of the set when this file last
+changed: when fewer programs are found, the second number is still FLOOR and each missing program
+counts as failing, so a program that drops out of the set turns G2 red.
 
 R rules. The file is tokenized: comments are dropped and string literals are never read as code
 (a quoted name in name position, or a string inside the brackets of an assignment target, still
@@ -24,11 +28,24 @@ summarise(), transmute() and rename() assign their columns), and across(cols, fn
 *_at(cols, fn), which assign fn to each column cols names. An expression runs to the end of its
 balanced call or statement, across lines. A name joins each set below when any assignment to it,
 anywhere in the file, qualifies (fixed points).
-  - log-derived names: assigned from an expression that calls log(), log10() or log2() (or passes
-    one as a function, as in across(x, log)), uses another log-derived name, or calls a function
-    defined in the file whose body is log-derived. This is transitive and flow-insensitive: one
-    log-derived assignment anywhere in the file is enough. rename(new = old) propagates; in a$b
-    only b counts. The base of the log is kept.
+  - log-derived names: assigned from an expression whose value calls log(), log10() or log2() (or
+    passes one as a function, as in across(x, log)), uses another log-derived name, or calls a
+    function defined in the file whose body is log-derived. This is transitive and
+    flow-insensitive: one log-derived assignment anywhere in the file is enough. rename(new = old)
+    propagates. The base of the log is kept. Only what reaches the value counts:
+      - a column taken by name counts as that column only: d$x, d@x, d[["x"]], d["x"], d[i, "x"]
+        and d[, c("x", "y")] when d is a plain name (d, or adam$adpc), and pull(d, x) and
+        select(d, x) whatever d is; taken from a call (fixef(m)[["day"]],
+        summary(m)$coefficients), the call counts too;
+      - a data-frame function passes on only its data argument (mutate(), transmute(), summarise(),
+        filter(), arrange(), group_by(), group_modify() and the like), joins and binds only their
+        positional arguments, and constructors (tibble(), data.frame()) nothing, because the
+        columns they create are their own assignments. So a data frame that carries a log column
+        is not itself log-derived, and exp(mean(d[["AVAL"]])) or d %>% pull(AVAL) %>% mean() %>%
+        exp() of such a frame fails;
+      - exp(), expm1(), 10^x and 2^x end log-derivation, as does exp passed as a function
+        (sapply(x, exp)): ctr = exp(ln_tr) is not log-derived, so exp(mean(ctr)) fails;
+      - an index ([...]), an if, for or while condition and function formals are not values.
   - log-scale means: mean(), weighted.mean(), colMeans(), rowMeans(), coef(), fixef(), fitted()
     or predict() whose first unnamed argument is log-derived and contains no exp() (indexing after the
     call is allowed), a name assigned that way, or a call of a function defined in the file that
@@ -56,8 +73,8 @@ anywhere in the file, qualifies (fixed points).
     square of a name assigned from sd(L) or sigma(model).
   - a column whose name matches both (Geo Mean (Geo CV%)): every leaf passes one of the two rules.
   - every model fitted has a log-derived response (the formula's left side; a formula held in a
-    name is followed to its assignment; a formula that cannot be found fails; one-sided formulas
-    are skipped).
+    name is followed to its assignment; a formula not written in code, such as as.formula("..."),
+    reformulate() or paste(), fails; one-sided formulas are skipped).
   - the program uses log, log10 or log2, or calls pkstats() and the helper passes.
   - pkstats() in 00_setup_helpers.R: its function body must assign geomean and geocv, each by the
     rules above, so sqrt(exp(sd(log(x))^2) - 1) is accepted.
@@ -90,17 +107,24 @@ read also after `else`, `if ... then`, `else if ... then`, `when (...)` and `oth
 Disclosed limits: log(x + c) counts as log-derived (the shift is not detected). The analysis is
 flow-insensitive and stays within one file (the helper and the macro excepted): a name counts as
 geometric when any one of its assignments, other than NA (R) or missing (SAS) alone, qualifies,
-although every geomean and geocv assignment is checked. Requiring every assignment to qualify
-would flag the library as it stands, where a data frame and one of its columns share a name (rac
-in mad/t_accumulation.R). A formula built from strings fails. Display rows built by row index, or
-by case_when() on a statistic label, are not seen. Plot mappings (aes(), SGPLOT) and the GMR, its
-confidence limits, Rac confidence limits and intra-participant CV columns are not checked.
-Package geometric-mean functions (DescTools::Gmean(), psych::geometric.mean()) and exp() of an
-emmeans column are not recognized and fail, as does an R geocv computed from log10 values. A
-raw-scale model in one of these programs would be flagged even if it were legitimate, and a new
-program that fits a raw-scale model with a dose or treatment term (a PD ANCOVA, say) joins the set
-and fails. SAS macro variables (&x) are never log-derived, a line that begins with `*` is read as
-a comment statement even in the middle of a statement, and PROC SQL is not read.
+although every geomean and geocv assignment is checked; likewise mutate(AVAL = log(AVAL)) makes
+AVAL log-derived everywhere in the file. Requiring every assignment to qualify would flag the
+library as it stands, where a data frame and one of its columns share a name (rac in
+mad/t_accumulation.R). A formula not written in code fails even when it is correct. Models fitted
+with other functions (nlme::nlme(), glmmTMB(), mmrm()) are not seen; a program found only through
+such a model is not in the set, and the floor catches only a drop below 28. An element taken by a
+literal name from a plain name (ci[1, "lower"], or a column of a data frame logged as a whole with
+log(d)) counts as that name only, so it is not log-derived; a data-frame function not listed
+passes on all its arguments; and powers other than 10^ and 2^ (exp(1)^x) do not end
+log-derivation. Display rows built by row index, or by case_when() on a statistic label, are not
+seen. Plot mappings (aes(), SGPLOT) and the GMR, its confidence limits, Rac confidence limits and
+intra-participant CV columns are not checked. Package geometric-mean functions (DescTools::Gmean(),
+psych::geometric.mean()) and exp() of an emmeans column are not recognized and fail, as does an R
+geocv computed from log10 values. A raw-scale model in one of these programs would be flagged even
+if it were legitimate, and a new program that fits a raw-scale model with a dose or treatment term
+(a PD ANCOVA, say) or on ADPP data joins the set and fails. SAS macro variables (&x) are never
+log-derived, a line that begins with `*` is read as a comment statement even in the middle of a
+statement, and PROC SQL is not read.
 """
 import os
 import re
@@ -109,7 +133,16 @@ import sys
 # ----------------------------------------------------------------------------- shared patterns
 GEO_MEAN_COL = re.compile(r'(?i)\bgeo(?:metric)?\.?\s*mean\b(?!\s*ratio)')
 GEO_CV_COL = re.compile(r'(?i)\bgeo(?:metric)?\.?\s*cv\b')
-BEDP_TERM = re.compile(r'(?i)^(?:ln|log)?_?(?:dose\w*|trt\w*|treat\w*|per|period\w*|aperiod\w*|seq|sequence\w*)$')
+# a right-hand-side term that marks a BE or dose-proportionality model (ldose, EXDOSE, log10dose, TRTA,
+# APERIOD, TRTSEQP, formulation, and the bare names per, form and arm)
+BEDP_TERM = re.compile(r'(?i)dose|trt|treat|period|seq|formul|^(?:per|form|arm\w*)$')
+# a string that names the ADPP dataset or its file ("adpp", "/data/adam/adpp.xpt")
+ADPP_FILE = re.compile(r'(?i)(?:^|[/\\])adpp(?:\.\w+)?$')
+# Committed floor: the number of R programs in the set when this file last changed. When fewer are
+# found (a deleted program, or one whose model or statistics the check no longer recognizes), each
+# missing program counts as failing, so G2 turns red; lower it only in the commit that removes a
+# program on purpose.
+FLOOR = 28
 
 # =============================================================================================== R
 NA_LIT = {'NA', 'NA_real_', 'NA_integer_', 'NA_character_'}
@@ -377,12 +410,14 @@ def pick_arg(args, names, pos):
 
 
 class Rec:
-    """one assignment: the names it writes, the value expression (newlines removed) and, for a
-    function definition with a braced body, the body's last statement as the value"""
-    __slots__ = ('targets', 'expr', 'value', 'span', 'ln')
+    """one assignment: the names it writes, the value expression (newlines removed; raw keeps them,
+    so the statements of a braced body can be told apart) and, for a function definition with a
+    braced body, the body's last statement as the value"""
+    __slots__ = ('targets', 'expr', 'raw', 'value', 'span', 'ln')
 
     def __init__(self, targets, expr, span, ln, value=None):
         self.targets = targets
+        self.raw = list(expr)
         self.expr = [t for t in expr if t.k != 'nl']
         self.value = self.expr if value is None else [t for t in value if t.k != 'nl']
         self.span, self.ln = span, ln
@@ -478,7 +513,8 @@ def log_base(s, j):
 
 
 def facts(s):
-    """(refs, calls, log bases) of a token list with newlines removed"""
+    """(refs, calls, log bases) of a token list with newlines removed, every name counted (used for
+    model terms and to see whether exp() appears; log-derivation uses lfacts())"""
     refs, calls, logs, n = set(), set(), set(), len(s)
     for j, t in enumerate(s):
         if t.k != 'name':
@@ -732,13 +768,366 @@ def leaves(s, depth=0):
     return out
 
 
+# ------------------------------------------------------------------ log-derivation (value facts)
+# How the arguments of a data-frame function reach the value it returns, for log-derivation. The
+# columns such a call creates are their own assignments (named arguments, across()), so they never
+# make the data frame itself log-derived.
+#   data: only the data argument (.data, .tbl, _data, data, x or the first positional argument)
+#   cols: pull() and select(): only the columns named (the data argument is dropped)
+#   positional: joins and binds: the positional arguments (by =, suffix =, .id = dropped)
+#   none: constructors: nothing
+FRAME_MODE = dict.fromkeys(
+    ('mutate', 'transmute', 'summarise', 'summarize', 'reframe', 'filter', 'arrange', 'group_by', 'ungroup',
+     'rowwise', 'rename', 'rename_with', 'relocate', 'distinct', 'slice', 'slice_head', 'slice_tail',
+     'slice_min', 'slice_max', 'slice_sample', 'add_column', 'transform', 'within', 'group_modify',
+     'mutate_at', 'mutate_all', 'mutate_if', 'summarise_at', 'summarize_at', 'summarise_all', 'summarize_all',
+     'summarise_if', 'summarize_if', 'transmute_at', 'transmute_all', 'transmute_if', 'count', 'add_count',
+     'tally', 'drop_na', 'fill', 'complete', 'pivot_longer', 'pivot_wider', 'unite', 'separate', 'nest',
+     'unnest', 'as_tibble', 'as.data.frame', 'data.table', 'setDT'), 'data')
+FRAME_MODE.update(dict.fromkeys(('pull', 'select'), 'cols'))
+FRAME_MODE.update(dict.fromkeys(('inner_join', 'left_join', 'right_join', 'full_join', 'semi_join', 'anti_join',
+                                 'bind_rows', 'bind_cols', 'cbind', 'rbind', 'merge'), 'positional'))
+FRAME_MODE.update(dict.fromkeys(('tibble', 'tribble', 'data.frame', 'data_frame', 'expand_grid', 'crossing'),
+                                'none'))
+DATA_ARGS = ('.data', '.tbl', '_data', 'data', 'x', '.df')
+BACK_FUNS = ('exp', 'expm1')
+
+
+class Facts:
+    __slots__ = ('refs', 'calls', 'logs')
+
+    def __init__(self):
+        self.refs, self.calls, self.logs = set(), set(), set()
+
+    def tup(self):
+        return self.refs, self.calls, self.logs
+
+
+def open_of(s, j):
+    """index of the opener that matches the closer s[j]"""
+    d = 0
+    for k in range(j, -1, -1):
+        if s[k].k in CLOSERS:
+            d += 1
+        elif s[k].k in OPENERS:
+            d -= 1
+            if d == 0:
+                return k
+    return 0
+
+
+def strip_top_nl(s):
+    """s without the newlines at bracket depth 0 (newlines inside brackets are kept)"""
+    out, d = [], 0
+    for t in s:
+        if t.k in OPENERS:
+            d += 1
+        elif t.k in CLOSERS:
+            d -= 1
+        elif t.k == 'nl' and d <= 0:
+            continue
+        out.append(t)
+    return out
+
+
+def split_args_raw(s):
+    """split_args() that keeps the newlines inside each argument"""
+    args, cur, j, end = [], [], 1, len(s) - 1
+    while j < end:
+        t = s[j]
+        if t.k == ',':
+            args.append(cur); cur = []; j += 1
+            continue
+        if t.k in OPENERS:
+            k = close_of(s, j)
+            cur.extend(s[j:k + 1]); j = k + 1
+            continue
+        cur.append(t); j += 1
+    args.append(cur)
+    out = []
+    for a in args:
+        b = [x for x in a if x.k != 'nl']
+        if len(b) >= 2 and b[0].k in ('name', 'str') and is_op(b[1], '='):
+            k = a.index(b[1])
+            out.append((b[0].v, a[k + 1:]))
+        elif b:
+            out.append((None, a))
+    return out
+
+
+def ends_open(s, j):
+    """True when a statement whose last token is s[j] continues on the next line"""
+    t = s[j]
+    if t.k == 'op':
+        return t.v in BINARY or (t.v.startswith('%') and len(t.v) > 1)
+    if is_name(t, 'else', 'repeat', 'function'):
+        return True
+    if t.k == ')':
+        o = open_of(s, j)
+        return o > 0 and (is_name(s[o - 1], 'if', 'for', 'while', 'function') or is_op(s[o - 1], '\\'))
+    return False
+
+
+def statements(s):
+    """the statements of the inside of a { } group (split at ; and at newlines that end one)"""
+    out, cur, last, j, n = [], [], None, 0, len(s)
+    while j < n:
+        t = s[j]
+        if t.k == ';':
+            if cur:
+                out.append(cur)
+            cur, last = [], None
+            j += 1
+            continue
+        if t.k == 'nl':
+            k = j
+            while k < n and s[k].k == 'nl':
+                k += 1
+            nxt = s[k] if k < n else None
+            if cur and last is not None and not ends_open(s, last) and not is_name(nxt, 'else'):
+                out.append(cur)
+                cur, last = [], None
+            j = k
+            continue
+        if t.k in OPENERS:
+            e = close_of(s, j)
+            cur.extend(s[j:e + 1])
+            last, j = e, e + 1
+            continue
+        cur.append(t)
+        last, j = j, j + 1
+    if cur:
+        out.append(cur)
+    return out
+
+
+def is_plain(s):
+    """s is a plain reference: a name, or a chain of names joined by $ or @"""
+    if not s or len(s) % 2 == 0 or s[0].k != 'name' or (not s[0].bq and s[0].v in KEYWORDS):
+        return False
+    return all(is_op(s[k], '$', '@') and s[k + 1].k in ('name', 'str') for k in range(1, len(s), 2))
+
+
+def unit_end(s, j):
+    """index just past the primary at s[j] (name or pkg::name) and its $x, @x, [..], [[..]], (..)"""
+    n, k = len(s), j
+    if k + 2 < n and is_op(s[k + 1], '::', ':::') and s[k + 2].k == 'name':
+        k += 2
+    k += 1
+    while k < n:
+        if s[k].k in ('(', '['):
+            k = close_of(s, k) + 1
+        elif is_op(s[k], '$', '@') and k + 1 < n and s[k + 1].k in ('name', 'str'):
+            k += 2
+        else:
+            break
+    return k
+
+
+def literal_cols(inner, double):
+    """the column names a literal index selects ([["x"]], ["x"], [i, "x"], [, c("x", "y")]), else None"""
+    parts, cur, j = [], [], 0
+    inner = [t for t in inner if t.k != 'nl']
+    while j < len(inner):
+        t = inner[j]
+        if t.k == ',':
+            parts.append(cur); cur = []; j += 1
+            continue
+        if t.k in OPENERS:
+            k = close_of(inner, j)
+            cur.extend(inner[j:k + 1]); j = k + 1
+            continue
+        cur.append(t); j += 1
+    parts.append(cur)
+    pos = [p for p in parts if not (len(p) >= 2 and p[0].k == 'name' and is_op(p[1], '='))]
+    if double:
+        p = pos[0] if len(pos) == 1 else None
+    else:
+        p = pos[0] if len(pos) == 1 else pos[1] if len(pos) == 2 else None
+    if p is None:
+        return None
+    if len(p) == 1 and p[0].k == 'str':
+        return {p[0].v}
+    if len(p) > 3 and is_name(p[0], 'c') and p[1].k == '(' and close_of(p, 1) == len(p) - 1:
+        vals = [x for x in p[2:-1] if x.k != ',']
+        if vals and all(x.k == 'str' for x in vals):
+            return {x.v for x in vals}
+    return None
+
+
+def data_arg(args):
+    """index in args of the data argument of a data-frame function"""
+    for k, (nm, _) in enumerate(args):
+        if nm in DATA_ARGS:
+            return k
+    for k, (nm, _) in enumerate(args):
+        if nm is None:
+            return k
+    return None
+
+
+def lf_call(u, fi, acc):
+    """facts of the call u[fi](...) that ends u"""
+    fn = u[fi].v
+    acc.calls.add(fn)
+    if not u[fi].bq and fn in LOGS:
+        acc.logs.add(log_base(u, fi))
+    if fn in BACK_FUNS:
+        return                                   # a back-transform ends log-derivation
+    args = split_args_raw(u[fi + 1:])
+    if any(len(strip_top_nl(a)) == 1 and is_name(strip_top_nl(a)[0], *BACK_FUNS) for _, a in args):
+        return                                   # exp passed as a function: sapply(x, exp)
+    mode = FRAME_MODE.get(fn)
+    if mode == 'none':
+        return
+    if mode in ('data', 'cols'):
+        k = data_arg(args)
+        if mode == 'data':
+            if k is not None:
+                lf_expr(args[k][1], acc)
+            return
+        rest = [a for i, (nm, a) in enumerate(args) if i != k]
+        if not rest and k is not None:
+            lf_expr(args[k][1], acc)
+        for a in rest:
+            b = strip_top_nl(a)
+            if len(b) == 1 and b[0].k in ('name', 'str'):
+                acc.refs.add(b[0].v)
+            else:
+                if k is not None:
+                    lf_expr(args[k][1], acc)
+                lf_expr(a, acc)
+        return
+    for nm, a in args:
+        if mode == 'positional' and nm is not None:
+            continue
+        lf_expr(a, acc)
+
+
+def lf_unit(u, acc):
+    """facts of one primary with its postfix accessors"""
+    if len(u) == 3 and is_op(u[1], '::', ':::'):
+        u = u[2:]
+    if len(u) == 1:
+        t = u[0]
+        if t.k == 'name' and not t.bq and t.v in LOGS:
+            acc.logs.add(LOGS[t.v])               # log passed as a function: across(x, log)
+        elif t.k in ('name', 'str') and (t.bq or t.v not in KEYWORDS):
+            acc.refs.add(t.v)
+        return
+    if len(u) >= 3 and is_op(u[-2], '$', '@') and u[-1].k in ('name', 'str'):
+        base = u[:-2]
+        if not is_plain(base):
+            lf_unit(base, acc)
+        acc.refs.add(u[-1].v)                     # d$x: only the column x
+        return
+    if u[-1].k == ']':
+        o = open_of(u, len(u) - 1)
+        double = o + 1 < len(u) and u[o + 1].k == '[' and close_of(u, o + 1) == len(u) - 2
+        inner = u[o + 2:-2] if double else u[o + 1:-1]
+        base = u[:o]
+        cols = literal_cols(inner, double)
+        if cols is not None:
+            if not is_plain(base):
+                lf_unit(base, acc)
+            acc.refs |= cols                     # d[["x"]], d[, "x"]: only the column x
+            return
+        if base:
+            lf_unit(base, acc)                   # the index selects; it is not a value
+        return
+    if u[-1].k == ')':
+        o = open_of(u, len(u) - 1)
+        head = u[:o]
+        if len(head) == 1 and head[0].k == 'name':
+            lf_call(u, 0, acc)
+        elif len(head) == 3 and head[0].k == 'name' and is_op(head[1], '::', ':::') and head[2].k == 'name':
+            lf_call(u, 2, acc)
+        else:
+            lf_unit(head, acc)
+            for _, a in split_args_raw(u[o:]):
+                lf_expr(a, acc)
+        return
+    for t in u:
+        if t.k == 'name' and (t.bq or t.v not in KEYWORDS):
+            acc.refs.add(t.v)
+
+
+def lf_expr(s, acc, depth=0):
+    """accumulate into acc the names, calls and log bases the value of expression s depends on"""
+    s = strip_top_nl(s)
+    if not s or depth > 60:
+        return
+    d, left, right = 0, None, None
+    for j, t in enumerate(s):
+        if t.k in OPENERS:
+            d += 1
+        elif t.k in CLOSERS:
+            d -= 1
+        elif d == 0 and t.k == 'op':
+            if t.v in ASSIGN_LEFT and left is None:
+                left = j
+            elif t.v in ASSIGN_RIGHT and right is None:
+                right = j
+    if left is not None and (right is None or left < right):
+        return lf_expr(s[left + 1:], acc, depth + 1)       # the value, not the target
+    if right is not None:
+        return lf_expr(s[:right], acc, depth + 1)
+    s = desugar_pipe(s)
+    j, n = 0, len(s)
+    while j < n:
+        t = s[j]
+        if t.k == '(':
+            e = close_of(s, j)
+            lf_expr(s[j + 1:e], acc, depth + 1)
+            j = e + 1
+        elif t.k == '{':
+            e = close_of(s, j)
+            for st in statements(s[j + 1:e]):
+                lf_expr(st, acc, depth + 1)
+            j = e + 1
+        elif t.k == '[':
+            j = close_of(s, j) + 1
+        elif t.k == 'num' and t.v in POW_BASE and j + 1 < n and is_op(s[j + 1], '^', '**'):
+            k = j + 2                                        # 10^x and 2^x end log-derivation
+            while k < n and is_op(s[k], '-', '+'):
+                k += 1
+            j = k + len(operand(s, k))
+        elif is_op(t, '\\') and j + 1 < n and s[j + 1].k == '(':
+            j = close_of(s, j + 1) + 1                       # \(x): the formals are not values
+        elif t.k == 'name':
+            if not t.bq and t.v in ('function', 'if', 'for', 'while') and j + 1 < n and s[j + 1].k == '(':
+                j = close_of(s, j + 1) + 1                   # formals and conditions are not values
+            elif not t.bq and t.v in KEYWORDS:
+                j += 1
+            else:
+                e = unit_end(s, j)
+                lf_unit(s[j:e], acc)
+                j = e
+        else:
+            j += 1
+
+
+def lfacts(s):
+    """(refs, calls, log bases) of the value of s, for log-derivation. Unlike facts(): d$x,
+    d[["x"]], d["x"] and d[i, "x"] of a plain name d, and pull(d, x) and select(d, x) of any d,
+    count only the column x; a data-frame function passes on only its data argument (mutate(), summarise(), filter() and
+    the like), its selected columns (pull(), select()) or its positional arguments (joins, binds),
+    and a constructor (tibble(), data.frame()) nothing, because the columns they create are their
+    own assignments; exp(), expm1(), 10^x and 2^x end log-derivation (a back-transformed value is
+    not log-scale), as does exp passed as a function; an index, an if/while condition and function
+    formals are not values."""
+    acc = Facts()
+    lf_expr(s, acc)
+    return acc.tup()
+
+
 class RCtx:
     """log-derived, log-scale-mean, back-transformed and log-variance names of one R file (fixed
     points; a name joins a set when any assignment to it, anywhere in the file, qualifies)"""
 
     def __init__(self, recs):
         self.recs = recs
-        self.f = [facts(r.expr) for r in recs]
+        self.f = [lfacts(r.raw) for r in recs]
         self.lv = [leaves(r.value) for r in recs]
         self.local = {tg for r in recs if r.expr and (is_name(r.expr[0], 'function') or is_op(r.expr[0], '\\'))
                       for tg in r.targets}
@@ -796,7 +1185,7 @@ class RCtx:
         return ch
 
     def ld(self, base, s):
-        refs, calls, logs = facts(s)
+        refs, calls, logs = lfacts(s)
         names = self.L[base]
         return base in logs or bool(refs & names) or bool(calls & self.local & names)
 
@@ -949,9 +1338,22 @@ class RFile:
                 return True
         return any(GEO_MEAN_COL.search(tg) or GEO_CV_COL.search(tg) for r in self.recs for tg in r.targets)
 
-    def bedp_signal(self):
-        """fits a model whose right-hand side names a dose, treatment, period or sequence term"""
-        return any(lhs is not None and any(BEDP_TERM.match(v) for v in facts(rhs)[0]) for _, lhs, rhs in self.models())
+    def reads_adpp(self):
+        """the code names ADPP: the name adpp (adam$adpp, say) or a string that is an ADPP file name"""
+        return any((t.k == 'name' and t.v.lower() == 'adpp') or (t.k == 'str' and ADPP_FILE.search(t.v))
+                   for t in self.toks)
+
+    def model_signal(self):
+        """fits a model whose formula is not written in code (it then fails), whose right-hand side
+        names a dose, treatment, period, sequence or formulation term, or on ADPP data"""
+        ms = self.models()
+        if not ms:
+            return False
+        if any(lhs is None for _, lhs, _ in ms):
+            return True
+        if any(any(BEDP_TERM.search(v) for v in facts(rhs)[0]) for _, _, rhs in ms):
+            return True
+        return self.reads_adpp()
 
 
 def check_r(rf, helper_ok):
@@ -972,7 +1374,7 @@ def check_r(rf, helper_ok):
     for ln, lhs, _ in rf.models():
         c['model'] += 1
         if lhs is None:
-            prob.append(f'model at line {ln}: formula not found')
+            prob.append(f'model at line {ln}: formula not written in code (one built from strings is not read)')
         elif not x.ld_any(lhs):
             prob.append(f'model at line {ln} has a response that is not log-derived')
     uses_pk = rf.calls('pkstats')
@@ -1368,7 +1770,7 @@ def find_programs(R):
             if f.endswith('.R') and rel != '00_setup_helpers.R':
                 rf = RFile(p)
                 geo = rf.geo_signal()
-                if geo or rf.bedp_signal():
+                if geo or rf.model_signal():
                     out.append((rel, rf, geo))
     return out
 
@@ -1390,19 +1792,28 @@ def run(R, SAS):
             routes[route] += 1
         if rprob or sprob:
             bad.append(f'{rel} (' + '; '.join(rprob + sprob) + ')')
-    n, ok = len(progs), len(progs) - len(bad)
+    found = len(progs)
+    ok = found - len(bad)
+    n = max(found, FLOOR)                  # each program missing below the committed floor fails
+    if found < FLOOR:
+        bad.append(f'the set has {found} programs, {count(FLOOR - found, "fewer", "fewer")} than the committed '
+                   f'floor of {FLOOR}, and each missing one counts as failing')
     helper = 'pkstats() passes the same rules' if helper_ok else 'pkstats() FAILS: ' + '; '.join(helper_prob)
     mac = 'the macro passes the same rules' if macro[0] else 'the macro FAILS: ' + '; '.join(macro[1])
-    ev = (f'{ok} of {n} R programs pass (found by content: they call pkstats(), use geomean or geocv, '
-          f'assign a Geo Mean or Geo CV% column, take exp(mean()) or 10^mean(), or fit a model with a dose, '
-          f'treatment, period or sequence term); comments are ignored and strings are never read as code. '
-          f'R: in {tot["assign"]} geomean/geocv assignments and {tot["col"]} Geo Mean/Geo CV% columns, every '
+    ev = (f'{ok} of {n} R programs pass ({found} found by content, committed floor {FLOOR}: they call '
+          f'pkstats(), use geomean or geocv, assign a Geo Mean or Geo CV% column, take exp(mean()) or '
+          f'10^mean(), or fit a model whose formula is not written in code, whose right-hand side names a '
+          f'dose, treatment, period, sequence or formulation term, or that reads ADPP); comments are ignored '
+          f'and strings are never read as code. R: a name is log-derived when assigned from log() (log10, '
+          f'log2) or a log-derived name, a column taken from a data frame by name (d$x, d[["x"]], pull(d, x)) '
+          f'counts as that column only, and exp() or 10^ ends log-derivation; in {tot["assign"]} geomean/geocv '
+          f'assignments and {tot["col"]} Geo Mean/Geo CV% columns, every '
           f'branch (if/else, ifelse, if_else, coalesce, case_when, pmin, pmax) inside display wrappers such as '
           f'sprintf() and round() is NA, a geometric name or function of the file, or exactly exp() of a '
           f'log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one), for a CV '
           f'exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a natural-log variance (a name assigned '
           f'only NA is not geometric); {tot["model"]} '
-          f'models have a log-derived response; and each program '
+          f'models have a log-derived response (a formula not written in code fails); and each program '
           f'uses log() (or log10/log2) or calls pkstats() ({helper}). SAS twin at the same path: every geomean '
           f'(round() unwrapped) is missing, a geometric name, or exp() of a PROC MEANS mean of a natural-log '
           f'variable (10** for log10), every geocv missing, a geometric-CV name or [100*]sqrt(exp(V)-1) with V '

@@ -6,15 +6,20 @@ one change in that copy (exact text that must occur exactly once), runs the chec
 run_harness.sh does (python3 g2_geo.py <R dir> <SAS dir>), restores the file and asserts:
   - the unmodified libraries pass every program;
   - every planted defect turns G2 red and names the program it is in;
-  - every legitimate variant stays green.
-The defect cases are the ones found in the three 2026-10-26 reviews of the per-program G2 (R01
+  - every legitimate variant stays green;
+  - the committed floor equals the program set, and a set below it turns G2 red.
+The defect cases are the ones found in the four 2026-10-26 reviews of the per-program G2 (R01
 to R18, S01 to S05, U01 to U05; then N01 to N08, N12 and N13, with N09, N18, N19, N27 and N28 from
 the same probe; then E01 to E03 and the SAS missing-value cases, where an assignment of NA or `.`
-alone made the arithmetic mean or CV count as geometric), registry defect D04, a pkstats() helper
-and a %pkstats macro without logs, and logs that appear only in comments or string literals. The
-legitimate variants include P01 to P09 and L01, L02, L04 to L09 from the reviews, and names that
-have an NA shell row and a geometric assignment. The known limit (log(x + c) counts as log-scale)
-is pinned as a passing case so the docs and the code cannot drift apart.
+alone made the arithmetic mean or CV count as geometric; then NE2, NE2b, ND4 to ND6 and ND6b,
+where a data frame with a log column or a back-transformed value counted as log-derived, and ND1
+to ND3 and NF1, where a program found only by its model left the set or a formula built from a
+string went unread), registry defect D04, a pkstats() helper and a %pkstats macro without logs,
+and logs that appear only in comments or string literals. The legitimate variants include P01 to
+P09 and L01, L02, L04 to L09 from the reviews, ND2b, names that have an NA shell row and a
+geometric assignment, and pull() or [[ ]] of a log column. Two disclosed limits are pinned so the
+docs and the code cannot drift apart: log(x + c) counts as log-scale (passes), and a correct
+formula built from a string (ND1c) fails.
 
 Run: python3 validation_harness/checks/tests/test_g2_geo.py -v
 """
@@ -70,6 +75,26 @@ SHELL = ('empty_cont <- tibble(n = 0L, mean = NA_real_, sd = NA_real_, cv = NA_r
          'geocv = NA_real_)\n')
 CXP_TMAX = '## --- Tmax: Median (Min, Max) ONLY'
 MACRO_USER = 'crossover/t_ada_impact_pk.R'
+# mad/t_accumulation.R: the trough data frame carries the log column ln_tr; KEEP_AVAL keeps raw AVAL in it
+ACC_TROUGH = 'day = ADY, ln_tr = log(AVAL))'
+KEEP_AVAL = (ACC, ACC_TROUGH, 'day = ADY, AVAL, ln_tr = log(AVAL))')
+ACC_GM = 'geomean  = exp(mean(ln_tr)),'
+ACC_MODEL = '## --- OPTIONAL log-linear mixed model'
+BE = R + '/crossover/t_be_anova.R'
+BE_FIT = 'lmer(lnval ~ seq + per + trt + (1 | subj), data = d)'
+BE_RUN = 'be <- map_dfr('
+BE_TAB = '`Intra-participant CV%` = intra_cv)'
+DP = R + '/sad/t_dose_proportionality.R'
+# sad/t_dose_proportionality.R with its log dose renamed ldose, which the old term pattern did not match
+LDOSE = [(DP, 'lndose = log(dose))', 'ldose = log(dose))'),
+         (DP, 'confint(m, "lndose", level = 0.90)', 'confint(m, "ldose", level = 0.90)'),
+         (DP, 'coef(m)[["lndose"]]', 'coef(m)[["ldose"]]')]
+FORMULA_TEXT = 'formula not written in code'
+
+
+def overall(expr):
+    """an extra Overall Trough Geo Mean column in mad/t_accumulation.R whose value is expr"""
+    return (ACC, ACC_MODEL, f'overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", {expr}))\n{ACC_MODEL}')
 
 
 def d04():
@@ -279,6 +304,59 @@ DEFECTS = {
     'E08 SAS mean = round(., 0.01) for empty groups, then geomean = mean': (
         [(CXP_SAS, '  ' + SAS_GM, '  if n=0 then mean = round(., 0.01);\n  geomean = mean;')],
         'crossover/t_pk_param_summary.R', 'SAS geomean = mean'),
+    # fourth review, 2026-10-26: a data frame with a log column, or a back-transformed value, still
+    # counted as log-derived, so exp(mean(<raw values>)) passed
+    'NE2 pull() of raw AVAL from a data frame that carries a log column, piped to mean() and exp()': (
+        [KEEP_AVAL, overall('trough %>% pull(AVAL) %>% mean() %>% exp()')], 'mad/t_accumulation.R',
+        '"Overall Trough Geo Mean"'),
+    'NE2b exp(mean(trough[["AVAL"]])) from that data frame': (
+        [KEEP_AVAL, overall('exp(mean(trough[["AVAL"]]))')], 'mad/t_accumulation.R', '"Overall Trough Geo Mean"'),
+    'NE2c exp(mean(trough$AVAL)) from that data frame (control)': (
+        [KEEP_AVAL, overall('exp(mean(trough$AVAL))')], 'mad/t_accumulation.R', '"Overall Trough Geo Mean"'),
+    'exp(mean(trough[, "AVAL"])) from that data frame': (
+        [KEEP_AVAL, overall('exp(mean(trough[, "AVAL"]))')], 'mad/t_accumulation.R', '"Overall Trough Geo Mean"'),
+    'select(trough, AVAL) unlisted, then mean() and exp()': (
+        [KEEP_AVAL, overall('exp(mean(unlist(select(trough, AVAL))))')], 'mad/t_accumulation.R',
+        '"Overall Trough Geo Mean"'),
+    'ND6 geomean = exp(mean(trough[["day"]])), a raw column of that data frame': (
+        [(ACC, ACC_GM, 'geomean  = exp(mean(trough[["day"]])),')], 'mad/t_accumulation.R', 'geomean at line'),
+    'ND6b base-R subset exp(mean(pp[pp$AVAL > 0, "AVAL"])) of a data frame that carries lnval': (
+        [(BE, BE_RUN, 'gm_all <- exp(mean(pp[pp$AVAL > 0, "AVAL"]))\n' + BE_RUN),
+         (BE, BE_TAB, '`Intra-participant CV%` = intra_cv, `Geo Mean (all)` = sprintf("%.2f", gm_all))')],
+        'crossover/t_be_anova.R', '"Geo Mean (all)"'),
+    'ND5 trough back-transformed per record (ctr = exp(ln_tr)), then exp(mean(ctr))': (
+        [(ACC, ACC_TROUGH, 'day = ADY, ln_tr = log(AVAL), ctr = exp(ln_tr))'),
+         (ACC, ACC_GM, 'geomean  = exp(mean(ctr)),')], 'mad/t_accumulation.R', 'geomean at line'),
+    'exp passed as a function: ctr = sapply(ln_tr, exp), then exp(mean(ctr))': (
+        [(ACC, ACC_TROUGH, 'day = ADY, ln_tr = log(AVAL), ctr = sapply(ln_tr, exp))'),
+         (ACC, ACC_GM, 'geomean  = exp(mean(ctr)),')], 'mad/t_accumulation.R', 'geomean at line'),
+    'ND4 ln_ratio = exp(ln_dN - ln_d1), so Rac = exp(mean(raw ratio))': (
+        [(ACC, 'mutate(ln_ratio = ln_dN - ln_d1)', 'mutate(ln_ratio = exp(ln_dN - ln_d1))')], 'mad/t_accumulation.R',
+        '"Rac (Geo Mean)"'),
+    # fourth review: a program found only by its model left the set when its formula was built from a
+    # string or no right-hand-side name matched the dose, treatment, period or sequence pattern
+    'ND1 BE model formula built from a string, raw AVAL response': (
+        [(BE, BE_FIT, 'lmer(as.formula("AVAL ~ seq + per + trt + (1 | subj)"), data = d)')],
+        'crossover/t_be_anova.R', FORMULA_TEXT),
+    'ND1b BE model formula from reformulate(..., response = "AVAL")': (
+        [(BE, BE_FIT, 'lmer(reformulate(c("seq", "per", "trt", "(1 | subj)"), response = "AVAL"), data = d)')],
+        'crossover/t_be_anova.R', FORMULA_TEXT),
+    'ND2 log dose renamed ldose and the dose-proportionality model fitted on raw AVAL': (
+        LDOSE + [(DP, 'm  <- lm(lnval ~ lndose, data = d)', 'm  <- lm(AVAL ~ ldose, data = d)')],
+        'sad/t_dose_proportionality.R', 'not log-derived'),
+    'ND3 BE model on raw AVAL with terms named sq, pd and form': (
+        [(BE, BE_FIT, 'lmer(AVAL ~ sq + pd + form + (1 | subj), data = d)')], 'crossover/t_be_anova.R',
+        'not log-derived'),
+    'NF1 string formula in a program found by its geometric statistics': (
+        [(ACC, 'lmer(ln_tr ~ day + (1 | subj), data = d)', 'lmer(as.formula("ln_tr ~ day + (1 | subj)"), data = d)')],
+        'mad/t_accumulation.R', FORMULA_TEXT),
+}
+
+# disclosed limits that turn G2 red although the code is correct: id -> (edits, program, text)
+LIMITS_RED = {
+    'ND1c a correct log-response formula built from a string fails (disclosed)': (
+        [(BE, BE_FIT, 'lmer(as.formula("lnval ~ seq + per + trt + (1 | subj)"), data = d)')],
+        'crossover/t_be_anova.R', FORMULA_TEXT),
 }
 
 VARIANTS = {
@@ -347,6 +425,16 @@ VARIANTS = {
         (CXP_SAS, 'if AVAL>0 then logv = log(AVAL);', 'if AVAL>0 then logv = log10(AVAL);'),
         (CXP_SAS, SAS_GM, 'geomean = 10**gmean_log;'),
         (CXP_SAS, SAS_CV, 'geocv   = 100*sqrt(exp((log(10)*gsd_log)**2)-1);')],
+    'pull() of the log column, piped to mean() and exp()': [overall('trough %>% pull(ln_tr) %>% mean() %>% exp()')],
+    'exp(mean(trough[["ln_tr"]])) of the log column': [overall('exp(mean(trough[["ln_tr"]]))')],
+    'exp(mean(trough[, "ln_tr"])) of the log column': [overall('exp(mean(trough[, "ln_tr"]))')],
+    'ND2b log dose renamed ldose (the program stays in the set and passes)': LDOSE + [
+        (DP, 'm  <- lm(lnval ~ lndose, data = d)', 'm  <- lm(lnval ~ ldose, data = d)')],
+    'BE model terms renamed sq, pd and form, log response (stays in the set: it reads ADPP)': [
+        (BE, BE_FIT, 'lmer(lnval ~ sq + pd + form + (1 | subj), data = d)')],
+    'BE model formula held in a name': [
+        (BE, BE_FIT, 'lmer(f_be, data = d)'),
+        (BE, 'be_one <- function(param) {', 'f_be <- lnval ~ seq + per + trt + (1 | subj)\nbe_one <- function(param) {')],
 }
 
 
@@ -434,6 +522,51 @@ class G2GeoTest(unittest.TestCase):
                 self.assertIn(prog, failing, ev)
                 if text:
                     self.assertIn(text, ev)
+
+    def test_disclosed_limits_that_fail(self):
+        for name, (edits, prog, text) in LIMITS_RED.items():
+            with self.subTest(name):
+                ok, n, ev = self.planted(edits)
+                self.assertEqual(n, len(EXPECTED), ev)
+                self.assertLess(ok, n, ev)
+                self.assertIn(prog, ev.split('; failing: ', 1)[1], ev)
+                self.assertIn(text, ev)
+
+    def test_floor_matches_the_program_set(self):
+        self.assertEqual(load_g2().FLOOR, len(EXPECTED))
+
+    def test_set_below_the_floor_fails(self):
+        """a program that leaves the set (here deleted with its twin) counts as failing"""
+        moved = []
+        try:
+            for d, ext in ((R, '.R'), (SAS, '.sas')):
+                p = os.path.join(self.tmp, d, 'crossover', 't_be_anova' + ext)
+                os.rename(p, p + '.off')
+                moved.append(p)
+            ok, n, ev = self.run_check()
+            self.assertEqual((ok, n), (len(EXPECTED) - 1, len(EXPECTED)), ev)
+            self.assertIn(f'{len(EXPECTED) - 1} found by content', ev)
+            self.assertIn('committed floor', ev.split('; failing: ', 1)[1])
+        finally:
+            for p in moved:
+                os.rename(p + '.off', p)
+
+    def test_model_program_with_unreadable_formula_joins_the_set(self):
+        """a new program whose only model has a formula built from a string is checked and fails"""
+        p = os.path.join(self.tmp, R, 'sad', 't_new_model.R')
+        q = os.path.join(self.tmp, SAS, 'sad', 't_new_model.sas')
+        try:
+            with open(p, 'w', encoding='utf-8') as fh:
+                fh.write('m <- lm(as.formula(paste("AVAL", "~ x")), data = d)\n')
+            with open(q, 'w', encoding='utf-8') as fh:
+                fh.write('proc mixed data=d; model logv = x; run;\n')
+            ok, n, ev = self.run_check()
+            self.assertEqual((ok, n), (len(EXPECTED), len(EXPECTED) + 1), ev)
+            self.assertIn('sad/t_new_model.R (model at line 1: ' + FORMULA_TEXT, ev)
+        finally:
+            for f in (p, q):
+                if os.path.exists(f):
+                    os.remove(f)
 
     def test_legitimate_variants_pass(self):
         for name, edits in VARIANTS.items():

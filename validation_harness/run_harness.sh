@@ -36,8 +36,13 @@ add "G1 Reproducibility & environment" "the sandbox's eight committed output fil
 # Log-scale geometric statistics, program by program (checks/g2_geo.py). Until 2026-10-26 this was
 # a repo-wide grep that one file anywhere could satisfy. The R programs are found by content
 # (pkstats(), geomean or geocv, a Geo Mean or Geo CV% column, exp(mean()) or 10^mean(), or a model
-# with a dose, treatment, period or sequence term). Comments are ignored and strings are never read
-# as code. Display wrappers (sprintf(), round(), format(), ...) are unwrapped and every branch of
+# whose formula is not written in code, whose right-hand side names a dose, treatment, period,
+# sequence or formulation term, or that is fitted in a program reading ADPP), with a committed floor
+# of 28: when fewer are found, each missing program counts as failing. Comments are ignored and
+# strings are never read as code. A name is log-derived when its value comes from log() or another
+# log-derived name; a column taken from a data frame by name counts as that column only, a data
+# frame that carries a log column is not itself log-derived, and exp() or 10^ ends log-derivation.
+# Display wrappers (sprintf(), round(), format(), ...) are unwrapped and every branch of
 # if/else, ifelse, if_else, coalesce, case_when, pmin and pmax is checked on its own: each branch of
 # every geomean and Geo Mean column must be NA, a geometric name or function of the file, or exactly
 # exp() of a log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one),
@@ -45,7 +50,8 @@ add "G1 Reproducibility & environment" "the sandbox's eight committed output fil
 # be NA, a geometric-CV name or function, or exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a
 # natural-log variance. NA counts only as a branch of the column or statistic being checked: a name
 # assigned only NA (an empty-data row, say) is not a geometric name. Every model response
-# must be log-derived, and each program must use log() or pkstats(), whose body is held to the same
+# must be log-derived (a formula not written in code fails), and each program must use log() or
+# pkstats(), whose body is held to the same
 # rules. Each SAS twin at the same path (assignments read also after else, when or otherwise, and
 # round() unwrapped) must assign geomean only as missing, a geometric name, or exp() of a PROC MEANS
 # mean of a natural-log variable (10** for log10), geocv only as missing, a geometric-CV name or
