@@ -302,8 +302,8 @@ html:not(.js) .theme-toggle { display: none; }
       <thead><tr><th scope="col">ID</th><th scope="col">Planted defect</th><th scope="col">Where</th><th scope="col">Predicted</th><th scope="col">Result</th><th scope="col">Caught by</th></tr></thead>
       <tbody id="teeth-rows"><tr><td colspan="6">Run <code>bash validation_harness/teeth/run_teeth.sh</code>.</td></tr></tbody>
     </table></div>
-    <p><b>Two registry versions.</b> Registry v1 (17 defects, D00 to D16) was frozen and committed before the first run, and all 17 outcomes matched its predictions (rows kept in <a href="teeth/results/teeth_2026-10-25_registry-v1.csv">teeth_2026-10-25_registry-v1.csv</a>). A review probe then changed the convention grid's lower window bound from <code>&gt;=</code> to <code>&gt;</code>, so that total bilirubin on the same day as the aminotransferase draw no longer counted. No test failed and no output changed on the shipped data, so the runner filed it Equivalent: no planted case or study participant has its only qualifying TBL on that day. A same-day known-answer test was added, and registry v2 (18 defects) adds the change as D17, frozen before the second run. D17's prediction was written after the test that catches it, so its catch shows the gap is closed, not that the tests were well designed. Registry v2 also corrects one sentence of D04's rationale; no v1 prediction changed.</p>
-    <p><b>What the 2026-10-25 run on registry v2 shows.</b> G1 to G8 caught none of the seven numeric and counting defects (D05 to D11); only the separately written, same-author recomputation (G9) did. D04 survived: G2 then counted files, not programs, and passed while the log-scale pattern appeared in any file under <code>r_tlf_pseudocode</code>, documentation included, so it would have passed even if no R program used the log scale; nothing runs the TLF libraries on data. (G2 has since been changed to check, program by program, the R programs that compute geometric statistics or fit a BE or dose-proportionality model, found by content (28 today, with a committed floor of 28, so a program that leaves the set turns G2 red), and each one's SAS twin: in every branch, a geometric mean must be missing or exactly <code>exp()</code> of a log-scale mean (<code>10^</code> in R or <code>10**</code> in SAS for <code>log10</code> logs), directly or through a name assigned that way, a geometric CV must come from a log-scale variance in the same way, and model responses must be log-derived, so a formula built from a string fails. A name assigned only a missing value is not a geometric name; in R a data frame that carries a log column is not itself log-scale, and a value passed through <code>exp()</code> is not log-scale either. Its unit tests catch D04, which will be re-scored in the next run under a new registry version frozen before it.) D01 was stopped by the generator's own consistency assertion before G3 could see it. The TRIALMON defects (D12 to D14, D17) were caught only by TRIALMON's tests, which <code>run_harness.sh</code> does not run. All 18 outcomes matched the predictions registered in advance, by this rule: same class, and every predicted catcher among the layers that caught it. More catchers than predicted still match: D12 and D13 were predicted to fail two TRIALMON test files and failed all four. The predictions came from the same author reading the gate code, so the match is not an independent test.</p>
+    <p><b>Registry versions.</b> Registry v1 (17 defects, D00 to D16) was frozen and committed before the first run, and all 17 outcomes matched its predictions (rows kept in <a href="teeth/results/teeth_2026-10-25_registry-v1.csv">teeth_2026-10-25_registry-v1.csv</a>). A review probe then changed the convention grid's lower window bound from <code>&gt;=</code> to <code>&gt;</code>, so that total bilirubin on the same day as the aminotransferase draw no longer counted. No test failed and no output changed on the shipped data, so the runner filed it Equivalent: no planted case or study participant has its only qualifying TBL on that day. A same-day known-answer test was added, and registry v2 (18 defects) adds the change as D17, frozen before the second run. D17's prediction was written after the test that catches it, so its catch shows the gap is closed, not that the tests were well designed. Registry v2 also corrects one sentence of D04's rationale; no v1 prediction changed. Registry v3 changes only D04's prediction, from Survived to caught by G2, after G2 became a per-program check; it was frozen in its own commit before the third run.</p>
+    <p><b>What the 2026-10-25 run on registry v2 shows.</b> G1 to G8 caught none of the seven numeric and counting defects (D05 to D11); only the separately written, same-author recomputation (G9) did. D04 survived: G2 then counted files, not programs, and passed while the log-scale pattern appeared in any file under <code>r_tlf_pseudocode</code>, documentation included, so it would have passed even if no R program used the log scale; nothing runs the TLF libraries on data. (G2 has since been changed to check, program by program, the R programs that compute geometric statistics or fit a BE or dose-proportionality model, found by content (28 today, with a committed floor of 28, so a program that leaves the set turns G2 red), and each one's SAS twin: in every branch, a geometric mean must be missing or exactly <code>exp()</code> of a log-scale mean (<code>10^</code> in R or <code>10**</code> in SAS for <code>log10</code> logs), directly or through a name assigned that way, a geometric CV must come from a log-scale variance in the same way, and model responses must be log-derived, so a formula built from a string fails. A name assigned only a missing value is not a geometric name; in R a data frame that carries a log column is not itself log-scale, and a value passed through <code>exp()</code> is not log-scale either. Its unit tests catch D04, and the 2026-10-26 run on registry v3 caught D04 by G2: 15 caught, 0 survived, 1 equivalent, 2 not applicable, 18 of 18 as predicted, with every other outcome unchanged.) D01 was stopped by the generator's own consistency assertion before G3 could see it. The TRIALMON defects (D12 to D14, D17) were caught only by TRIALMON's tests, which <code>run_harness.sh</code> does not run. All 18 outcomes matched the predictions registered in advance, by this rule: same class, and every predicted catcher among the layers that caught it. More catchers than predicted still match: D12 and D13 were predicted to fail two TRIALMON test files and failed all four. The predictions came from the same author reading the gate code, so the match is not an independent test.</p>
     <p class="small">Registry: <a href="teeth/defects.csv">teeth/defects.csv</a> (file, exact text replaced, replacement, predicted catcher and rationale per defect), frozen by its SHA-256 in <a href="teeth/defects.sha256">teeth/defects.sha256</a> before each run (v1 <code>6693bc70198f6a68c49ce9eee80f9dc053dec88ba07fa78f407703fd1cfa4e62</code>; v2 <code>e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3</code>); the runner refuses an edited registry. Runner: <a href="teeth/run_teeth.sh">teeth/run_teeth.sh</a> with <a href="teeth/apply_defect.py">teeth/apply_defect.py</a>. Results: <code>teeth/results/summary.json</code> and the dated CSV beside it. G10 turns &ldquo;stale&rdquo; when the registry or any gate script changes after the run. Layers: G1 to G9 and the module tests (TRIALMON testthat files, the UAT logic test); &ldquo;driver error&rdquo; means <code>run_lifecycle.R</code> stopped with an error, and &ldquo;generator error&rdquo; that <code>simulate_study()</code> itself did.</p>
     <div class="principle"><b>Tools built:</b> QC-process engineering adapted from the teeth check and method-invariance grid in my consilience-engine software. It measures the harness itself and is not a statistical method. The Hy's Law grid in the TRIALMON console is a structured sensitivity analysis of SAP conventions. Synthetic data; SAS not executed.<br><br>
     <b>Prior art first.</b> Mutation testing (DeMillo, Lipton and Sayward, &ldquo;Hints on test data selection,&rdquo; <em>Computer</em> 11(4):34&ndash;41, 1978) and error seeding (Mills, &ldquo;On the Statistical Validation of Computer Programs,&rdquo; IBM Federal Systems Division, 1972) plant known faults to measure a test suite; the R package muttest (0.3.0, CRAN, July 2026) does this for R code. Zheng (JSM Proceedings 2019) models the errors that independent dual programming misses with a Poisson process, a model rather than an experiment. Two PharmaSUG papers by Sunil Gupta and Tom&aacute;s Sabat Stofsel ask how clinical data validation should be done: &ldquo;Does SDTM Validation Really Require Double Programming?&rdquo; (PharmaSUG 2025, MM-227) weighs technology-based alternatives to double programming and sponsor oversight of CRO deliverables, and &ldquo;Ready for Next Level SDTMs and ADaMs Compliance with End-to-End Processing?&rdquo; (PharmaSUG 2026, DS-111) describes metadata-driven compliance checking. Neither abstract describes planting defects to measure what a QC process catches. The grid follows multiverse analysis (Steegen et al., <em>Perspectives on Psychological Science</em> 11(5):702&ndash;712, 2016) and specification curves (Simonsohn, Simmons and Nelson, <em>Nature Human Behaviour</em> 4:1208&ndash;1214, 2020), in the spirit of ICH E9(R1) sensitivity analyses and FDA's July 2009 DILI guidance. <b>What is new here</b> is no new statistics: it is measuring which defects this clinical QC harness catches against a list registered before the run (a literature search for this build found no published example, which does not show there is none), and making each potential Hy's Law flag's dependence on SAP conventions explicit.<br><br>
@@ -320,7 +320,7 @@ html:not(.js) .theme-toggle { display: none; }
 
 <script id="ledger" type="application/json">
 {
- "generated": "2026-10-25 19:16 EDT",
+ "generated": "2026-10-26 08:54 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "green": 8,
  "manual": 1,
@@ -331,14 +331,14 @@ html:not(.js) .theme-toggle { display: none; }
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "520 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "293 R files parse (0 fail; every .R file in the repository, each counted once, hidden directories included, .git excluded); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
    "gate": "G2 PK and count convention scans",
    "guards": "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)",
    "status": "green",
-   "evidence": "static scans: the log-scale geometric-mean pattern appears in 14 files under r_tlf_pseudocode (programs, helpers and documentation alike; the scan needs only one, so it would pass even if no PK program used it); distinct-participant counting in 164 programs; drafter number-validation self-test present (5)",
+   "evidence": "per-program scans: 28 of 28 R programs pass (28 found by content, committed floor 28: they call pkstats(), use geomean or geocv, assign a Geo Mean or Geo CV% column, take exp(mean()) or 10^mean(), or fit a model whose formula is not written in code, whose right-hand side names a dose, treatment, period, sequence or formulation term, or that reads ADPP); comments are ignored and strings are never read as code. R: a name is log-derived when assigned from log() (log10, log2) or a log-derived name, a column taken from a data frame by name (d$x, d[[\"x\"]], pull(d, x)) counts as that column only, and exp() or 10^ ends log-derivation; in 8 geomean/geocv assignments and 37 Geo Mean/Geo CV% columns, every branch (if/else, ifelse, if_else, coalesce, case_when, pmin, pmax) inside display wrappers such as sprintf() and round() is NA, a geometric name or function of the file, or exactly exp() of a log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one), for a CV exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a natural-log variance (a name assigned only NA is not geometric); 8 models have a log-derived response (a formula not written in code fails); and each program uses log() (or log10/log2) or calls pkstats() (pkstats() passes the same rules). SAS twin at the same path: every geomean (round() unwrapped) is missing, a geometric name, or exp() of a PROC MEANS mean of a natural-log variable (10** for log10), every geocv missing, a geometric-CV name or [100*]sqrt(exp(V)-1) with V a natural-log variance or squared SD (a variable assigned only missing is not geometric), every MODEL response log-derived; 1 twin calls %pkstats (the macro passes the same rules), 23 back-transform their own such mean in the same base, 4 model-only twins fit a MODEL. Static check: nothing is run, and log(x + c) counts as log-scale; distinct-participant counting in 164 programs; drafter number-validation self-test present (5)",
    "sign_off": "pending"
   },
   {
@@ -380,7 +380,7 @@ html:not(.js) .theme-toggle { display: none; }
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 65 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
+   "evidence": "package_qc.py: 0 issues across 66 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
   },
   {
@@ -394,7 +394,7 @@ html:not(.js) .theme-toggle { display: none; }
    "gate": "G10 Harness sensitivity",
    "guards": "the harness's own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)",
    "status": "green",
-   "evidence": "registry of 18 defects frozen at sha256 e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3; last run 2026-10-25: CAUGHT 14, SURVIVED 1, EQUIVALENT 1, NOT APPLICABLE 2; survived (disclosed, not failures): D04 (exp(mean(x)) as the geometric mean in one R PK TLF program); the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
+   "evidence": "registry of 18 defects frozen at sha256 9d7d59bc383fec9f73bc21798c07553ce849827fa37743824f88fdcc3efedd9b; last run 2026-10-26: CAUGHT 15, SURVIVED 0, EQUIVALENT 1, NOT APPLICABLE 2; the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
    "sign_off": "pending"
   }
  ]
@@ -402,25 +402,26 @@ html:not(.js) .theme-toggle { display: none; }
 </script>
 <script id="teeth-data" type="application/json">
 {
- "run_date": "2026-10-25",
+ "run_date": "2026-10-26",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "registry": "validation_harness/teeth/defects.csv",
- "registry_sha256": "e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3",
+ "registry_sha256": "9d7d59bc383fec9f73bc21798c07553ce849827fa37743824f88fdcc3efedd9b",
  "n_defects": 18,
  "n_run": 18,
  "partial": false,
  "gate_scripts": {
-  "validation_harness/run_harness.sh": "f4b356db3f25c1d45b3777fcbbb6c5f7eafbfe28058f9669eed0f68ac2fa85c6",
+  "validation_harness/run_harness.sh": "dbe95977519707bd658befd0978141d8942eb21d5c7611b0f88c036e9a756748",
   "validation_harness/checks/conformance.R": "2338845c397bba61e22ff8dc7457e5f0b2ad8d42c14a17467fb2a7979d42e35b",
+  "validation_harness/checks/g2_geo.py": "4d31bce7e7297029c1a152c804ccec529bad4435b071dd9f16079f38cd4fbb84",
   "validation_harness/checks/independent_recompute.R": "e6d6f950d7009792544c51fda0600bda77cb4c3af6bc38502d74c50bd38e7dce",
   "package_qc.py": "7220a0252da09492e354e0013c50782e6df4d5f09a5f5349bea441ca875819eb",
   "sasr_monitoring_wiki/trialmon_tests/testthat/helper-trialmon.R": "991042b6ad58fe7cf6fb1392397919add6ef34fdb977365b7371256903393dbc",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-boundaries.R": "73b91a31b4652749d096e69508c5f621002b1605bdff2d0a987ed077a3474f7a",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R": "6cc1ea345e1a14a50e969cecd16c165b7978dba17a3c7fe2613704857263333e",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-logic.R": "1376040d1d0cc7d76d2263f64be28e7c041cd59c2133188afdd2a9f11a97fc18",
-  "sasr_monitoring_wiki/trialmon_tests/testthat/test-server.R": "ef6fa458db58c12ee188e3133d44ed6f506f4a60253feccf59ff59dd91eb4f4f",
-  "uat_irt/tests/test-logic.R": "390bfb89d9dafa76ac41a1ea7f92682922918d71dbddfcefe179f942155fab12",
-  "validation_harness/teeth/run_teeth.sh": "dd29995c18b349a4dd843a5c997ac47f0cf2a26e768029356b8ef5ba06c76c78",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/test-server.R": "91faeb3337393f4a33ca998248bd8dc1fa3d918e4d31caf41429fd856dde51e3",
+  "uat_irt/tests/test-logic.R": "87dbd5b9bf08ec7ffc0ffc7f460fac5d303ddbb5a9809a412c12a8fab127456a",
+  "validation_harness/teeth/run_teeth.sh": "e84c114f99ad6ba63a7d7597ae7216142155f4bd4b3b7c4c636bae6655667d6e",
   "validation_harness/teeth/apply_defect.py": "45ae6c5c8041139f49cb9cb4d0d9189e9c3d8971bb8ee90c0eb34569bd671f97"
  },
  "baseline": {
@@ -445,14 +446,14 @@ html:not(.js) .theme-toggle { display: none; }
   }
  },
  "counts": {
-  "CAUGHT": 14,
-  "SURVIVED": 1,
+  "CAUGHT": 15,
+  "SURVIVED": 0,
   "EQUIVALENT": 1,
   "NOT APPLICABLE": 2
  },
  "as_predicted": 18,
  "as_predicted_rule": "same class as predicted, and every predicted catcher among the layers that caught it (a defect caught by more layers than predicted still matches; beyond_prediction lists the extra layers)",
- "results_csv": "validation_harness/teeth/results/teeth_2026-10-25.csv",
+ "results_csv": "validation_harness/teeth/results/teeth_2026-10-26.csv",
  "rows": [
   {
    "id": "D00",
@@ -511,11 +512,11 @@ html:not(.js) .theme-toggle { display: none; }
    "defect": "exp(mean(x)) as the geometric mean in one R PK TLF program",
    "defect_class": "convention",
    "file": "r_tlf_pseudocode/crossover/t_pk_param_summary.R",
-   "predicted": "SURVIVED",
-   "class": "SURVIVED",
-   "layers": "",
+   "predicted": "CAUGHT: G2",
+   "class": "CAUGHT",
+   "layers": "G2",
    "differs": "",
-   "note": "no layer runs this program, so nothing can differ or fail",
+   "note": "",
    "status": "as predicted",
    "beyond_prediction": ""
   },
