@@ -63,6 +63,7 @@ tm_css <- function() {
 
 TM_CSS_RULES <- "
 .bslib-page-title{font-size:1.15rem;font-weight:700}
+.tm-title{font-size:1rem;font-weight:400;line-height:1.5;margin:0}
 .nav-tabs .nav-link{padding:.5rem .7rem;white-space:nowrap}
 @media (max-width:1399.98px){.nav-tabs .nav-link{padding:.45rem .5rem;font-size:.92rem}}
 @media (max-width:575.98px){.nav-tabs .nav-link{padding:.4rem .55rem;font-size:.9rem}}

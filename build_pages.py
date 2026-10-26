@@ -514,6 +514,12 @@ def app_theme_block(T, mode):
 
 # The apps' shared component rules: the site's panels, controls, tables and focus ring on Bootstrap
 # and bslib. Token variables only; build_pages.py --check fails on a color literal in app sources.
+# Where Bootstrap's precompiled CSS (loaded first) uses a more specific selector, the rule here
+# matches or beats it: Shiny's radios and checkboxes have no .form-check-input class (their own
+# selectors carry bslib's default blue), Bootstrap hides the tab focus outline with
+# ".nav-tabs > li > a:focus-visible", DataTables tints a striped selected row with
+# "table-striped>tbody>tr.odd.selected>*", and ion.rangeSlider takes the outline off the slider's
+# focusable track, so the handle shows the focus ring instead.
 APP_RULES = r'''
 html{background:var(--bg);--shiny-pulse-background:linear-gradient(120deg,transparent,var(--accent),var(--blue),transparent);--shiny-spinner-color:var(--accent)}
 body{font-family:var(--sans);background:var(--bg);color:var(--text)}
@@ -521,6 +527,9 @@ h1,h2,h3,h4,h5,h6{color:var(--ink)}
 a{color:var(--accent)}a:hover{color:var(--accent-ink)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .btn:focus-visible,.form-control:focus-visible,.form-select:focus-visible,.nav-link:focus-visible,.accordion-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;box-shadow:none}
+.nav .nav-link:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pagination .page-link:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.bslib-sidebar-layout .bslib-sidebar-resize-handle:focus-visible .resize-indicator{outline:2px solid var(--accent);outline-offset:2px;opacity:1}
 hr{border-color:var(--line-2);opacity:1}
 code{color:var(--accent-ink)}
 .bslib-page-sidebar{--bslib-page-sidebar-title-bg:var(--surface);--bslib-page-sidebar-title-color:var(--ink)}
@@ -559,17 +568,18 @@ code{color:var(--accent-ink)}
 .selectize-dropdown .active:not(.selected){background:var(--accent-soft);color:var(--ink)}
 .selectize-dropdown .selected{background:var(--accent);color:var(--on-accent)}
 .form-label,.control-label{color:var(--ink)}
-.form-check-input{background-color:var(--surface);border-color:var(--control)}
-.form-check-input:checked{background-color:var(--accent);border-color:var(--accent)}
-.form-check-input:checked[type=checkbox]{--bs-form-check-bg-image:var(--bp-check)}
-.form-check-input:checked[type=radio]{--bs-form-check-bg-image:var(--bp-radio)}
-.form-check-input:focus{border-color:var(--accent);box-shadow:0 0 0 .2rem var(--accent-ring)}
+.form-check-input,.shiny-input-container :is(.checkbox,.checkbox-inline,.radio,.radio-inline) input{background-color:var(--surface);border-color:var(--control)}
+.form-check-input:checked,.shiny-input-container :is(.checkbox,.checkbox-inline,.radio,.radio-inline) input:checked{background-color:var(--accent);border-color:var(--accent)}
+.form-check-input:checked[type=checkbox],.shiny-input-container :is(.checkbox,.checkbox-inline,.radio,.radio-inline) input:checked[type=checkbox]{--bs-form-check-bg-image:var(--bp-check)}
+.form-check-input:checked[type=radio],.shiny-input-container :is(.checkbox,.checkbox-inline,.radio,.radio-inline) input:checked[type=radio]{--bs-form-check-bg-image:var(--bp-radio)}
+.form-check-input:focus,.shiny-input-container :is(.checkbox,.checkbox-inline,.radio,.radio-inline) input:focus{border-color:var(--accent);box-shadow:0 0 0 .2rem var(--accent-ring)}
+.form-check-input:focus-visible,.shiny-input-container :is(.checkbox,.checkbox-inline,.radio,.radio-inline) input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .table{--bs-table-bg:transparent;--bs-table-color:var(--text);--bs-table-border-color:var(--line);
  --bs-table-striped-bg:color-mix(in srgb,var(--ink) 3.5%,transparent);--bs-table-striped-color:var(--text);
- --bs-table-hover-bg:var(--accent-soft);--bs-table-hover-color:var(--ink);--bs-table-active-bg:var(--accent-soft);--bs-table-active-color:var(--ink)}
+ --bs-table-hover-bg:var(--surface-3);--bs-table-hover-color:var(--ink);--bs-table-active-bg:var(--accent-soft);--bs-table-active-color:var(--ink)}
 .table thead th,table.dataTable thead th{color:var(--muted);border-bottom-color:var(--line-2)}
 html .table.dataTable,html table.dataTable{--dt-row-selected:var(--bp-sel-rgb);--dt-row-selected-text:var(--bp-sel-text-rgb);--dt-row-selected-link:var(--bp-sel-link-rgb)}
-html table.dataTable>tbody>tr.selected>td:first-child{box-shadow:inset 3px 0 0 var(--accent),inset 0 0 0 9999px rgb(var(--dt-row-selected))}
+html table.dataTable>tbody>tr.selected>td:first-child,html table.dataTable.table-striped>tbody>tr.selected>td:first-child{box-shadow:inset 3px 0 0 var(--accent),inset 0 0 0 9999px rgb(var(--dt-row-selected))}
 div.dataTables_wrapper div.dataTables_info,div.dataTables_wrapper div.dataTables_length label,div.dataTables_wrapper div.dataTables_filter label{color:var(--muted)}
 .pagination{--bs-pagination-color:var(--accent-ink);--bs-pagination-bg:var(--surface);--bs-pagination-border-color:var(--line-2);
  --bs-pagination-hover-color:var(--ink);--bs-pagination-hover-bg:var(--surface-3);--bs-pagination-hover-border-color:var(--line-2);
@@ -588,8 +598,10 @@ div.dataTables_wrapper div.dataTables_info,div.dataTables_wrapper div.dataTables
 .shiny-notification-close{color:var(--muted)}
 .irs--shiny .irs-bar{background:var(--accent);border-color:var(--accent)}
 .irs--shiny .irs-line{background:var(--surface-3);border-color:var(--line-2)}
-.irs--shiny .irs-handle{background:var(--surface);border-color:var(--accent)}
+.irs--shiny .irs-handle{background:var(--surface);border:3px solid var(--accent)}
 .irs--shiny .irs-handle.state_hover,.irs--shiny .irs-handle:hover{background:var(--surface-3)}
+.irs.irs--shiny .irs-handle:active,.irs.irs--shiny .irs-handle:focus-visible{background:var(--accent);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-ring)}
+.irs--shiny:has(.irs-line:focus-visible) .irs-handle{background:var(--accent);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--accent)}
 .irs--shiny .irs-single,.irs--shiny .irs-from,.irs--shiny .irs-to{background:var(--accent);color:var(--on-accent)}
 .irs--shiny .irs-single:before,.irs--shiny .irs-from:before,.irs--shiny .irs-to:before{border-top-color:var(--accent)}
 .irs--shiny .irs-min,.irs--shiny .irs-max{background:var(--surface-3);color:var(--muted)}
@@ -625,7 +637,6 @@ BP_HEAD_JS = r'''
     [].forEach.call(d.querySelectorAll(".bp-theme-toggle"), function (b) {
       b.setAttribute("aria-pressed", dark ? "true" : "false");
       b.title = dark ? "Switch to light theme" : "Switch to dark theme";
-      var s = b.querySelector(".bp-sr"); if (s) s.textContent = dark ? "Dark theme" : "Light theme";
     });
   }
   function set(t) { if (t !== "light" && t !== "dark") t = want(); if (r.getAttribute("data-bs-theme") !== t) r.setAttribute("data-bs-theme", t); }

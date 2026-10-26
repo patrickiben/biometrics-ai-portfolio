@@ -59,9 +59,10 @@ Shiny.addCustomMessageHandler('trialmon-download', function(m) {
 
 ui <- page_sidebar(
   title = div(class = "d-flex flex-wrap align-items-center gap-2 w-100",
-              span("TRIALMON: safety review console"),
+              tags$h1(class = "tm-title", "TRIALMON: safety review console"),   # the page's one h1
               span(class = "bp-chip synthetic", "Synthetic data"),
               div(class = "ms-auto", bp_theme_toggle())),
+  window_title = "TRIALMON safety review console (synthetic data)",   # else the title's markup, toggle included
   theme = bp_theme(),                                   # precompiled; the site's tokens come from bp_theme_head()
   lang = "en",
   fillable = FALSE,

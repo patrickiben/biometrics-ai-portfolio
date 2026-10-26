@@ -233,6 +233,9 @@ $(document).on('click', '[data-uat-cover]', function (e) {
 $(document).on('keydown', '#defects td input', function (e) {
   if (e.key === 'Enter') { e.preventDefault(); this.blur(); }
 });
+// DT opens the editor with the caret after the old status; select it, so typing Closed replaces
+// Open instead of making OpenClosed
+$(document).on('focusin', '#defects td input', function () { this.select(); });
 $(document).on('click', '[data-uat-jump]', function (e) {
   e.preventDefault(); e.stopPropagation();
   Shiny.setInputValue('jump', this.getAttribute('data-uat-jump'), {priority: 'event'});
@@ -638,7 +641,10 @@ server <- function(input, output, session) {
     to <- uat_defect_status(info$value)
     if (is.na(to)) {
       show_defects()
-      note(sprintf("%s: type Open or Closed. It stays %s.", id, rv$defects$Status[info$row]), type = "warning")
+      got <- trimws(paste(info$value, collapse = " "))   # what arrived; showNotification() shows it as text
+      if (nchar(got) > 40) got <- paste0(substr(got, 1, 40), "\u2026")
+      note(sprintf("%s: \u201c%s\u201d is not a status; type Open or Closed. It stays %s.",
+                   id, got, rv$defects$Status[info$row]), type = "warning")
     } else set_defect(id, to)
   })
 

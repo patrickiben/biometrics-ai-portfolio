@@ -193,6 +193,44 @@ $(function () {
   var ro = new ResizeObserver(function () { lcClip(); });
   [].forEach.call(document.querySelectorAll('.lc-scroll'), function (s) { ro.observe(s); });
 });
+// The what-if sliders and the keyboard. ion.rangeSlider answers its track taking focus with a
+// simulated click beside the handle, which moved the value one step: tabbing past a slider made a
+// what-if nobody asked for. Focus now only prepares the slider for the arrow keys (what that click
+// also set up), on the shared prototype, so the sliders that updateSliderInput() rebuilds keep it.
+$(document).on('shiny:bound', '.js-range-slider', function () {
+  var s = $(this).data('ionRangeSlider'), P = s && Object.getPrototypeOf(s);
+  if (!P || P.lcQuietFocus) return;
+  P.lcQuietFocus = true;
+  P.pointerFocus = function () {
+    if (this.target) return;
+    var single = this.options.type === 'single';
+    this.current_plugin = this.plugin_count;
+    this.target = single ? 'single' : 'from';
+    this.coords.p_gap = 0;
+    this.coords.p_pointer = single ? this.coords.p_single_fake : this.coords.p_from_fake;
+  };
+  $('.js-range-slider').each(function () {
+    var t = $(this).data('ionRangeSlider'); if (!t || !t.$cache.line) return;
+    t.$cache.line.off('focus.irs_' + t.plugin_count).on('focus.irs_' + t.plugin_count, t.pointerFocus.bind(t));
+  });
+});
+// The track is the slider's tab stop: give it the role, name and value a screen reader announces.
+// Set on every change, because each updateSliderInput() rebuilds the track (Shiny then fires change).
+function lcSliderAria(inp) {
+  var s = $(inp).data('ionRangeSlider'), l = inp.parentNode && inp.parentNode.querySelector('.irs-line');
+  if (!s || !l) return;
+  l.setAttribute('role', 'slider');
+  l.setAttribute('aria-labelledby', inp.id + '-label');
+  l.setAttribute('aria-valuemin', s.result.min);
+  l.setAttribute('aria-valuemax', s.result.max);
+  l.setAttribute('aria-valuenow', s.result.from);
+  l.setAttribute('aria-valuetext', s.result.from + (s.options.postfix || ''));
+  inp.setAttribute('aria-hidden', 'true');   // the read-only copy would be read twice
+}
+$(document).on('change', 'input.js-range-slider', function () { lcSliderAria(this); })
+  .on('shiny:sessioninitialized shiny:bound', function () {
+    $('input.js-range-slider').each(function () { lcSliderAria(this); });
+  });
 "
 # a table that scrolls sideways when it is wider than its card, with a visible cue when it does
 scroll_wrap <- function(label, ...) div(
