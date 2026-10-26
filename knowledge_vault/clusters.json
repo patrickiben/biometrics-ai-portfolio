@@ -1,0 +1,46 @@
+{
+  "Foundation": [
+    "hub",
+    "protocol",
+    "schedule",
+    "ecrf"
+  ],
+  "PK & Statistics": [
+    "pk-sampling",
+    "sap",
+    "tlf-shells",
+    "adam"
+  ],
+  "Data build": [
+    "dmp",
+    "edc-build",
+    "edit-checks"
+  ],
+  "Transfers & lock": [
+    "data-transfers",
+    "lab-transfers",
+    "db-lock",
+    "central-lab"
+  ],
+  "Safety & oversight": [
+    "monitoring",
+    "risk-signals",
+    "dsmb",
+    "interim"
+  ],
+  "Supply & blinding": [
+    "randomization",
+    "drug-supply"
+  ],
+  "Program & timeline": [
+    "csr-plan",
+    "milestones",
+    "lessons"
+  ],
+  "Reference": [
+    "roles",
+    "conventions",
+    "glossary",
+    "vendors"
+  ]
+}

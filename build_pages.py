@@ -167,8 +167,8 @@ for theme, T in (('dark', DARK), ('light', LIGHT)):
 # ---------------------------------------------------------------------------------------------
 # 3. site.css token region, chrome and shared blocks
 # ---------------------------------------------------------------------------------------------
-site_css = set_region(rd('site.css'), 'tokens', TOKENS_BODY, path='site.css')
-put('site.css', site_css)
+site_css = set_region(rd('assets/toolkit.css'), 'tokens', TOKENS_BODY, path='assets/toolkit.css')
+put('assets/toolkit.css', site_css)
 CHROME = get_region(site_css, 'chrome')
 SHARED = get_region(site_css, 'shared')
 UI_JS = rd('assets/ui.js')
@@ -290,13 +290,16 @@ put('_quarto-site.scss', QUARTO_SITE + '\n')
 # ---------------------------------------------------------------------------------------------
 # 5. chrome markup: head, top bar, footers
 # ---------------------------------------------------------------------------------------------
-NAV = [('home', 'index.html', 'Home'), ('lifecycle', 'lifecycle.html', 'Lifecycle'),
-       ('example', 'study/index.html', 'Worked example'), ('apps', 'apps.html', 'Apps'),
-       ('methods', 'methods.html', 'Methods'), ('quality', 'quality.html', 'Quality and AI use'),
-       ('about', 'about.html', 'About')]
+# the site's original structure: Home, Operations, Biostatistics and the full library
+NAV = [('home', 'index.html', 'Home'), ('operations', 'Operations.html', 'Operations'),
+       ('biostatistics', 'Biostatistics.html', 'Biostatistics'), ('library', 'START_HERE.html', 'Full library')]
+# the pages built on this generator, by the hub that lists them
+SECTION_OF = {'example': 'biostatistics', 'methods': 'biostatistics', 'quality': 'biostatistics', 'apps': 'operations'}
 SITE = 'Trial biostatistics toolkit'   # the site's name in the bar and in page titles; the author is credited in the footer
 SECTION_NAME = {k: t for k, _, t in NAV}
 SECTION_HREF = {k: h for k, h, _ in NAV}
+for _k, _v in SECTION_OF.items():
+    SECTION_NAME[_k], SECTION_HREF[_k] = SECTION_NAME[_v], SECTION_HREF[_v]
 BOOT = ('<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}'
         'if(t==="light"||t==="dark")d.setAttribute("data-theme",t);d.classList.add("js")})(document.documentElement)</script>')
 FAVICON = ('<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E'
@@ -317,7 +320,7 @@ def head_block(depth, css=True):
     u = up(depth)
     s = METAS + '\n' + BOOT + '\n'
     if css:
-        s += f'<link rel="stylesheet" href="{u}site.css">\n<script src="{u}assets/ui.js" defer></script>\n'
+        s += f'<link rel="stylesheet" href="{u}assets/toolkit.css">\n<script src="{u}assets/ui.js" defer></script>\n'
     return s
 
 
@@ -334,12 +337,11 @@ def topbar(section, depth, current='page'):
     u = up(depth)
     links = []
     for key, href, text in NAV:
-        cur = f' aria-current="{current}"' if key == section else ''
+        cur = f' aria-current="{current}"' if key == SECTION_OF.get(section, section) else ''
         links.append(f'      <a href="{u}{href}"{cur}>{text}</a>')
     return ('<header class="top">\n  <div class="wrap">\n'
             f'    <a class="name" href="{u}index.html"><span class="mark" aria-hidden="true"></span>{SITE}</a>\n'
             '    <nav class="nav" id="site-nav" aria-label="Site">\n' + '\n'.join(links) + '\n    </nav>\n'
-            '    <span class="bar-facts">Synthetic data only</span>\n'
             f'    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme">{MOON}{SUN}<span class="sr">Dark theme</span></button>\n'
             '    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>\n'
             '  </div>\n</header>\n')
@@ -358,12 +360,12 @@ def quarto_head():
 
 def author_block(depth=0):
     u = up(depth)
-    return ('<p class="fine">Built by Patrick Iben. <a href="' + u + 'about.html#author">About the author</a></p>\n'
+    return ('<p class="fine">Built by Patrick Iben.</p>\n'
             '      <ul class="contact">\n'
             '        <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>\n'
             '        <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>\n      </ul>')
-FINE = ('Every dataset on this site is synthetic. Nothing here is real trial data, and no output here is a validated '
-        'or regulatory deliverable. Last updated October 2026.')
+FINE = ('The example studies (CP-101 to CP-108) are synthetic. No output here is a validated or regulatory '
+        'deliverable. Last updated October 2026.')
 
 
 def site_footer(depth=0):
@@ -372,8 +374,9 @@ def site_footer(depth=0):
             '    <div>\n      <h2>Author</h2>\n      ' + author_block(depth) + '\n    </div>\n'
             f'    <div>\n      <h2>This site</h2>\n      <p class="fine">{FINE}</p>\n    </div>\n'
             '    <div>\n      <h2>More</h2>\n      <ul class="foot-links">\n'
-            f'        <li><a href="{u}about.html">About</a></li>\n'
-            f'        <li><a href="{u}quality.html">Quality and AI use</a></li>\n'
+            f'        <li><a href="{u}Operations.html">Operations</a></li>\n'
+            f'        <li><a href="{u}Biostatistics.html">Biostatistics</a></li>\n'
+            f'        <li><a href="{u}START_HERE.html">Full library</a></li>\n'
             '        <li><a href="https://github.com/patrickiben/biometrics-ai-portfolio">Source on GitHub</a></li>\n'
             '        <li><button class="linklike" type="button" data-theme-reset>Follow system theme</button></li>\n'
             '      </ul>\n    </div>\n  </div>\n</footer>\n')
@@ -1171,30 +1174,13 @@ def sec_head(n, key, h_id, title, intro='', more=''):
 # 9. hand pages: head, bar, footer and data regions
 # ---------------------------------------------------------------------------------------------
 HAND = OrderedDict([
-    # path: (kind, section, depth)
-    ('index.html', ('site', 'home', 0)),
-    ('quality.html', ('site', 'quality', 0)),
-    ('about.html', ('site', 'about', 0)),
-    ('404.html', ('404', None, 0)),
-    ('sim_lifecycle/index.html', ('site', 'methods', 1)),
+    # path: (kind, section, depth); the original pages (index, Operations, Biostatistics, START_HERE and
+    # the module pages) keep their own markup and look
     ('sim_lifecycle/carryover_oc/index.html', ('site', 'methods', 2)),
     ('sasr_monitoring_wiki/index.html', ('site', 'apps', 1)),
-    ('uat_irt/templates/index.html', ('site', 'apps', 2)),
-    ('budget_reconciliation/templates/index.html', ('site', 'apps', 2)),
     ('validation_harness/index.html', ('inline', 'quality', 1)),
-    ('sas_tlf_pseudocode/index.html', ('inline', 'methods', 1)),
-    ('r_tlf_pseudocode/index.html', ('inline', 'methods', 1)),
-    ('tlf_interpret/index.html', ('inline', 'methods', 1)),
-    ('sasr_onleave_wiki/Continuity_Toolkit.html', ('inline', 'apps', 1)),
-    ('sasr_onleave_wiki/On_Leave_Coverage_Playbook.html', ('inline', 'apps', 1)),
-    ('sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html', ('inline', 'methods', 1)),
-    ('sas_r_automation/SAS_R_Trial_Monitoring_Automation.html', ('inline', 'methods', 1)),
-    ('smartsheet_sasr/Smartsheet_SASR.html', ('inline', 'methods', 1)),
-    ('smartsheet_sasr/CP101_Tracker_Demo.html', ('inline', 'methods', 1)),
-    ('lifecycle_dashboard/Study_Lifecycle_Monitor.html', ('inline', 'apps', 1)),
-    ('lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html', ('inline', 'apps', 1)),
 ])
-ROOT_PAGE = {'index.html', 'quality.html', 'about.html', 'lifecycle.html', 'apps.html', 'methods.html'}
+ROOT_PAGE = set()
 
 
 def fill_hand(path, kind, section, depth):
@@ -1390,15 +1376,6 @@ def group_page(key, title, h1, lede, desc, section, run_local):
     return page(title, desc, section, main)
 
 
-put('lifecycle.html', lifecycle_page())
-put('apps.html', group_page('apps', 'Apps', 'Apps and interactive tools',
-                            'Everything on this site that runs: what it runs in, what it downloads, and how to run it yourself. Synthetic data only.',
-                            'Every app and interactive tool on the portfolio: what it runs in, what it downloads, and the command that runs it locally.',
-                            'apps', True))
-put('methods.html', group_page('methods', 'Methods', 'Methods, libraries and checks',
-                               'The method studies, the template libraries, the checks and the reference map, each with what was executed and what was not.',
-                               'Method studies, TLF template libraries, checks and the reference pipeline map, each with its execution status.',
-                               'methods', False))
 for path, (kind, section, depth) in HAND.items():
     fill_hand(path, kind, section, depth)
 
@@ -1406,12 +1383,6 @@ for path, (kind, section, depth) in HAND.items():
 # 11. rendered pages that read the partials must carry the current bar (stale render check)
 # ---------------------------------------------------------------------------------------------
 RENDERED = {
-    '_partials/_topbar-apps-d2.html': ['uat_irt/quarto/uat-guide.html', 'uat_irt/quarto/uat-dashboard.html', 'uat_irt/quarto/uat-build.html',
-                                       'lifecycle_dashboard/quarto/lifecycle-guide.html', 'lifecycle_dashboard/quarto/lifecycle-dashboard.html',
-                                       'lifecycle_dashboard/quarto/lifecycle-build.html', 'budget_reconciliation/quarto/hours-guide.html',
-                                       'budget_reconciliation/quarto/hours-dashboard.html', 'budget_reconciliation/quarto/hours-build.html',
-                                       'sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html', 'sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html',
-                                       'sasr_monitoring_wiki/trialmon_quarto/trialmon-build.html', 'sasr_monitoring_wiki/trialmon_quarto/trialmon-src-packet.html'],
     '_partials/_topbar-example-d1.html': ['study/index.html'],
     '_partials/_topbar-example-d2.html': ['study/03_adam/index.html', 'study/04_analysis/index.html', 'study/05_qc/qc_ledger.html'],
     '_partials/_topbar-example-d3.html': ['study/04_analysis/tlf/t_14_4_3_1.html', 'study/04_analysis/report/report.html'],

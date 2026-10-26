@@ -312,7 +312,7 @@ PAGE_TEMPLATE <- r"---(<!doctype html>
 <a class="skip" href="#main">Skip to content</a>
 {{TOPBAR}}
 <main id="main" class="wrap">
-  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../methods.html">Methods</a></li><li aria-current="page">C-QTc hysteresis check</li></ol></nav>
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../Biostatistics.html">Biostatistics</a></li><li aria-current="page">C-QTc hysteresis check</li></ol></nav>
   <section class="page-head">
     <p class="kicker">SAP and mock shells: a prespecified check</p>
     <h1>C-QTc hysteresis check: a signed loop area on model residuals</h1>

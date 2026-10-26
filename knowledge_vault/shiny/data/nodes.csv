@@ -1,0 +1,29 @@
+id,title,type,status,owner,cluster,summary
+hub,CP-101 Knowledge Hub,hub,Active,Project Manager,Foundation,"Single entry point for the CP101 biostatistics and studyoperations knowledge base. Start here to navigate the study's design, analysis, data, and delivery artifacts."
+protocol,Protocol,design,Final,Clinical Pharmacology Lead,Foundation,Authoritative description of the CP101 firstinhuman SAD/MAD design in healthy participants; the source document all downstream specs must trace to.
+schedule,Schedule of Assessments,design,Final,Clinical Pharmacology Lead,Foundation,"Defines what is assessed at each CP101 visit and timepoint, by cohort and dosing day, for both the SAD and MAD phases."
+ecrf,eCRF Specification,design,Final,Data Management Lead,Foundation,"Fieldlevel specification for CP101 electronic data capture: forms, variables, controlled terminology, and editcheck intent."
+pk-sampling,PK Sampling Plan,design,Final,Clinical Pharmacology Lead,PK & Statistics,"Defines the PK bloodsampling strategy for CP101 across the SAD and MAD cohorts, including nominal timepoints, window tolerances, and handling of deviations."
+sap,Statistical Analysis Plan,stats,Final,Lead Biostatistician,PK & Statistics,"The master statistical methods document for CP101, governing analysis populations, endpoints, and the planned summaries for the SAD/MAD firstinhuman design."
+tlf-shells,TLF Shells,stats,Draft,Lead Biostatistician,PK & Statistics,"Mock tables, listings, and figures for CP101 — the emptybutfullyformatted output templates that define titles, structure, footnotes, and population labels with no data po…"
+adam,ADaM Specifications,stats,Draft,Statistical Programming,PK & Statistics,"Analysis dataset specifications for CP101 — the ADaMlevel metadata defining derived variables, parameters, and traceability from collected data to analysisready structure…"
+dmp,Data Management Plan,data,Active,Data Management Lead,Data build,"Governs how CP101 clinical data are captured, cleaned, transferred, and locked across the study lifecycle."
+edc-build,EDC Build,data,Active,Data Management Lead,Data build,Tracks configuration of the CP101 EDC system from approved specs through golive and migration control.
+edit-checks,Edit Checks,data,Active,Data Management Lead,Data build,Specifies the automated and manual datavalidation rules applied in the CP101 EDC to flag discrepancies at or near entry.
+data-transfers,Data Transfers,data,Active,Data Management Lead,Transfers & lock,"Governs how external data reaches CP101's clinical database, including transfer formats, frequency, file naming, and reconciliation."
+lab-transfers,Lab Data Transfers,data,Active,Data Management Lead,Transfers & lock,"Governs the operational handling of central laboratory data transfers into CP101 (safety chemistry/hematology, urinalysis, and PK bioanalytical results)."
+db-lock,Database Lock,ops,Planned,Project Manager,Transfers & lock,"Defines the readiness criteria and sequencing for CP101 database lock(s), including any SAD/MAD interim locks ahead of the final lock."
+monitoring,Monitoring Plan,safety,Active,Medical Monitor / Safety,Safety & oversight,Defines how CP101 safety and conduct are monitored across the SAD and MAD dosing periods.
+risk-signals,Risk Signals,safety,Active,Medical Monitor / Safety,Safety & oversight,Catalogs the predefined safety and conduct signals that trigger escalation in CP101.
+dsmb,DSMB Operations,safety,Active,Medical Monitor / Safety,Safety & oversight,Describes how the Data Safety Monitoring Board is convened and serviced for CP101.
+interim,Interim Analysis (ops),safety,Planned,Lead Biostatistician,Safety & oversight,Plans the operational mechanics of any interim safety look in CP101.
+randomization,Randomization & Blinding,supply,Final,Project Manager,Supply & blinding,Defines how participants are assigned to active or placebo and how the blind is maintained across the CP101 SAD/MAD program.
+drug-supply,Drug Supply & Accountability,supply,Active,Project Manager,Supply & blinding,"Tracks investigational product receipt, storage, dispensing, reconciliation, and return for CP101."
+csr-plan,CSR Plan,program,Planned,Lead Biostatistician,Program & timeline,Defines how CP101 moves from final TLF outputs to a completed Clinical Study Report.
+milestones,Milestones,program,Active,Project Manager,Program & timeline,Single tracked timeline of CP101 statistical and reporting milestones.
+lessons,Lessons Learned,program,Active,Project Manager,Program & timeline,"Running log of what worked, what slipped, and what to change for the next CP101 cohort and future protocols."
+roles,Roles & Responsibilities,reference,Active,Project Manager,Reference,"Defines who owns each deliverable, decision, and signoff across the CP101 biostatistics workstream."
+conventions,Naming Conventions,reference,Active,Statistical Programming,Reference,"Sets the file, dataset, variable, and output naming standards every CP101 deliverable must follow."
+glossary,Glossary,reference,Active,Lead Biostatistician,Reference,"Single source of truth for CP101 abbreviations, role labels, and studyspecific terms."
+vendors,Vendors,reference,Active,Project Manager,Reference,Lists the external service providers supporting CP101 and the biostatisticsrelevant interfaces with each.
+central-lab,Central Lab,reference,Active,Data Management Lead,Transfers & lock,Reference note for the central safety laboratory vendor for CP101. (PK bioanalysis — e.g.

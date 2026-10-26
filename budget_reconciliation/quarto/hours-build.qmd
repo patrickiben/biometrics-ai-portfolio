@@ -4,20 +4,14 @@ subtitle: "The complete R Shiny app, every line"
 format:
   html:
     theme:
-      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
-      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
-    respect-user-color-scheme: true
-    include-in-header: ../../_partials/_quarto-head-d2.html
-    include-before-body:
-      - ../../_partials/_quarto-skip.html
-      - ../../_partials/_topbar-apps-d2.html
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
     toc-title: On this page
     embed-resources: true
-    highlight-style:
-      light: github
-      dark: github-dark
+    highlight-style: github-dark
     code-copy: true
     code-fold: false
 execute:

@@ -2,7 +2,7 @@
 // Pages does (under /biometrics-ai-portfolio/), opens each app's launch page in headless Chrome
 // with a fresh profile, and fails unless, for every app:
 //   - the launch page shows its title and its "Try this" list at once (first contentful paint
-//     under --max-fcp ms), before any R loads, inside the site's top bar (Apps current, with the
+//     under --max-fcp ms), before any R loads, inside the site's top bar (Operations current, with the
 //     theme toggle);
 //   - the launch page reaches "ready" within the app's smoke.timeout_s with no reported problem;
 //   - every output in smoke.outputs has content (a plot image, table rows, text), each value in
@@ -401,7 +401,7 @@ async function checkApp(spec) {
     if (intro.tries !== (spec.try || []).length) fail(`launch page lists ${intro.tries} things to try, expected ${(spec.try || []).length}`);
     if (!intro.fcp || intro.fcp > MAX_FCP) fail(`launch page first contentful paint ${intro.fcp ? Math.round(intro.fcp) + " ms" : "missing"} (limit ${MAX_FCP} ms)`);
     if (!intro.status.trim()) fail("the status line is empty");
-    if (!intro.bar || intro.current !== "Apps") fail(`the launch page lacks the site's top bar with Apps current and the theme toggle (current: "${intro.current}")`);
+    if (!intro.bar || intro.current !== "Operations") fail(`the launch page lacks the site's top bar with Operations current and the theme toggle (current: "${intro.current}")`);
     if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${spec.name}-launch.png`) });
 
     // the app: ready, with content, without errors

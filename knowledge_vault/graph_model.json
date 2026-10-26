@@ -1,0 +1,631 @@
+{
+  "study": "CP-101",
+  "nodes": [
+    {
+      "id": "hub",
+      "title": "CP-101 Knowledge Hub",
+      "type": "hub",
+      "status": "Active",
+      "owner": "Project Manager",
+      "links": [
+        "protocol",
+        "sap",
+        "dmp",
+        "monitoring",
+        "randomization",
+        "db-lock",
+        "csr-plan",
+        "milestones",
+        "roles",
+        "conventions",
+        "glossary",
+        "vendors",
+        "lessons"
+      ],
+      "degree": 15
+    },
+    {
+      "id": "protocol",
+      "title": "Protocol",
+      "type": "design",
+      "status": "Final",
+      "owner": "Clinical Pharmacology Lead",
+      "links": [
+        "hub",
+        "sap",
+        "ecrf",
+        "schedule",
+        "monitoring",
+        "randomization"
+      ],
+      "degree": 6
+    },
+    {
+      "id": "schedule",
+      "title": "Schedule of Assessments",
+      "type": "design",
+      "status": "Final",
+      "owner": "Clinical Pharmacology Lead",
+      "links": [
+        "protocol",
+        "ecrf",
+        "pk-sampling"
+      ],
+      "degree": 3
+    },
+    {
+      "id": "ecrf",
+      "title": "eCRF Specification",
+      "type": "design",
+      "status": "Final",
+      "owner": "Data Management Lead",
+      "links": [
+        "protocol",
+        "dmp",
+        "edc-build",
+        "schedule"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "pk-sampling",
+      "title": "PK Sampling Plan",
+      "type": "design",
+      "status": "Final",
+      "owner": "Clinical Pharmacology Lead",
+      "links": [
+        "schedule",
+        "sap",
+        "lab-transfers"
+      ],
+      "degree": 3
+    },
+    {
+      "id": "sap",
+      "title": "Statistical Analysis Plan",
+      "type": "stats",
+      "status": "Final",
+      "owner": "Lead Biostatistician (NA)",
+      "links": [
+        "hub",
+        "protocol",
+        "tlf-shells",
+        "adam",
+        "interim"
+      ],
+      "degree": 7
+    },
+    {
+      "id": "tlf-shells",
+      "title": "TLF Shells",
+      "type": "stats",
+      "status": "Draft",
+      "owner": "Lead Biostatistician (NA)",
+      "links": [
+        "hub",
+        "sap",
+        "adam",
+        "db-lock",
+        "csr-plan"
+      ],
+      "degree": 5
+    },
+    {
+      "id": "adam",
+      "title": "ADaM Specifications",
+      "type": "stats",
+      "status": "Draft",
+      "owner": "Statistical Programming (India)",
+      "links": [
+        "sap",
+        "tlf-shells",
+        "edc-build",
+        "conventions"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "dmp",
+      "title": "Data Management Plan",
+      "type": "data",
+      "status": "Active",
+      "owner": "Data Management Lead",
+      "links": [
+        "hub",
+        "ecrf",
+        "edc-build",
+        "data-transfers",
+        "db-lock"
+      ],
+      "degree": 6
+    },
+    {
+      "id": "edc-build",
+      "title": "EDC Build",
+      "type": "data",
+      "status": "Active",
+      "owner": "Data Management Lead",
+      "links": [
+        "ecrf",
+        "dmp",
+        "edit-checks",
+        "adam"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "edit-checks",
+      "title": "Edit Checks",
+      "type": "data",
+      "status": "Active",
+      "owner": "Data Management Lead",
+      "links": [
+        "edc-build",
+        "dmp"
+      ],
+      "degree": 2
+    },
+    {
+      "id": "data-transfers",
+      "title": "Data Transfers",
+      "type": "data",
+      "status": "Active",
+      "owner": "Data Management Lead",
+      "links": [
+        "dmp",
+        "lab-transfers",
+        "db-lock",
+        "vendors"
+      ],
+      "degree": 5
+    },
+    {
+      "id": "lab-transfers",
+      "title": "Lab Data Transfers",
+      "type": "data",
+      "status": "Active",
+      "owner": "Data Management Lead",
+      "links": [
+        "data-transfers",
+        "pk-sampling",
+        "central-lab"
+      ],
+      "degree": 3
+    },
+    {
+      "id": "db-lock",
+      "title": "Database Lock",
+      "type": "ops",
+      "status": "Planned",
+      "owner": "Project Manager",
+      "links": [
+        "hub",
+        "dmp",
+        "data-transfers",
+        "tlf-shells",
+        "milestones"
+      ],
+      "degree": 7
+    },
+    {
+      "id": "monitoring",
+      "title": "Monitoring Plan",
+      "type": "safety",
+      "status": "Active",
+      "owner": "Medical Monitor / Safety",
+      "links": [
+        "hub",
+        "protocol",
+        "risk-signals",
+        "lessons"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "risk-signals",
+      "title": "Risk Signals",
+      "type": "safety",
+      "status": "Active",
+      "owner": "Medical Monitor / Safety",
+      "links": [
+        "monitoring",
+        "dsmb"
+      ],
+      "degree": 2
+    },
+    {
+      "id": "dsmb",
+      "title": "DSMB Operations",
+      "type": "safety",
+      "status": "Active",
+      "owner": "Medical Monitor / Safety",
+      "links": [
+        "hub",
+        "risk-signals",
+        "interim"
+      ],
+      "degree": 3
+    },
+    {
+      "id": "interim",
+      "title": "Interim Analysis (ops)",
+      "type": "safety",
+      "status": "Planned",
+      "owner": "Lead Biostatistician (NA)",
+      "links": [
+        "dsmb",
+        "sap",
+        "db-lock"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "randomization",
+      "title": "Randomization & Blinding",
+      "type": "supply",
+      "status": "Final",
+      "owner": "Project Manager",
+      "links": [
+        "hub",
+        "protocol",
+        "drug-supply"
+      ],
+      "degree": 3
+    },
+    {
+      "id": "drug-supply",
+      "title": "Drug Supply & Accountability",
+      "type": "supply",
+      "status": "Active",
+      "owner": "Project Manager",
+      "links": [
+        "randomization",
+        "vendors"
+      ],
+      "degree": 2
+    },
+    {
+      "id": "csr-plan",
+      "title": "CSR Plan",
+      "type": "program",
+      "status": "Planned",
+      "owner": "Lead Biostatistician (NA)",
+      "links": [
+        "hub",
+        "sap",
+        "tlf-shells",
+        "db-lock"
+      ],
+      "degree": 5
+    },
+    {
+      "id": "milestones",
+      "title": "Milestones",
+      "type": "program",
+      "status": "Active",
+      "owner": "Project Manager",
+      "links": [
+        "hub",
+        "db-lock",
+        "interim",
+        "csr-plan"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "lessons",
+      "title": "Lessons Learned",
+      "type": "program",
+      "status": "Active",
+      "owner": "Project Manager",
+      "links": [
+        "hub",
+        "monitoring",
+        "data-transfers"
+      ],
+      "degree": 3
+    },
+    {
+      "id": "roles",
+      "title": "Roles & Responsibilities",
+      "type": "reference",
+      "status": "Active",
+      "owner": "Project Manager",
+      "links": [
+        "hub",
+        "conventions"
+      ],
+      "degree": 2
+    },
+    {
+      "id": "conventions",
+      "title": "Naming Conventions",
+      "type": "reference",
+      "status": "Active",
+      "owner": "Statistical Programming (India)",
+      "links": [
+        "hub",
+        "roles",
+        "glossary",
+        "adam"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "glossary",
+      "title": "Glossary",
+      "type": "reference",
+      "status": "Active",
+      "owner": "Lead Biostatistician (NA)",
+      "links": [
+        "hub",
+        "conventions"
+      ],
+      "degree": 2
+    },
+    {
+      "id": "vendors",
+      "title": "Vendors",
+      "type": "reference",
+      "status": "Active",
+      "owner": "Project Manager",
+      "links": [
+        "hub",
+        "data-transfers",
+        "central-lab",
+        "drug-supply"
+      ],
+      "degree": 4
+    },
+    {
+      "id": "central-lab",
+      "title": "Central Lab",
+      "type": "reference",
+      "status": "Active",
+      "owner": "Data Management Lead",
+      "links": [
+        "lab-transfers",
+        "vendors"
+      ],
+      "degree": 2
+    }
+  ],
+  "edges": [
+    {
+      "source": "adam",
+      "target": "conventions"
+    },
+    {
+      "source": "adam",
+      "target": "edc-build"
+    },
+    {
+      "source": "adam",
+      "target": "sap"
+    },
+    {
+      "source": "adam",
+      "target": "tlf-shells"
+    },
+    {
+      "source": "central-lab",
+      "target": "lab-transfers"
+    },
+    {
+      "source": "central-lab",
+      "target": "vendors"
+    },
+    {
+      "source": "conventions",
+      "target": "glossary"
+    },
+    {
+      "source": "conventions",
+      "target": "hub"
+    },
+    {
+      "source": "conventions",
+      "target": "roles"
+    },
+    {
+      "source": "csr-plan",
+      "target": "db-lock"
+    },
+    {
+      "source": "csr-plan",
+      "target": "hub"
+    },
+    {
+      "source": "csr-plan",
+      "target": "milestones"
+    },
+    {
+      "source": "csr-plan",
+      "target": "sap"
+    },
+    {
+      "source": "csr-plan",
+      "target": "tlf-shells"
+    },
+    {
+      "source": "data-transfers",
+      "target": "db-lock"
+    },
+    {
+      "source": "data-transfers",
+      "target": "dmp"
+    },
+    {
+      "source": "data-transfers",
+      "target": "lab-transfers"
+    },
+    {
+      "source": "data-transfers",
+      "target": "lessons"
+    },
+    {
+      "source": "data-transfers",
+      "target": "vendors"
+    },
+    {
+      "source": "db-lock",
+      "target": "dmp"
+    },
+    {
+      "source": "db-lock",
+      "target": "hub"
+    },
+    {
+      "source": "db-lock",
+      "target": "interim"
+    },
+    {
+      "source": "db-lock",
+      "target": "milestones"
+    },
+    {
+      "source": "db-lock",
+      "target": "tlf-shells"
+    },
+    {
+      "source": "dmp",
+      "target": "ecrf"
+    },
+    {
+      "source": "dmp",
+      "target": "edc-build"
+    },
+    {
+      "source": "dmp",
+      "target": "edit-checks"
+    },
+    {
+      "source": "dmp",
+      "target": "hub"
+    },
+    {
+      "source": "drug-supply",
+      "target": "randomization"
+    },
+    {
+      "source": "drug-supply",
+      "target": "vendors"
+    },
+    {
+      "source": "dsmb",
+      "target": "hub"
+    },
+    {
+      "source": "dsmb",
+      "target": "interim"
+    },
+    {
+      "source": "dsmb",
+      "target": "risk-signals"
+    },
+    {
+      "source": "ecrf",
+      "target": "edc-build"
+    },
+    {
+      "source": "ecrf",
+      "target": "protocol"
+    },
+    {
+      "source": "ecrf",
+      "target": "schedule"
+    },
+    {
+      "source": "edc-build",
+      "target": "edit-checks"
+    },
+    {
+      "source": "glossary",
+      "target": "hub"
+    },
+    {
+      "source": "hub",
+      "target": "lessons"
+    },
+    {
+      "source": "hub",
+      "target": "milestones"
+    },
+    {
+      "source": "hub",
+      "target": "monitoring"
+    },
+    {
+      "source": "hub",
+      "target": "protocol"
+    },
+    {
+      "source": "hub",
+      "target": "randomization"
+    },
+    {
+      "source": "hub",
+      "target": "roles"
+    },
+    {
+      "source": "hub",
+      "target": "sap"
+    },
+    {
+      "source": "hub",
+      "target": "tlf-shells"
+    },
+    {
+      "source": "hub",
+      "target": "vendors"
+    },
+    {
+      "source": "interim",
+      "target": "milestones"
+    },
+    {
+      "source": "interim",
+      "target": "sap"
+    },
+    {
+      "source": "lab-transfers",
+      "target": "pk-sampling"
+    },
+    {
+      "source": "lessons",
+      "target": "monitoring"
+    },
+    {
+      "source": "monitoring",
+      "target": "protocol"
+    },
+    {
+      "source": "monitoring",
+      "target": "risk-signals"
+    },
+    {
+      "source": "pk-sampling",
+      "target": "sap"
+    },
+    {
+      "source": "pk-sampling",
+      "target": "schedule"
+    },
+    {
+      "source": "protocol",
+      "target": "randomization"
+    },
+    {
+      "source": "protocol",
+      "target": "sap"
+    },
+    {
+      "source": "protocol",
+      "target": "schedule"
+    },
+    {
+      "source": "sap",
+      "target": "tlf-shells"
+    }
+  ]
+}
