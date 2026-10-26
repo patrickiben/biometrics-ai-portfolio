@@ -237,6 +237,9 @@ server <- function(input, output, session) {
     r <- roll()$worklist[input$worklist_rows_selected, ]
     if (!nrow(r) || is.na(r$tier[1])) return()
     if (r$tier == "Participant") {
+      # the open participant's own row is selected by the table's first draw and by selectRows()
+      # below; that is not a tap, so it opens nothing and says nothing
+      if (identical(r$id, pid())) { wl_pick(NULL); return() }
       wl_pick(NULL); open_participant(r$id)
       if (isTRUE(session$clientData$output_worklist_width < 540))
         tell(sprintf("Opened <strong>%s</strong>: its packet is below the console.", tm_esc(r$id)),

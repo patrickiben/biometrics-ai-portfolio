@@ -168,6 +168,16 @@ test_that("the Try this steps each change what they say they change", {
   })
 })
 
+test_that("the table selecting the open participant's own row is not a tap: nothing opens, nothing is announced", {
+  shiny::testServer(APP_DIR, {
+    do.call(session$setInputs, START)
+    expect_equal(pid_row(), 1L)
+    session$setInputs(worklist_rows_selected = pid_row())                    # what DT reports after its first draw
+    expect_null(asked()); expect_null(told()); expect_equal(pid(), "CP101-014")
+    expect_match(strip(output$wl_status$html), "Open now: CP101-014 RED, highlighted below.", fixed = TRUE)
+  })
+})
+
 test_that("every click says what it did: the open participant, a missed point, a cohort or study row", {
   shiny::testServer(APP_DIR, {
     do.call(session$setInputs, START)
