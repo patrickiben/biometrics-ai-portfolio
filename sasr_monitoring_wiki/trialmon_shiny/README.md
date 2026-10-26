@@ -33,10 +33,38 @@ site opens the app behind a launch page that reports each step of starting R
 ### What a visitor sees first
 
 A **Start here** card at the top of the console says what it shows, what RED, AMBER, watch and GREEN
-mean, and three things to try; it folds away with one click. Below it, every value box, the
-worklist and the participant packet have content on the first screen, and each tab fills when it is
+mean, and four things to try (the same four as the launch page). The color legend is built from the
+list of screening rules in `R/logic.R` (`WORKLIST_RULES`), so it names every rule that can put a row
+on the worklist, and the tests fail if a worklist row matches no legend entry of its level. The card
+is open on a visitor's first visit and folded on a phone, and it starts folded on later visits (the
+choice is kept in that browser only); one click opens or folds it. With the card open, a 1440 x 900
+screen shows the seven value boxes in one row and the top of the worklist; on a 1280 x 800 laptop
+the worklist starts just below the first screen until the card is folded. Every value box, the
+worklist and the participant packet have content on first load, and each tab fills when it is
 opened. A panel that cannot show anything says why and what to do (for example "Pick a participant
 in the sidebar"), and an R error names the panel that failed (`guard()`); the tests check both.
+
+Each "Try this" step changes something a visitor can see, and the tests replay them: the packet
+opens with CP101-014, the worst participant, whose first worklist row is highlighted, so step 1
+(CP101-004's row) switches the packet; step 2 names both points in the shaded eDISH box
+(CP101-014, a potential Hy's Law case, and CP101-004, whose bilirubin peaked before its
+aminotransferase elevation). Every click says what it did:
+
+- The line above the worklist names the participant in the sidebar. Their row stays highlighted
+  however they were chosen (worklist, sidebar or eDISH plot); a participant with no flag is said to
+  have no row.
+- The line under the eDISH plot names the ringed participant and the points in the shaded box, and
+  after a click says which participant it opened, that the one clicked is already open, or that no
+  point was near enough.
+- A Cohort or Study row is explained (the packet shows participants only) with a link to its tab,
+  above the worklist and in a short notice at the edge of the screen; on a phone, a Participant row
+  also gets a notice with a "Show the packet" link, because the packet is below the console.
+
+On a phone (under 576 px) the worklist and the DLT table turn into one small card per row, and any
+table wider than its card fades at the edge it continues and says "scroll the table sideways". The
+three plots place every word in inches and pick the longest wording that fits the device (a phone,
+the eDISH column on a laptop, a wide screen); the tests draw them at five widths and fail if any
+text leaves the device or covers another label.
 
 ### Why it starts fast in the browser
 
@@ -55,20 +83,22 @@ once at startup. Measured on 2026-10-25 from a full local export (the same steps
 workflow) in headless Chrome with a fresh profile, served locally on one fast laptop: every visible
 output had content 6.9 to 7.3 s after the launch page opened (8.3 to 8.5 s before these changes),
 6.5 to 6.7 s on a reload (7.9 to 8.3 s before), and each tab filled 0.1 to 0.2 s after a click
-(the Liver tab took 0.9 s before), with no output error in light, dark or phone-width runs. A
-slower laptop and a real network add to these numbers; the launch page reports each step meanwhile.
+(the Liver tab took 0.9 s before), with no output error in light, dark or phone-width runs. After
+the status lines, notices and text-fitting plots were added, three runs of the deploy smoke test
+(`smoke.mjs`, 2026-10-25) read 6.7 to 6.9 s to ready and 6.3 to 6.5 s on a reload. A slower laptop and a real network add to these
+numbers; the launch page reports each step meanwhile.
 
 ## Files
 
 | File | What it is |
 |---|---|
 | `app.R` | The UI and the reactive server. |
-| `R/app_view.R` | How the console looks: the level colors (WCAG AA in light and dark), the site tokens as CSS, the level chips, the Start here card and the three plots in base graphics. No screening rule lives here. |
+| `R/app_view.R` | How the console looks: the level colors (WCAG AA in light and dark), the site tokens as CSS, a few lines of JavaScript (the scroll cues, the Start here card's memory), the level chips, the Start here card, the phone card tables and the three plots in base graphics, with their text-fitting helpers. No screening rule lives here. |
 | `R/logic.R` | The screening rules in base R (no Shiny): potential Hy's Law with its timing window, the aminotransferase confirmation flag, eDISH quadrants, the R ratio, QTcF categories, CTCAE v6.0/v5.0 lab grades, the 3+3 rule reference, the study tier and the worst-of roll-up. The Quarto pages, the SRC packet and the tests call the same functions. |
 | `R/hyslaw_grid.R` | The Hy's Law convention grid in base R: 12 cells (window 14, 30 or 60 days; ALT or AST, or ALT only; ALP < 2x ULN at the aminotransferase draw, or not applied), the peak-versus-peak reference column and the verdict rule. |
 | `R/gen_data.R` | Writes the synthetic ADaM-shaped CSVs from one seed, plus `labs_long.csv` (no random draws). |
 | `data/` | `adsl`, `adlb`, `adeg`, `adae`, `cohorts`, `study_kri` (operational indicators) and `notes` (teaching notes); `labs_long` (liver tests for seven planted known-answer cases, CP101-901 to -907, used only by the grid) and `narrative_flags` (written by hand: the grid verdict each narrative implies). |
-| `../trialmon_tests/` | testthat tests: rule boundaries, the shipped study, the server through `shiny::testServer()`, and the first screen (`test-app.R`: every output has content, empty states explain themselves, the launch page's smoke-test values match the server). |
+| `../trialmon_tests/` | testthat tests: rule boundaries, the shipped study, the server through `shiny::testServer()`, and the first screen (`test-app.R`: every output has content, empty states explain themselves, the legend covers every worklist rule, each "Try this" step and click does what it says, the plots' text fits at five widths, the launch page's smoke-test values match the server). |
 
 ## The rules
 

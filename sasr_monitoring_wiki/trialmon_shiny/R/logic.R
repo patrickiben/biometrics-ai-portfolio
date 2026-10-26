@@ -463,6 +463,36 @@ trialmon_worklist <- function(tm, settings = trialmon_settings(), study = NULL) 
   out
 }
 
+# every rule that can put a row on the worklist, at the level it gives, in a few words. The app's
+# color legend is built from this table, and the tests check that every worklist row (under each
+# CTCAE version, window and what-if) matches an entry of its own level, so the legend never leaves
+# a firing rule out. `match` is a regular expression on "<tier>: <check>".
+WORKLIST_RULES <- data.frame(
+  sev = c(rep("RED", 7), rep("AMBER", 5), "watch"),
+  match = c("^Participant: Potential Hy's Law$", "^Participant: FDA \\(2009\\) discontinuation consideration$",
+            "^Participant: Serious adverse event$", "^Participant: QTcF ", "^Participant: Lab grade [4-9] ",
+            "^Cohort: DLT tally ", "^Study: ",
+            "^Participant: Aminotransferase > 3x ULN: confirm$", "^Participant: QTcF ",
+            "^Participant: Lab grade 3 ", "^Cohort: DLT tally ", "^Study: ",
+            "^Participant: QTcF "),
+  phrase = c("potential Hy's Law", "an FDA (2009) discontinuation consideration", "a serious AE",
+             "QTcF > 500 ms or a change > 60 ms", "a grade 4 blood count or creatinine",
+             "a cohort over the MTD (3+3)", "a study indicator past its RED limit",
+             "ALT or AST > 3x ULN", "QTcF > 480 ms or a change > 30 ms",
+             "a grade 3 blood count or creatinine", "a cohort to expand to 6 (3+3)",
+             "a study indicator past its AMBER limit",
+             "QTcF > 450 ms"),
+  stringsAsFactors = FALSE)
+
+# the WORKLIST_RULES entry each worklist row matches (NA when none does)
+worklist_rule <- function(wl) {
+  key <- paste0(wl$tier, ": ", wl$check)
+  vapply(seq_len(nrow(wl)), function(i) {
+    j <- which(WORKLIST_RULES$sev == wl$sev[i] & vapply(WORKLIST_RULES$match, grepl, logical(1), x = key[i]))
+    if (length(j)) WORKLIST_RULES$phrase[j[1]] else NA_character_
+  }, character(1))
+}
+
 # worst-of per participant (for the roster, the eDISH colors and the packet)
 participant_status <- function(tm, settings = trialmon_settings()) {
   wl <- trialmon_worklist(tm, settings)

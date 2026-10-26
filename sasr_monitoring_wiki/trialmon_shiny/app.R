@@ -10,6 +10,11 @@
 # console flags; the medical monitor and the committee decide, and it never makes a
 # dose-escalation decision.
 #
+# A visitor can always tell what is open and what a click did: the line above the worklist names
+# the participant in the sidebar (whose row stays highlighted, however it was chosen), the line under
+# the eDISH plot says what each click found, and a short notice explains a click whose effect is out
+# of view (a Cohort or Study row; on a phone, the packet below the console).
+#
 # Shinylive-ready: all data sit in data/, the packages are shiny, bslib and DT (the plots are
 # base graphics), and the CSV download is built in the browser (a Blob), not by a
 # downloadHandler. The look comes from the site's color tokens on the precompiled Bootstrap
@@ -73,33 +78,35 @@ ui <- page_sidebar(
     checkboxInput("alp", "Also require ALP < 2x ULN (an SAP convention)", value = FALSE),
     textInput("meddra", "MedDRA version (label)", value = "29.1")
   ),
-  tags$head(tags$link(rel = "icon", href = "data:,"), tags$script(HTML(DOWNLOAD_JS)), tags$style(HTML(tm_css()))),
+  tags$head(tags$link(rel = "icon", href = "data:,"), tags$script(HTML(DOWNLOAD_JS)), tags$script(HTML(TM_JS)),
+            tags$style(HTML(tm_css()))),
   app_status_ui("the worst-of safety roll-up, the ranked worklist and the participant packet"),
   start_here_ui(nrow(tm$adsl), COHORT_TEXT),
-  div(class = "tm-kpis",
-    kpi("Overall (worst-of)", uiOutput("v_overall", inline = TRUE), "worst of both tiers"),
-    kpi("Participants and cohorts", uiOutput("v_part", inline = TRUE), "worst participant or cohort flag"),
-    kpi("Study tier", uiOutput("v_study", inline = TRUE), "worst study indicator"),
+  div(class = "tm-kpis-wrap", div(class = "tm-kpis",         # 7 in a row when wide, 3 + 4, or 1 + 2 + 2 + 2 on a phone
+    kpi(tagList("Overall ", span(class = "nw", "(worst-of)")), uiOutput("v_overall", inline = TRUE), "worst of both tiers", tier = TRUE),
+    kpi("Participants and cohorts", uiOutput("v_part", inline = TRUE), "worst participant or cohort", tier = TRUE),
+    kpi("Study tier", uiOutput("v_study", inline = TRUE), "worst study indicator", tier = TRUE),
     kpi("RED flags", textOutput("v_red", inline = TRUE), "worklist rows", "RED"),
     kpi("AMBER flags", textOutput("v_amber", inline = TRUE), "worklist rows", "AMBER"),
     kpi("Watch", textOutput("v_watch", inline = TRUE), "worklist rows", "watch"),
     kpi("Dosed participants", textOutput("v_n", inline = TRUE), COHORT_TEXT)
-  ),
+  )),
   navset_card_tab(
     id = "tabs",
     nav_panel("Worklist",
-      div(class = "d-flex flex-wrap gap-2 align-items-center justify-content-between mb-1",
-          p(class = "tm-hint mb-0", HTML(paste0("<strong>Click a Participant row</strong> to open that participant's packet ",
-            "in the sidebar<span class=\"d-sm-none\"> (on a phone, after the tabs)</span>. Ranked RED, then AMBER, then watch."))),
+      div(class = "d-flex flex-wrap gap-2 align-items-start justify-content-between mb-1",
+          div(class = "flex-grow-1", style = "min-width:14rem;flex-basis:20rem", uiOutput("wl_status")),
           actionButton("dl", "Download the worklist (CSV)", class = "btn-sm btn-outline-primary")),
-      DTOutput("worklist", fill = FALSE),
-      p(class = "foot mt-2", "The CSV file is built in your browser; its first column labels every row synthetic.")),
+      tm_wide(tm_xscroll(DTOutput("worklist", fill = FALSE))),
+      p(class = "foot mt-2", "Ranked RED, then AMBER, then watch. The CSV file is built in your browser; its first",
+        "column labels every row synthetic.")),
     nav_panel("Liver (eDISH)",
       layout_columns(
         col_widths = breakpoints(sm = 12, lg = c(7, 5)),
         div(plotOutput("edish", height = "430px", click = "edish_click"),
-            p(class = "tm-plot-note", tags$strong("Click a point"), " to open that participant; the ringed point is the ",
-              "participant in the sidebar. Shaded box: ALT or AST >= 3x ULN and TBL > 2x ULN on peak values.")),
+            uiOutput("edish_msg"),
+            p(class = "tm-plot-note", "Shaded box: peak ALT or AST >= 3x ULN and peak TBL > 2x ULN. A point there is a ",
+              "potential Hy's Law case only when the timing fits; the table below says which.")),
         div(plotOutput("traj", height = "300px"),
             p(class = "tm-plot-note", "ALT, AST, ALP and TBL by study day for the participant in the sidebar, as ",
               "multiples of ULN. Pick another participant in the sidebar or on the eDISH plot."))),
@@ -107,26 +114,26 @@ ui <- page_sidebar(
         "Peaks need not be concurrent: a point in the upper-right quadrant is a potential Hy's Law case only when ",
         "TBL > 2x ULN came on or after an aminotransferase elevation (ALT or AST >= 3x ULN) within the window. ",
         "Every such draw opens its own window. The axes widen so that no participant falls off."),
-      DTOutput("liver_tbl", fill = FALSE)),
+      tm_wide(DTOutput("liver_tbl", fill = FALSE))),
     nav_panel("Convention grid",
       p(class = "small", HYS_GRID_LABEL),
       p(class = "tm-hint", "One row per participant, one column per combination; ", tags$strong("scroll the table sideways"),
         " for the verdict, what the narrative states and whether the two agree."),
-      DTOutput("grid_tbl", fill = FALSE),
+      tm_wide(tm_xscroll(DTOutput("grid_tbl", fill = FALSE)), hint = FALSE),
       uiOutput("grid_note")),
     nav_panel("QTcF",
-      tableOutput("qtc_cat"),
+      tm_wide(tm_xscroll(tableOutput("qtc_cat"))),
       p(class = "foot", "Categorical analysis per ICH E14 and the E14/S7B Q&As: maximum post-baseline QTcF > 450, > 480 and ",
         "> 500 ms; maximum change from baseline > 30 and > 60 ms. Categories are cumulative."),
-      DTOutput("qtc_tbl", fill = FALSE)),
+      tm_wide(DTOutput("qtc_tbl", fill = FALSE))),
     nav_panel("Labs (CTCAE)",
-      tableOutput("shift"),
+      tm_wide(tm_xscroll(tableOutput("shift"))),
       uiOutput("shift_note")),
     nav_panel("Adverse events",
-      tableOutput("ae_tbl"),
+      tm_wide(tm_xscroll(tableOutput("ae_tbl"))),
       uiOutput("ae_note")),
     nav_panel("Dose escalation",
-      tableOutput("dlt_tbl"),
+      tm_wide(tm_xscroll(uiOutput("dlt_tbl"))),            # one card per cohort on a phone
       plotOutput("ladder", height = "300px"),
       p(class = "foot", "3+3 appears only as an illustrative rule reference: 0 of 3 or 1 of 6 is escalation-eligible, ",
         "1 of 3 means expand to 6, and 2 or more DLTs mean the dose exceeds the MTD (which needs 6 treated). ",
@@ -143,7 +150,7 @@ ui <- page_sidebar(
           radioButtons("kri_level", "Level (what-if)", choices = LEVELS, inline = TRUE,
                        selected = STUDY0$LEVEL[STUDY0$ID == KRI0]),
           actionButton("kri_reset", "Reset to the feed", class = "btn-sm btn-outline-secondary mb-3")),
-      DTOutput("study_tbl", fill = FALSE),
+      tm_wide(DTOutput("study_tbl", fill = FALSE)),
       p(class = "foot mt-2", paste0("Guidance: ", E6R3, ".")))
   ),
   p(class = "tm-footer", "Synthetic data only: study CP-101 and every participant in it are invented. TRIALMON flags ",
@@ -185,6 +192,22 @@ server <- function(input, output, session) {
   output$v_watch <- renderText(guard("the watch count", roll()$watch))
   output$v_n <- renderText(nrow(tm$adsl))
 
+  # Opening a participant, from a worklist row or an eDISH point: the sidebar's select input changes
+  # in the browser and pid() follows. `asked` keeps the last request (the tests read it).
+  asked <- reactiveVal(NULL)
+  open_participant <- function(id) {
+    asked(id)
+    if (!identical(id, pid())) updateSelectInput(session, "pid", selected = id)
+  }
+
+  # the worklist: the row highlighted is always the sidebar's participant (its first row), or the
+  # Cohort or Study row just clicked, which the status line above the table explains
+  wl_pick <- reactiveVal(NULL)
+  pid_row <- reactive({
+    wl <- roll()$worklist
+    i <- which(wl$tier == "Participant" & wl$id %in% pid())
+    if (length(i)) i[1] else integer(0)
+  })
   output$worklist <- renderDT(guard("the worklist", {
     wl <- roll()$worklist
     explain_empty(nrow(wl) > 0, paste("No participant, cohort or study indicator is flagged under these settings, so",
@@ -193,15 +216,63 @@ server <- function(input, output, session) {
                     `Screen and rule` = sprintf('<span class="tm-check">%s</span><span class="tm-rule">%s</span>',
                                                 tm_esc(wl$check), tm_esc(wl$rule)),
                     Finding = tm_esc(wl$value), check.names = FALSE)
-    datatable(d, rownames = FALSE, selection = "single", escape = FALSE, class = "compact stripe hover",
-              options = list(pageLength = 15, dom = "tp", scrollX = TRUE, ordering = FALSE,
+    sel <- isolate(pid_row())
+    datatable(d, rownames = FALSE, escape = FALSE, class = "compact stripe hover",
+              selection = list(mode = "single", target = "row", selected = if (length(sel)) sel else NULL),
+              options = list(pageLength = 15, dom = "tp", ordering = FALSE, autoWidth = FALSE,
                              columnDefs = list(list(width = "6rem", targets = c(0, 2)), list(width = "7.5rem", targets = 1),
                                                list(width = "30%", targets = 3))))
   }))
+  wl_proxy <- dataTableProxy("worklist")
+  observeEvent(roll(), wl_pick(NULL), ignoreInit = TRUE)   # a re-ranked worklist starts on the sidebar's participant
+  # a short notice at the edge of the screen for a click whose effect is out of view: a Cohort or
+  # Study row (the packet shows participants only) and, on a phone, a Participant row (the packet
+  # is below the console). `told` keeps the last one (the tests read it).
+  told <- reactiveVal(NULL)
+  tell <- function(msg, action = NULL) {
+    told(msg)
+    showNotification(HTML(msg), action = action, duration = 8, id = "tm-notice", type = "message")
+  }
   observeEvent(input$worklist_rows_selected, {
     r <- roll()$worklist[input$worklist_rows_selected, ]
-    if (nrow(r) && r$tier == "Participant") updateSelectInput(session, "pid", selected = r$id)
+    if (!nrow(r) || is.na(r$tier[1])) return()
+    if (r$tier == "Participant") {
+      wl_pick(NULL); open_participant(r$id)
+      if (isTRUE(session$clientData$output_worklist_width < 540))
+        tell(sprintf("Opened <strong>%s</strong>: its packet is below the console.", tm_esc(r$id)),
+             tags$a(href = "#", onclick = "tmShowPacket(); return false;", "Show the packet"))
+    } else {
+      k <- list(tier = r$tier, label = if (r$tier == "Cohort") paste("Cohort", r$id) else sprintf("%s (%s)", r$id, r$check),
+                tab = if (r$tier == "Cohort") "Dose escalation" else "Study tier")
+      wl_pick(k)
+      tell(sprintf("<strong>%s</strong> is a %s, not a participant, so the packet still shows %s.", tm_esc(k$label),
+                   if (r$tier == "Cohort") "cohort flag" else "study indicator", if (is.na(pid())) "no one" else tm_esc(pid())),
+           actionLink("note_goto", paste("Open", k$tab)))
+    }
   })
+  observeEvent(input$note_goto, { k <- wl_pick(); removeNotification("tm-notice"); if (!is.null(k)) nav_select("tabs", k$tab) })
+  observeEvent(pid(), {                                    # chosen in the sidebar or on the eDISH plot
+    cur <- input$worklist_rows_selected; wl <- roll()$worklist
+    on_pid <- length(cur) == 1 && cur <= nrow(wl) && wl$tier[cur] == "Participant" && identical(wl$id[cur], pid())
+    if (!on_pid) { wl_pick(NULL); selectRows(wl_proxy, if (length(pid_row())) pid_row() else NULL) }
+  }, ignoreInit = TRUE)
+  observeEvent(input$wl_goto, { k <- wl_pick(); if (!is.null(k)) nav_select("tabs", k$tab) })
+  who <- function(i) sprintf("<strong>%s</strong> %s", tm_esc(i), sev_html(pstat()[[i]]))   # "CP101-014 RED"
+  output$wl_status <- renderUI(guard("the worklist status", {
+    id <- pid(); k <- wl_pick()
+    txt <- if (!is.null(k)) paste0(
+      "<strong>", tm_esc(k$label), "</strong> is a ", if (k$tier == "Cohort") "cohort flag" else "study indicator",
+      ", not a participant, so the sidebar packet still shows ", if (is.na(id)) "no one" else tm_esc(id), ". ",
+      if (k$tier == "Cohort") paste0("Its DLT tally is on ", actionLink("wl_goto", k$tab), ".")
+      else paste0("It is on ", actionLink("wl_goto", k$tab), ", where a what-if can change its level."))
+    else paste0(
+      "<strong>Click a Participant row</strong> to open that participant's packet in the sidebar. ",
+      if (is.na(id)) "No participant is open." else paste0(
+        "Open now: ", who(id), if (length(pid_row())) ", highlighted below." else ", which has no flag, so no row is highlighted.",
+        '<span class="d-sm-none"> On a phone the packet is below the console: <button type="button" class="btn btn-link" ',
+        'onclick="tmShowPacket()">show the packet</button>.</span>'))
+    p(class = "tm-status", role = "status", HTML(txt))
+  }))
 
   # client-side download: R builds the CSV text, the browser saves it (works under Shinylive)
   dl_payload <- reactiveVal(NULL)
@@ -216,31 +287,60 @@ server <- function(input, output, session) {
     h <- liver()
     explain_empty(nrow(h) > 0, "No participant has post-baseline liver tests, so there is nothing to plot.")
     tm_plot_edish(h, edish_limits(h), pal(), pid())
-  }), bg = "transparent", res = 96)
+  }), bg = "transparent", res = 96,
+  alt = reactive(paste("eDISH plot: peak ALT or AST against peak total bilirubin for each participant, as multiples of ULN;",
+                       "ringed:", if (is.na(pid())) "none" else pid())))
+  # every click on the eDISH plot says what it did: opened a participant, found the one already
+  # open, or found no point near enough
+  edish_last <- reactiveVal(NULL)
   observeEvent(input$edish_click, {
-    np <- nearPoints(liver(), input$edish_click, xvar = "peak_at", yvar = "peak_tbl", maxpoints = 1)
-    if (nrow(np)) updateSelectInput(session, "pid", selected = np$USUBJID[1])
+    np <- nearPoints(liver(), input$edish_click, xvar = "peak_at", yvar = "peak_tbl", maxpoints = 1, threshold = 14)
+    id <- if (nrow(np)) np$USUBJID[1] else NA_character_
+    n <- if (is.null(edish_last())) 1 else edish_last()$n + 1
+    edish_last(list(id = id, before = pid(), n = n))
+    if (!is.na(id)) open_participant(id)
   })
+  output$edish_msg <- renderUI(guard("the eDISH note", {
+    h <- liver(); id <- pid(); e <- edish_last()
+    inbox <- h$USUBJID[grepl("^Upper right", h$quadrant)]
+    box <- if (!length(inbox)) "No point sits in the shaded box."
+      else sprintf("%s in the shaded box: %s.", if (length(inbox) == 1) "One point sits" else sprintf("%d points sit", length(inbox)),
+                   paste(vapply(inbox, who, ""), collapse = ", "))
+    if (length(inbox) > 1) box <- sub(", (?=[^,]*\\.$)", " and ", box, perl = TRUE)
+    ringed <- if (is.na(id)) "No participant is open in the sidebar. " else paste0("Ringed: ", who(id), ", the participant in the sidebar. ")
+    expect <- if (is.null(e)) NULL else if (is.na(e$id)) e$before else e$id
+    txt <- if (is.null(e) || !identical(expect, id)) paste0("<strong>Click a point</strong> to open that participant. ", ringed, box)
+      else if (is.na(e$id)) paste0("<strong>No point within reach of that click.</strong> Click on a point. ", ringed)
+      else if (identical(e$id, e$before)) paste0(who(id), " is already the participant in the sidebar (ringed). ",
+                                                 "Click another point to compare. ", box)
+      else paste0("Now showing ", who(id), ": ringed here, with its liver tests by study day and its packet in the sidebar.")
+    p(class = "tm-plot-note", role = "status", HTML(txt))
+  }))
   output$traj <- renderPlot(guard("the liver trajectory", {
     explain_empty(!is.na(pid()), "Pick a participant in the sidebar to see their liver tests by study day.")
     d <- liver_trajectory(tm, pid())
     explain_empty(nrow(d) > 0, sprintf("%s has no ALT, AST, ALP or TBL results in this data cut.", pid()))
     tm_plot_traj(d, pid(), pal())
-  }), bg = "transparent", res = 96)
-  output$liver_tbl <- renderDT(guard("the liver table", {
+  }), bg = "transparent", res = 96,
+  alt = reactive(paste("ALT, AST, ALP and total bilirubin by study day, as multiples of ULN, for", pid())))
+  liver_view <- reactive({                                 # the liver table's rows (the tests read them)
     h <- liver()
     h <- h[h$peak_at >= 3 | h$peak_tbl > 2 | h$sev != "GREEN", ]
-    explain_empty(nrow(h) > 0, paste("No participant reached ALT or AST >= 3x ULN or TBL > 2x ULN, and none has a",
-                                     "hepatic flag, so this table is empty. The eDISH plot above still shows everyone."))
     h <- h[order(-sev_rank(h$sev), h$USUBJID), ]
-    d <- data.frame(Participant = h$USUBJID, Level = sev_html(h$sev), `Peak AT` = round(h$peak_at, 1),
-                    `Peak TBL` = round(h$peak_tbl, 1), `AT >= 3x (day)` = h$at3_day,
-                    `ALP then` = round(h$alp_at3, 1), `R ratio` = round(h$r_at3, 1), Pattern = h$pattern,
-                    `TBL > 2x (day)` = h$tbl_day, `Potential Hy's Law` = ifelse(h$hys, "Yes", "No"),
-                    Quadrant = h$quadrant, `First repeat (days later)` = h$repeat_gap, check.names = FALSE)
+    data.frame(Participant = h$USUBJID, Level = sev_html(h$sev), `Peak AT` = tm_f1(h$peak_at),
+               `Peak TBL` = tm_f1(h$peak_tbl), `AT >= 3x (day)` = h$at3_day,
+               `ALP then` = tm_f1(h$alp_at3), `R ratio` = tm_f1(h$r_at3), Pattern = h$pattern,
+               `TBL > 2x (day)` = h$tbl_day, `Potential Hy's Law` = ifelse(h$hys, "Yes", "No"),
+               Quadrant = h$quadrant, `First repeat (days later)` = h$repeat_gap, check.names = FALSE)
+  })
+  output$liver_tbl <- renderDT(guard("the liver table", {
+    d <- liver_view()
+    explain_empty(nrow(d) > 0, paste("No participant reached ALT or AST >= 3x ULN or TBL > 2x ULN, and none has a",
+                                     "hepatic flag, so this table is empty. The eDISH plot above still shows everyone."))
     datatable(d, rownames = FALSE, escape = -2, selection = "none", class = "compact stripe",
               caption = "Participants with a liver finding: peaks as x ULN; days are study days.",
-              options = list(dom = "t", scrollX = TRUE, ordering = FALSE))
+              options = list(dom = "t", scrollX = TRUE, ordering = FALSE,
+                             columnDefs = list(list(className = "dt-right", targets = c(2, 3, 5, 6)))))
   }))
 
   output$grid_tbl <- renderDT(guard("the convention grid", {
@@ -251,7 +351,7 @@ server <- function(input, output, session) {
                     `Cells flagged` = sprintf("%d of 12", g$N_FLAGGED), Verdict = g$VERDICT,
                     `Narrative states` = ifelse(is.na(asserted), "", asserted),
                     `Agrees` = ifelse(is.na(agree), "", ifelse(agree, "yes", "NO")),
-                    `ALP at the AT draw (x ULN)` = round(g$ALP_AT3, 1), check.names = FALSE)
+                    `ALP at the AT draw (x ULN)` = tm_f1(g$ALP_AT3), check.names = FALSE)
     leaf <- c("AT + ALP", "AT", "ALT + ALP", "ALT")
     head2 <- tags$table(class = "display", tags$thead(
       tags$tr(tags$th(rowspan = 2, "Participant"), tags$th(rowspan = 2, "Source"),
@@ -264,7 +364,8 @@ server <- function(input, output, session) {
     dt <- datatable(d, container = head2, rownames = FALSE, selection = "none", class = "compact stripe",
               options = list(dom = "t", ordering = FALSE, pageLength = 50, autoWidth = FALSE,
                              columnDefs = list(list(className = "tm-ref", targets = refcol),
-                                               list(className = "dt-center", targets = seq(2, refcol)))))
+                                               list(className = "dt-center", targets = seq(2, refcol)),
+                                               list(className = "dt-right", targets = ncol(d) - 1))))
     formatStyle(dt, c(HYS_GRID$code, "Peak vs peak"), fontWeight = styleEqual(1, "700"))
   }), server = FALSE)                                   # ten rows: sent whole to the browser
   output$grid_note <- renderUI({
@@ -302,7 +403,8 @@ server <- function(input, output, session) {
                          `Max QTcF (ms)` = q$max_qtcf, `On day` = q$max_day, `Max change (ms)` = q$max_chg,
                          check.names = FALSE),
               rownames = FALSE, escape = -2, selection = "none", class = "compact stripe",
-              caption = "Participants above a QTcF category, worst first.", options = list(dom = "t", ordering = FALSE))
+              caption = "Participants above a QTcF category, worst first.",
+              options = list(dom = "t", ordering = FALSE, scrollX = TRUE))
   }))
 
   output$shift <- renderTable(guard("the lab shift table", {
@@ -330,14 +432,19 @@ server <- function(input, output, session) {
     "(now v%s) re-derives lab grades only and does not change a recorded AE grade."),
     settings()$meddra, settings()$ae_ctcae, settings()$ctcae)))
 
-  output$dlt_tbl <- renderTable(guard("the DLT table", {
+  output$dlt_tbl <- renderUI(guard("the DLT table", {
     d <- DLT
-    tm_table(data.frame(Cohort = d$COHORT, `Dose (mg)` = d$DOSEMG, Status = d$STATUS, Dosed = d$N,
-                        `DLT-evaluable` = d$EVALUABLE, `Confirmed DLTs` = d$DLT, Pending = d$PENDING,
-                        Level = ifelse(d$N > 0, sev_html(d$sev), ""), `Rule reference (3+3, illustrative)` = d$text,
-                        check.names = FALSE), html = "Level")
-  }), striped = TRUE, hover = TRUE, spacing = "s", digits = 0, sanitize.text.function = function(x) x)
-  output$ladder <- renderPlot(guard("the dose ladder", tm_plot_ladder(DLT, pal())), bg = "transparent", res = 96)
+    lvl <- ifelse(d$N > 0, sev_html(d$sev), "")
+    head <- sprintf('%s<span class="tm-stack-only">, %g mg %s</span>', tm_esc(d$COHORT), d$DOSEMG, lvl)
+    tm_stack_table(data.frame(Cohort = head, `Dose (mg)` = d$DOSEMG, Status = d$STATUS, Dosed = d$N,
+                              `DLT-evaluable` = d$EVALUABLE, `Confirmed DLTs` = d$DLT, Pending = d$PENDING, Level = lvl,
+                              `Rule reference (3+3, illustrative)` = d$text, check.names = FALSE),
+                   html = c("Cohort", "Level"), head = "Cohort", wide = c("Status", "Rule reference (3+3, illustrative)"),
+                   hide = c("Dose (mg)", "Level"), cols = 2,
+                   labels = c(`DLT-evaluable` = "Evaluable", `Confirmed DLTs` = "Confirmed"))
+  }))
+  output$ladder <- renderPlot(guard("the dose ladder", tm_plot_ladder(DLT, pal())), bg = "transparent", res = 96,
+                              alt = "Dose ladder: one bar per cohort at its dose, colored by its level under the illustrative 3+3 rule")
 
   # study tier what-if. The radio starts on the selected indicator's level and its observer
   # ignores the initial value, so opening the app never rewrites an indicator (no flicker).
@@ -352,13 +459,15 @@ server <- function(input, output, session) {
     study(STUDY0)
     updateRadioButtons(session, "kri_level", selected = STUDY0$LEVEL[STUDY0$ID == input$kri])
   })
-  output$study_tbl <- renderDT(guard("the study tier", {
+  study_view <- reactive({                                 # the study table's rows (the tests read them)
     s <- study()
     lvl <- paste0(sev_html(s$LEVEL), ifelse(s$LEVEL != STUDY0$LEVEL,
                   sprintf('<span class="tm-whatif" title="feed: %s">what-if</span>', STUDY0$LEVEL), ""))
-    d <- data.frame(ID = s$ID, Indicator = s$INDICATOR, Value = s$VALUE, Unit = s$UNIT, Level = lvl,
-                    Rule = s$RULE, Detail = s$DETAIL, Source = s$SOURCE, check.names = FALSE)
-    datatable(d, rownames = FALSE, escape = -5, selection = "none", class = "compact stripe",
+    data.frame(ID = s$ID, Indicator = s$INDICATOR, Value = s$VALUE, Unit = s$UNIT, Level = lvl,
+               Rule = s$RULE, Detail = s$DETAIL, Source = s$SOURCE, check.names = FALSE)
+  })
+  output$study_tbl <- renderDT(guard("the study tier", {
+    datatable(study_view(), rownames = FALSE, escape = -5, selection = "none", class = "compact stripe",
               options = list(dom = "t", scrollX = TRUE, pageLength = 50, ordering = FALSE))
   }))
 
