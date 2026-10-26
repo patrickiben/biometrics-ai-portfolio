@@ -1,23 +1,24 @@
 {
- "run_date": "2026-10-25",
+ "run_date": "2026-10-26",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "registry": "validation_harness/teeth/defects.csv",
- "registry_sha256": "e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3",
+ "registry_sha256": "9d7d59bc383fec9f73bc21798c07553ce849827fa37743824f88fdcc3efedd9b",
  "n_defects": 18,
  "n_run": 18,
  "partial": false,
  "gate_scripts": {
-  "validation_harness/run_harness.sh": "f4b356db3f25c1d45b3777fcbbb6c5f7eafbfe28058f9669eed0f68ac2fa85c6",
+  "validation_harness/run_harness.sh": "dbe95977519707bd658befd0978141d8942eb21d5c7611b0f88c036e9a756748",
   "validation_harness/checks/conformance.R": "2338845c397bba61e22ff8dc7457e5f0b2ad8d42c14a17467fb2a7979d42e35b",
+  "validation_harness/checks/g2_geo.py": "4d31bce7e7297029c1a152c804ccec529bad4435b071dd9f16079f38cd4fbb84",
   "validation_harness/checks/independent_recompute.R": "e6d6f950d7009792544c51fda0600bda77cb4c3af6bc38502d74c50bd38e7dce",
   "package_qc.py": "7220a0252da09492e354e0013c50782e6df4d5f09a5f5349bea441ca875819eb",
   "sasr_monitoring_wiki/trialmon_tests/testthat/helper-trialmon.R": "991042b6ad58fe7cf6fb1392397919add6ef34fdb977365b7371256903393dbc",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-boundaries.R": "73b91a31b4652749d096e69508c5f621002b1605bdff2d0a987ed077a3474f7a",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-hyslaw-grid.R": "6cc1ea345e1a14a50e969cecd16c165b7978dba17a3c7fe2613704857263333e",
   "sasr_monitoring_wiki/trialmon_tests/testthat/test-logic.R": "1376040d1d0cc7d76d2263f64be28e7c041cd59c2133188afdd2a9f11a97fc18",
-  "sasr_monitoring_wiki/trialmon_tests/testthat/test-server.R": "ef6fa458db58c12ee188e3133d44ed6f506f4a60253feccf59ff59dd91eb4f4f",
-  "uat_irt/tests/test-logic.R": "910f3207302a681ffc6dad357c5d05b8f9b7595a5ddd72ec642819b750fb71d3",
-  "validation_harness/teeth/run_teeth.sh": "dd29995c18b349a4dd843a5c997ac47f0cf2a26e768029356b8ef5ba06c76c78",
+  "sasr_monitoring_wiki/trialmon_tests/testthat/test-server.R": "91faeb3337393f4a33ca998248bd8dc1fa3d918e4d31caf41429fd856dde51e3",
+  "uat_irt/tests/test-logic.R": "87dbd5b9bf08ec7ffc0ffc7f460fac5d303ddbb5a9809a412c12a8fab127456a",
+  "validation_harness/teeth/run_teeth.sh": "e84c114f99ad6ba63a7d7597ae7216142155f4bd4b3b7c4c636bae6655667d6e",
   "validation_harness/teeth/apply_defect.py": "45ae6c5c8041139f49cb9cb4d0d9189e9c3d8971bb8ee90c0eb34569bd671f97"
  },
  "baseline": {
@@ -42,14 +43,14 @@
   }
  },
  "counts": {
-  "CAUGHT": 14,
-  "SURVIVED": 1,
+  "CAUGHT": 15,
+  "SURVIVED": 0,
   "EQUIVALENT": 1,
   "NOT APPLICABLE": 2
  },
  "as_predicted": 18,
  "as_predicted_rule": "same class as predicted, and every predicted catcher among the layers that caught it (a defect caught by more layers than predicted still matches; beyond_prediction lists the extra layers)",
- "results_csv": "validation_harness/teeth/results/teeth_2026-10-25.csv",
+ "results_csv": "validation_harness/teeth/results/teeth_2026-10-26.csv",
  "rows": [
   {
    "id": "D00",
@@ -108,11 +109,11 @@
    "defect": "exp(mean(x)) as the geometric mean in one R PK TLF program",
    "defect_class": "convention",
    "file": "r_tlf_pseudocode/crossover/t_pk_param_summary.R",
-   "predicted": "SURVIVED",
-   "class": "SURVIVED",
-   "layers": "",
+   "predicted": "CAUGHT: G2",
+   "class": "CAUGHT",
+   "layers": "G2",
    "differs": "",
-   "note": "no layer runs this program, so nothing can differ or fail",
+   "note": "",
    "status": "as predicted",
    "beyond_prediction": ""
   },

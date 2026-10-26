@@ -151,6 +151,9 @@ replacement, the predicted catcher and the reasoning. It is frozen by its SHA-25
   second run. It adds D17, that lower-bound change, and corrects one sentence of D04's rationale
   (what G2 scans); no v1 prediction changed. D17's prediction was written after the test that
   catches it, so its catch shows the gap is closed, not that the tests were well designed.
+- **Registry v3** (18 defects; sha256 `9d7d59bc383fec9f73bc21798c07553ce849827fa37743824f88fdcc3efedd9b`) changes only
+  D04's prediction, from SURVIVED to caught by G2, after G2 became a per-program check. It was
+  frozen in its own commit before the third run.
 
 The second run, on registry v2, was on 2026-10-25 with R 4.6.0
 (`bash validation_harness/teeth/run_teeth.sh`, about 13 minutes); the unmutated copy passed
@@ -177,7 +180,15 @@ every layer. Results: `teeth/results/teeth_2026-10-25.csv` and `teeth/results/su
 | D16 | AUC on nominal times | n/a | NOT APPLICABLE | ADPC has no actual-time variable |
 | D17 | Grid window lower bound made strict (v2) | TRIALMON `hyslaw_grid.R` | CAUGHT | `test-hyslaw-grid.R` only; no shipped output changes |
 
-Counts for registry v2: 14 caught, 1 survived, 1 equivalent, 2 not applicable. All 18 outcomes
+Counts for registry v2: 14 caught, 1 survived, 1 equivalent, 2 not applicable.
+
+The third run, on registry v3, was on 2026-10-26 with R 4.6.0 (about 13 minutes) on the tree
+merged in PR #16: **15 caught, 0 survived, 1 equivalent, 2 not applicable; 18 of 18 as
+predicted.** D04 was caught by G2 alone; every other defect had the same class and the same
+catching layers as in the v2 run. Results: `teeth/results/teeth_2026-10-26.csv` and
+`teeth/results/summary.json`; the v2 rows stay in `teeth/results/teeth_2026-10-25.csv`.
+
+For the v2 run: All 18 outcomes
 matched the registered predictions, by this rule: a defect matches when its class is the
 predicted one and every predicted catcher is among the layers that caught it. More catchers than
 predicted still match. D12 and D13 were predicted to fail `test-logic.R` and `test-hyslaw-grid.R`;
@@ -201,8 +212,7 @@ What the run shows:
   even if no R program used the log scale; and no layer runs the TLF libraries on data. This is a
   disclosure of what the harness missed, not a failure of the run. G2 has since been changed to
   check each program and its SAS twin (2026-10-26; see G2 above), and its unit tests catch D04.
-  D04 will be re-scored in the next seeded-defect run under a new registry version, frozen before
-  that run.
+  Under registry v3 (2026-10-26) D04 was caught by G2.
 - **D01 was caught earlier than the build spec predicted.** `simulate_study()` asserts that the
   ADSL period-1 TRT01A equals the ADEX period-1 TRTA, so the generator stops before G3's
   TRT01A-tracks-TRTSEQP check sees any data; that G3 check is not exercised by this list.
