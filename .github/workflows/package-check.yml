@@ -14,3 +14,5 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends poppler-utils
       - name: Check packaged files, navigation, links and documented counts
         run: python package_qc.py
+      - name: Check that generated pages, partials, readouts and tokens match their sources
+        run: python build_pages.py --check

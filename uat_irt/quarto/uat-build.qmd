@@ -4,14 +4,20 @@ subtitle: "The complete R Shiny app, every line"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
+      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
+      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
+    respect-user-color-scheme: true
+    include-in-header: ../../_partials/_quarto-head-d2.html
+    include-before-body:
+      - ../../_partials/_quarto-skip.html
+      - ../../_partials/_topbar-apps-d2.html
     toc: true
     toc-location: left
     toc-title: On this page
     embed-resources: true
-    highlight-style: github-dark
+    highlight-style:
+      light: github
+      dark: github-dark
     code-copy: true
     code-fold: false
 execute:
@@ -32,9 +38,9 @@ Select a test and mark it Pass/Fail, close a defect, and the KPIs and the go-liv
 sign-off gate recompute live. Download your results to CSV from the sidebar to drop
 into the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) and the eTMF.
 
-It also runs in your browser with no install: [open the tracker in your browser](../../apps/uat_irt/)
-(Shinylive and webR; R starts in the browser, the first visit downloads about 55 MB, and it works
-best in Chrome or Edge; Safari support may vary). The app folder carries a copy of the three CSVs in `shiny/templates/`,
+It is also exported as a Shinylive build: [open the Shinylive build](../../apps/uat_irt/)
+(not yet checked in a real browser; Shinylive and webR, so R starts in the browser, the first visit
+downloads about 55 MB, and it works best in Chrome or Edge; Safari support may vary). The app folder carries a copy of the three CSVs in `shiny/templates/`,
 because Shinylive exports only the app folder, and the download is built in the browser (a Blob)
 rather than by a `downloadHandler`.
 

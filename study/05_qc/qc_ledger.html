@@ -5,27 +5,40 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QC Ledger | Patrick Iben</title>
 <meta name="description" content="Executed QC ledger for a synthetic BE study: NonCompart vs PKNCA, two refits of the BE model, and base-R re-derivations, compared with diffdf.">
-<link rel="icon" href="data:,">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0f15" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M16 0v16H0z%27 fill=%27%233ad7c8%27/%3E%3C/svg%3E">
+<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}if(t==="light"||t==="dark")d.setAttribute("data-theme",t);d.classList.add("js")})(document.documentElement)</script>
 <link rel="stylesheet" href="../../site.css">
+<script src="../../assets/ui.js" defer></script>
 <link rel="stylesheet" href="../study.css">
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
 <header class="top">
   <div class="wrap">
-    <a class="name" href="../../index.html">Patrick Iben</a>
-    <nav aria-label="Site">
+    <a class="name" href="../../index.html"><span class="mark" aria-hidden="true"></span>Patrick Iben</a>
+    <nav class="nav" id="site-nav" aria-label="Site">
       <a href="../../index.html">Home</a>
-      <a href="../../index.html#lifecycle">Lifecycle</a>
-      <a href="../index.html">Worked example</a>
+      <a href="../../lifecycle.html">Lifecycle</a>
+      <a href="../../study/index.html" aria-current="true">Worked example</a>
+      <a href="../../apps.html">Apps</a>
+      <a href="../../methods.html">Methods</a>
+      <a href="../../quality.html">Quality and AI use</a>
+      <a href="../../about.html">About</a>
     </nav>
+    <span class="bar-facts">Synthetic data only</span>
+    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.6 14.2A8.5 8.5 0 0 1 9.8 3.4a8.5 8.5 0 1 0 10.8 10.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><span class="sr">Dark theme</span></button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
   </div>
 </header>
 <main id="main" class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../../index.html">Home</a></li><li><a href="../index.html">Worked example</a></li><li aria-current="page">QC Ledger</li></ol></nav>
   <section class="page-head">
     <p class="kicker">Stage 5: QC and validation</p>
     <h1>Executed QC ledger: re-derivation by a second method</h1>
-    <p class="meta"><span class="lab sup">Supported (job): reviewed outputs</span><span class="lab tools">Executed here: same-author re-derivation</span></p>
+    <p class="meta"><span class="lab sup">Supported (job): reviewed outputs</span><span class="st st-runs">Executed here: same-author re-derivation</span></p>
     <p class="synthetic">Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable.</p>
   </section>
 <div class="note"><p><strong>Same-author re-derivation, not independent double programming.</strong> One person wrote the primary programs and these checks from the same SAP. The checks re-derive each result by a different method and compare with <code>diffdf</code> at the tolerances shown. They can catch coding slips and engine defaults; they cannot catch a misreading of the SAP that both routes share.</p></div><ul class="kv"><li><span class="k">Checks</span><span class="v">40</span></li><li><span class="k">Pass</span><span class="v">40</span></li><li><span class="k">Fail</span><span class="v">0</span></li><li><span class="k">Values compared</span><span class="v">5100</span></li></ul><div class="tblwrap"><table class="data"><caption>Executed QC ledger. Tolerances are absolute, in the units of each variable; 'exact' means identical values.</caption><thead><tr><th scope="col">ID</th><th scope="col">Item</th><th scope="col">Variable</th><th scope="col">Primary route</th><th scope="col">QC route</th><th scope="col">Compared</th><th scope="col">Tolerance</th><th scope="col">Mismatches</th><th scope="col">Max abs diff</th><th scope="col">Status</th></tr></thead><tbody><tr><td>Q1</td><td>NCA parameters per profile</td><td>CMAX</td><td>PKNCA 0.12.1 pk.nca()</td><td>NonCompart 0.8.4 tblNCA(), plus the zero-segment trapezoid in base R</td><td>  79</td><td>1e-09</td><td>0</td><td>≤ 1e-10</td><td>pass</td></tr>

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quality and AI use | Patrick Iben</title>
+<meta name="description" content="How the work on this portfolio is checked: the principles, the checks that run on this site, the status vocabulary and how AI tools are used.">
+<!-- gen:head -->
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0f15" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M16 0v16H0z%27 fill=%27%233ad7c8%27/%3E%3C/svg%3E">
+<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}if(t==="light"||t==="dark")d.setAttribute("data-theme",t);d.classList.add("js")})(document.documentElement)</script>
+<link rel="stylesheet" href="site.css">
+<script src="assets/ui.js" defer></script>
+<!-- /gen:head -->
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<!-- gen:topbar -->
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="index.html"><span class="mark" aria-hidden="true"></span>Patrick Iben</a>
+    <nav class="nav" id="site-nav" aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="lifecycle.html">Lifecycle</a>
+      <a href="study/index.html">Worked example</a>
+      <a href="apps.html">Apps</a>
+      <a href="methods.html">Methods</a>
+      <a href="quality.html" aria-current="page">Quality and AI use</a>
+      <a href="about.html">About</a>
+    </nav>
+    <span class="bar-facts">Synthetic data only</span>
+    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.6 14.2A8.5 8.5 0 0 1 9.8 3.4a8.5 8.5 0 1 0 10.8 10.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><span class="sr">Dark theme</span></button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+  </div>
+</header>
+<!-- /gen:topbar -->
+<main id="main" class="wrap">
+
+  <section class="page-head">
+    <p class="eyebrow">Quality and AI use</p>
+    <h1>How the work is checked</h1>
+    <p class="lede">The principles behind every page, the checks that run on this site and what they do not cover, the words used for execution status, and where AI tools were used.</p>
+  </section>
+
+  <section id="how" aria-labelledby="how-h">
+    <div class="sec-head"><div><p class="eyebrow"><span class="n">01</span> · Principles</p><h2 id="how-h">How I work</h2></div></div>
+    <ul class="principles">
+      <li>Validated systems own reported numbers</li>
+      <li>A named statistician signs every deliverable</li>
+      <li>This site uses synthetic data only</li>
+    </ul>
+    <p>In a study, reported numbers come from validated, double-programmed SAS/R TLF programs on ADaM; NCA from Phoenix WinNonlin (version per the ADRG, currently 8.8) or PKNCA; CDISC conformance is checked with Pinnacle 21, which produces no reported numbers.</p>
+  </section>
+
+  <section id="checks" aria-labelledby="checks-h">
+    <div class="sec-head"><div><p class="eyebrow"><span class="n">02</span> · Checks</p><h2 id="checks-h">Checks on this site</h2>
+      <p>Each value below is read from the file named beside it when the page is built.</p></div></div>
+    <!-- gen:qkpis --><div class="kpis"><div class="kpi"><span class="k">Gates green</span><span class="v c-green">8 of 10</span><span class="s">1 manual record, 1 not signed; ledger 2026-10-25</span></div><div class="kpi"><span class="k">Human sign-off</span><span class="v c-amber">0 of 10</span><span class="s">no gate signed yet</span></div><div class="kpi"><span class="k">Seeded defects</span><span class="v">14 of 18</span><span class="s">caught; 1 survived, 1 equivalent, 2 not applicable; run 2026-10-25</span></div><div class="kpi"><span class="k">Worked example QC</span><span class="v c-green">40 of 40</span><span class="s">5,100 values; same-author re-derivation</span></div></div><!-- /gen:qkpis -->
+
+    <h3 id="gates-h">Validation harness gates</h3>
+    <p>Ten gates run against this repository's own TLF pseudocode libraries and synthetic ADaM data. Most checks are structural (inventories, pattern scans, counts); G1 re-runs the synthetic study; G9 recomputes the sandbox's PK, bioequivalence and adverse-event results with separately written code; G5 is a manual record, not computed; G7 stays "not signed" until a named statistician signs for AI use. No gate has a human sign-off yet.</p>
+    <!-- gen:gates --><ol class="gates"><li class="g-green"><span class="gid">G1</span><span class="gname">Reproducibility &amp; environment</span><span class="st st-runs">green</span><span class="gev">the sandbox&#x27;s eight committed output files regenerate byte for byte from code and seed, and every R program parses</span></li><li class="g-green"><span class="gid">G2</span><span class="gname">PK and count convention scans</span><span class="st st-runs">green</span><span class="gev">PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter&#x27;s number check has a self-test (pattern scans; they do not show where a reported number comes from)</span></li><li class="g-green"><span class="gid">G3</span><span class="gname">Data structure &amp; integrity</span><span class="st st-runs">green</span><span class="gev">the analysis data passes the custom structural checks (not Pinnacle 21 or CDISC CORE), is intact, and PHI-free</span></li><li class="g-green"><span class="gid">G4</span><span class="gname">SAS/R twin structural parity</span><span class="st st-runs">green</span><span class="gev">the SAS and R twins line up program for program (structure only)</span></li><li class="g-amber"><span class="gid">G5</span><span class="gname">Adversarial QC panel</span><span class="st st-manual">manual</span><span class="gev">no skeptical reader can break the deliverable</span></li><li class="g-green"><span class="gid">G6</span><span class="gname">Reporting conventions</span><span class="st st-runs">green</span><span class="gev">TLF numbering, scope and ICH E14 conventions hold (pattern checks, not a regulatory review)</span></li><li class="g-amber"><span class="gid">G7</span><span class="gname">AI-governance documentation present</span><span class="st st-manual">not signed</span><span class="gev">the drafter&#x27;s AI-use limits (frozen model, human gate) are written down and no PHI turns up (file scans); accountability needs a named statistician&#x27;s signature, not yet given</span></li><li class="g-green"><span class="gid">G8</span><span class="gname">Package &amp; GUI consistency</span><span class="st st-runs">green</span><span class="gev">the package is navigable, linked, and internally consistent</span></li><li class="g-green"><span class="gid">G9</span><span class="gname">Independent recomputation</span><span class="st st-runs">green</span><span class="gev">the sandbox&#x27;s NCA parameters (ADPP) and printed results (geometric means and CV%, GMR and 90% CI, AE participant counts) match a separately written recomputation from ADPC, ADEX, ADSL and ADAE (same author: a re-derivation, not double programming by a second person)</span></li><li class="g-green"><span class="gid">G10</span><span class="gname">Harness sensitivity</span><span class="st st-runs">green</span><span class="gev">the harness&#x27;s own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)</span></li></ol><!-- /gen:gates -->
+    <ul class="go"><li><a href="validation_harness/index.html" data-type="report">Evidence ledger</a></li><li><a href="validation_harness/README.md" data-type="guide">Harness spec</a></li><li><a href="validation_harness/run_harness.sh" data-type="source">run_harness.sh</a></li></ul>
+
+    <h3 id="teeth-h">Seeded defects</h3>
+    <p>Programming defects from a list fixed in advance are planted one at a time in a throwaway copy of the repository, and each is recorded as caught (and by which gate or test), survived, equivalent or not applicable.</p>
+    <!-- gen:teethnote --><p class="small">Counts by class for this hand-picked, pre-registered list; they estimate nothing beyond it (no detection rate, no interval). Survivors are disclosures, not failures. EQUIVALENT is decided by diff on the shipped data, so it is not proof that a change has no effect.</p><!-- /gen:teethnote -->
+    <ul class="go"><li><a href="validation_harness/index.html#teeth" data-type="report">What the harness catches</a></li><li><a href="validation_harness/teeth/defects.csv" data-type="download">defects.csv</a></li></ul>
+
+    <h3 id="qc-h">Worked example QC</h3>
+    <p>The flagship study's results are re-derived by a second method and compared at stated tolerances.</p>
+    <!-- gen:qclabel --><p class="small">Same-author re-derivation by a second method; not independent double programming (diffdf 1.1.2).</p><!-- /gen:qclabel -->
+    <ul class="go"><li><a href="study/05_qc/qc_ledger.html" data-type="report">QC ledger</a></li><li><a href="study/05_qc/qc.R" data-type="source">qc.R</a></li></ul>
+
+    <h3 id="package-h">Package check</h3>
+    <p><code>python3 package_qc.py</code> checks local links (HTML and Markdown), retired content, empty link cards, navigation and the README inventory, terminology, framing and count drift, and reads the text of every published spreadsheet, Word file, slide deck, PDF and JSON file for the same framing, terminology and spelling checks. <code>python3 build_pages.py --check</code> confirms that every generated page, region and readout matches its source and that every color pair meets its contrast floor. GitHub Actions runs both on every push and pull request. They check the package, not the statistics.</p>
+  </section>
+
+  <section id="vocabulary" aria-labelledby="vocabulary-h">
+    <div class="sec-head"><div><p class="eyebrow"><span class="n">03</span> · Vocabulary</p><h2 id="vocabulary-h">Status labels</h2>
+      <p>Each module states what was actually executed, in these words:</p></div></div>
+    <div class="tblwrap"><table class="data">
+      <caption>Execution status, as used on every page</caption>
+      <thead><tr><th scope="col">Label</th><th scope="col">Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><span class="st st-runs">Runs</span></td><td>Executed here; the page says how and when</td></tr>
+        <tr><td><span class="st st-parse">Parse-checked</span></td><td>The code parses; it has not been run on data</td></tr>
+        <tr><td><span class="st st-notrun">Not executed</span></td><td>Written for a tool that was not available (SAS: no license)</td></tr>
+        <tr><td><span class="st st-struct">Structural check</span></td><td>Inventories, pattern scans or counts, not a numeric comparison</td></tr>
+        <tr><td><span class="st st-manual">Manual record</span></td><td>Entered by hand, not computed</td></tr>
+        <tr><td><span class="st st-revision">Under revision</span></td><td>Known issues are listed on the page; fixes come in the next revision</td></tr>
+      </tbody>
+    </table></div>
+    <p>The lifecycle labels are narrower still: <span class="lab led">Led</span> owned, wrote or led the work in a job; <span class="lab sup">Supported</span> reviewed, contributed, or created or reviewed; <span class="lab tools">Tools built</span> shown only by independent work (code on this site or public drafts), not by job experience; <span class="lab gap">Gap</span> no job experience or no worked artifact yet.</p>
+  </section>
+
+  <section id="ai" aria-labelledby="ai-h">
+    <div class="sec-head"><div><p class="eyebrow"><span class="n">04</span> · AI use</p><h2 id="ai-h">AI use</h2></div></div>
+    <div class="how">
+      <p>AI tools may draft or check text; they never produce a reported number.</p>
+      <p>Several modules were drafted with AI assistance; where an AI-agent review panel was used, the page says so, and human sign-off is recorded only where it was given (none yet in the validation ledger).</p>
+    </div>
+  </section>
+
+</main>
+<!-- gen:footer -->
+<footer id="contact" class="site">
+  <div class="wrap foot-grid">
+    <div>
+      <h2>Contact</h2>
+      <ul class="contact">
+        <li><span class="k">Email</span>patrickiben@gmail.com</li>
+        <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>
+        <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>
+        <li><span class="k">Location</span>St. Petersburg, FL / Remote US</li>
+      </ul>
+    </div>
+    <div>
+      <h2>This site</h2>
+      <p class="fine">Every dataset on this site is synthetic. Nothing here is real trial data, and no output here is a validated or regulatory deliverable. Last updated October 2026.</p>
+    </div>
+    <div>
+      <h2>More</h2>
+      <ul class="foot-links">
+        <li><a href="about.html">About</a></li>
+        <li><a href="quality.html">Quality and AI use</a></li>
+        <li><a href="https://github.com/patrickiben/biometrics-ai-portfolio">Source on GitHub</a></li>
+        <li><button class="linklike" type="button" data-theme-reset>Follow system theme</button></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+<!-- /gen:footer -->
+</body>
+</html>

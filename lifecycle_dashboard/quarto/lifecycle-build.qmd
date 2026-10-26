@@ -4,14 +4,20 @@ subtitle: "The complete R Shiny console, every line"
 format:
   html:
     theme:
-      - darkly
-      - ../../_quarto-mc.scss
-    include-before-body: ../../_mc-topbar.html
+      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
+      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
+    respect-user-color-scheme: true
+    include-in-header: ../../_partials/_quarto-head-d2.html
+    include-before-body:
+      - ../../_partials/_quarto-skip.html
+      - ../../_partials/_topbar-apps-d2.html
     toc: true
     toc-location: left
     toc-title: On this page
     embed-resources: true
-    highlight-style: github-dark
+    highlight-style:
+      light: github
+      dark: github-dark
     code-copy: true
     code-fold: false
 execute:
@@ -32,9 +38,9 @@ Pick a study, then move the what-if sliders (open queries, double-programmed %) 
 watch that study's row in the risk heatmap re-color. The scoring is transparent, so
 every number is defensible.
 
-It also runs in your browser with no install: [open the console in your browser](../../apps/lifecycle_dashboard/)
-(Shinylive and webR; R starts in the browser, the first visit downloads about 55 MB, and it works
-best in Chrome or Edge; Safari support may vary).
+It is also exported as a Shinylive build: [open the Shinylive build](../../apps/lifecycle_dashboard/)
+(not yet checked in a real browser; Shinylive and webR, so R starts in the browser, the first visit
+downloads about 55 MB, and it works best in Chrome or Edge; Safari support may vary).
 
 The whole console is three R files, shown here in full, nothing elided:
 

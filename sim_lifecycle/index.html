@@ -5,28 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PK, NCA and Bioequivalence Sandbox | Patrick Iben</title>
 <meta name="description" content="One synthetic early-phase crossover study in base R: eight ADaM-shaped domains, a one-compartment PK model, NCA and a bioequivalence analysis with a 90% confidence interval.">
-<link rel="icon" href="data:,">
+<!-- gen:head -->
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0f15" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M16 0v16H0z%27 fill=%27%233ad7c8%27/%3E%3C/svg%3E">
+<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}if(t==="light"||t==="dark")d.setAttribute("data-theme",t);d.classList.add("js")})(document.documentElement)</script>
 <link rel="stylesheet" href="../site.css">
+<script src="../assets/ui.js" defer></script>
+<!-- /gen:head -->
 </head>
 <body>
 <a class="skip" href="#main">Skip to content</a>
+<!-- gen:topbar -->
 <header class="top">
   <div class="wrap">
-    <a class="name" href="../index.html">Patrick Iben</a>
-    <nav aria-label="Site">
+    <a class="name" href="../index.html"><span class="mark" aria-hidden="true"></span>Patrick Iben</a>
+    <nav class="nav" id="site-nav" aria-label="Site">
       <a href="../index.html">Home</a>
-      <a href="../index.html#lifecycle">Lifecycle</a>
-      <a href="../index.html#start">Start here</a>
+      <a href="../lifecycle.html">Lifecycle</a>
+      <a href="../study/index.html">Worked example</a>
+      <a href="../apps.html">Apps</a>
+      <a href="../methods.html" aria-current="true">Methods</a>
+      <a href="../quality.html">Quality and AI use</a>
+      <a href="../about.html">About</a>
     </nav>
+    <span class="bar-facts">Synthetic data only</span>
+    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.6 14.2A8.5 8.5 0 0 1 9.8 3.4a8.5 8.5 0 1 0 10.8 10.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><span class="sr">Dark theme</span></button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
   </div>
 </header>
+<!-- /gen:topbar -->
 
 <main id="main" class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../methods.html">Methods</a></li><li aria-current="page">PK, NCA and bioequivalence sandbox</li></ol></nav>
   <section class="page-head">
     <p class="kicker">PK and clinical pharmacology</p>
     <h1>PK, NCA and bioequivalence sandbox</h1>
-    <p class="meta"><span class="lab tools">Runs in base R</span><span class="lab tools">Synthetic data</span></p>
+    <p class="meta"><span class="st st-runs">Runs in base R</span><span class="st st-synthetic">Synthetic data</span></p>
     <p class="lede">One synthetic early-phase clinical pharmacology study, taken through the analysis steps: synthetic ADaM, PK and NCA, then summary computations. Base R, seeded, runs offline.</p>
+    <p class="small">Related: the <a href="../study/index.html">flagship worked example</a> builds on this sandbox (same priors and model) and takes it from sample size to CSR text; the <a href="carryover_oc/index.html">residual-carryover study</a> tests the ICH M13A 5% pre-dose rule with its own one-compartment crossover model, then applies the rule to one study made with this sandbox's generator and its new washout option.</p>
   </section>
 
   <h2>What it does</h2>

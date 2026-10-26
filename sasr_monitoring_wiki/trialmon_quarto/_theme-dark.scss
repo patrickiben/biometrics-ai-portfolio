@@ -1,46 +1,32 @@
 /*-- scss:defaults --*/
-// TRIALMON pages, dark theme. Colors match the site's dark tokens in site.css.
-$tm-bg: #12171D; $tm-surface: #1A2129; $tm-surface2: #212A34; $tm-text: #E6EAEE; $tm-muted: #A9B3BD;
-$tm-line: #323C47; $tm-accent: #7DB5FF; $tm-code: #F5B48A;
-$tm-red: #FF9B8F; $tm-amber: #F3C169; $tm-watch: #9CC3EA; $tm-green: #8FD8A8;
-$body-bg: $tm-bg; $body-color: $tm-text; $link-color: $tm-accent; $primary: $tm-accent;
-$border-color: $tm-line; $text-muted: $tm-muted;
-$font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-$font-family-monospace: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-$code-block-bg: #1A2129;
+// TRIALMON pages, dark theme: layered on ../../_quarto-tokens-dark.scss and ../../_quarto-site.scss.
 
 /*-- scss:rules --*/
-// Shared by the light and dark files; colors come from the defaults above.
-body { background: $tm-bg; color: $tm-text; }
-.tm-top { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; padding: 10px 16px;
-  border-bottom: 1px solid $tm-line; background: $tm-surface; font-size: .95rem; }
-.tm-top .name { font-weight: 700; color: $tm-text; text-decoration: none; margin-right: auto; }
-.tm-top a { text-decoration: none; }
-.tm-top a:hover { text-decoration: underline; }
-h1.title, .quarto-title .title { font-weight: 700; letter-spacing: -.01em; }
-h2 { border-bottom: 1px solid $tm-line; padding-bottom: .25rem; margin-top: 2.2rem; }
-.callout { border-left-width: 4px !important; }
-code:not(pre code) { color: $tm-code; background: $tm-surface2; border-radius: 4px; padding: .05em .3em; }
+// TRIALMON-only rules. Layered after the site's token and shared files, so every color is a site
+// token (the light and dark files differ only in their first comment).
+h2 { margin-top: 2.2rem; }
+.callout { border-left-width: 3px !important; }
+code:not(pre code) { color: var(--gap-fg); background: var(--surface-3); border-radius: 4px; padding: .05em .3em; }
 table { font-size: .92rem; }
 table.tm-table { width: 100%; border-collapse: collapse; margin: .5rem 0 1rem; }
-table.tm-table th, table.tm-table td { border-bottom: 1px solid $tm-line; padding: .35rem .5rem; text-align: left; vertical-align: top; }
-table.tm-table thead th { background: $tm-surface2; font-size: .84rem; font-weight: 600; line-height: 1.25; vertical-align: bottom; }
+table.tm-table th, table.tm-table td { border-bottom: 1px solid var(--line); padding: .4rem .55rem; text-align: left; vertical-align: top; }
+table.tm-table thead th { background: var(--surface-2); color: var(--muted); font: 600 12px/1.3 var(--mono); letter-spacing: .04em; text-transform: uppercase; vertical-align: bottom; }
 table.tm-table td.num, table.tm-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
 table.tm-table td.num, table.tm-table td.nw { white-space: nowrap; }
-table.tm-table caption { caption-side: top; text-align: left; font-weight: 600; color: $tm-text; padding: .2rem 0 .4rem; }
-table.tm-table tr.soc td { font-weight: 600; background: $tm-surface2; }
+table.tm-table caption { caption-side: top; text-align: left; font-weight: 600; color: var(--ink); padding: .2rem 0 .4rem; }
+table.tm-table tr.soc td { font-weight: 600; background: var(--surface-2); }
 .tm-wrap { overflow-x: auto; max-width: 100%; }
-.tm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: .5rem 0 1.2rem; }
-.tm-kpi { border: 1px solid $tm-line; border-radius: 8px; padding: 8px 12px; background: $tm-surface; }
-.tm-kpi .k { font-size: .8rem; color: $tm-muted; line-height: 1.2; }
-.tm-kpi .v { font-size: 1.35rem; font-weight: 700; line-height: 1.35; }
+.tm-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin: .5rem 0 1.2rem; }
+.tm-kpi { border: 1px solid var(--line-2); border-radius: var(--r-md); padding: 10px 14px; background: linear-gradient(180deg, var(--surface-2), var(--surface)); box-shadow: var(--shadow-1); }
+.tm-kpi .k { font: 600 12px/1.3 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.tm-kpi .v { font-size: 1.45rem; font-weight: 700; line-height: 1.35; color: var(--ink); font-variant-numeric: tabular-nums; }
 .sev { font-weight: 700; white-space: nowrap; }
-.sev-RED { color: $tm-red; } .sev-AMBER { color: $tm-amber; } .sev-watch { color: $tm-watch; } .sev-GREEN { color: $tm-green; }
-.tm-foot { font-size: .86rem; color: $tm-muted; }
-.tm-decision { border: 2px dashed $tm-line; border-radius: 8px; padding: 12px 16px; margin: 1rem 0; }
+.sev-RED { color: var(--red); } .sev-AMBER { color: var(--amber); } .sev-watch { color: var(--blue); } .sev-GREEN { color: var(--green); }
+.tm-foot { font-size: .88rem; color: var(--muted); }
+.tm-decision { border: 2px dashed var(--line-2); border-radius: var(--r-md); padding: 12px 16px; margin: 1rem 0; }
 .tm-decision p:last-child { margin-bottom: 0; }
 .figure img, .cell-output-display img { max-width: 100%; height: auto; }
 pre.sourceCode, div.sourceCode { max-width: 100%; }
 .tm-flow { list-style: none; padding: 0; margin: .5rem 0 1rem; display: grid; gap: 6px; }
-.tm-flow li { border: 1px solid $tm-line; border-left: 4px solid $tm-accent; border-radius: 6px; padding: 8px 12px; background: $tm-surface; }
-.tm-flow li.red { border-left-color: $tm-red; } .tm-flow li.amber { border-left-color: $tm-amber; } .tm-flow li.green { border-left-color: $tm-green; }
+.tm-flow li { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); border-radius: var(--r-sm); padding: 8px 12px; background: var(--surface); }
+.tm-flow li.red { border-left-color: var(--red); } .tm-flow li.amber { border-left-color: var(--amber); } .tm-flow li.green { border-left-color: var(--green); }

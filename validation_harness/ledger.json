@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-25 18:49 UTC",
+ "generated": "2026-10-25 19:16 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
  "green": 8,
  "manual": 1,
@@ -10,7 +10,7 @@
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "519 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "520 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
@@ -59,7 +59,7 @@
    "gate": "G8 Package & GUI consistency",
    "guards": "the package is navigable, linked, and internally consistent",
    "status": "green",
-   "evidence": "package_qc.py: 0 issues across 60 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
+   "evidence": "package_qc.py: 0 issues across 65 HTML pages, the Markdown files and the text of the published spreadsheets, Word files, decks, PDFs and JSON (broken links, retired content, missing or orphaned pages, terminology, framing and count drift)",
    "sign_off": "pending"
   },
   {
