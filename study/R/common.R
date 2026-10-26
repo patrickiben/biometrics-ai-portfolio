@@ -47,7 +47,7 @@ stopifnot(grepl(STUDY$meddra_version, STUDY$dict_meddra, fixed = TRUE))
 ## normalizes the dash to a dot ("1.5.7"), so displayed versions use the DESCRIPTION string.
 pkg_version <- function(p) utils::packageDescription(p, fields = "Version")
 
-SYNTHETIC_NOTE <- "Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable."
+SYNTHETIC_NOTE <- "Synthetic data only: simulated for this worked example; not real trial data and not a regulatory deliverable."
 
 ## --- paths -------------------------------------------------------------------
 sp <- function(...) file.path("study", ...)

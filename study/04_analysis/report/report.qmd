@@ -37,7 +37,7 @@ n_set <- function(fl) sum(O$adsl[[fl]] == "Y")
 ```
 
 ::: {.synthetic}
-Synthetic data only: simulated for a portfolio worked example; not real trial data and not a regulatory deliverable. Every number below is computed by `study/run_all.R` from code in this repository.
+Synthetic data only: simulated for this worked example; not real trial data and not a regulatory deliverable. Every number below is computed by `study/run_all.R` from code in this repository.
 :::
 
 ## Summary
