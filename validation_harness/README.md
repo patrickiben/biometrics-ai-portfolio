@@ -184,7 +184,7 @@ What the run shows:
 
 - **G1 to G8 caught none of the seven numeric and counting defects (D05 to D11).** Structural
   scans and byte-for-byte regeneration cannot see a wrong formula once the outputs are
-  regenerated; only the independent recomputation (G9) caught them.
+  regenerated; only the separately written, same-author recomputation (G9) caught them.
 - **D04 survived.** G2 counts files, not programs: it passes while the log-scale pattern appears
   in any file under `r_tlf_pseudocode`, documentation included, so it would pass even if no R
   program used the log scale; and no layer runs the TLF libraries on data. This is a disclosure of

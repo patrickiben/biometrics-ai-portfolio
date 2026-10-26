@@ -2316,7 +2316,11 @@ vertical-align: -.125em;
   function scrollName(el, used) {
     var kind = el.matches("pre, div.sourceCode") ? "Code" : el.matches("table") || el.querySelector("table") ? "Table" : "Scrolling region";
     var cap = el.querySelector("caption"), t = cap ? cap.textContent : "";
-    if (!t) { var hs = d.querySelectorAll("h1, h2, h3, h4, h5, h6"); for (var i = hs.length - 1; i >= 0; i--) if (hs[i].compareDocumentPosition(el) & 4) { t = hs[i].textContent; break; } }
+    /* the nearest earlier rendered heading, inside the box's own tab panel when it has one; else that panel's tab */
+    function near(root) { var hs = root.querySelectorAll("h1, h2, h3, h4, h5, h6"); for (var i = hs.length - 1; i >= 0; i--) if ((hs[i].compareDocumentPosition(el) & 4) && hs[i].getClientRects().length) return hs[i].textContent; return ""; }
+    var panel = el.closest('[role="tabpanel"]');
+    if (!t && panel) { t = near(panel); if (!t) { var tab = d.getElementById(panel.getAttribute("aria-labelledby") || ""); t = tab ? tab.textContent : panel.getAttribute("aria-label") || ""; } }
+    if (!t) t = near(d);
     t = t.replace(/\s+/g, " ").trim().slice(0, 80);
     var base = kind + (t ? ": " + t : ""), name = base, n = 1;
     while (used[name]) name = base + " (" + (++n) + ")";
@@ -2329,6 +2333,11 @@ vertical-align: -.125em;
     [].forEach.call(d.body.getElementsByTagName("*"), function (el) {
       var mine = el.getAttribute("data-scroll-focus"), over = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1;
       if (over) { var cs = getComputedStyle(el); over = /auto|scroll/.test(cs.overflowX + " " + cs.overflowY); }
+      if (over && mine !== null && / aria-label( |$)/.test(" " + mine)) {   /* a name this script gave follows a re-rendered heading */
+        var was = el.getAttribute("aria-label"); delete used[was];
+        var now = scrollName(el, used); if (now !== was) el.setAttribute("aria-label", now);
+        return;
+      }
       if (over && mine === null && !el.hasAttribute("tabindex") && !el.matches(TABBABLE) && !el.querySelector(TABBABLE)) {
         var added = ["tabindex"];
         el.setAttribute("tabindex", "0");
