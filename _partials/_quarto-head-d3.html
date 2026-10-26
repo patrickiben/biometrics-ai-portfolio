@@ -43,6 +43,16 @@
     else if (b.hasAttribute("data-theme-reset")) apply(null, true);
     else menu(b, b.getAttribute("aria-expanded") !== "true");
   });
+  // the site's command-bar readout (as site.js adds on Home and Operations): status and a UTC clock
+  var bar = d.querySelector(".top > .wrap"), tog = bar && bar.querySelector(".theme-toggle");
+  if (bar && tog && !bar.querySelector(".mc-status")) {
+    var st = d.createElement("span"); st.className = "mc-status"; st.innerHTML = '<span class="dot"></span> All sectors nominal';
+    var ck = d.createElement("span"); ck.className = "mc-clock";
+    bar.insertBefore(st, tog); bar.insertBefore(ck, tog);
+    var pad = function (n) { return String(n).padStart(2, "0"); };
+    var tick = function () { var t = new Date(); ck.textContent = pad(t.getUTCHours()) + ":" + pad(t.getUTCMinutes()) + ":" + pad(t.getUTCSeconds()) + " UTC"; };
+    tick(); setInterval(tick, 1000);
+  }
   window.addEventListener("storage", function (e) { if (e.key === KEY) apply(saved(), false); });
   if (mq && mq.addEventListener) mq.addEventListener("change", function () { if (!saved()) apply(null, false); });
 
