@@ -2,11 +2,14 @@
 // Pages does (under /biometrics-ai-portfolio/), opens each app's launch page in headless Chrome
 // with a fresh profile, and fails unless, for every app:
 //   - the launch page shows its title and its "Try this" list at once (first contentful paint
-//     under --max-fcp ms), before any R loads;
+//     under --max-fcp ms), before any R loads, inside the site's top bar (Apps current, with the
+//     theme toggle);
 //   - the launch page reaches "ready" within the app's smoke.timeout_s with no reported problem;
 //   - every output in smoke.outputs has content (a plot image, table rows, text), each value in
 //     smoke.expect matches, and no output anywhere shows an error (.shiny-output-error that is not
 //     a validate() message);
+//   - the app shows the page's theme, and the theme toggle in the site's top bar switches the app
+//     too (and back), with no output left in an error;
 //   - each tab in smoke.tabs, once clicked, fills its listed outputs with no error;
 //   - each step list in smoke.interactions, done with real mouse and keyboard events (optionally at
 //     another window size), ends with every expectation met: an element visible, an element's
@@ -266,12 +269,15 @@ async function checkApp(spec) {
       tries: document.querySelectorAll(".launch-try li").length,
       status: (document.querySelector(".app-status .status-stage") || {}).textContent || "",
       fcp: (performance.getEntriesByName("first-contentful-paint")[0] || {}).startTime || null,
+      bar: !!document.querySelector("header.top .theme-toggle"),
+      current: ((document.querySelector("header.top nav a[aria-current]") || {}).textContent || "").trim(),
     }));
     res.timings.fcp_ms = intro.fcp && Math.round(intro.fcp);
     if (intro.title.trim() !== spec.title) fail(`launch page title is "${intro.title}", expected "${spec.title}"`);
     if (intro.tries !== (spec.try || []).length) fail(`launch page lists ${intro.tries} things to try, expected ${(spec.try || []).length}`);
     if (!intro.fcp || intro.fcp > MAX_FCP) fail(`launch page first contentful paint ${intro.fcp ? Math.round(intro.fcp) + " ms" : "missing"} (limit ${MAX_FCP} ms)`);
     if (!intro.status.trim()) fail("the status line is empty");
+    if (!intro.bar || intro.current !== "Apps") fail(`the launch page lacks the site's top bar with Apps current and the theme toggle (current: "${intro.current}")`);
     if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${spec.name}-launch.png`) });
 
     // the app: ready, with content, without errors
@@ -344,6 +350,23 @@ async function checkApp(spec) {
         }
       }
       if ((smoke.fit || []).length) { await page.setViewport({ width: 1440, height: 900 }); await sleep(500); }
+      // the site's theme: the app shows the page's theme, and the top bar's toggle switches both
+      const pageTheme = () => page.evaluate(() => document.documentElement.getAttribute("data-theme") ||
+        (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
+      const appTheme = () => appFrame(page).evaluate(() => document.documentElement.getAttribute("data-bs-theme")).catch(() => null);
+      const t1 = await pageTheme();
+      if ((await appTheme()) !== t1) fail(`the app shows the ${await appTheme()} theme on a ${t1} page`);
+      for (const want of [t1 === "dark" ? "light" : "dark", t1]) {
+        await page.click("header.top .theme-toggle");
+        const end = Date.now() + 10000;
+        while (Date.now() < end && ((await pageTheme()) !== want || (await appTheme()) !== want)) await sleep(150);
+        await settle(appFrame(page));
+        if ((await appTheme()) !== want) { fail(`the theme toggle set the page to ${await pageTheme()}, the app stayed ${await appTheme()}`); break; }
+        const rt = await waitOutputs(page, smoke.outputs, 30);
+        for (const e of rt.errors || []) fail(`after switching to the ${want} theme: output ${e.id} shows an error: ${e.text}`);
+      }
+      res.theme = { page: t1, toggled: !res.failures.some((f) => /theme/.test(f)) };
+      say(`${spec.name}: the app follows the site's theme (${t1}, toggled and back)`);
       // the tabs
       for (const tab of smoke.tabs || []) {
         const fr = appFrame(page);
