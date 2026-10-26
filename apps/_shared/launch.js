@@ -25,6 +25,7 @@
   var MB = cfg.download_mb || 55;
   var TIMEOUT_S = cfg.timeout_s || 60;
   var BUSY_S = cfg.busy_timeout_s || 45;
+  var SETTLE_S = 5;   // once R is idle, how long a still-empty panel may delay "ready"
   var AUTO_RELOAD_KEY = 'launch-reload:' + location.pathname;
 
   var app = document.getElementById('app');
@@ -395,7 +396,8 @@
     doc.on('shiny:disconnected', function () { log('shiny', 'disconnected'); showProblem('disconnected'); });
     doc.on('shiny:busy', function () { setBusy(true); });
     doc.on('shiny:idle', function () { setBusy(false); });
-    doc.on('shiny:value', function () { L.values = (L.values || 0) + 1; });
+    // recount as each value arrives (after Shiny has drawn it), not only on the 500 ms tick
+    doc.on('shiny:value', function () { L.values = (L.values || 0) + 1; setTimeout(function () { countOutputs(w); }, 0); });
     doc.on('shiny:error', function (ev) {
       var e = ev.error || {}, types = [].concat(e.type || []);
       if (e.message && types.indexOf('validation') < 0) log('output-error', (ev.name || 'output') + ': ' + e.message);
@@ -426,6 +428,12 @@
     if (e.classList.contains('shiny-plot-output') || e.classList.contains('shiny-image-output')) {
       var i = e.querySelector('img'); return !!(i && i.getAttribute('src'));
     }
+    // a DataTable counts once it shows rows or its own empty message, not while it is loading
+    // (with scrollX the first table.dataTable is the header's copy, which has no body rows)
+    if (e.querySelector('table.dataTable')) {
+      var td = e.querySelector('table.dataTable tbody td');
+      return !!td && !(td.classList.contains('dataTables_empty') && /^(loading|processing)/i.test((td.textContent || '').trim()));
+    }
     return (e.textContent || '').trim().length > 0 || !!e.querySelector('img,svg,canvas,table');
   }
   function countOutputs(w) {
@@ -445,7 +453,12 @@
     // page itself (Shiny marks <html> with shiny-busy while R works)
     if (!L.idleSeen && L.connected && (L.values || k.filled) &&
         !w.document.documentElement.classList.contains('shiny-busy')) L.idleSeen = true;
-    if (!L.ready && L.connected && L.idleSeen && !L.busy && k.recalc === 0) markReady();
+    // ready once R is idle and every visible panel has content; a panel still empty then (a
+    // widget drawing, or one empty by design) gets at most SETTLE_S more before the app counts as ready
+    var settled = !L.ready && L.connected && L.idleSeen && !L.busy && k.recalc === 0;
+    if (!settled) L.settledAt = null;
+    else if (L.settledAt == null) L.settledAt = now();
+    if (settled && (k.filled >= k.total || now() - L.settledAt > SETTLE_S)) markReady();
     else render();
   }
   function markReady() {
