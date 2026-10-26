@@ -8,13 +8,6 @@ format:
     slide-number: true
     smaller: true
     transition: fade
-    html-math-method: plain
-    include-in-header:
-      text: |
-        <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M16 0v16H0z%27 fill=%27%233ad7c8%27/%3E%3C/svg%3E">
-    include-after-body:
-      text: |
-        <script>/* names for reveal.js icon-only links; empty code-line anchors leave the tab order */(function(){function f(){document.querySelectorAll(".slide-menu-button a:not([aria-label])").forEach(function(a){a.setAttribute("aria-label","Slide menu")});document.querySelectorAll('.sourceCode a[href=""]:empty, a[href="#"]:empty').forEach(function(a){a.setAttribute("aria-hidden","true");a.setAttribute("tabindex","-1")})}if(window.Reveal&&Reveal.on)Reveal.on("ready",function(){setTimeout(f,0)});window.addEventListener("load",function(){setTimeout(f,50)})})()</script>
     fig-width: 9
     fig-height: 4.2
 mermaid-format: svg

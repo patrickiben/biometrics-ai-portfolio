@@ -2,19 +2,55 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0; url=index.html">
-<link rel="canonical" href="index.html">
-<title>Moved | Trial biostatistics toolkit</title>
 <link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operations | Trial biostatistics toolkit</title>
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<main class="wrap stub">
-  <h1>This page has moved</h1>
-  <p>The portfolio now starts at the home page, which lists every stage of the trial lifecycle and the work behind it.</p>
-  <p class="actions"><a href="index.html">Go to the home page</a></p>
-</main>
+<div class="top">
+  <b>Trial biostatistics toolkit</b>
+  <div class="nav">
+    <a href="index.html">Home</a>
+    <a href="Operations.html" class="here">Operations</a>
+    <a href="Biostatistics.html">Biostatistics</a>
+    <a href="START_HERE.html">Full library</a>
+  </div>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <a class="back" href="index.html">&larr; Home</a>
+    <div class="eyebrow" style="color:var(--teal)">For study operations</div>
+    <h1>Operations</h1>
+    <p class="sub">The operational layer you can run for a client today: <b>no PHI, nothing new to approve, no AI sourcing a number</b>. Self-updating Smartsheet trackers, deterministic SAS/R monitoring with coverage for leave and handoffs, and the participant-safety, trial-risk and study-lifecycle dashboards. The dashboards are live and interactive, and the three R apps also run in your browser.</p>
+  </header>
+
+  <h2>Monitoring, safety &amp; coverage</h2>
+  <div class="grid">
+    <div class="card"><h3>SAS/R monitoring, coverage &amp; continuity <span class="pill tmpl">runnable templates</span></h3><div class="d">Deterministic, no-AI monitoring that detects, packages, and pages humans: freshness gate &rarr; checks &rarr; roll-up &rarr; digest &rarr; tier-2 alert &rarr; heartbeat. The coverage playbook started with "covering while on leave" (service account, named backup, dead-man's switch) and now handles five scenarios: planned leave, unplanned absence, role handoff or departure, a new owner taking over, and bus-factor review. The <b>Continuity Toolkit</b> turns a team's job inventory into a coverage matrix, a risk register, per-job checklists and a printable handoff packet, all in the browser.</div>
+      <div class="links"><a href="sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html">Monitoring Wiki</a><a href="sas_r_automation/SAS_R_Trial_Monitoring_Automation.html">SAS/R Automation</a><a href="sasr_onleave_wiki/On_Leave_Coverage_Playbook.html">Coverage Playbook</a><a class="dash" href="sasr_onleave_wiki/Continuity_Toolkit.html">Continuity Toolkit</a></div></div>
+    <div class="card"><h3>Participant-safety dashboard (TRIALMON) <span class="pill run">R Shiny + multimodal</span></h3><div class="d">The safety-monitoring backbone made visible: the eDISH Hy's-Law screen, QTcF (ICH E14), the 3+3 DLT ladder, AE by SOC&times;grade, and a per-participant evidence packet. Now a <b>runnable R Shiny app</b> (click the eDISH scatter to open a packet), a <b>visual guide</b> (the AND-gate as a diagram + live screens), a shareable <b>dashboard</b>, and a <b>build-it walkthrough</b>, all from one shared R logic core. A screening lens, never a reported number; the medical monitor / SRC / DSMB decide.</div>
+      <div class="links"><a href="sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html">&#9733; Visual guide</a><a class="dash" href="sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html">Dashboard</a><a class="code" href="sasr_monitoring_wiki/trialmon_quarto/trialmon-build.html">Run &amp; build</a><a class="dash" href="apps/trialmon/">In your browser</a><a href="sasr_monitoring_wiki/trialmon_quarto/trialmon-src-packet.html">SRC packet</a><a href="sasr_monitoring_wiki/TRIALMON_Dashboard.html">Full dashboard</a><a href="sasr_monitoring_wiki/TRIALMON_Dashboard_Wiki.html">Field guide</a></div></div>
+    <div class="card"><h3>Trial-risk early-warning <span class="pill run">R Shiny + multimodal</span></h3><div class="d">The participant- and study-tier trial early-warning console: signals roll up to a tier RAG and an overall risk index, with an advanced engine (Optimal Transport + Active Inference). Now a <b>runnable R Shiny app</b> (set a signal's level and watch the tier risk move), a <b>visual guide</b> (the roll-up as a diagram + a live console), a shareable <b>dashboard</b>, and a <b>build-it walkthrough</b>, all from one shared R logic core. The console flags; the SRC, the DSMB and the study team decide.</div>
+      <div class="links"><a href="risk_monitor/quarto/risk-guide.html">&#9733; Visual guide</a><a class="dash" href="risk_monitor/quarto/risk-dashboard.html">Dashboard</a><a class="code" href="risk_monitor/quarto/risk-build.html">Run &amp; build</a></div></div>
+    <div class="card"><h3>Study Lifecycle Monitor <span class="pill run">R Shiny + multimodal</span></h3><div class="d">The operational study-lifecycle console: portfolio RAG heatmap, ranked early-warning signals, milestone track, data readiness, TLF funnel, deliverables pipeline. Now a <b>runnable R Shiny app</b> you edit and own (with a transparent what-if on the risk score), a <b>visual guide</b> (the scoring model as a diagram + a live roll-up), a shareable <b>dashboard</b>, and a <b>build-it walkthrough</b>, all from one shared R logic core. Plus the operating-depth field guide. Synthetic, no PHI.</div>
+      <div class="links"><a href="lifecycle_dashboard/quarto/lifecycle-guide.html">&#9733; Visual guide</a><a class="dash" href="lifecycle_dashboard/quarto/lifecycle-dashboard.html">Dashboard</a><a class="code" href="lifecycle_dashboard/quarto/lifecycle-build.html">Run &amp; build</a><a class="dash" href="apps/lifecycle_dashboard/">In your browser</a><a href="lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html">Field guide</a><a class="dash" href="lifecycle_dashboard/Study_Lifecycle_Monitor.html">Legacy demo</a></div></div>
+  </div>
+
+  <h2>Study setup, UAT &amp; project stewardship</h2>
+  <div class="grid">
+    <div class="card"><h3>IRT / RTSM User Acceptance Testing <span class="pill run">R Shiny + multimodal</span></h3><div class="d">Run a UAT of the IRT/RTSM (randomization &amp; supply) system before go-live, from the biostatistics lens, confirming the vendor build implements <em>the protocol's</em> randomization (allocation, stratification, blocking, concealment, dose-escalation logic), dispensing, resupply, and emergency unblinding. Delivered five ways from one shared R logic core: a <b>visual guide</b> (Mermaid diagrams + a live gate computed from the data), a <b>runnable R Shiny app</b> you edit and own, a shareable <b>dashboard</b>, a fillable <b>Excel workbook</b> (formula-driven go-live gate) for the eTMF, and a <b>build-it walkthrough</b>. Synthetic test data.</div>
+      <div class="links"><a href="uat_irt/quarto/uat-guide.html">&#9733; Visual guide</a><a class="dash" href="uat_irt/quarto/uat-dashboard.html">Dashboard</a><a class="code" href="uat_irt/quarto/uat-build.html">Run &amp; build</a><a class="dash" href="apps/uat_irt/">In your browser</a><a class="code" href="uat_irt/UAT_IRT_RTSM_Workbook.xlsx">Excel workbook</a><a href="uat_irt/quarto/uat-slides.html">Slides</a><a href="uat_irt/quarto/uat-onepager.pdf">1-pager</a></div></div>
+    <div class="card"><h3>Hours budget reconciliation: "find hours" <span class="pill run">R Shiny + multimodal</span></h3><div class="d">When an out-of-scope deliverable suddenly needs doing, where do the hours come from? A planned-vs-actual-vs-forecast (EAC) effort reconciliation: net findable = (&Sigma; planned + contingency) &minus; &Sigma; EAC, then a decision tree: reallocate under-run slack &rarr; contingency &rarr; defer &rarr; change order. Delivered five ways from one shared R logic core: a <b>visual guide</b> (decision-tree + source-map diagrams, a live roll-up), a <b>runnable R Shiny app</b>, a shareable <b>dashboard</b>, a fillable <b>Excel workbook</b>, and a <b>build-it walkthrough</b>. Hours/effort only, no dollars; synthetic.</div>
+      <div class="links"><a href="budget_reconciliation/quarto/hours-guide.html">&#9733; Visual guide</a><a class="dash" href="budget_reconciliation/quarto/hours-dashboard.html">Dashboard</a><a class="code" href="budget_reconciliation/quarto/hours-build.html">Run &amp; build</a><a class="code" href="budget_reconciliation/Hours_Budget_Reconciliation_Workbook.xlsx">Excel workbook</a><a href="budget_reconciliation/quarto/hours-slides.html">Slides</a><a href="budget_reconciliation/quarto/hours-onepager.pdf">1-pager</a></div></div>
+    <div class="card"><h3>Self-updating Smartsheet trackers <span class="pill tmpl">scripts</span></h3><div class="d">Smartsheet keeps itself current from scheduled SAS/R. Code owns the data; Smartsheet owns the alerts.</div>
+      <div class="links"><a href="smartsheet_sasr/Smartsheet_SASR.html">Smartsheet &times; SAS/R</a></div></div>
+  </div>
+
+  <footer>
+    <b>Operations guardrails:</b> operations only: no PHI, no participant-level data; reported/regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21, EDC/CTMS), never an LLM; the tools detect, package, and page; humans and the medical monitor decide. The example data are synthetic. &nbsp;·&nbsp; <a href="index.html">&larr; Home</a> &nbsp;·&nbsp; <a href="START_HERE.html">Full library</a>
+  </footer>
+</div>
+<script src="site.js" defer></script>
 </body>
 </html>

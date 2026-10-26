@@ -4,13 +4,9 @@ subtitle: "A visual, runnable guide, from the biostatistics lens"
 format:
   html:
     theme:
-      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
-      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
-    respect-user-color-scheme: true
-    include-in-header: ../../_partials/_quarto-head-d2.html
-    include-before-body:
-      - ../../_partials/_quarto-skip.html
-      - ../../_partials/_topbar-apps-d2.html
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
     toc-title: On this page
@@ -45,7 +41,7 @@ svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !i
 ```
 
 ::: {.callout-note appearance="simple"}
-**Watch / explore / read / build, pick your mode.** This page *shows* the UAT (diagrams + a live dashboard computed from the data), the [**runnable R Shiny app**](uat-build.html) lets you *run* one, the [build-it walkthrough](uat-build.html) shows how the app is made, and the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) is what you file. Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
+**Watch / explore / read / build, pick your mode.** This page *shows* the UAT (diagrams + a live dashboard computed from the data), the [**runnable R Shiny app**](uat-build.html) lets you *run* one, the [build-it walkthrough](uat-build.html) shows how the app is made, and the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) is what you file. Operations-only, synthetic, no PHI.
 :::
 
 ::: {.callout-tip appearance="simple"}
@@ -136,9 +132,8 @@ The gate is deliberately **conjunctive**: all three conditions must hold. In the
 ### Execution by area
 
 ```{r plot, fig.alt="Test scripts by test area, stacked by status: pass, fail, blocked, in progress and not run."}
-#| renderings: [light, dark]
 df <- uat_area_counts(d$tests)
-for (mode in c("light", "dark")) print(
+for (mode in "dark") print(
   ggplot(df, aes(Freq, Area, fill = Status)) +
     geom_col(width = 0.7) +
     scale_fill_manual(values = c("Pass"="#43c47d","Fail"="#e8657a","Blocked"="#e0a64c",

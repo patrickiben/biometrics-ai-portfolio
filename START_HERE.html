@@ -2,19 +2,86 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<meta http-equiv="refresh" content="0; url=index.html">
-<link rel="canonical" href="index.html">
-<title>Moved | Trial biostatistics toolkit</title>
 <link rel="icon" href="data:,">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trial biostatistics toolkit | Full library</title>
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<main class="wrap stub">
-  <h1>This page has moved</h1>
-  <p>The portfolio now starts at the home page, which lists every stage of the trial lifecycle and the work behind it.</p>
-  <p class="actions"><a href="index.html">Go to the home page</a></p>
-</main>
+<div class="top">
+  <b>Trial biostatistics toolkit</b>
+  <div class="nav">
+    <a href="index.html">Home</a><a href="#ops">Operations</a><a href="#monitor">Monitoring</a>
+    <a href="#deliver">Deliverables</a><a href="#dash">Dashboards</a>
+  </div>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Full library · every tool on one page</div>
+    <h1>The full toolkit</h1>
+    <p class="sub">Every template, dashboard and check for a biostatistics consultant's work on an early-phase trial, organized by theme. Everything runs from static files or in local R, and the three R apps also run in your browser, so a client's data never has to leave your machine. The example studies (CP-101 to CP-108) are synthetic.</p>
+  </header>
+
+  <h2>Curated packages</h2>
+  <div class="pkgs">
+    <div class="pkg"><h3>Operations</h3><p>The no-PHI operational layer you can run for a client today: monitoring, coverage and self-updating trackers.</p><a class="btn" href="#ops">View →</a></div>
+    <div class="pkg"><h3>Biostatistician</h3><p>The hands-on build: TLF libraries, a worked study, the interpretation drafter, the pipeline, the lifecycle sandbox and the validation harness.</p><a class="btn" href="#deliver">View →</a></div>
+  </div>
+
+
+  <h2 id="ops">1 · Operations wikis <span style="color:var(--mut);text-transform:none;letter-spacing:0;font-weight:400">· low risk, nothing new to approve, no PHI</span></h2>
+  <div class="grid">
+    <div class="card"><h3>Self-updating Smartsheet trackers <span class="pill tmpl">scripts</span></h3><div class="d">Smartsheet updates itself from scheduled SAS/R; code owns the data and Smartsheet owns the alerts.</div>
+      <div class="links"><a href="smartsheet_sasr/Smartsheet_SASR.html">Smartsheet × SAS/R</a></div></div>
+    <div class="card"><h3>IRT / RTSM User Acceptance Testing <span class="pill run">R Shiny + multimodal</span></h3><div class="d">Run a UAT of the randomization &amp; supply (IRT/RTSM) system before go-live, from the biostatistics lens. Five ways from one shared R logic core: a <b>visual guide</b> (Mermaid diagrams + a live go-live gate computed from the data), a <b>runnable R Shiny app</b> you edit and own, a shareable <b>dashboard</b>, a fillable <b>Excel workbook</b> for the eTMF, and a <b>build-it walkthrough</b>. Synthetic test data.</div>
+      <div class="links"><a href="uat_irt/quarto/uat-guide.html">&#9733; Visual guide</a><a class="dash" href="uat_irt/quarto/uat-dashboard.html">Dashboard</a><a class="code" href="uat_irt/quarto/uat-build.html">Run &amp; build</a><a class="dash" href="apps/uat_irt/">In your browser</a><a class="code" href="uat_irt/UAT_IRT_RTSM_Workbook.xlsx">Excel</a></div></div>
+    <div class="card"><h3>Hours "find-hours" reconciliation <span class="pill run">R Shiny + multimodal</span></h3><div class="d">Where do the hours come from when out-of-scope work lands? Five ways from one shared R logic core: a <b>visual guide</b> (decision-tree + source-map diagrams, a live net-findable roll-up), a <b>runnable R Shiny app</b>, a shareable <b>dashboard</b>, a fillable <b>Excel workbook</b>, and a <b>build-it walkthrough</b>. Net findable = (&Sigma; planned + contingency) &minus; &Sigma; EAC; hours only, no dollars.</div>
+      <div class="links"><a href="budget_reconciliation/quarto/hours-guide.html">&#9733; Visual guide</a><a class="dash" href="budget_reconciliation/quarto/hours-dashboard.html">Dashboard</a><a class="code" href="budget_reconciliation/quarto/hours-build.html">Run &amp; build</a><a class="code" href="budget_reconciliation/Hours_Budget_Reconciliation_Workbook.xlsx">Excel</a></div></div>
+  </div>
+
+  <h2 id="monitor">2 · Monitoring, safety &amp; coverage</h2>
+  <div class="grid">
+    <div class="card"><h3>SAS/R monitoring, coverage &amp; continuity <span class="pill tmpl">runnable templates</span></h3><div class="d">Deterministic, no-AI monitoring that detects, packages, and pages humans. The coverage playbook covers five scenarios (planned leave, unplanned absence, role handoff or departure, a new owner taking over, bus-factor review), and the interactive Continuity Toolkit builds a coverage matrix, risk register, checklists and handoff packet in the browser.</div>
+      <div class="links"><a href="sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html">Monitoring Wiki</a><a href="sas_r_automation/SAS_R_Trial_Monitoring_Automation.html">SAS/R Automation</a><a href="sasr_onleave_wiki/On_Leave_Coverage_Playbook.html">Coverage Playbook</a><a class="dash" href="sasr_onleave_wiki/Continuity_Toolkit.html">Continuity Toolkit</a></div></div>
+    
+  </div>
+
+  <h2 id="deliver">3 · Core deliverables &amp; pipeline</h2>
+  <div class="grid">
+    <div class="card"><h3>TLF pseudocode libraries <span class="pill tmpl">221 + 221</span></h3><div class="d">ADaM-based Table/Listing/Figure pseudocode for every early-phase design, in both SAS and R (pharmaverse). SAS not executed (no license); R parse-checked, not run on data.</div>
+      <div class="links"><a class="code" href="sas_tlf_pseudocode/index.html">SAS library</a><a class="code" href="r_tlf_pseudocode/index.html">R library</a></div></div>
+    <div class="card"><h3>TLF interpretation drafter <span class="pill tmpl">skeleton</span></h3><div class="d">Drafts TLF narrative text behind a number validator and a human gate; the model never sources a number. The model step is a stub; the validator and its self-test run.</div>
+      <div class="links"><a class="code" href="tlf_interpret/index.html">tlf_interpret</a></div></div>
+    <div class="card"><h3>Protocol→CSR biostat pipeline <span class="pill dsgn">register + map</span></h3><div class="d">The complete Phase-1 clin-pharm deliverables pipeline (136 deliverables) with a worked PK example.</div>
+      <div class="links"><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf">Pipeline</a><a href="biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pdf">Visual Map</a></div></div>
+    <div class="card"><h3>Study-lifecycle sandbox <span class="pill run">runs/verified</span></h3><div class="d">A public-calibrated synthetic study: 8 ADaM domains, a 1-compartment PK + NCA and a 2&times;2 bioequivalence ANOVA.</div>
+      <div class="links"><a class="code" href="sim_lifecycle/index.html">sim_lifecycle</a></div></div>
+    <div class="card"><h3>Worked bioequivalence study <span class="pill run">runs</span></h3><div class="d">One 2&times;2 crossover study from sample size and randomization through the SAP, admiral ADaM, PKNCA, the ICH M13A analysis, rtables/tern tables, a QC re-derivation (same author) and CSR text, regenerated by one script.</div>
+      <div class="links"><a class="dash" href="study/index.html">Worked study</a><a href="study/04_analysis/report/report.html">Results report</a></div></div>
+    <div class="card"><h3>Operating-characteristics studies <span class="pill run">runs</span></h3><div class="d">Residual carryover and the ICH M13A 5% pre-dose rule; a prespecified C-QTc hysteresis check with its size and power.</div>
+      <div class="links"><a class="dash" href="sim_lifecycle/carryover_oc/index.html">Residual carryover</a><a class="dash" href="cqtc_hysteresis/index.html">C-QTc hysteresis</a></div></div>
+    <div class="card"><h3>eCRF pipeline apps <span class="pill run">in your browser</span></h3><div class="d">Four independent Python (Streamlit) apps for clinical eCRF extracts, each a four-tier chain with its own audit log: MedDRA-style auto-coding of adverse-event verbatims, PII/PHI flagging and redaction, participant safety and discontinuation risk scoring, and anomaly and drift detection. Labeled <code>[SI]</code> stand-ins run until trained runtimes are installed. They run in your browser (stlite); the demos use synthetic data and placeholder codes, not MedDRA.</div>
+      <div class="links"><a class="dash" href="https://patrickiben.github.io/ecrf-pipeline-apps/">Overview</a><a class="dash" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html">Coding</a><a class="dash" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html">PHI review</a><a class="dash" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html">Risk</a><a class="dash" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html">Anomaly</a><a class="code" href="https://github.com/patrickiben/ecrf-pipeline-apps">Source</a></div></div>
+    <div class="card"><h3>Trial-Management Validation Harness <span class="pill run">8 of 10 gates green</span></h3><div class="d">Ten gates, from reproducibility and PK conventions to an independent recomputation and a seeded-defect test; an adversarial QC panel is a manual record and the AI-use record awaits sign-off. Runs on this repo's own libraries and synthetic data.</div>
+      <div class="links"><a class="dash" href="validation_harness/index.html">Evidence ledger</a><a class="code" href="validation_harness/README.md">Spec</a></div></div>
+  </div>
+
+  <h2 id="dash">4 · Dashboards</h2>
+  <div class="grid">
+    <div class="card"><h3>Study Lifecycle Monitor <span class="pill run">R Shiny + multimodal</span></h3><div class="d">The operational study-lifecycle console (portfolio RAG, ranked early-warning signals, milestones, TLF funnel), now a runnable <b>R Shiny app</b> you edit and own + a <b>visual guide</b> + shareable <b>dashboard</b> + <b>build-it walkthrough</b>, all from one shared R logic core. Plus the operating-depth field guide.</div>
+      <div class="links"><a href="lifecycle_dashboard/quarto/lifecycle-guide.html">&#9733; Visual guide</a><a class="dash" href="apps/lifecycle_dashboard/">In your browser</a><a class="dash" href="lifecycle_dashboard/quarto/lifecycle-dashboard.html">Dashboard</a><a class="code" href="lifecycle_dashboard/quarto/lifecycle-build.html">Run &amp; build</a><a href="lifecycle_dashboard/Study_Lifecycle_Monitor_FieldGuide.html">Field Guide</a></div></div>
+    <div class="card"><h3>Safety &amp; risk consoles <span class="pill run">runs/verified</span></h3><div class="d">The participant-safety (TRIALMON) console with its Safety Review Committee packet, and the participant- and study-tier risk early-warning console.</div>
+      <div class="links"><a href="sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html">TRIALMON</a><a class="dash" href="apps/trialmon/">TRIALMON in your browser</a><a href="sasr_monitoring_wiki/trialmon_quarto/trialmon-src-packet.html">SRC packet</a><a href="sasr_monitoring_wiki/TRIALMON_Dashboard_Wiki.html">TRIALMON Field Guide</a><a href="risk_monitor/quarto/risk-guide.html">Risk Early-Warning</a></div></div>
+  </div>
+
+  <footer>
+    <b>Guardrails (apply throughout):</b> operations only: no PHI and no participant-level data leave the client's
+    systems; reported and regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21, the
+    EDC/CTMS), never from a language model; every deliverable is signed by a named statistician. These are working
+    templates and tools to adapt and validate for each client study, not validated production systems.
+    <br>Built by Patrick Iben.
+  </footer>
+</div>
+<script src="site.js" defer></script>
 </body>
 </html>

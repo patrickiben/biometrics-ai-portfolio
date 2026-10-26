@@ -4,13 +4,9 @@ subtitle: "A visual, runnable guide to the operational-health console"
 format:
   html:
     theme:
-      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
-      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
-    respect-user-color-scheme: true
-    include-in-header: ../../_partials/_quarto-head-d2.html
-    include-before-body:
-      - ../../_partials/_quarto-skip.html
-      - ../../_partials/_topbar-apps-d2.html
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
     toc-title: On this page
@@ -110,11 +106,10 @@ cat('</div>')
 ### Risk heatmap
 
 ```{r heat, fig.width=8, fig.height=4, fig.alt="Risk heatmap: each study's timeline, data, TLF and resource sub-scores from 0 to 100, colored green to amber to red."}
-#| renderings: [light, dark]
 dims <- c("Timeline","Data","TLF","Resource")
 hl <- do.call(rbind, lapply(dims, function(dm) data.frame(id=st$id, dim=dm, value=st[[dm]])))
 hl$id <- factor(hl$id, levels=rev(st$id)); hl$dim <- factor(hl$dim, levels=dims)
-for (mode in c("light", "dark")) print(
+for (mode in "dark") print(
   ggplot(hl, aes(dim, id, fill=value)) +
     geom_tile(colour=bp_tokens[[mode]][["surface"]], linewidth=1.5) +
     geom_text(aes(label=value), colour="#0b1020", fontface="bold", size=4) +

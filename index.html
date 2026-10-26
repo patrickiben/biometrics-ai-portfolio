@@ -3,119 +3,63 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Trial biostatistics toolkit | Worked examples for lead biostatisticians</title>
-<meta name="description" content="Worked examples, templates, apps and checks for lead biostatisticians on early-phase clinical trials, from sample size to CSR text. Synthetic data; each page says what was actually run.">
-<!-- gen:head -->
-<meta name="color-scheme" content="dark light">
-<meta name="theme-color" content="#0b0f15" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M16 0v16H0z%27 fill=%27%233ad7c8%27/%3E%3C/svg%3E">
-<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}if(t==="light"||t==="dark")d.setAttribute("data-theme",t);d.classList.add("js")})(document.documentElement)</script>
+<title>Trial biostatistics toolkit | Home</title>
+<meta name="description" content="Runnable SAS and R templates, dashboards and checks for a biostatistics consultant's work on an early-phase trial, from the protocol's statistical sections to CSR text.">
+<link rel="icon" href="data:,">
 <link rel="stylesheet" href="site.css">
-<script src="assets/ui.js" defer></script>
-<!-- /gen:head -->
 </head>
 <body>
-<a class="skip" href="#main">Skip to content</a>
-<!-- gen:topbar -->
-<header class="top">
-  <div class="wrap">
-    <a class="name" href="index.html"><span class="mark" aria-hidden="true"></span>Trial biostatistics toolkit</a>
-    <nav class="nav" id="site-nav" aria-label="Site">
-      <a href="index.html" aria-current="page">Home</a>
-      <a href="lifecycle.html">Lifecycle</a>
-      <a href="study/index.html">Worked example</a>
-      <a href="apps.html">Apps</a>
-      <a href="methods.html">Methods</a>
-      <a href="quality.html">Quality and AI use</a>
-      <a href="about.html">About</a>
-    </nav>
-    <span class="bar-facts">Synthetic data only</span>
-    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.6 14.2A8.5 8.5 0 0 1 9.8 3.4a8.5 8.5 0 1 0 10.8 10.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><span class="sr">Dark theme</span></button>
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+<div class="top">
+  <b>Trial biostatistics toolkit</b>
+  <div class="nav">
+    <a href="Operations.html">Operations</a>
+    <a href="Biostatistics.html">Biostatistics</a>
+    <a href="START_HERE.html">Full library</a>
   </div>
-</header>
-<!-- /gen:topbar -->
-<main id="main" class="wrap">
-
-  <section class="hero hero--home" aria-labelledby="title">
-    <div>
-      <p class="eyebrow">For lead biostatisticians</p>
-      <h1 id="title">Trial biostatistics toolkit</h1>
-      <p class="lede">Worked examples, templates, apps and checks for the work a lead biostatistician does on an early-phase clinical trial, from sample size to clinical study report text. Every dataset is synthetic, and each page says what was actually run and what was not.</p>
-      <p class="actions">
-        <a class="btn btn--primary" href="study/index.html">See the worked example</a>
-        <a class="btn btn--ghost" href="lifecycle.html">Find your task</a>
-        <a class="btn btn--ghost" href="apps.html">Run an app</a>
-      </p>
+</div>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow" style="color:var(--gold)">Home · for independent biostatistics consultants</div>
+    <h1>Biostatistics and trial-operations tools for consulting work</h1>
+    <p class="sub">Runnable SAS and R templates, dashboards and checks for the work a biostatistics consultant does for a
+       client across an early-phase trial, from the protocol's statistical sections to CSR text. Everything here runs
+       from static files or in local R, so a client's data never has to leave your machine. The example studies
+       (CP-101 to CP-108) are synthetic.</p>
+    <div class="qprow">
+      <a class="qp go" href="study/index.html">
+        <div class="qe">&#128202; New to the toolkit?</div>
+        <div class="qt">See one study end to end &rarr;</div>
+        <div class="qd">A bioequivalence study taken from sample size and randomization through the SAP, ADaM, NCA, the bioequivalence analysis, QC and CSR text, every step runnable.</div>
+      </a>
     </div>
-    <ul class="facts-grid">
-      <li><span class="k">A worked study</span>One synthetic bioequivalence study taken through sample size, the SAP, ADaM, NCA and the ICH M13A analysis, QC and CSR text, with every program and output.</li>
-      <li><span class="k">Templates</span>SAS and R table, listing and figure templates for five early-phase designs, mock shells and a protocol statistics excerpt to adapt.</li>
-      <li><span class="k">Apps and checks</span>A safety-review console, a UAT tracker and a study lifecycle monitor that run in the browser, plus a QC harness that reports what it catches.</li>
-    </ul>
-    <!-- gen:glance --><aside class="glance" aria-labelledby="glance-h"><header><h2 id="glance-h">Worked example at a glance</h2><span class="st st-synthetic">Synthetic data</span></header><ol><li><a href="study/index.html#stage1"><span class="n">01</span><span class="step">Design</span><span class="val">40 enrolled; 38 evaluable for 90% power</span></a></li><li><a href="study/index.html#stage2"><span class="n">02</span><span class="step">SAP</span><span class="val">6 table shells; analysis settings drive the code</span></a></li><li><a href="study/index.html#stage3"><span class="n">03</span><span class="step">ADaM</span><span class="val">24 of 24 metadata checks passed</span></a></li><li><a href="study/index.html#stage4"><span class="n">04</span><span class="step">BE</span><span class="val">Cmax 101.07% (90% CI 98.89 to 103.30)</span></a></li><li><a href="study/index.html#stage5"><span class="n">05</span><span class="step">QC</span><span class="val">40 of 40 checks (same-author re-derivation)</span></a></li><li><a href="study/index.html#stage6"><span class="n">06</span><span class="step">CSR text</span><span class="val">10 of 10 paragraphs number-checked</span></a></li></ol><footer>Synthetic study SIMBE01, seed 2026; every value is read from a study output file.</footer></aside><!-- /gen:glance -->
-  </section>
+  </header>
 
-  <section id="status" class="sec-status" aria-label="This site in numbers, each linked to its source">
-    <!-- gen:status --><p class="strip-cap"><span class="k">This site in numbers</span><span>Read from this repository's files when the pages are built; updated 2026-10-25; <span class="c-amber">synthetic data only</span></span><span>App smoke test: <a href="https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml" rel="noopener">run history</a> ↗</span></p><div class="strip" role="list"><a class="readout" role="listitem" href="lifecycle.html"><span class="k">Lifecycle</span><span class="v">10 <span class="u">stages</span></span><span class="s">7 with a worked-example step · 5 with stated limits</span><span class="d">Updated 2026-10-25</span></a><a class="readout" role="listitem" href="apps.html"><span class="k">Apps</span><span class="v">9 <span class="u">apps</span></span><span class="s">4 R Shiny · 4 Python · 1 JavaScript</span><span class="d">3 R apps smoke-tested before each deploy; local run 2026-10-26</span></a><a class="readout" role="listitem" href="validation_harness/index.html"><span class="k">Harness gates</span><span class="v"><span class="c-green">8</span> of 10 <span class="u">green</span></span><span class="s">1 manual record · <span class="c-amber">1 awaiting sign-off</span> · <span class="c-amber">no gate signed yet</span></span><span class="d">Ledger 2026-10-26</span></a><a class="readout" role="listitem" href="validation_harness/index.html#teeth"><span class="k">Seeded defects</span><span class="v">15 of 18 <span class="u">caught</span></span><span class="s">0 survived · 1 equivalent · 2 not applicable</span><span class="d">Run 2026-10-26</span></a><a class="readout" role="listitem" href="study/05_qc/qc_ledger.html"><span class="k">Worked example QC</span><span class="v"><span class="c-green">40</span> of 40 <span class="u">checks</span></span><span class="s">5,100 values · same-author re-derivation</span><span class="d">study/run_all.R, R 4.6.0</span></a><a class="readout" role="listitem" href="methods.html#libraries"><span class="k">TLF templates</span><span class="v">221 <span class="u">SAS/R twins</span></span><span class="s">5 early-phase designs · R parse-checked · SAS not executed (no license)</span><span class="d">Pseudocode, not run on data</span></a></div><!-- /gen:status -->
-  </section>
-
-  <section id="start" aria-labelledby="start-h">
-    <div class="sec-head"><div><p class="eyebrow"><span class="n">01</span> · Start here</p><h2 id="start-h">Start here</h2>
-      <p>Four places to start, each with its status stated.</p></div></div>
-    <!-- gen:featured --><div class="grid-12"><article class="card card--feature span-8"><a class="thumb" href="study/index.html" tabindex="-1"><img src="assets/thumbs/study-lg.webp" width="880" height="550" alt="Worked example results report: mean plasma concentration over time for test and reference, linear scale, synthetic data" loading="eager" fetchpriority="high" decoding="async"></a><div class="body"><p class="eyebrow" title="Worked example · 6 stages">Worked example · 6 stages</p><h3><a href="study/index.html">A synthetic bioequivalence study, from sample size to CSR text</a></h3><p class="chips"><span class="st st-runs" title="Runs: study/run_all.R">Runs</span></p><p class="aux"><span class="ax ax-synthetic">Synthetic data</span></p><p class="sum">One synthetic 2x2 bioequivalence study taken from sample size and randomization through the SAP, ADaM (admiral), NCA (PKNCA), the ICH M13A analysis, rtables/tern tables, QC and CSR text.</p><p class="fact">QC is same-author re-derivation; define.xml and ADRG not authored.</p><ul class="go"><li><a href="study/index.html" data-type="open">Open the worked example</a></li><li><a href="study/04_analysis/report/report.html" data-type="report">Results report</a></li><li><a href="study/05_qc/qc_ledger.html" data-type="report">QC ledger</a></li><li><a href="study/run_all.R" data-type="source">run_all.R</a></li></ul></div></article><article class="card span-4"><a class="thumb" href="sasr_monitoring_wiki/index.html" tabindex="-1"><picture><source srcset="assets/thumbs/trialmon-light.webp" media="(prefers-color-scheme: light)"><img src="assets/thumbs/trialmon.webp" width="640" height="400" alt="TRIALMON console as it opens: the participant packet, the Start here card, the worst-of value boxes and the ranked worklist, synthetic data" loading="eager" decoding="async"></picture></a><p class="eyebrow" title="Monitoring and interim review">Monitoring and interim review</p><h3><a href="sasr_monitoring_wiki/index.html">TRIALMON: safety review on synthetic data</a></h3><p class="chips"><span class="st st-runs">Runs (R 4.6.0); tests pass</span></p><p class="aux"><span class="ax ax-synthetic">Synthetic data</span></p><p class="sum">A worked Safety Review Committee example for a first-in-human dose-escalation study: the screening rules, a console that applies them, and the packet a committee would read.</p><p class="fact">Flags positions for a medical monitor and a committee; it does not adjudicate DLTs or Hy&#x27;s Law cases.</p><p class="fact">Not covered: DMC charters, group-sequential interim design, BOIN or CRM design</p><ul class="go"><li><a href="apps/trialmon/" data-type="run">Run in browser</a></li><li><a href="sasr_monitoring_wiki/index.html" data-type="open">Open TRIALMON</a></li><li><a href="sasr_monitoring_wiki/trialmon_quarto/trialmon-src-packet.html" data-type="report">SRC packet</a></li><li><a href="sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html" data-type="guide">How the screens work</a></li></ul></article><article class="card span-8 card--slim-phone"><p class="eyebrow" title="AI and automation">AI and automation</p><h3><a href="https://patrickiben.github.io/ecrf-pipeline-apps/">eCRF assist apps</a></h3><p class="aux"><span class="ax ax-synthetic">Synthetic data</span></p><p class="sum">Four Python apps: coding QC assist, de-identification review assist, participant risk screening (rule-based default thresholds) and central statistical monitoring. The evaluation reports its own failures: on held-out synthetic text, the de-identification stand-in left 108 of 308 identifiers readable (the full model path: 91 of 308).</p><div class="shots"><figure><a class="thumb" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html" tabindex="-1"><img src="assets/thumbs/ecrf-coding.webp" width="640" height="400" alt="Coding QC assist: synthetic adverse-event verbatims with ranked candidate dictionary terms" loading="lazy" decoding="async"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html">Coding QC</a></figcaption></figure><figure><a class="thumb" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html" tabindex="-1"><img src="assets/thumbs/ecrf-phi.webp" width="640" height="400" alt="De-identification review assist: flagged names, phone numbers and ZIP codes in synthetic adverse-event text" loading="lazy" decoding="async"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html">De-identification</a></figcaption></figure><figure><a class="thumb" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html" tabindex="-1"><img src="assets/thumbs/ecrf-risk.webp" width="640" height="400" alt="Participant risk screening: per-participant scores and contributing factors from rule-based default thresholds, synthetic data" loading="lazy" decoding="async"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html">Risk screening</a></figcaption></figure><figure><a class="thumb" href="https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html" tabindex="-1"><img src="assets/thumbs/ecrf-anomaly.webp" width="640" height="400" alt="Central statistical monitoring: per-participant numeric outliers and per-lab drift tables, synthetic data" loading="lazy" decoding="async"></a><figcaption><a href="https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html">Central monitoring</a></figcaption></figure></div><p class="fact">In your browser: GitHub Pages and jsDelivr see your IP address; about 30 MB on first visit; uploads disabled. Not a validated or Part 11 system.</p><ul class="go"><li><a href="https://patrickiben.github.io/ecrf-pipeline-apps/" data-type="open" rel="noopener">Overview</a></li><li><a href="https://github.com/patrickiben/ecrf-pipeline-apps" data-type="source" rel="noopener">Source and evaluation</a></li></ul></article><article class="card span-4 card--slim-phone"><a class="thumb" href="sasr_onleave_wiki/Continuity_Toolkit.html" tabindex="-1"><picture><source srcset="assets/thumbs/toolkit-light.webp" media="(prefers-color-scheme: light)"><img src="assets/thumbs/toolkit.webp" width="640" height="400" alt="Continuity Toolkit: scenario status line, view tabs with counts, KPI tiles and scenario choices, fictional example" loading="lazy" decoding="async"></picture></a><p class="eyebrow" title="Operations and delivery">Operations and delivery</p><h3><a href="sasr_onleave_wiki/Continuity_Toolkit.html">Continuity and handoff toolkit</a></h3><p class="chips"><span class="st st-runs">Runs in the browser</span></p><p class="sum">Turns a list of recurring statistical jobs into a coverage matrix, single-owner risks, per-job checklists and a printable handoff packet.</p><p class="fact">The page makes no network requests and ships with a clearly fictional example.</p><ul class="go"><li><a href="sasr_onleave_wiki/Continuity_Toolkit.html" data-type="open">Open the toolkit</a></li></ul></article></div><!-- /gen:featured -->
-  </section>
-
-  <section id="methods" aria-labelledby="methods-h">
-    <div class="sec-head"><div><p class="eyebrow"><span class="n">02</span> · Methods</p><h2 id="methods-h">Method transfers and operating characteristics</h2>
-      <p>Two checks adapted from the author's research (the seeded-defect check and the within-sibling evaluation) and two operating-characteristics studies, all on synthetic data.</p></div>
-      <a class="more" href="methods.html">All methods, libraries and checks</a></div>
-    <!-- gen:transfers --><div class="grid-12"><article class="card card--compact span-3"><a class="thumb" href="validation_harness/index.html#teeth" tabindex="-1"><picture><source srcset="assets/thumbs/teeth-light.webp" media="(prefers-color-scheme: light)"><img src="assets/thumbs/teeth.webp" width="640" height="400" alt="Seeded-defect check: counts caught, survived, equivalent and not applicable, above the table of planted defects" loading="lazy" decoding="async"></picture></a><p class="eyebrow" title="QC and validation">QC and validation</p><h3><a href="validation_harness/index.html#teeth">What the harness catches</a></h3><p class="chips"><span class="st st-runs">Run 2026-10-26</span></p><p class="sum">Programming defects from a list fixed in advance are planted one at a time in a throwaway copy, and each is recorded as caught (and by which gate or test), survived, equivalent or not applicable.</p><p class="fact">15 caught, 0 survived, 1 equivalent, 2 not applicable; a hand-picked list, not a detection rate.</p><ul class="go"><li><a href="validation_harness/index.html#teeth" data-type="open">Open</a></li><li><a href="validation_harness/teeth/run_teeth.sh" data-type="source">run_teeth.sh</a></li></ul></article><article class="card card--compact span-3"><a class="thumb" href="sim_lifecycle/carryover_oc/index.html" tabindex="-1"><picture><source srcset="assets/thumbs/carryover-light.webp" media="(prefers-color-scheme: light)"><img src="assets/thumbs/carryover.webp" width="640" height="400" alt="Residual carryover study: consumer risk against washout in mean half-lives for each analysis, synthetic simulation" loading="lazy" decoding="async"></picture></a><p class="eyebrow" title="PK and clinical pharmacology">PK and clinical pharmacology</p><h3><a href="sim_lifecycle/carryover_oc/index.html">Residual carryover and the ICH M13A 5% pre-dose rule</a></h3><p class="aux"><span class="ax ax-synthetic">Exploratory (synthetic)</span><span class="ax ax-note">Subtraction: sensitivity analysis</span></p><p class="sum">How the ICH M13A 5% pre-dose rule performs when washout is borderline: consumer risk, power and exclusions for washouts of 2 to 10 mean half-lives.</p><p class="fact">At 5 mean half-lives the rule drops 34% of participants; consumer risk 0.051 (MCSE 0.005).</p><ul class="go"><li><a href="sim_lifecycle/carryover_oc/index.html" data-type="open">Open</a></li><li><a href="sim_lifecycle/carryover_oc/R/run_oc.R" data-type="source">run_oc.R</a></li></ul></article><article class="card card--compact span-3"><a class="thumb" href="cqtc_hysteresis/index.html" tabindex="-1"><picture><source srcset="assets/thumbs/cqtc-light.webp" media="(prefers-color-scheme: light)"><img src="assets/thumbs/cqtc.webp" width="640" height="400" alt="C-QTc hysteresis check: concentration and ddQTcF loops for typical participants under four scenarios, synthetic data" loading="lazy" decoding="async"></picture></a><p class="eyebrow" title="SAP and mock shells">SAP and mock shells</p><h3><a href="cqtc_hysteresis/index.html">C-QTc hysteresis check</a></h3><p class="chips"><span class="st st-runs" title="Runs: cqtc_hysteresis/R/run_oc.R">Runs</span></p><p class="aux"><span class="ax ax-synthetic">Exploratory (synthetic)</span></p><p class="sum">A prespecified check: the signed area of each participant&#x27;s concentration-ddQTcF loop on residuals from the direct-effect model, with its operating characteristics.</p><p class="fact">Its test&#x27;s standard error allows for the shared time-matched placebo mean.</p><ul class="go"><li><a href="cqtc_hysteresis/index.html" data-type="open">Open</a></li><li><a href="cqtc_hysteresis/R/run_oc.R" data-type="source">run_oc.R</a></li></ul></article><article class="card card--compact span-3"><a class="thumb" href="https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination" tabindex="-1"><img src="assets/thumbs/sibling.webp" width="640" height="400" alt="Within-sibling evaluation: gate table and within-set accuracy against the keyword rule by family and variant, synthetic data" loading="lazy" decoding="async"></a><p class="eyebrow" title="AI and automation">AI and automation</p><h3><a href="https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination">Within-sibling evaluation of the coding assist</a></h3><p class="aux"><span class="ax ax-synthetic">Synthetic, non-MedDRA data</span></p><p class="sum">With the neighborhood of terms given, does the coding assist pick the right member? An adaptation of the within-site permutation design from the AlphaGenome audit.</p><p class="fact">Within-set accuracy 0.909 (lab) and 0.861 (site) against a keyword rule&#x27;s 0.970 and 0.819; both route to human coding.</p><ul class="go"><li><a href="https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination" data-type="open" rel="noopener">Open the evaluation</a></li></ul></article></div><!-- /gen:transfers -->
-  </section>
-
-  <section id="lifecycle" aria-labelledby="lifecycle-h">
-    <div class="sec-head"><div><p class="eyebrow"><span class="n">03</span> · Lifecycle</p><h2 id="lifecycle-h">By task across the trial lifecycle</h2>
-      <p>For each stage: the strongest worked example or tool on this site, and what it does not cover.</p></div>
-      <a class="more" href="lifecycle.html">Full lifecycle and every module</a></div>
-    <!-- gen:lifecycle --><div class="stage-grid"><article class="card card--stage"><h3><span class="num">01</span><a href="lifecycle.html#design">Design</a></h3><p class="strong"><span class="k">Use here</span><a href="study/index.html#stage1">Worked example, stage 1: sample size and randomization</a></p><p class="strong"><span class="k">Not covered</span>BOIN/CRM dose escalation, adaptive and group-sequential designs</p></article><article class="card card--stage"><h3><span class="num">02</span><a href="lifecycle.html#sap">SAP and mock shells</a></h3><p class="strong"><span class="k">Use here</span><a href="study/index.html#stage2">Worked example, stage 2: SAP excerpt and six mock shells</a></p></article><article class="card card--stage"><h3><span class="num">03</span><a href="lifecycle.html#standards">Data standards</a></h3><p class="strong"><span class="k">Use here</span><a href="study/index.html#stage3">Worked example, stage 3: ADaM (admiral), P21-layout specification, XPT</a></p><p class="strong"><span class="k">Not covered</span>define.xml, ADRG, SDTM mapping</p></article><article class="card card--stage"><h3><span class="num">04</span><a href="lifecycle.html#programming">Programming and TLFs</a></h3><p class="strong"><span class="k">Use here</span><a href="study/04_analysis/tlf/t_14_4_3_1.html">Table 14.4.3.1 (rtables) and the SAS and R template libraries</a></p></article><article class="card card--stage"><h3><span class="num">05</span><a href="lifecycle.html#qc">QC and validation</a></h3><p class="strong"><span class="k">Use here</span><a href="validation_harness/index.html">QC harness and seeded-defect check</a></p><p class="strong"><span class="k">Not covered</span>independent double programming</p></article><article class="card card--stage"><h3><span class="num">06</span><a href="lifecycle.html#monitoring">Monitoring and interim review</a></h3><p class="strong"><span class="k">Use here</span><a href="sasr_monitoring_wiki/index.html">TRIALMON safety review</a></p><p class="strong"><span class="k">Not covered</span>DMC charters, group-sequential interim design</p></article><article class="card card--stage"><h3><span class="num">07</span><a href="lifecycle.html#pk">PK and clinical pharmacology</a></h3><p class="strong"><span class="k">Use here</span><a href="study/index.html#stage4">Worked example, stage 4: NCA and the ICH M13A analysis</a></p></article><article class="card card--stage"><h3><span class="num">08</span><a href="lifecycle.html#reporting">Reporting and CSR</a></h3><p class="strong"><span class="k">Use here</span><a href="study/index.html#stage6">Worked example, stage 6: CSR section 11-style text, number-checked</a></p><p class="strong"><span class="k">Not covered</span>submission packages</p></article><article class="card card--stage"><h3><span class="num">09</span><a href="lifecycle.html#operations">Operations and delivery</a></h3><p class="strong"><span class="k">Use here</span><a href="sasr_onleave_wiki/Continuity_Toolkit.html">Continuity and handoff toolkit</a></p></article><article class="card card--stage"><h3><span class="num">10</span><a href="lifecycle.html#ai">AI and automation</a></h3><p class="strong"><span class="k">Use here</span><a href="https://patrickiben.github.io/ecrf-pipeline-apps/" rel="noopener">eCRF assist apps and their evaluation</a> ↗</p></article></div><p class="not-covered"><strong>Not covered here:</strong> define.xml and ADRG authoring, conformant SDTM, submission packages, DMC charters, BOIN/CRM dose escalation, adaptive and group-sequential designs, and independent double programming.</p><!-- /gen:lifecycle -->
-  </section>
-
-  <section id="how" class="how-panel" aria-labelledby="how-h">
-    <p class="eyebrow"><span class="n">04</span> · Using these resources</p>
-    <h2 id="how-h">Using these resources</h2>
-    <p>These are worked examples on synthetic data, not validated systems. In a real study, reported numbers come from validated systems and a named statistician signs every deliverable.</p>
-    <p class="small">AI tools may draft or check text here; they never produce a reported number. Pages say what was executed and what was not.</p>
-    <p class="more"><a href="quality.html">Quality and AI use</a></p>
-  </section>
-
-</main>
-<!-- gen:footer -->
-<footer id="contact" class="site">
-  <div class="wrap foot-grid">
-    <div>
-      <h2>Author</h2>
-      <p class="fine">Built by Patrick Iben. <a href="about.html#author">About the author</a></p>
-      <ul class="contact">
-        <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>
-        <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>
-      </ul>
-    </div>
-    <div>
-      <h2>This site</h2>
-      <p class="fine">Every dataset on this site is synthetic. Nothing here is real trial data, and no output here is a validated or regulatory deliverable. Last updated October 2026.</p>
-    </div>
-    <div>
-      <h2>More</h2>
-      <ul class="foot-links">
-        <li><a href="about.html">About</a></li>
-        <li><a href="quality.html">Quality and AI use</a></li>
-        <li><a href="https://github.com/patrickiben/biometrics-ai-portfolio">Source on GitHub</a></li>
-        <li><button class="linklike" type="button" data-theme-reset>Follow system theme</button></li>
-      </ul>
-    </div>
+  <h2>Choose your view</h2>
+  <div class="sections">
+    <a class="sec ops" href="Operations.html">
+      <div class="k">For study operations</div>
+      <h3>Operations</h3>
+      <p>The tools that keep a study running: self-updating Smartsheet trackers, deterministic SAS/R monitoring with coverage for leave and handoffs, the participant-safety, trial-risk and study-lifecycle dashboards, IRT/RTSM acceptance testing, and hours reconciliation.</p>
+      <span class="go" style="display:block">Enter Operations &rarr;</span>
+    </a>
+    <a class="sec bio" href="Biostatistics.html">
+      <div class="k">For the biostatistician</div>
+      <h3>Biostatistics</h3>
+      <p>The hands-on build: the SAS and R TLF pseudocode libraries, a worked bioequivalence study, the TLF-interpretation drafter, the Protocol&rarr;CSR deliverables pipeline, the study-lifecycle sandbox and the validation harness.</p>
+      <span class="go" style="display:block">Enter Biostatistics &rarr;</span>
+    </a>
   </div>
-</footer>
-<!-- /gen:footer -->
+
+  <div class="firstbox" style="margin-top:20px">Prefer one long page? <a href="START_HERE.html"><b>Browse the full library &rarr;</b></a> Every tool, organized by theme, on a single index.</div>
+
+  <footer>
+    <b>Guardrails (apply throughout):</b> operations only: no PHI and no participant-level data leave the client's
+    systems; reported and regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21, the
+    EDC/CTMS), never from a language model; every deliverable is signed by a named statistician. These are working
+    templates and tools to adapt and validate for each client study, not validated production systems.
+    <br>Built by Patrick Iben.
+  </footer>
+</div>
+<script src="site.js" defer></script>
 </body>
 </html>

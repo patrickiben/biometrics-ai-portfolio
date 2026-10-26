@@ -3,11 +3,12 @@
 # Action majors checked against their GitHub releases on 2026-10-25: actions/checkout v7,
 # r-lib/actions v2 (latest tag v2.14.0), quarto-dev/quarto-actions v2, actions/upload-artifact v7.
 name: Flagship worked example
+# Every pull request runs it: "study" is a required check on main, and a path-filtered
+# required check would never report on a PR that does not touch these paths.
 on:
   push:
     paths: ['study/**', 'sim_lifecycle/**', 'tlf_interpret/R/**', '.github/workflows/study.yml']
   pull_request:
-    paths: ['study/**', 'sim_lifecycle/**', 'tlf_interpret/R/**', '.github/workflows/study.yml']
   workflow_dispatch:
 permissions:
   contents: read

@@ -14,26 +14,16 @@ params:
 format:
   html:
     theme:
-      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss, _theme-dark.scss]
-      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss, _theme-light.scss]
-    respect-user-color-scheme: true
-    include-in-header: ../../_partials/_quarto-head-d2.html
-    include-before-body:
-      - ../../_partials/_quarto-skip.html
-      - ../../_partials/_topbar-apps-d2.html
-    grid:
-      sidebar-width: 230px
-      body-width: 960px
-      margin-width: 40px
+      - darkly
+      - ../../_quarto-mc.scss
+      - _theme-mc.scss
+    include-before-body: ../../_mc-topbar.html
     toc: true
     toc-location: left
-    toc-title: Contents
-    toc-depth: 2
-    number-sections: true
+    toc-title: On this page
     embed-resources: true
-    html-math-method: plain
-    fig-format: png
-    fig-dpi: 110
+    code-tools: true
+    code-fold: true
 execute:
   echo: false
   warning: false
@@ -170,7 +160,6 @@ out. The screen cannot rule out other causes; the medical monitor does. Separate
 **above** 3x ULN calls for repeat ALT, AST, ALP and TBL within 48 to 72 hours to confirm it.
 
 ```{r edish, fig.width=7.6, fig.height=4.9, fig.alt="eDISH plot: peak ALT or AST against peak total bilirubin for each participant, log scales, with reference lines at 3x and 2x ULN."}
-#| renderings: [light, dark]
 both(function(look) edish_plot(h, look))
 ```
 
@@ -217,7 +206,6 @@ traj_ids <- head(x$USUBJID[x$hys | !is.na(x$at3x_day)], 4)
 ```
 
 ```{r traj, eval=length(traj_ids) > 0, fig.width=7.6, fig.height=3.4, fig.alt=paste0("Liver tests by study day for ", and_list(traj_ids), ", as multiples of ULN.")}
-#| renderings: [light, dark]
 tr <- do.call(rbind, lapply(traj_ids, function(i) cbind(liver_trajectory(tm, i), USUBJID = i)))
 tr$USUBJID <- factor(tr$USUBJID, levels = traj_ids)
 both(function(look) trajectory_plot(tr, look, NULL) + facet_wrap(~USUBJID, nrow = 1))

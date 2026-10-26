@@ -3,13 +3,9 @@ title: "Find Hours - Reconciliation Snapshot"
 format:
   html:
     theme:
-      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
-      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
-    respect-user-color-scheme: true
-    include-in-header: ../../_partials/_quarto-head-d2.html
-    include-before-body:
-      - ../../_partials/_quarto-skip.html
-      - ../../_partials/_topbar-apps-d2.html
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     embed-resources: true
     page-layout: full
     toc: false
@@ -32,7 +28,7 @@ f45 <- find_hours(45, d$ledger, d$contingency)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Read-only shareable snapshot**, computed from the effort ledger [`project_hours_ledger.csv`](../templates/project_hours_ledger.csv). It connects to no real budget or timesheet. The interactive tool is the [Run &amp; build the Shiny app](hours-build.html) page, and the [visual guide](hours-guide.html) explains it. Operations-only, synthetic, hours / effort only (no dollars, rates, or headcount). We say *participant*, not *subject*.
+**Read-only shareable snapshot**, computed from the effort ledger [`project_hours_ledger.csv`](../templates/project_hours_ledger.csv). It connects to no real budget or timesheet. The interactive tool is the [Run &amp; build the Shiny app](hours-build.html) page, and the [visual guide](hours-guide.html) explains it. Operations-only, synthetic, hours / effort only (no dollars, rates, or headcount).
 :::
 
 ```{r kpis, results='asis'}
@@ -54,12 +50,11 @@ cat('</div>')
 #### Planned vs forecast (EAC) by deliverable
 
 ```{r plot, fig.width=7, fig.height=4.4, fig.alt="Planned and forecast (EAC) hours for each deliverable, as paired horizontal bars."}
-#| renderings: [light, dark]
 long <- rbind(
   data.frame(deliverable = d$ledger$deliverable, hours = d$ledger$planned, kind = "Planned"),
   data.frame(deliverable = d$ledger$deliverable, hours = d$ledger$eac,     kind = "Forecast EAC"))
 long$deliverable <- factor(long$deliverable, levels = rev(d$ledger$deliverable))
-for (mode in c("light", "dark")) print(
+for (mode in "dark") print(
   ggplot(long, aes(hours, deliverable, fill = kind)) +
     geom_col(width = 0.7, position = position_dodge(width = 0.75)) +
     scale_fill_manual(values = c("Planned"="#5b8cff","Forecast EAC"="#e0a64c")) +

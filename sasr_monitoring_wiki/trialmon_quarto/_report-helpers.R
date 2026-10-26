@@ -51,7 +51,7 @@ tm_theme <- function(look, base_size = 12) {
     panel.background = ggplot2::element_rect(fill = "transparent", colour = NA))
 }
 
-both <- function(make) { for (k in c("light", "dark")) print(make(TM_LOOK[[k]])) }
+both <- function(make) print(make(TM_LOOK[["dark"]]))   # the pages use the dark theme (darkly), so one rendering
 
 edish_plot <- function(h, look) {
   h$screen <- factor(ifelse(h$hys, "Potential Hy's Law", ifelse(!is.na(h$at3x_day), "AT > 3x ULN: confirm", "No hepatic flag")),

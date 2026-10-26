@@ -3,13 +3,9 @@ title: "IRT / RTSM UAT Snapshot"
 format:
   html:
     theme:
-      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss]
-      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss]
-    respect-user-color-scheme: true
-    include-in-header: ../../_partials/_quarto-head-d2.html
-    include-before-body:
-      - ../../_partials/_quarto-skip.html
-      - ../../_partials/_topbar-apps-d2.html
+      - darkly
+      - ../../_quarto-mc.scss
+    include-before-body: ../../_mc-topbar.html
     embed-resources: true
     page-layout: full
     toc: false
@@ -32,7 +28,7 @@ s <- uat_summary(d$tests, d$defects, d$trace)
 ```
 
 ::: {.callout-note appearance="simple"}
-**Read-only shareable snapshot**, computed from the synthetic UAT data ([`test_scripts.csv`](../templates/test_scripts.csv), [`defect_log.csv`](../templates/defect_log.csv), [`traceability_matrix.csv`](../templates/traceability_matrix.csv)). It does not connect to the IRT. The interactive tool is the [Run &amp; build the Shiny app](uat-build.html) page, and the [visual guide](uat-guide.html) explains it. Operations-only, synthetic, no PHI. We say *participant*, not *subject*.
+**Read-only shareable snapshot**, computed from the synthetic UAT data ([`test_scripts.csv`](../templates/test_scripts.csv), [`defect_log.csv`](../templates/defect_log.csv), [`traceability_matrix.csv`](../templates/traceability_matrix.csv)). It does not connect to the IRT. The interactive tool is the [Run &amp; build the Shiny app](uat-build.html) page, and the [visual guide](uat-guide.html) explains it. Operations-only, synthetic, no PHI.
 :::
 
 ```{r kpis, results='asis'}
@@ -71,9 +67,8 @@ cat('<div style="font-size:12px;color:var(--muted);margin-top:12px">Conjunctive:
 #### Execution by area
 
 ```{r plot, fig.width=7, fig.height=4.2, fig.alt="Test scripts by test area, stacked by status: pass, fail, blocked, in progress and not run."}
-#| renderings: [light, dark]
 df <- uat_area_counts(d$tests)
-for (mode in c("light", "dark")) print(
+for (mode in "dark") print(
   ggplot(df, aes(Freq, Area, fill = Status)) +
     geom_col(width = 0.7) +
     scale_fill_manual(values = c("Pass"="#43c47d","Fail"="#e8657a","Blocked"="#e0a64c",

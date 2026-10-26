@@ -39,12 +39,15 @@ ROOT = os.path.abspath(ARGS[0]) if ARGS else os.path.dirname(os.path.abspath(__f
 SKIP_DIR = {'node_modules', '__pycache__', '.git', '.quarto'}
 
 HOME = 'index.html'
-REDIRECT_STUBS = ['START_HERE.html', 'Biostatistics.html', 'Operations.html']
-CORE_PAGES = [HOME, '404.html', 'README.md'] + REDIRECT_STUBS
+REDIRECT_STUBS = []   # Operations, Biostatistics and the full library are the site's own hubs again
+CORE_PAGES = [HOME, '404.html', 'README.md', 'Operations.html', 'Biostatistics.html', 'START_HERE.html']
 # Removed from the published site (kept in the private archive). Paths are relative to ROOT.
-REMOVED = ['New_Hire_Start_Here.html', 'hybrid_ops_wiki/', 'slm_operating_wiki/', 'slm_wiki/',
-           'study_kb_nogui/', 'smartsheet_nocode/', 'knowledge_vault/', 'courses/', 'netlify.toml',
-           'site.js', 'risk_monitor/narration/', 'wiki_a11y.js', 'Management.html']
+# The consultant toolkit keeps every tool; it drops the management material, onboarding, the training
+# course, the narrated videos and the hybrid / on-device AI program wikis (their deterministic macro
+# library stays in slm_wiki/macro_library/).
+REMOVED = ['New_Hire_Start_Here.html', 'hybrid_ops_wiki/', 'slm_operating_wiki/', 'slm_wiki/SLM_SASR_TrialOps.html',
+           'smartsheet_nocode/', 'study_kb_nogui/', 'knowledge_vault/', 'courses/', 'netlify.toml', 'risk_monitor/narration/', 'Management.html',
+           'risk_monitor/Trial_Risk_EarlyWarning_Dashboard.html', 'risk_monitor/Advanced_Engine_Manager_Slide.pdf']
 RETIRED_FRAMING = re.compile(
     r'AI for Biometrics|pending management approval|our in[- ]house team|in-house capability|'
     r'New biostatistician\? Start here|SVC-BIOSTAT|work laptop|\bper SOP\b|cross-validated SAS|'
@@ -129,6 +132,8 @@ def check_target(src_file, url):
     if not path:
         return
     base = os.path.dirname(src_file)
+    if path.startswith('/biometrics-ai-portfolio/'):   # the 404 page links from the project site's root
+        path = '/' + path[len('/biometrics-ai-portfolio/'):]
     tgt = os.path.normpath(os.path.join(ROOT, path.lstrip('/')) if path.startswith('/') else os.path.join(base, path))
     if not os.path.exists(tgt):
         add('Broken links', f'{rel(src_file)}  ->  {url}')

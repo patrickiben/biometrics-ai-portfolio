@@ -135,7 +135,7 @@ for (a in APPS) {
        paste0(a$name, ": app.R does not use the shared helper (source it and add app_status_ui())"))
   need(grepl('<link rel="icon"', page, fixed = TRUE), paste0(a$name, ": the launch page has no favicon link"))
   need(grepl('<header class="top">', page, fixed = TRUE) && grepl('class="theme-toggle"', page, fixed = TRUE) &&
-         grepl('href="../../site.css"', page, fixed = TRUE) && grepl('<footer id="contact" class="site">', page, fixed = TRUE),
+         grepl('href="../../assets/toolkit.css"', page, fixed = TRUE) && grepl('<footer id="contact" class="site">', page, fixed = TRUE),
        paste0(a$name, ": the launch page lacks the site's head, top bar or footer"))
   need(grepl('id="launch-config"', page, fixed = TRUE) && grepl("../../apps/_shared/launch.js", page, fixed = TRUE),
        paste0(a$name, ": the page is not the launch page"))

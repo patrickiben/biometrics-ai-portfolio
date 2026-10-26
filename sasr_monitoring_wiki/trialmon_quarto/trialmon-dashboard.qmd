@@ -4,19 +4,13 @@ subtitle: "A read-only snapshot of the console at the Cohort 4 data cut (synthet
 format:
   html:
     theme:
-      dark: [default, ../../_quarto-tokens-dark.scss, ../../_quarto-site.scss, _theme-dark.scss]
-      light: [default, ../../_quarto-tokens-light.scss, ../../_quarto-site.scss, _theme-light.scss]
-    respect-user-color-scheme: true
-    include-in-header: ../../_partials/_quarto-head-d2.html
-    include-before-body:
-      - ../../_partials/_quarto-skip.html
-      - ../../_partials/_topbar-apps-d2.html
+      - darkly
+      - ../../_quarto-mc.scss
+      - _theme-mc.scss
+    include-before-body: ../../_mc-topbar.html
+    embed-resources: true
     page-layout: full
     toc: false
-    embed-resources: true
-    html-math-method: plain
-    fig-format: png
-    fig-dpi: 110
 execute:
   echo: false
   warning: false
@@ -72,7 +66,6 @@ cat(html_table(data.frame(Level = sev_html(wl$sev), Tier = wl$tier, `Participant
 ### eDISH
 
 ```{r edish, fig.width=6.2, fig.height=4.6, fig.alt="eDISH plot of peak ALT or AST against peak total bilirubin."}
-#| renderings: [light, dark]
 both(function(look) edish_plot(h, look))
 ```
 
