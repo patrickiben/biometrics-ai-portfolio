@@ -37,13 +37,20 @@ add "G1 Reproducibility & environment" "the sandbox's eight committed output fil
 # a repo-wide grep that one file anywhere could satisfy. The R programs are found by content
 # (pkstats(), geomean or geocv, a Geo Mean or Geo CV% column, exp(mean()) or 10^mean(), or a model
 # with a dose, treatment, period or sequence term). Comments are ignored and strings are never read
-# as code. Every geomean and Geo Mean column must be exp() or 10^ of a log-derived value (or NA),
-# every geocv and Geo CV% column exp() of a log-scale variance (or NA), every model response must be
-# log-derived, and each program must use log() or pkstats(), whose body is held to the same rules.
-# Each SAS twin at the same path must assign geomean only as exp() of a PROC MEANS mean of a
-# log-derived variable, geocv only from exp() of its log-scale SD or variance, and every MODEL
-# response must be log-derived; it must also call a passing %pkstats or back-transform its own
-# such mean with exp() (a model-only program's twin must fit a MODEL). The script prints
+# as code. Display wrappers (sprintf(), round(), format(), ...) are unwrapped and every branch of
+# if/else, ifelse, if_else, coalesce, case_when, pmin and pmax is checked on its own: each branch of
+# every geomean and Geo Mean column must be NA, a geometric name or function of the file, or exactly
+# exp() of a log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one),
+# so exp(log(mean(x))) and mean(exp(log(x))) fail; each branch of every geocv and Geo CV% column must
+# be NA, a geometric-CV name or function, or exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a
+# natural-log variance. Every model response
+# must be log-derived, and each program must use log() or pkstats(), whose body is held to the same
+# rules. Each SAS twin at the same path (assignments read also after else, when or otherwise, and
+# round() unwrapped) must assign geomean only as missing, a geometric name, or exp() of a PROC MEANS
+# mean of a natural-log variable (10** for log10), geocv only as missing, a geometric-CV name or
+# [100*]sqrt(exp(V)-1) of a natural-log variance or squared SD, and every MODEL response must be
+# log-derived; it must also call a passing %pkstats or back-transform its own such mean in the same
+# base (a model-only program's twin must fit a MODEL). The script prints
 # <passing> <checked> <evidence>; G2 is green only when the two counts are equal and not 0.
 read -r GEO GEOTOT GEOE < <(python3 validation_harness/checks/g2_geo.py "$R" "$SAS")
 NDIST=$(( $(grep -rl 'n_distinct(USUBJID)' $R 2>/dev/null | wc -l) + $(grep -rl 'CLASS USUBJID\|distinct USUBJID' $SAS 2>/dev/null | wc -l) ))

@@ -22,21 +22,36 @@ names the column assigned). Assignments are `=`, `<-`, `<<-`, `:=`, `->`, `->>`,
 x$name, x[["name"]] and backticked or quoted names, every named argument (so mutate(),
 summarise(), transmute() and rename() assign their columns), and across(cols, fn) or
 *_at(cols, fn), which assign fn to each column cols names. An expression runs to the end of its
-balanced call or statement, across lines.
+balanced call or statement, across lines. A name joins each set below when any assignment to it,
+anywhere in the file, qualifies (fixed points).
   - log-derived names: assigned from an expression that calls log(), log10() or log2() (or passes
     one as a function, as in across(x, log)), uses another log-derived name, or calls a function
     defined in the file whose body is log-derived. This is transitive and flow-insensitive: one
     log-derived assignment anywhere in the file is enough. rename(new = old) propagates; in a$b
-    only b counts.
-  - geomean, and every Geo Mean column: NA, or contains exp() of a natural-log-derived value that
-    is not a log-scale variance, or 10^ of a log10-derived value (2^ of log2 likewise), or calls a
-    function defined in the file whose body does, or uses geomean or a name assigned from such an
-    exp() or 10^ (or assigned only from such names).
-  - geocv, and every Geo CV column: NA, or contains exp() of a log-scale variance (var(L),
-    sd(L)^2 or sigma(model)^2 with L log-derived, or a name assigned from one of these, or the
-    square of a name assigned from sd(L) or sigma(model)), or calls a function defined in the
-    file whose body does, or uses geocv or a name assigned from such an exp() (or assigned only
-    from such names).
+    only b counts. The base of the log is kept.
+  - log-scale means: mean(), weighted.mean(), colMeans(), rowMeans(), coef(), fixef(), fitted()
+    or predict() whose first unnamed argument is log-derived and contains no exp() (indexing after the
+    call is allowed), a name assigned that way, or a call of a function defined in the file that
+    returns one; each keeps the base of its log. A name assigned straight from log() is not a mean.
+  - leaves: the values an expression can take. Display wrappers are unwrapped (sprintf(),
+    gettextf(), round(), signif(), format(), formatC(), prettyNum(), number(), comma(),
+    as.numeric(), as.double(), as.character(), unname(), trimws(), I(), paste(), paste0(),
+    return(), invisible(); a pasted string literal is not a leaf). Each branch of if/else,
+    ifelse(), if_else(), coalesce(), case_when(), pmin() and pmax() is its own leaf. Native and
+    magrittr pipes are rewritten as nested calls, and a function definition contributes its body
+    (the last statement of a braced body).
+  - geomean, and every Geo Mean column: every leaf is NA, a geometric name (geomean, or a name
+    with an assignment whose every leaf passes this rule), a call of a function defined in the
+    file whose every leaf passes, or exactly exp(<natural-log mean>), 10^<log10 mean> or
+    2^<log2 mean> with nothing around it. So exp(log(mean(x))), mean(exp(log(x))),
+    exp(mean(log(x)) + var(log(x))/2), exp(<a name assigned from log()>) and an arithmetic
+    fallback in any branch fail.
+  - geocv, and every Geo CV column: every leaf is NA, a geometric-CV name, a call of a function
+    defined in the file whose every leaf passes, or exactly [100 *] sqrt(exp(V) - 1) [* 100] or
+    sqrt(expm1(V)), where V is a natural-log variance: var(L), sd(L)^2 or sigma(model)^2 with L
+    natural-log-derived, a name assigned from one of these, or the square of a name assigned from
+    sd(L) or sigma(model).
+  - a column whose name matches both (Geo Mean (Geo CV%)): every leaf passes one of the two rules.
   - every model fitted has a log-derived response (the formula's left side; a formula held in a
     name is followed to its assignment; a formula that cannot be found fails; one-sided formulas
     are skipped).
@@ -47,26 +62,39 @@ balanced call or statement, across lines.
 SAS rules, for the twin at the same relative path (exact case) of each program in the set.
 /* */ comments, `*` comment statements (at a statement start, including after a semicolon on the
 same line, or at a line start), `%*` macro comments, quoted strings and %tfltitle(...) calls are
-blanked first; the code is lowercased and split into statements at semicolons.
+blanked first; the code is lowercased and split into statements at semicolons. Assignments are
+read also after `else`, `if ... then`, `else if ... then`, `when (...)` and `otherwise`.
   - log-derived variables: assigned from log(), log10() or log2(), or from another log-derived
-    variable. A PROC MEANS or PROC SUMMARY whose VAR statement lists a log-derived variable makes
-    the matching MEAN= names of its OUTPUT statement (positional, or MEAN(var)=, or AUTONAME, or
-    ODS OUTPUT SUMMARY=) geometric-mean names; STD=/STDDEV= and VAR= give log-scale SD and
-    variance names.
-  - every geomean assignment is exp(<geometric-mean name>) or missing (.); every geocv
-    assignment contains exp(<log-scale SD name>**2) or exp(<log-scale variance name>) or is
-    missing; a twin that calls %pkstats may use the macro's names. Every MODEL statement in a
-    PROC MIXED, GLM, REG, GLIMMIX, GENMOD, ANOVA or HPMIXED step has a log-derived response.
+    variable, by base. A PROC MEANS or PROC SUMMARY whose VAR statement lists a log-derived
+    variable makes the matching MEAN= names of its OUTPUT statement (positional, or MEAN(var)=,
+    or AUTONAME, or ODS OUTPUT SUMMARY=) geometric-mean names of that base; STD=/STDDEV= and VAR=
+    give log-scale SD and variance names of that base.
+  - every geomean assignment, with round(x, unit) unwrapped, is missing (.), a geometric name
+    (geomean, or a variable with an assignment that passes this rule), exp(<natural-log mean
+    name>), 10**<log10 mean name> or 2**<log2 mean name>. Every geocv assignment, round()
+    unwrapped, is missing, a geometric-CV name, or [100*]sqrt(exp(V)-1)[*100] where V is SD**2 or
+    SD*SD of a natural-log SD name, a natural-log variance name, or a log10 (log2) SD or variance
+    scaled by log(10)**2 (log(2)**2). A twin that calls %pkstats may use the macro's names. Every
+    MODEL statement in a PROC MIXED, GLM, REG, GLIMMIX, GENMOD, ANOVA or HPMIXED step has a
+    log-derived response.
   - the twin of an R program with geometric statistics (any signal above except the model one)
     must call %pkstats, whose macro body must assign geomean and geocv by these rules and
-    back-transform its own geometric mean, or must apply exp() to one of its own geometric-mean
-    names. The twin of an R program found only by its model must fit a MODEL.
+    back-transform its own geometric mean, or must have its own geometric-mean name that some
+    assignment back-transforms in the same base (exp() for log, 10** for log10, 2** for log2).
+    The twin of an R program found only by its model must fit a MODEL.
 
 Disclosed limits: log(x + c) counts as log-derived (the shift is not detected). The analysis is
-flow-insensitive and stays within one file (the helper and the macro excepted). A formula built
-from strings fails. Display rows built by row index or case_when() are not seen. A raw-scale
-model in one of these programs would be flagged even if it were legitimate. SAS macro variables
-(&x) are never log-derived.
+flow-insensitive and stays within one file (the helper and the macro excepted): a name counts as
+geometric when any one of its assignments qualifies, although every geomean and geocv assignment
+is checked. A formula built from strings fails. Display rows built by row index, or by
+case_when() on a statistic label, are not seen. Plot mappings (aes(), SGPLOT) and the GMR, its
+confidence limits, Rac confidence limits and intra-participant CV columns are not checked.
+Package geometric-mean functions (DescTools::Gmean(), psych::geometric.mean()) and exp() of an
+emmeans column are not recognized and fail, as does an R geocv computed from log10 values. A
+raw-scale model in one of these programs would be flagged even if it were legitimate, and a new
+program that fits a raw-scale model with a dose or treatment term (a PD ANCOVA, say) joins the set
+and fails. SAS macro variables (&x) are never log-derived, a line that begins with `*` is read as
+a comment statement even in the middle of a statement, and PROC SQL is not read.
 """
 import os
 import re
@@ -343,12 +371,38 @@ def pick_arg(args, names, pos):
 
 
 class Rec:
-    __slots__ = ('targets', 'expr', 'span', 'ln')
+    """one assignment: the names it writes, the value expression (newlines removed) and, for a
+    function definition with a braced body, the body's last statement as the value"""
+    __slots__ = ('targets', 'expr', 'value', 'span', 'ln')
 
-    def __init__(self, targets, expr, span, ln):
+    def __init__(self, targets, expr, span, ln, value=None):
         self.targets = targets
         self.expr = [t for t in expr if t.k != 'nl']
+        self.value = self.expr if value is None else [t for t in value if t.k != 'nl']
         self.span, self.ln = span, ln
+
+
+def fn_last_stmt(toks, M, s, e):
+    """for function(...) { ... } starting at toks[s], the tokens of the body's last statement
+    (return(x) is unwrapped later); None when toks[s:e] is not a function with a braced body"""
+    if not (s + 1 < e and (is_name(toks[s], 'function') or is_op(toks[s], '\\')) and toks[s + 1].k == '('
+            and M[s + 1] > 0):
+        return None
+    k = M[s + 1] + 1
+    while k < e and toks[k].k == 'nl':
+        k += 1
+    if not (k < e and toks[k].k == '{' and M[k] > 0):
+        return None
+    i, last = k + 1, None
+    while i < M[k]:
+        if toks[i].k in ('nl', ';'):
+            i += 1
+            continue
+        j = expr_end(toks, M, i)
+        j = max(j, i + 1)
+        last = (i, j)
+        i = j
+    return toks[last[0]:last[1]] if last else []
 
 
 def r_assignments(toks, M):
@@ -366,7 +420,7 @@ def r_assignments(toks, M):
             while s < n and toks[s].k == 'nl':
                 s += 1
             e = expr_end(toks, M, s)
-            recs.append(Rec(lhs_targets(toks, M, a, i), toks[s:e], (i, e), t.ln))
+            recs.append(Rec(lhs_targets(toks, M, a, i), toks[s:e], (i, e), t.ln, fn_last_stmt(toks, M, s, e)))
         elif t.v in ASSIGN_RIGHT:
             s = expr_start_back(toks, M, i)
             j = i + 1
@@ -446,13 +500,39 @@ def strip_parens(s):
     return s
 
 
+def call_parts(s):
+    """(function name, [(arg name or None, tokens)], tokens after the call) of [pkg::]f(...)..."""
+    k = 2 if len(s) > 2 and s[0].k == 'name' and is_op(s[1], '::', ':::') else 0
+    if len(s) > k + 1 and s[k].k == 'name' and not s[k].bq and s[k + 1].k == '(':
+        c = close_of(s, k + 1)
+        return s[k].v, split_args(s[k + 1:c + 1]), s[c + 1:]
+    return None, None, None
+
+
 def call_form(s):
     """(function name, first positional argument, tokens after the call) of [pkg::]f(...)..."""
-    k = 2 if len(s) > 2 and s[0].k == 'name' and is_op(s[1], '::', ':::') else 0
-    if len(s) > k + 1 and s[k].k == 'name' and s[k + 1].k == '(':
-        c = close_of(s, k + 1)
-        return s[k].v, pick_arg(split_args(s[k + 1:c + 1]), (), 0), s[c + 1:]
-    return None, None, None
+    fn, args, rest = call_parts(s)
+    if fn is None:
+        return None, None, None
+    return fn, pick_arg(args, (), 0), rest
+
+
+def match_args(args, formals):
+    """R argument matching (exact names, then positions): {formal: tokens}, '...' holds the rest"""
+    out, pos, extra = {}, [], []
+    for nm, a in args:
+        if nm in formals and nm not in out:
+            out[nm] = a
+        elif nm is None:
+            pos.append(a)
+        else:
+            extra.append((nm, a))
+    free = [f for f in formals if f not in out]
+    for f, a in zip(free, pos):
+        out[f] = a
+    out['...'] = pos[len(free):]
+    out['...named'] = extra
+    return out
 
 
 def squared(rest):
@@ -487,23 +567,186 @@ def operand(s, j):
     return []
 
 
+def ref_name(s):
+    """the column or variable a bare reference names: x -> x, d$x -> x, d[["x"]] -> x; else None"""
+    s = strip_parens(s)
+    if len(s) == 1 and s[0].k == 'name' and (s[0].bq or s[0].v not in KEYWORDS):
+        return s[0].v
+    if len(s) >= 3 and is_op(s[-2], '$', '@') and s[-1].k in ('name', 'str') and ref_name(s[:-2]) is not None:
+        return s[-1].v
+    if (len(s) >= 6 and [t.k for t in s[-5:]] == ['[', '[', 'str', ']', ']'] and close_of(s, len(s) - 5) == len(s) - 1
+            and ref_name(s[:-5]) is not None):
+        return s[-3].v
+    return None
+
+
+def only_index(rest):
+    """True when rest is only indexing: [..], [[..]] or $name, any number of times"""
+    j, n = 0, len(rest)
+    while j < n:
+        if rest[j].k == '[':
+            j = close_of(rest, j) + 1
+        elif is_op(rest[j], '$', '@') and j + 1 < n and rest[j + 1].k in ('name', 'str'):
+            j += 2
+        else:
+            return False
+    return True
+
+
+def top_ops(s):
+    """indices of the operators of s at bracket depth 0 (namespace and $ access excluded)"""
+    out, d = [], 0
+    for j, t in enumerate(s):
+        if t.k in OPENERS:
+            d += 1
+        elif t.k in CLOSERS:
+            d -= 1
+        elif d == 0 and t.k == 'op' and t.v not in ('::', ':::', '$', '@'):
+            out.append(j)
+    return out
+
+
+def split_at(s, idx):
+    parts, a = [], 0
+    for j in idx:
+        parts.append(s[a:j])
+        a = j + 1
+    parts.append(s[a:])
+    return parts
+
+
+def desugar_pipe(s):
+    """x |> f(a) and x %>% f(a) (or %>% f) become f(x, a); s unchanged when a step is not a call"""
+    idx = [j for j in top_ops(s) if s[j].v in ('|>', '%>%')]
+    if not idx:
+        return s
+    parts = split_at(s, idx)
+    cur = parts[0]
+    for seg in parts[1:]:
+        if not seg or not cur:
+            return s
+        ln = seg[0].ln
+        if len(seg) == 1 and seg[0].k == 'name':
+            cur = [seg[0], Tok('(', '(', ln)] + cur + [Tok(')', ')', ln)]
+            continue
+        k = 2 if len(seg) > 2 and seg[0].k == 'name' and is_op(seg[1], '::', ':::') else 0
+        if not (len(seg) > k + 1 and seg[k].k == 'name' and seg[k + 1].k == '('
+                and close_of(seg, k + 1) == len(seg) - 1):
+            return s
+        empty = seg[k + 2].k == ')'
+        cur = seg[:k + 2] + cur + ([] if empty else [Tok(',', ',', ln)]) + seg[k + 2:]
+    return cur
+
+
+def else_index(s):
+    """index of the else that closes the if whose body starts s (nested ifs counted)"""
+    d, nested = 0, 0
+    for j, t in enumerate(s):
+        if t.k in OPENERS:
+            d += 1
+        elif t.k in CLOSERS:
+            d -= 1
+        elif d == 0 and is_name(t, 'if'):
+            nested += 1
+        elif d == 0 and is_name(t, 'else'):
+            if nested == 0:
+                return j
+            nested -= 1
+    return None
+
+
+# display wrappers whose value is one argument: {function: formal that holds the value}
+WRAP_ONE = {'round': 'x', 'signif': 'x', 'format': 'x', 'formatC': 'x', 'prettyNum': 'x', 'as.numeric': 'x',
+            'as.double': 'x', 'as.character': 'x', 'unname': 'obj', 'return': 'value', 'invisible': 'x',
+            'trimws': 'x', 'I': 'x', 'number': 'x', 'comma': 'x'}
+# calls whose formals come before `...`: {function: formals}; the values are WRAP_VALUES[f], or
+# else everything that `...` takes
+WRAP_FORMALS = {'sprintf': ('fmt',), 'gettextf': ('fmt',), 'ifelse': ('test', 'yes', 'no'),
+                'if_else': ('condition', 'true', 'false', 'missing', 'ptype', 'size')}
+WRAP_VALUES = {'ifelse': ('yes', 'no'), 'if_else': ('true', 'false', 'missing')}
+# calls whose `...` comes first, so their other formals match only by name: {function: those
+# formals}; every other argument is a branch the result can take, or text that is pasted
+WRAP_DOTS = {'coalesce': (), 'pmin': ('na.rm',), 'pmax': ('na.rm',), 'paste': ('sep', 'collapse', 'recycle0'),
+             'paste0': ('collapse', 'recycle0')}
+# aggregates that, applied to a log-scale value, give a log-scale mean (exp() of it is geometric)
+MEAN_FUNS = {'mean', 'weighted.mean', 'colMeans', 'rowMeans', 'coef', 'fixef', 'fitted', 'predict'}
+
+
+def leaves(s, depth=0):
+    """the value expressions s can evaluate to: display wrappers (sprintf, round, signif, format,
+    as.numeric, paste, ...) are unwrapped; if/else, ifelse, if_else, coalesce, case_when, pmin and
+    pmax give one leaf per branch; pipes are rewritten as nested calls; a function gives its body.
+    A string literal pasted into a label is not a leaf."""
+    s = strip_parens(s)
+    if not s or depth > 25:
+        return [s]
+    if is_op(s[0], '~') and len(s) > 1:                       # purrr lambda inside across()
+        return leaves(s[1:], depth + 1)
+    if s[0].k == '{' and close_of(s, 0) == len(s) - 1:      # { x } (one statement: newlines are gone)
+        return leaves(s[1:-1], depth + 1)
+    s = desugar_pipe(s)
+    if (is_name(s[0], 'function') or is_op(s[0], '\\')) and len(s) > 2 and s[1].k == '(':
+        return leaves(s[close_of(s, 1) + 1:], depth + 1)
+    if is_name(s[0], 'if') and len(s) > 2 and s[1].k == '(':
+        rest = s[close_of(s, 1) + 1:]
+        k = else_index(rest)
+        if k is None:
+            return leaves(rest, depth + 1)
+        return leaves(rest[:k], depth + 1) + leaves(rest[k + 1:], depth + 1)
+    fn, args, tail = call_parts(s)
+    if fn is None or tail:
+        return [s]
+    vals = None
+    if fn in WRAP_ONE:
+        v = match_args(args, (WRAP_ONE[fn],)).get(WRAP_ONE[fn])
+        vals = [v] if v else []
+    elif fn in WRAP_FORMALS:
+        m = match_args(args, WRAP_FORMALS[fn])
+        if fn in WRAP_VALUES:
+            vals = [m[f] for f in WRAP_VALUES[fn] if m.get(f)]
+        else:
+            vals = m['...'] + [a for _, a in m['...named']]
+    elif fn in WRAP_DOTS:
+        vals = [a for nm, a in args if nm not in WRAP_DOTS[fn]]
+        if fn in ('paste', 'paste0'):
+            vals = [a for a in vals if not (len(a) == 1 and a[0].k == 'str')]
+    elif fn == 'case_when':
+        vals = []
+        for nm, a in args:
+            if nm == '.default':
+                vals.append(a)
+            elif nm is None:
+                t = [j for j in top_ops(a) if a[j].v == '~']
+                vals.append(a[t[0] + 1:] if t else a)
+    if vals is None:
+        return [s]
+    out = []
+    for v in vals:
+        out += leaves(v, depth + 1)
+    return out
+
+
 class RCtx:
-    """log-derived, back-transformed and log-variance names of one R file (fixed points)"""
+    """log-derived, log-scale-mean, back-transformed and log-variance names of one R file (fixed
+    points; a name joins a set when any assignment to it, anywhere in the file, qualifies)"""
 
     def __init__(self, recs):
         self.recs = recs
         self.f = [facts(r.expr) for r in recs]
+        self.lv = [leaves(r.value) for r in recs]
         self.local = {tg for r in recs if r.expr and (is_name(r.expr[0], 'function') or is_op(r.expr[0], '\\'))
                       for tg in r.targets}
         self.L = {b: set() for b in ('e', '10', '2', '?')}
         self._fix(self._add_log)
         self.LV, self.LSD = set(), set()
         self._fix(self._add_var)
+        self.LM = {b: set() for b in ('e', '10', '2')}
+        self._fix(self._add_lm)
         self.G, self.GCV = {'geomean'}, {'geocv'}
         self._fix(self._add_geo)
 
     def _fix(self, step):
-        while any([step(r, f) for r, f in zip(self.recs, self.f)]):
+        while any([step(r, f, lv) for r, f, lv in zip(self.recs, self.f, self.lv)]):
             pass
 
     @staticmethod
@@ -512,7 +755,7 @@ class RCtx:
         dest |= new
         return bool(new)
 
-    def _add_log(self, r, f):
+    def _add_log(self, r, f, lv):
         refs, calls, logs = f
         ch = False
         for b, names in self.L.items():
@@ -520,20 +763,26 @@ class RCtx:
                 ch |= self._grow(names, r.targets)
         return ch
 
-    def _add_var(self, r, f):
+    def _add_var(self, r, f, lv):
         ch = False
-        if self.is_logvar(r.expr):
+        if self.is_logvar(r.value):
             ch |= self._grow(self.LV, r.targets)
-        if self.is_logsd(r.expr):
+        if self.is_logsd(r.value):
             ch |= self._grow(self.LSD, r.targets)
         return ch
 
-    def _add_geo(self, r, f):
-        refs = f[0]
+    def _add_lm(self, r, f, lv):
         ch = False
-        if self.bt(r.expr) or (refs and refs <= self.G):
+        for b in self.LM:
+            if lv and all(self.log_mean(b, x) for x in lv):
+                ch |= self._grow(self.LM[b], r.targets)
+        return ch
+
+    def _add_geo(self, r, f, lv):
+        ch = False
+        if lv and all(self.leaf_mean(x) for x in lv):
             ch |= self._grow(self.G, r.targets)
-        if self.expv(r.expr) or (refs and refs <= self.GCV):
+        if lv and all(self.leaf_cv(x) for x in lv):
             ch |= self._grow(self.GCV, r.targets)
         return ch
 
@@ -545,17 +794,35 @@ class RCtx:
     def ld_any(self, s):
         return any(self.ld(b, s) for b in self.L)
 
+    def local_call(self, s, names):
+        """s is one call of a function defined in this file whose name is in names"""
+        fn, _, rest = call_parts(strip_parens(s))
+        return fn is not None and not rest and fn in self.local and fn in names
+
+    def log_mean(self, base, s):
+        """s is a log-scale mean of the given base: mean(L), weighted.mean, colMeans, rowMeans,
+        coef, fixef, fitted or predict of a log-derived value (optionally indexed, no exp() inside),
+        a name assigned only that way, or a call of a function defined in the file that returns one"""
+        s = strip_parens(s)
+        n = ref_name(s)
+        if n is not None:
+            return n in self.LM[base]
+        if self.local_call(s, self.LM[base]):
+            return True
+        fn, a, rest = call_form(s)
+        if fn not in MEAN_FUNS or not a or not only_index(rest):
+            return False
+        return 'exp' not in facts(a)[1] and self.ld(base, a)
+
     def bt(self, s):
-        """contains exp() of a natural-log-derived value (not a log-scale variance) or 10^ / 2^ of a
-        log10- / log2-derived one"""
-        for j, t in enumerate(s):
-            if is_name(t, 'exp') and j + 1 < len(s) and s[j + 1].k == '(' and not (j and is_op(s[j - 1], '$', '@')):
-                a = s[j + 2:close_of(s, j + 1)]
-                if self.ld('e', a) and not self.is_logvar(a):     # exp(log variance) is a CV, not a mean
-                    return True
-            if t.k == 'num' and t.v in POW_BASE and j + 1 < len(s) and is_op(s[j + 1], '^', '**'):
-                if self.ld(POW_BASE[t.v], operand(s, j + 2)):
-                    return True
+        """s is exactly exp(<natural-log mean>), 10^<log10 mean> or 2^<log2 mean>"""
+        s = strip_parens(s)
+        fn, a, rest = call_form(s)
+        if fn == 'exp' and a and not rest:
+            return self.log_mean('e', a)
+        if len(s) > 2 and s[0].k == 'num' and s[0].v in POW_BASE and is_op(s[1], '^', '**'):
+            op = operand(s, 2)
+            return bool(op) and len(op) == len(s) - 2 and self.log_mean(POW_BASE[s[0].v], op)
         return False
 
     def is_logvar(self, s):
@@ -576,21 +843,44 @@ class RCtx:
             return self.ld('e', a)
         return len(s) == 1 and s[0].k == 'name' and s[0].v in self.LSD
 
-    def expv(self, s):
-        """contains exp() of a log-scale variance"""
-        for j, t in enumerate(s):
-            if is_name(t, 'exp') and j + 1 < len(s) and s[j + 1].k == '(' and not (j and is_op(s[j - 1], '$', '@')):
-                if self.is_logvar(s[j + 2:close_of(s, j + 1)]):
-                    return True
-        return False
+    def cv_formula(self, s):
+        """s is [100 *] sqrt(exp(V) - 1) [* 100] or sqrt(expm1(V)), V a natural-log variance"""
+        s = strip_parens(s)
+        ops = top_ops(s)
+        if any(s[j].v != '*' for j in ops):
+            return False
+        parts = [strip_parens(x) for x in split_at(s, ops)]
+        hundred = ('100', '100L', '100.0', '1e2')
+        roots = [x for x in parts if not (len(x) == 1 and x[0].k == 'num' and x[0].v in hundred)]
+        if len(roots) != 1 or len(parts) > 2:
+            return False
+        fn, y, rest = call_form(roots[0])
+        if fn != 'sqrt' or not y or rest:
+            return False
+        fn, v, rest = call_form(strip_parens(y))
+        if fn == 'expm1' and v and not rest:
+            return self.is_logvar(v)
+        return fn == 'exp' and bool(v) and len(rest) == 2 and is_op(rest[0], '-') and rest[1].k == 'num' \
+            and rest[1].v in ('1', '1L', '1.0') and self.is_logvar(v)
+
+    def leaf_mean(self, s):
+        """NA, a geometric name, a call of a geometric function defined in the file, or a back-transform"""
+        return is_na(s) or ref_name(s) in self.G or self.local_call(s, self.G) or self.bt(s)
+
+    def leaf_cv(self, s):
+        return is_na(s) or ref_name(s) in self.GCV or self.local_call(s, self.GCV) or self.cv_formula(s)
 
     def ok_mean(self, s):
-        refs, calls, _ = facts(s)
-        return is_na(s) or self.bt(s) or bool(calls & self.local & self.G) or bool(refs & self.G)
+        lv = leaves(s)
+        return bool(lv) and all(self.leaf_mean(x) for x in lv)
 
     def ok_cv(self, s):
-        refs, calls, _ = facts(s)
-        return is_na(s) or self.expv(s) or bool(calls & self.local & self.GCV) or bool(refs & self.GCV)
+        lv = leaves(s)
+        return bool(lv) and all(self.leaf_cv(x) for x in lv)
+
+    def ok_either(self, s):
+        lv = leaves(s)
+        return bool(lv) and all(self.leaf_mean(x) or self.leaf_cv(x) for x in lv)
 
 
 class RFile:
@@ -663,12 +953,13 @@ def check_r(rf, helper_ok):
         for tg in r.targets:
             if tg in ('geomean', 'geocv'):
                 c['assign'] += 1
-                if not (x.ok_mean(r.expr) if tg == 'geomean' else x.ok_cv(r.expr)):
+                if not (x.ok_mean(r.value) if tg == 'geomean' else x.ok_cv(r.value)):
                     prob.append(f'{tg} at line {r.ln} is not a log-scale back-transform')
             elif GEO_MEAN_COL.search(tg) or GEO_CV_COL.search(tg):
                 c['col'] += 1
-                if not (x.ok_mean(r.expr) if GEO_MEAN_COL.search(tg) else x.ok_cv(r.expr)):
-                    prob.append(f'"{tg}" at line {r.ln} uses no geometric statistic')
+                gm, gcv = GEO_MEAN_COL.search(tg), GEO_CV_COL.search(tg)
+                if not (x.ok_either(r.value) if gm and gcv else x.ok_mean(r.value) if gm else x.ok_cv(r.value)):
+                    prob.append(f'"{tg}" at line {r.ln} is not a geometric statistic')
     for ln, lhs, _ in rf.models():
         c['model'] += 1
         if lhs is None:
@@ -699,7 +990,7 @@ def check_r_helper(path):
         for tg in r.targets:
             if tg in seen:
                 seen[tg] += 1
-                if not (rf.ctx.ok_mean(r.expr) if tg == 'geomean' else rf.ctx.ok_cv(r.expr)):
+                if not (rf.ctx.ok_mean(r.value) if tg == 'geomean' else rf.ctx.ok_cv(r.value)):
                     prob.append(f'pkstats() {tg} at line {r.ln} is not a log-scale back-transform')
     prob += [f'pkstats() assigns no {k}' for k, v in seen.items() if not v]
     return not prob, prob
@@ -709,7 +1000,11 @@ def check_r_helper(path):
 SAS_MODEL_PROCS = {'mixed', 'glm', 'reg', 'glimmix', 'genmod', 'anova', 'hpmixed'}
 SAS_STATS = {'mean', 'std', 'stddev', 'var', 'n', 'nmiss', 'median', 'min', 'max', 'cv', 'sum', 'stderr',
              'q1', 'q3', 'p5', 'p95', 'lclm', 'uclm', 'range'}
-SAS_ASSIGN = re.compile(r'^(?:(?:else\s+)?if\b.*?\bthen\s+)?([a-z_][a-z0-9_]*)\s*=(?!=)\s*(.+)$', re.S)
+# an assignment statement, also after `else`, `if ... then`, `else if ... then`, `when (...)` or `otherwise`
+SAS_ASSIGN = re.compile(r'^(?:else\s+)?(?:if\b.*?\bthen\s+|when\s*\(.*?\)\s*|otherwise\s+)?'
+                        r'([a-z_][a-z0-9_]*)\s*=(?!=)\s*(.+)$', re.S)
+SAS_BASES = ('e', '10', '2')
+SAS_N = r'([a-z_][a-z0-9_]*)'
 SAS_WORD = re.compile(r'(&?)\b([a-z_][a-z0-9_]*)\b(\s*\()?')
 SAS_OPT = re.compile(r'\b([a-z_][a-z0-9_]*)\s*(?:\(([^)]*)\))?\s*=')
 
@@ -784,23 +1079,41 @@ def sas_words(expr):
     return {m.group(2) for m in SAS_WORD.finditer(expr) if not m.group(1) and not m.group(3)}
 
 
-def balanced_args(expr, fn):
-    """argument text of every fn( ... ) call in expr"""
-    out = []
-    for m in re.finditer(r'\b' + fn + r'\s*\(', expr):
-        j, d = m.end() - 1, 0
-        while j < len(expr):
-            d += expr[j] == '('
-            d -= expr[j] == ')'
+def sas_unparen(x):
+    """x without spaces and without parentheses that enclose all of it"""
+    x = x.replace(' ', '')
+    while x.startswith('(') and x.endswith(')'):
+        d = 0
+        for k, c in enumerate(x):
+            d += c == '('
+            d -= c == ')'
             if d == 0:
                 break
-            j += 1
-        out.append(expr[m.end():j])
-    return out
+        if k != len(x) - 1:
+            break
+        x = x[1:-1]
+    return x
+
+
+def sas_unround(x):
+    """x with round(v, unit) unwrapped (spaces removed)"""
+    x = sas_unparen(x)
+    while x.startswith('round(') and x.endswith(')'):
+        inner, d, cut = x[6:-1], 0, None
+        for k, c in enumerate(inner):
+            d += c == '('
+            d -= c == ')'
+            if d < 0:
+                return x
+            if c == ',' and d == 0:
+                cut = k
+                break
+        x = sas_unparen(inner if cut is None else inner[:cut])
+    return x
 
 
 class SasCode:
-    """log-derived variables, PROC MEANS output names, models and assignments of SAS code"""
+    """log-derived variables (by log base), PROC MEANS output names, models and assignments"""
 
     def __init__(self, text):
         self.stmts = [s.strip() for s in text.split(';')]
@@ -809,7 +1122,7 @@ class SasCode:
             m = SAS_ASSIGN.match(s)
             if m and not re.match(r'(?:(?:proc|data|output|model|class|var|by|set|merge|where)\b|%)', s):
                 self.assigns.append((m.group(1), ' '.join(m.group(2).split())))
-        self.L = {'e': set(), '10': set(), '2': set()}
+        self.L = {b: set() for b in SAS_BASES}
         pats = {'e': r'\blog\s*\(', '10': r'\blog10\s*\(', '2': r'\blog2\s*\('}
         changed = True
         while changed:
@@ -820,7 +1133,9 @@ class SasCode:
                     if tg not in names and (re.search(pats[b], ex) or w & names):
                         names.add(tg)
                         changed = True
-        self.GM, self.LSD, self.LV, self.models = set(), set(), set(), []
+        # geometric-mean, log-scale SD and log-scale variance output names, by the base of the log
+        self.GM, self.LSD, self.LV = ({b: set() for b in SAS_BASES} for _ in range(3))
+        self.models = []
         proc, block = None, []
         for s in self.stmts + ['run']:
             m = re.match(r'(proc|data)\s+(\w+)|(run|quit)\b|%mend\b', s)
@@ -829,11 +1144,11 @@ class SasCode:
                 proc, block = (m.group(2) if m.group(1) == 'proc' else None), []
             elif proc:
                 block.append(s)
-        self.feeds = any(sas_words(a) & self.GM for _, ex in self.assigns for a in balanced_args(ex, 'exp'))
+        self.feeds = any(sas_backtransforms(ex, self.GM) for _, ex in self.assigns)
         self.calls_pkstats = any(re.search(r'%pkstats\s*\(', s) for s in self.stmts)
 
-    def logvar(self, v):
-        return any(v in names for names in self.L.values())
+    def logbases(self, v):
+        return [b for b, names in self.L.items() if v in names]
 
     def _block(self, proc, block):
         if proc in ('means', 'summary'):
@@ -842,6 +1157,7 @@ class SasCode:
                 m = re.match(r'var\s+(.+)$', s, re.S)
                 if m:
                     vars_ += m.group(1).split()
+            dest = {'mean': self.GM, 'std': self.LSD, 'stddev': self.LSD, 'var': self.LV}
             for s in block:
                 if not re.match(r'output\b', s):
                     continue
@@ -858,40 +1174,117 @@ class SasCode:
                     if not names and auto:
                         names = [f'{v}_{stat}' for v in vs]
                     for v, nm in zip(vs, names):
-                        if self.logvar(v):
-                            {'mean': self.GM, 'std': self.LSD, 'stddev': self.LSD, 'var': self.LV}.get(stat, set()).add(nm)
+                        for b in self.logbases(v):
+                            if stat in dest:
+                                dest[stat][b].add(nm)
             for s in block:
                 if re.match(r'ods\s+output\s+summary\s*=', s):
                     for v in vars_:
-                        if self.logvar(v):
-                            self.GM.add(f'{v}_mean'); self.LSD.add(f'{v}_stddev')
+                        for b in self.logbases(v):
+                            self.GM[b].add(f'{v}_mean')
+                            self.LSD[b].add(f'{v}_stddev')
         elif proc in SAS_MODEL_PROCS:
             for s in block:
                 m = re.match(r'model\s+(.+?)\s*=', s, re.S)
                 if m:
                     resp = m.group(1)
                     self.models.append((resp, bool(re.search(r'\blog(?:10|2)?\s*\(', resp))
-                                        or all(self.logvar(v) for v in resp.replace('/', ' ').split())))
+                                        or all(self.logbases(v) for v in resp.replace('/', ' ').split())))
 
-    def geomean_ok(self, ex, gm):
-        m = re.fullmatch(r'\(*\s*exp\s*\(\s*([a-z_][a-z0-9_]*)\s*\)\s*\)*', ex)
-        return ex == '.' or bool(m and m.group(1) in gm)
+    def aliases(self, ok, start):
+        """start plus every variable with an assignment that ok() accepts given the names so far"""
+        names = set(start)
+        changed = True
+        while changed:
+            changed = False
+            for tg, ex in self.assigns:
+                if tg not in names and ok(ex, names):
+                    names.add(tg)
+                    changed = True
+        return names
 
-    def geocv_ok(self, ex, lsd, lv):
-        if ex == '.':
+
+def sas_backtransforms(ex, gm):
+    """ex contains exp(<natural-log mean name>), 10**<log10 mean name> or 2**<log2 mean name>"""
+    x = ex.replace(' ', '')
+    for m in re.finditer(r'\bexp\(' + SAS_N + r'\)', x):
+        if m.group(1) in gm['e']:
             return True
-        for a in balanced_args(ex, 'exp'):
-            a = a.strip()
-            m = re.fullmatch(r'\(?\s*([a-z_][a-z0-9_]*)\s*\)?\s*\*\*\s*2', a)
-            if (m and m.group(1) in lsd) or a in lv:
+    for b in ('10', '2'):
+        for m in re.finditer(r'(?<![\w.])' + b + r'\*\*\(?' + SAS_N, x):
+            if m.group(1) in gm[b]:
                 return True
-        return False
+    return False
+
+
+def sas_mean_ok(ex, gm, names):
+    """ex (round() unwrapped) is missing, a geometric name, exp(<natural-log mean name>),
+    10**<log10 mean name> or 2**<log2 mean name>"""
+    x = sas_unround(ex)
+    if x == '.' or x in names:
+        return True
+    m = re.fullmatch(r'exp\(' + SAS_N + r'\)', x)
+    if m:
+        return m.group(1) in gm['e']
+    m = re.fullmatch(r'(10|2)\*\*\(?' + SAS_N + r'\)?', x)
+    return bool(m) and m.group(2) in gm[m.group(1)]
+
+
+def sas_logvar(v, lsd, lv):
+    """v is a natural-log variance: SD**2 or SD*SD of a natural-log SD name, a natural-log
+    variance name, or a log10 / log2 SD or variance scaled by log(10)**2 or log(2)**2"""
+    v = sas_unparen(v)
+    n = SAS_N
+    m = re.fullmatch(r'\(?' + n + r'\)?\*\*2', v) or re.fullmatch(n + r'\*' + n + r'$', v)
+    if m and len(set(m.groups())) == 1 and m.group(1) in lsd['e']:
+        return True
+    if v in lv['e']:
+        return True
+    for b in ('10', '2'):
+        k = re.escape(f'log({b})')
+        for pat in (r'\(' + k + r'\*' + n + r'\)\*\*2', r'\(' + n + r'\*' + k + r'\)\*\*2',
+                    n + r'\*\*2\*' + k + r'\*\*2', k + r'\*\*2\*' + n + r'\*\*2'):
+            m = re.fullmatch(pat, v)
+            if m and m.group(1) in lsd[b]:
+                return True
+        for pat in (n + r'\*' + k + r'\*\*2', k + r'\*\*2\*' + n):
+            m = re.fullmatch(pat, v)
+            if m and m.group(1) in lv[b]:
+                return True
+    return False
+
+
+def sas_cv_ok(ex, lsd, lv, names):
+    """ex (round() unwrapped) is missing, a geometric-CV name, or [100*]sqrt(exp(V)-1)[*100] with
+    V a natural-log variance (see sas_logvar)"""
+    x = sas_unround(ex)
+    if x == '.' or x in names:
+        return True
+    m = re.fullmatch(r'(?:100\*)?sqrt\(exp\((.+)\)-1\)(?:\*100)?', x)
+    return bool(m) and sas_logvar(m.group(1), lsd, lv)
 
 
 def sas_code(path):
     with open(path, encoding='utf-8', errors='replace') as fh:
         text = sas_clean(fh.read()).lower()
     return strip_call(text, '%tfltitle')
+
+
+BT_TEXT = 'exp() of a natural-log PROC MEANS mean or 10** of a log10 one'
+CV_TEXT = '100*sqrt(exp(V)-1) of a natural-log PROC MEANS variance or squared SD'
+
+
+def sas_stat_problems(sc, gm, lsd, lv, who):
+    """problems with the geomean and geocv assignments of sc, given the PROC MEANS names in scope"""
+    g = sc.aliases(lambda ex, names: sas_mean_ok(ex, gm, names), {'geomean'})
+    gcv = sc.aliases(lambda ex, names: sas_cv_ok(ex, lsd, lv, names), {'geocv'})
+    prob = []
+    for tg, ex in sc.assigns:
+        if tg == 'geomean' and not sas_mean_ok(ex, gm, g):
+            prob.append(f'{who} geomean = {ex} is not {BT_TEXT}')
+        if tg == 'geocv' and not sas_cv_ok(ex, lsd, lv, gcv):
+            prob.append(f'{who} geocv = {ex} is not {CV_TEXT}')
+    return prob
 
 
 def check_sas_macro(path):
@@ -902,16 +1295,11 @@ def check_sas_macro(path):
     if not m:
         return False, ['no %macro pkstats ... %mend'], None
     sc = SasCode(m.group(0))
-    prob = []
-    for tg in ('geomean', 'geocv'):
-        ex = [e for t, e in sc.assigns if t == tg]
-        if not ex:
-            prob.append(f'%pkstats assigns no {tg}')
-        for e in ex:
-            if not (sc.geomean_ok(e, sc.GM) if tg == 'geomean' else sc.geocv_ok(e, sc.LSD, sc.LV)):
-                prob.append(f'%pkstats {tg} = {e} is not exp() of a log-scale PROC MEANS statistic')
-    if not (sc.GM and sc.feeds):
-        prob.append('%pkstats has no PROC MEANS of a log-derived variable back-transformed with exp()')
+    prob = [f'%pkstats assigns no {tg}' for tg in ('geomean', 'geocv') if not any(t == tg for t, _ in sc.assigns)]
+    prob += sas_stat_problems(sc, sc.GM, sc.LSD, sc.LV, '%pkstats')
+    if not (any(sc.GM.values()) and sc.feeds):
+        prob.append('%pkstats has no PROC MEANS of a log-derived variable whose mean it back-transforms in the '
+                    'same base')
     return not prob, prob, sc
 
 
@@ -926,18 +1314,14 @@ def check_sas(path, macro, r_geo, r_models):
     of an R program that only fits models needs a MODEL (every MODEL response must be log-derived)"""
     if not exact_file(path):
         return ['no SAS twin at the same path'], None
-    sc = sas_code(path)
-    sc = SasCode(sc)
+    sc = SasCode(sas_code(path))
     mok, _, msc = macro
-    gm, lsd, lv = set(sc.GM), set(sc.LSD), set(sc.LV)
+    gm, lsd, lv = ({b: set(d[b]) for b in SAS_BASES} for d in (sc.GM, sc.LSD, sc.LV))
     if sc.calls_pkstats and msc is not None:
-        gm |= msc.GM; lsd |= msc.LSD; lv |= msc.LV
-    prob = []
-    for tg, ex in sc.assigns:
-        if tg == 'geomean' and not sc.geomean_ok(ex, gm):
-            prob.append(f'SAS geomean = {ex} is not exp() of a log-scale PROC MEANS mean')
-        if tg == 'geocv' and not sc.geocv_ok(ex, lsd, lv):
-            prob.append(f'SAS geocv = {ex} is not exp() of a log-scale variance')
+        for mine, theirs in ((gm, msc.GM), (lsd, msc.LSD), (lv, msc.LV)):
+            for b in SAS_BASES:
+                mine[b] |= theirs[b]
+    prob = sas_stat_problems(sc, gm, lsd, lv, 'SAS')
     for resp, ok in sc.models:
         if not ok:
             prob.append(f'SAS MODEL response {resp} is not log-derived')
@@ -945,11 +1329,11 @@ def check_sas(path, macro, r_geo, r_models):
     if r_geo:
         if sc.calls_pkstats and mok:
             route = 'pkstats'
-        elif sc.GM and sc.feeds:
+        elif any(sc.GM.values()) and sc.feeds:
             route = 'means'
         else:
             prob.append('SAS twin has no passing %pkstats call and no PROC MEANS of a log-derived variable'
-                        ' back-transformed with exp()')
+                        ' whose mean it back-transforms in the same base')
     elif r_models:
         if sc.models:
             route = 'model'
@@ -1002,15 +1386,20 @@ def run(R, SAS):
     ev = (f'{ok} of {n} R programs pass (found by content: they call pkstats(), use geomean or geocv, '
           f'assign a Geo Mean or Geo CV% column, take exp(mean()) or 10^mean(), or fit a model with a dose, '
           f'treatment, period or sequence term); comments are ignored and strings are never read as code. '
-          f'R: {tot["assign"]} geomean/geocv assignments and {tot["col"]} Geo Mean/Geo CV% columns are exp() or '
-          f'10^ of a log-derived value (CV: exp() of a log-scale variance), use a name assigned that way, or are '
-          f'NA; {tot["model"]} models have a log-derived response; and each program uses log() (or log10/log2) '
-          f'or calls pkstats() ({helper}). SAS twin at the same path: geomean only as exp() of a PROC MEANS mean '
-          f'of a log-derived variable, geocv only from exp() of its log-scale SD or variance, every MODEL '
-          f'response log-derived; {count(routes["pkstats"], "twin calls", "twins call")} %pkstats ({mac}), '
-          f'{count(routes["means"], "back-transforms its", "back-transform their")} own such mean with exp(), '
-          f'{count(routes["model"], "model-only twin fits", "model-only twins fit")} a MODEL. Static check: '
-          f'nothing is run, and log(x + c) counts as log-scale')
+          f'R: in {tot["assign"]} geomean/geocv assignments and {tot["col"]} Geo Mean/Geo CV% columns, every '
+          f'branch (if/else, ifelse, if_else, coalesce, case_when, pmin, pmax) inside display wrappers such as '
+          f'sprintf() and round() is NA, a geometric name or function of the file, or exactly exp() of a '
+          f'log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one), for a CV '
+          f'exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a natural-log variance; {tot["model"]} '
+          f'models have a log-derived response; and each program '
+          f'uses log() (or log10/log2) or calls pkstats() ({helper}). SAS twin at the same path: every geomean '
+          f'(round() unwrapped) is missing, a geometric name, or exp() of a PROC MEANS mean of a natural-log '
+          f'variable (10** for log10), every geocv missing, a geometric-CV name or [100*]sqrt(exp(V)-1) with V '
+          f'a natural-log variance or squared SD, every MODEL response log-derived; '
+          f'{count(routes["pkstats"], "twin calls", "twins call")} %pkstats ({mac}), '
+          f'{count(routes["means"], "back-transforms its", "back-transform their")} own such mean in the same '
+          f'base, {count(routes["model"], "model-only twin fits", "model-only twins fit")} a MODEL. Static '
+          f'check: nothing is run, and log(x + c) counts as log-scale')
     if bad:
         ev += '; failing: ' + ', '.join(bad)
     return ok, n, ev.replace('\n', ' ').replace('|', '/')

@@ -7,10 +7,12 @@ run_harness.sh does (python3 g2_geo.py <R dir> <SAS dir>), restores the file and
   - the unmodified libraries pass every program;
   - every planted defect turns G2 red and names the program it is in;
   - every legitimate variant stays green.
-The defect cases are the ones found in the 2026-10-26 review of the per-program G2 (R01 to R18,
-S01 to S05, U01 to U05), registry defect D04, a pkstats() helper and a %pkstats macro without
-logs, and logs that appear only in comments or string literals. The known limit (log(x + c)
-counts as log-scale) is pinned as a passing case so the docs and the code cannot drift apart.
+The defect cases are the ones found in the two 2026-10-26 reviews of the per-program G2 (R01 to
+R18, S01 to S05, U01 to U05; then N01 to N08, N12 and N13, with N09, N18, N19, N27 and N28 from
+the same probe), registry defect D04, a pkstats() helper and a %pkstats macro without logs, and
+logs that appear only in comments or string literals. The legitimate variants include P01 to
+P09 and L01, L02, L04 to L09 from the reviews. The known limit (log(x + c) counts as log-scale)
+is pinned as a passing case so the docs and the code cannot drift apart.
 
 Run: python3 validation_harness/checks/tests/test_g2_geo.py -v
 """
@@ -48,6 +50,14 @@ ACC = R + '/mad/t_accumulation.R'
 HELP = R + '/00_setup_helpers.R'
 MAC = SAS + '/00_setup_macros.sas'
 GEO_LINE = 'geomean = exp(mean(log(AVAL[AVAL > 0]))),'
+PD = R + '/mad/t_pd_summary.R'
+SADF_SAS = SAS + '/sad/f_pk_conc_mean.sas'
+CXP_SAS = SAS + '/crossover/t_pk_param_summary.sas'
+CXP_GEO = '`Geo Mean`      = sprintf("%.3g", geomean)'
+CXP_CV = '`Geo CV%`       = sprintf("%.1f", geocv)'
+CXP_PKSTATS = 'cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%'
+SAS_GM = 'geomean = exp(gmean_log);'
+SAS_CV = 'geocv   = 100*sqrt(exp(gsd_log**2)-1);'
 SAD_GEO = 'geomean = exp(mean(log(AVAL[AVAL > 0]))),      # geometric (semi-log panel)'
 SAD_GROUPS = SAD_GEO + '\n            .groups = "drop") %>%'
 HELP_GM = 'geomean = exp(mean(log(.data[[var]]))),'
@@ -177,6 +187,66 @@ DEFECTS = {
         'no log() call'),
     'D04 registry defect (exp(mean) overwrites the pkstats geometric mean)': (
         d04(), 'crossover/t_pk_param_summary.R', 'geomean at line'),
+    # second review, 2026-10-26: wrong orders, fallbacks to the arithmetic mean, the SAS log base
+    'N01 trough geomean = mean(exp(ln_tr)), the arithmetic mean': (
+        [(ACC, 'geomean  = exp(mean(ln_tr)),', 'geomean  = mean(exp(ln_tr)),')], 'mad/t_accumulation.R',
+        'geomean at line'),
+    'N02 geomean = exp(log(mean(x))), the arithmetic mean': (
+        [(SADF, 'exp(mean(log(AVAL[AVAL > 0])))', 'exp(log(mean(AVAL[AVAL > 0])))')], 'sad/f_pk_conc_mean.R',
+        'geomean at line'),
+    'N03 helper geomean = exp(log(mean(x)))': (
+        [(HELP, HELP_GM, 'geomean = exp(log(mean(.data[[var]]))),')], 'crossover/t_pk_param_summary.R',
+        'pkstats() FAILS'),
+    'N04 helper geomean = mean(exp(log(x)))': (
+        [(HELP, HELP_GM, 'geomean = mean(exp(log(.data[[var]]))),')], 'sad/t_pk_param_summary.R', 'pkstats() FAILS'),
+    'N05 PD trough geomean falls back to the arithmetic mean': (
+        [(PD, 'exp(mean(log(AVAL))) else NA_real_,', 'exp(mean(log(AVAL))) else mean(AVAL),')], 'mad/t_pd_summary.R',
+        'geomean at line'),
+    'N06 Geo Mean column coalesce(geomean, mean)': (
+        [(CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", coalesce(geomean, mean))')],
+        'crossover/t_pk_param_summary.R', '"Geo Mean"'),
+    'N07 geomean <- ifelse(n < 3, mean, geomean) after pkstats()': (
+        [(CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = ifelse(n < 3, mean, geomean)) %>%')],
+        'crossover/t_pk_param_summary.R', 'geomean at line'),
+    'N08 exp(mean(log(x)) + var(log(x)) / 2), the lognormal estimate of the arithmetic mean': (
+        [(SADF, 'exp(mean(log(AVAL[AVAL > 0])))',
+          'exp(mean(log(AVAL[AVAL > 0])) + var(log(AVAL[AVAL > 0])) / 2)')], 'sad/f_pk_conc_mean.R', 'geomean at line'),
+    'N09 helper geocv with a misplaced parenthesis, 100 * sqrt(exp(v)) - 1': (
+        [(HELP, HELP_CV, 'geocv   = 100 * sqrt(exp(stats::var(log(.data[[var]])))) - 1,')],
+        'crossover/t_pk_param_summary.R', 'pkstats() FAILS'),
+    'N19 combined Geo Mean (Geo CV%) column shows the arithmetic CV': (
+        [(CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = sprintf("%.3g (%.1f)", geomean, cv)')],
+        'crossover/t_pk_param_summary.R', '"Geo Mean (Geo CV%)"'),
+    'N27 prof[["geomean"]] <- prof[["mean"]]': (
+        [(SADF, 'ttl <- tfl_titles(', 'prof[["geomean"]] <- prof[["mean"]]\nttl <- tfl_titles(')],
+        'sad/f_pk_conc_mean.R', 'geomean at line'),
+    'N28 prof[, "geomean"] <- prof[, "mean"]': (
+        [(SADF, 'ttl <- tfl_titles(', 'prof[, "geomean"] <- prof[, "mean"]\nttl <- tfl_titles(')],
+        'sad/f_pk_conc_mean.R', 'geomean at line'),
+    'combined column pasted from the arithmetic mean (paste0 arguments are all values)': (
+        [(CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = paste0(sprintf("%.3g", mean), " (", sprintf("%.1f", geocv), ")")')],
+        'crossover/t_pk_param_summary.R', '"Geo Mean (Geo CV%)"'),
+    'pmax(geomean, mean, na.rm = TRUE)': (
+        [(CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = pmax(geomean, mean, na.rm = TRUE)) %>%')],
+        'crossover/t_pk_param_summary.R', 'geomean at line'),
+    '10^ of a natural-log mean': (
+        [(SADF, 'exp(mean(log(AVAL[AVAL > 0])))', '10^mean(log(AVAL[AVAL > 0]))')], 'sad/f_pk_conc_mean.R',
+        'geomean at line'),
+    'N12 SAS log10 logs back-transformed with exp()': (
+        [(SADF_SAS, 'logv = log(AVAL);', 'logv = log10(AVAL);')], 'sad/f_pk_conc_mean.R', 'SAS geomean = exp(gmean_log)'),
+    'N13 SAS else fallback geomean = mean': (
+        [(CXP_SAS, '  ' + SAS_GM, '  if n>=3 then geomean = exp(gmean_log); else geomean = mean;')],
+        'crossover/t_pk_param_summary.R', 'SAS geomean = mean'),
+    'SAS when/otherwise fallback geomean = mean': (
+        [(CXP_SAS, '  ' + SAS_GM, '  select; when (n>=3) geomean = exp(gmean_log); otherwise geomean = mean; end;')],
+        'crossover/t_pk_param_summary.R', 'SAS geomean = mean'),
+    'N18 SAS geocv missing the - 1': (
+        [(CXP_SAS, SAS_CV, 'geocv   = 100*sqrt(exp(gsd_log**2));')], 'crossover/t_pk_param_summary.R', 'SAS geocv'),
+    'SAS log10 logs, 10** mean, but geocv not scaled by log(10)': (
+        [(CXP_SAS, 'if AVAL>0 then logv = log(AVAL);', 'if AVAL>0 then logv = log10(AVAL);'),
+         (CXP_SAS, SAS_GM, 'geomean = 10**gmean_log;')], 'crossover/t_pk_param_summary.R', 'SAS geocv'),
+    'SAS macro geomean = exp(log(amean))': (
+        [(MAC, 'geomean = exp(meanlog);', 'geomean = exp(log(amean));')], MACRO_USER, 'the macro FAILS'),
 }
 
 VARIANTS = {
@@ -205,6 +275,37 @@ VARIANTS = {
     'quoted "geomean" column name': [(SADF, GEO_LINE, '"geomean" = exp(mean(log(AVAL[AVAL > 0]))),')],
     'known limit: log(x + c) counts as log-scale (disclosed)': [
         (SADF, 'exp(mean(log(AVAL[AVAL > 0])))', 'exp(mean(log(AVAL + 1)))')],
+    'L01 native pipe x |> log() |> mean() |> exp()': [
+        (SADF, GEO_LINE, 'geomean = AVAL[AVAL > 0] |> log() |> mean() |> exp(),')],
+    'L02 magrittr pipe x %>% log() %>% mean() %>% exp()': [
+        (SADF, GEO_LINE, 'geomean = AVAL[AVAL > 0] %>% log() %>% mean() %>% exp(),')],
+    'L04 helper geocv as sqrt(expm1(var(log(x))))': [
+        (HELP, HELP_CV, 'geocv   = 100 * sqrt(expm1(stats::var(log(.data[[var]])))),')],
+    'combined Geo Mean (Geo CV%) column from geomean and geocv': [
+        (CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = sprintf("%.3g (%.1f)", geomean, geocv)')],
+    'combined column pasted from geomean and geocv': [
+        (CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = paste0(sprintf("%.3g", geomean), " (", sprintf("%.1f", geocv), ")")')],
+    'if_else(n >= 3, geomean, NA_real_) after pkstats()': [
+        (CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = if_else(n >= 3, geomean, NA_real_)) %>%')],
+    'case_when(n >= 3 ~ geomean, .default = NA_real_) after pkstats()': [
+        (CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = case_when(n >= 3 ~ geomean, '
+         '.default = NA_real_)) %>%')],
+    'Geo Mean column rounded with round(geomean, 3)': [
+        (CXP, CXP_GEO, '`Geo Mean`      = format(round(geomean, 3), nsmall = 3)')],
+    'mean of logs held in a name, then exp(mlog)': [
+        (SADF, GEO_LINE, 'mlog = mean(log(AVAL[AVAL > 0])), geomean = exp(mlog),')],
+    'L05 SAS geomean = round(exp(gmean_log), 0.001)': [(SADF_SAS, SAS_GM, 'geomean = round(exp(gmean_log), 0.001);')],
+    'L06 SAS geomean rounded in a later statement': [
+        (SADF_SAS, SAS_GM, 'geomean = exp(gmean_log); geomean = round(geomean, 0.001);')],
+    'L07 SAS geocv with gsd_log*gsd_log': [(CXP_SAS, SAS_CV, 'geocv   = 100*sqrt(exp(gsd_log*gsd_log)-1);')],
+    'L08 SAS log10 logs back-transformed with 10**': [
+        (SADF_SAS, 'logv = log(AVAL);', 'logv = log10(AVAL);'), (SADF_SAS, SAS_GM, 'geomean = 10**gmean_log;')],
+    'L09 SAS if/else with missing': [(SADF_SAS, SAS_GM, 'if n>0 then geomean = exp(gmean_log); else geomean = .;')],
+    'L09b SAS geomean = gm where gm = exp(gmean_log)': [(SADF_SAS, SAS_GM, 'gm = exp(gmean_log); geomean = gm;')],
+    'SAS log10 logs with 10** mean and the log(10)-scaled geocv': [
+        (CXP_SAS, 'if AVAL>0 then logv = log(AVAL);', 'if AVAL>0 then logv = log10(AVAL);'),
+        (CXP_SAS, SAS_GM, 'geomean = 10**gmean_log;'),
+        (CXP_SAS, SAS_CV, 'geocv   = 100*sqrt(exp((log(10)*gsd_log)**2)-1);')],
 }
 
 
