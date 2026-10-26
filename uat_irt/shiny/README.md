@@ -79,7 +79,7 @@ Two details matter only in the browser:
   them in well under a second, and the theme is Bootstrap's precompiled one with the site's tokens
   as CSS variables (`bp_theme()` and `bp_theme_head()` in the shared helper), so no Sass is
   compiled in the browser. In a local Shinylive build every panel had content 7.0 to 7.3 s after
-  the page opened on a first visit and 6.7 s after a reload (2026-10-25; 7.7 to 8.4 s while the app
+  the page opened on a first visit and 6.7 to 6.9 s after a reload (2026-10-25; 7.7 to 8.4 s while the app
   still compiled a custom theme), almost all of it R and its packages starting. The startup card
   stays until both tables have drawn their rows.
 - **What only a browser shows** is checked by the deploy smoke test's `smoke.interactions` in

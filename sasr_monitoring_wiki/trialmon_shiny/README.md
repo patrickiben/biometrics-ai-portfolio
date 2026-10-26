@@ -88,8 +88,8 @@ output had content 6.9 to 7.3 s after the launch page opened (8.3 to 8.5 s befor
 (the Liver tab took 0.9 s before), with no output error in light, dark or phone-width runs. After
 the status lines, notices and text-fitting plots were added, three runs of the deploy smoke test
 (`smoke.mjs`, 2026-10-25) read 6.7 to 6.9 s to ready and 6.3 to 6.5 s on a reload; after the move
-to the site's tokens, 6.7 s and 6.2 s, and four more first visits at 1280 and 390 px, light and
-dark, 6.8 to 7.0 s. A slower laptop and a real network add to these
+to the site's tokens, 6.7 s and 6.2 to 6.3 s in two runs, and eight more first visits at 1280 and
+390 px, light and dark, 6.6 to 7.0 s. A slower laptop and a real network add to these
 numbers; the launch page reports each step meanwhile.
 
 ## Files

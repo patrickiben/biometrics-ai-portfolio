@@ -146,11 +146,14 @@ are listed under [Actions, Pages](https://github.com/patrickiben/biometrics-ai-p
 `--fault 'shinylive-sw\.js$=404' --expect-problem sw-failed`.
 
 Checked locally on 2026-10-25, after the apps took the site's tokens and the launch pages the
-site's bar (macOS, headless Chrome 155, served from the same machine): all three apps passed, ready
-6.7 s (TRIALMON), 7.0 s (UAT tracker) and 7.9 s (lifecycle monitor) after opening on a first visit
-and 6.2 to 7.1 s on a reload, page text painted in 72 to 120 ms, about 65 MB served on a first
-visit; twelve more first visits (each app at 1280 and 390 px, light and dark) were ready in 6.8 to
-7.9 s. Before these changes the same machine read 6.7 to 7.9 s. Four error states were re-run on
+site's bar (macOS, headless Chrome 155, served from the same machine): in two runs of the smoke
+test all three apps passed, ready 6.7 s (TRIALMON), 7.0 to 7.2 s (UAT tracker) and 7.7 to 7.9 s
+(lifecycle monitor) after opening on a first visit and 6.2 to 7.1 s on a reload, page text painted
+in 68 to 120 ms, about 65 MB served on a first visit. 24 more first visits (each app at 1280 and
+390 px, light and dark, on two builds) were ready in 6.6 to 7.9 s, with no serious or critical
+axe-core 4.14.0 violation on the launch page or in the app, and six with a saved theme opposite to
+the system setting opened in the saved theme. Before these changes the same machine read 6.7 to
+7.9 s. Four error states were re-run on
 the new launch page (a service worker script, `app.json`, `R.wasm` and `shinylive.js` that answer
 404), and each was reported as such. Earlier on 2026-10-25 the other error states were checked the
 same way: a font, font cache, graphics library or webR worker that does not download, an `app.R`

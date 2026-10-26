@@ -67,8 +67,8 @@ was ready at 9.0 s. After the review fixes (24 outputs, with the trend note): re
 counts the panels as they arrive, so it never says "0 of 24 panels filled" while the app already
 shows them (it did for about 0.5 s before). Inside the app, a study switch takes about 0.8 s, a what-if about 0.9 s,
 Reset 0.6 s and the light or dark switch 0.7 s. After the move to the site's tokens
-(2026-10-25), the deploy smoke test read 7.9 s to ready and 7.1 s after a reload, and four more
-first visits at 1280 and 390 px, light and dark, 7.5 to 7.9 s. Of R's own start in the browser,
+(2026-10-25), two runs of the deploy smoke test read 7.7 to 7.9 s to ready and 7.1 s after a reload,
+and eight more first visits at 1280 and 390 px, light and dark, 7.3 to 7.9 s. Of R's own start in the browser,
 `library(bslib)` takes 2.0 s and `library(ggplot2)` 0.7 s; the app's own computation is under 1 s.
 
 A click on a study selects it in the picker at once, in the browser. Right after a study switch
