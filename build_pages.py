@@ -236,6 +236,13 @@ a:hover { color: var(--accent-ink); }
 div.sourceCode, pre.sourceCode, pre { background: var(--surface-3) !important; border: 1px solid var(--line-2); border-radius: var(--r-md); }
 div.sourceCode pre { border: 0; }
 code span.co, code span.do, code span.an, code span.cv { color: var(--muted) !important; }   /* highlight themes put comments below 4.5:1 on the code panel */
+/* the light highlight themes also put keywords, strings, attributes, variables and alerts below 4.5:1 on the code panel (axe) */
+body.quarto-light code span.kw, body.quarto-light code span.cf, body.quarto-light code span.bu, body.quarto-light code span.dt,
+body.quarto-light code span.ex, body.quarto-light code span.pp, body.quarto-light code span.al, body.quarto-light code span.er,
+body.quarto-light code span.wa { color: var(--red) !important; }
+body.quarto-light code span.st, body.quarto-light code span.ss, body.quarto-light code span.vs, body.quarto-light code span.ch { color: var(--green) !important; }
+body.quarto-light code span.at, body.quarto-light code span.va { color: var(--amber) !important; }
+body.quarto-light code span.in, body.quarto-light code span.re { color: var(--muted) !important; }
 code { color: var(--accent-ink); }
 pre code { color: var(--ink); }
 .table, table { color: var(--text); font-variant-numeric: tabular-nums; }
