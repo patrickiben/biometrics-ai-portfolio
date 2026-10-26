@@ -22,6 +22,7 @@ Sources and what is generated from them (Python 3 standard library only):
   _partials/               <-  the top bar, head and Quarto head partials that the R page generators
                                (study/R/common.R, cqtc_hysteresis/R/page.R) and the Quarto pages read,
                                and the footer that .github/pages/build_site.R puts on the apps' launch pages
+  rendered Quarto pages    ->  the guard on Quarto's mermaid post-processing (see MERMAID_GUARD)
 Hand text outside the <!-- gen:NAME --> ... <!-- /gen:NAME --> markers (and # gen:NAME:begin ...
 # gen:NAME:end in R files) is never touched.
 Synthetic data only.
@@ -1486,6 +1487,14 @@ def leaked_css(p):
 
 QUARTO_PAGES = sorted({p for ps in RENDERED.values() for p in ps} | {
     'uat_irt/quarto/uat-slides.html', 'budget_reconciliation/quarto/hours-slides.html'})
+# Quarto 1.10.19's mermaid post-processing reads the id of a <desc> element that chart SVGs do not
+# have and throws on load (the reveal.js decks carry it; commit 3790189 patched it by hand). Every
+# render brings it back, so this applies the guard after a render, and --check fails until it is.
+MERMAID_BUG = '      (el) =>\n        el.querySelector("desc").id &&'
+MERMAID_GUARD = '      (el) =>\n        el.querySelector("desc") &&\n        el.querySelector("desc").id &&'
+for p in QUARTO_PAGES:
+    if exists(p) and MERMAID_BUG in rd(p):
+        put(p, rd(p).replace(MERMAID_BUG, MERMAID_GUARD))
 if '--rendered' in sys.argv or CHECK:
     for p in QUARTO_PAGES:
         if exists(p) and leaked_css(p):
