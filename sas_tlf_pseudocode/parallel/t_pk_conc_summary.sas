@@ -48,6 +48,8 @@ data _cont;
   merge _arith _geo;
   by &TRTVAR PARAMCD atptn;
   length stat $14 value $30;
+  geomean = exp(gmean_log);                    /* geometric mean: exp(mean of logs)  */
+  geocv   = 100*sqrt(exp(gsd_log**2)-1);       /* geometric CV% from the log-scale SD */
   /* geomean = exp(gmean_log);  geocv = 100*sqrt(exp(gsd_log**2)-1)         */
   /* emit one row per statistic: n / Mean / SD / CV% / Geo Mean /           */
   /*   Geo CV% / Median / Min / Max  (loop or array, formatted per analyte) */

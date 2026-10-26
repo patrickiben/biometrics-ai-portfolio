@@ -34,6 +34,8 @@ proc means data=pp(where=(tmaxfl=0 and AVAL>0)) noprint;
 run;
 
 data _cont; merge _arith _geo; by &TRTVAR PARAMCD; length stat $14 value $30;
+  geomean = exp(gmean_log);                    /* geometric mean: exp(mean of logs)  */
+  geocv   = 100*sqrt(exp(gsd_log**2)-1);       /* geometric CV% from the log-scale SD */
   /* round to ADaM decimal hints per parameter; build display strings:      */
   /* n / Mean / SD / CV% / Geo Mean / Geo CV% / Median / Min / Max          */
 run;

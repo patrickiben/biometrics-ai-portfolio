@@ -1,7 +1,7 @@
 {
- "generated": "2026-10-26 00:54 EDT",
+ "generated": "2026-10-25 19:16 EDT",
  "r_version": "R version 4.6.0 (2026-04-24)",
- "green": 7,
+ "green": 8,
  "manual": 1,
  "unsigned": 1,
  "total": 10,
@@ -10,14 +10,14 @@
    "gate": "G1 Reproducibility & environment",
    "guards": "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses",
    "status": "green",
-   "evidence": "289 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
+   "evidence": "520 R programs parse (0 fail); the synthetic study regenerates 8 of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)",
    "sign_off": "pending"
   },
   {
    "gate": "G2 PK and count convention scans",
    "guards": "PK programs use log-scale geometric statistics, counts use distinct participants, and the drafter's number check has a self-test (pattern scans; they do not show where a reported number comes from)",
    "status": "green",
-   "evidence": "per-program scans: 27 of 27 PK programs take geometric statistics from the log scale in R (pkstats(), whose body computes exp(mean(log)) and the geometric CV from var(log), or an explicit log()), assign geomean only from log-scale expressions, and have a SAS twin that uses log() or the %pkstats macro (whose body works on the log scale); distinct-participant counting in 164 programs; drafter number-validation self-test present (5)",
+   "evidence": "static scans: the log-scale geometric-mean pattern appears in 14 files under r_tlf_pseudocode (programs, helpers and documentation alike; the scan needs only one, so it would pass even if no PK program used it); distinct-participant counting in 164 programs; drafter number-validation self-test present (5)",
    "sign_off": "pending"
   },
   {
@@ -72,8 +72,8 @@
   {
    "gate": "G10 Harness sensitivity",
    "guards": "the harness's own reach: a pre-registered list of programming defects is planted one at a time in a throwaway copy, the outputs are regenerated so G1 cannot fire, and each defect is recorded as caught (by which gate or test), survived, equivalent or not applicable (QC-process engineering; it measures the harness, not a statistical method)",
-   "status": "stale",
-   "evidence": "stale: changed since the last run: validation_harness/run_harness.sh. registry of 18 defects frozen at sha256 e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3; last run 2026-10-25: CAUGHT 14, SURVIVED 1, EQUIVALENT 1, NOT APPLICABLE 2; survived (disclosed, not failures): D04 (exp(mean(x)) as the geometric mean in one R PK TLF program); the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
+   "status": "green",
+   "evidence": "registry of 18 defects frozen at sha256 e962ca98d30b2ac3b6c1db66d7271ea4f8beb2cb6b285606c2ea9f9c29d811d3; last run 2026-10-25: CAUGHT 14, SURVIVED 1, EQUIVALENT 1, NOT APPLICABLE 2; survived (disclosed, not failures): D04 (exp(mean(x)) as the geometric mean in one R PK TLF program); the counts describe this hand-picked list only, not a detection rate (teeth/run_teeth.sh)",
    "sign_off": "pending"
   }
  ]

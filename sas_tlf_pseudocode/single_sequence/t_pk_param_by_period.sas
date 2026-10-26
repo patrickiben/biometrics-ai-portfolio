@@ -45,6 +45,8 @@ run;
 
 data _cont; merge _arith _geo; by &TRTVAR &BYPERIOD PARAMCD;
   length stat $14 value $30;
+  geomean = exp(gmean_log);                    /* geometric mean: exp(mean of logs)  */
+  geocv   = 100*sqrt(exp(gsd_log**2)-1);       /* geometric CV% from the log-scale SD */
   /* build display strings: n / Geo Mean / Geo CV% / Mean / SD / CV% /
      Median / Min / Max, rounded to ADaM decimal hints per parameter            */
 run;
