@@ -149,7 +149,7 @@ write_text(page_html(
   title = "SAP Excerpt", kicker = "Stage 2: statistical analysis plan",
   h1 = "SAP statistical methods: estimand, analysis sets and the BE model",
   description = "Statistical analysis plan excerpt for a synthetic 2x2 bioequivalence study: E9(R1) estimand, analysis sets, the ICH M13A model, BLQ and missing-data rules.",
-  labels = paste0(lab("led", "Led (job): analysis plans and mock shells"), lab("tools", "Settings feed the code: analysis_parameters.json")),
+  labels = paste0(lab("tools", "Settings feed the code: analysis_parameters.json")),
   body = body, depth = 1), out("sap_excerpt.html"))
 
 ## --- mock shells -------------------------------------------------------------------------
@@ -198,6 +198,6 @@ write_text(page_html(
   title = "Mock Shells", kicker = "Stage 2: statistical analysis plan",
   h1 = "Mock shells for the planned outputs",
   description = "Mock table shells for a synthetic 2x2 bioequivalence study: demographics, adverse events, PK concentrations, PK parameters and the bioequivalence result.",
-  labels = paste0(lab("led", "Led (job): mock tables, listings and figures"), lab("tools", "Shells for the six executed tables")),
+  labels = paste0(lab("tools", "Shells for the six executed tables")),
   body = shells, depth = 1), out("mock_shells.html"))
 cat("[02_sap] analysis_parameters.json, sap_excerpt.html, mock_shells.html written\n")

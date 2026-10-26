@@ -63,7 +63,7 @@ body03 <- paste0(
 write_text(page_html(title = "ADaM Datasets and Specification", kicker = "Stage 3: data standards",
                      h1 = "SDTM-like inputs, ADaM with admiral, specification checks and XPT",
                      description = "Synthetic SDTM-like domains, ADaM datasets derived with admiral 1.5.0, a metacore-readable specification, metatools checks and XPT v5 from xportr.",
-                     labels = paste0(lab("sup", "Supported (job): created or reviewed CDISC analysis specifications"), lab("tools", "Executed here"), lab("gap", "Gap: define.xml and ADRG not authored")),
+                     labels = paste0(lab("tools", "Executed here"), lab("tools", "Not covered: define.xml, ADRG")),
                      body = body03, depth = 1), sp("03_adam", "index.html"))
 
 ## --- 04_analysis/index.html ------------------------------------------------------------------------
@@ -100,7 +100,7 @@ body04 <- paste0(
   '<div class="not-covered"><p><strong>Not covered here.</strong> SAS was not used in this example; the SAS twins in the TLF library are not executed (no license). Phoenix WinNonlin was not used. These outputs are executed on synthetic data and are not validated deliverables.</p></div>')
 write_text(page_html(title = "Analysis Outputs", kicker = "Stage 4: analysis", h1 = "NCA, bioequivalence analysis and executed tables",
                      description = "Executed NCA (PKNCA), ICH M13A bioequivalence analysis and rtables/tern tables with RTF export for a synthetic 2x2 crossover.",
-                     labels = paste0(lab("led", "Led (job): PK analyses for crossover and BE studies"), lab("sup", "Supported (job): TLF review"), lab("tools", "Executed here")),
+                     labels = paste0(lab("tools", "Executed here")),
                      body = body04, depth = 1), sp("04_analysis", "index.html"))
 
 ## --- study/index.html: one section per stage --------------------------------------------------------
@@ -121,10 +121,8 @@ body_idx <- paste0(
   sprintf('<li><a href="#stage5">QC</a><span class="v">%d of %d checks (same-author)</span></li>', QC$pass, QC$checks),
   sprintf('<li><a href="#stage6">CSR text</a><span class="v">%d of %d paragraphs number-checked</span></li>', n_csr_ok, length(CSR$paragraphs)),
   '</ol>',
-  '<ul class="legend"><li><span class="lab led">Led</span> the resume says owned, wrote or led</li><li><span class="lab sup">Supported</span> reviewed, contributed, or created or reviewed</li>',
-  '<li><span class="lab tools">Tools built</span> shown only by code here</li><li><span class="lab gap">Gap</span> no job evidence and no artifact</li></ul>',
   stage_sec(1, "Design: sample size and randomization",
-    paste0(lab("led", "Led (job): protocol statistical sections and randomization schedules"), lab("tools", "Tools built: runs here")),
+    paste0(lab("tools", "Runs here")),
     c(sprintf("PowerTOST %s, exact method: CV %s%%, ratio %s%%, limits 80.00%% to 125.00%%: <strong>%s evaluable for 80%% power, %s for 90%%</strong>; 5%% allowance for non-evaluable participants gives %s enrolled.",
               v("PowerTOST"), P$cv_pct, P$gmr_pct, P$n_evaluable_80, P$n_evaluable_90, P$n_enrolled),
       "Sensitivity grid of N and power over CV 15% to 35% and ratio 0.90 to 1.05; pa.ABE() limits of the assumptions.",
@@ -137,7 +135,7 @@ body_idx <- paste0(
       L("01_design/design_parameters.json", "design_parameters.json", "machine-readable design")),
     "BOIN/CRM dose-escalation designs, adaptive or group-sequential designs."),
   stage_sec(2, "Statistical analysis plan and mock shells",
-    paste0(lab("led", "Led (job): analysis plans and mock tables, listings and figures"), lab("tools", "Tools built: settings drive the code")),
+    paste0(lab("tools", "Settings drive the code")),
     c("Estimand with the five ICH E9(R1) attributes; each intercurrent event mapped to a strategy, and why the other four strategies do not apply.",
       "Analysis sets with their ADaM flags; the ICH M13A model, the tests to report, the decision on unrounded limits.",
       "BLQ and missing-data rules per ICH M13A; the settings are written to analysis_parameters.json, which the NCA, exclusion and BE programs read.",
@@ -146,7 +144,7 @@ body_idx <- paste0(
       L("02_sap/mock_shells.html", "mock_shells.html", "six table shells"),
       L("02_sap/analysis_parameters.json", "analysis_parameters.json", "settings the code reads"))),
   stage_sec(3, "SDTM-like inputs, ADaM, specification and XPT",
-    paste0(lab("sup", "Supported (job): created or reviewed CDISC analysis specifications"), lab("tools", "Tools built: runs here"), lab("gap", "Gap: define.xml, ADRG")),
+    paste0(lab("tools", "Runs here")),
     c(sprintf("Simulated DM, EX, PC, AE, VS and DS (%d concentration records at actual times) with %d documented scenarios: a withdrawal, emesis, a pre-dose carry-over value, a missed sample, a late sample and a BLQ result between quantifiable samples.", sum(adpc$PARAMCD == "SIMDRUG"), length(SCN)),
       sprintf("ADSL, ADPC, ADPP and ADAE with admiral %s following its ad_adpc.R and ad_adpp.R templates (NFRLT, AFRLT, NRRLT, ARRLT), adaptations listed.", v("admiral")),
       sprintf("Specification in Pinnacle 21 layout (xlsx) and JSON, read by metacore::spec_to_metacore(); <strong>%d of %d metadata checks passed</strong> (metatools check_variables, check_ct_data, check_unique_keys, lengths, mandatory values, XPT read-back).", sum(mchk$pass), nrow(mchk)),
@@ -157,7 +155,7 @@ body_idx <- paste0(
       L("03_adam/data/adpc.xpt", "adpc.xpt", "one of four XPT v5 files")),
     "define.xml and the ADRG are not authored; no Pinnacle 21 or CDISC CORE run; the inputs are SDTM-like, not conformant SDTM."),
   stage_sec(4, "NCA, bioequivalence analysis and TLFs",
-    paste0(lab("led", "Led (job): lead biostatistician on crossover and BE studies; PK analyses"), lab("sup", "Supported (job): TLF review"), lab("tools", "Tools built: runs here")),
+    paste0(lab("tools", "Runs here")),
     c(sprintf("PKNCA %s NCA on actual times with BLQ kept as zero in every position (ICH M13A): %d profiles. For the profile with a BLQ value between quantifiable samples, AUC(0-t) is %s h*ng/mL against %s with the PKNCA default, which drops that value.",
               v("PKNCA"), nrow(nca_wide), fmt(blq_auc$M13A[1], 1), fmt(blq_auc$PKNCA_default[1], 1)),
       sprintf("SAP parameter rules through PKNCA exclude(): AUC(0-inf) flagged in %d profiles (more than %s%% extrapolated); the supportive AUC(0-inf) analysis uses %d participants.",
@@ -172,7 +170,7 @@ body_idx <- paste0(
       L("04_analysis/be_results.csv", "be_results.csv", "unrounded estimates")),
     "Phoenix WinNonlin and SAS were not used."),
   stage_sec(5, "QC: re-derivation by a second method",
-    paste0(lab("sup", "Supported (job): reviewed outputs"), lab("tools", "Tools built: same-author re-derivation"), lab("gap", "Gap: independent double programming")),
+    paste0(lab("tools", "Same-author re-derivation")),
     c(sprintf("<strong>%d of %d checks passed</strong> (%d values compared with diffdf %s at stated tolerances).", QC$pass, QC$checks, QC$values_compared, v("diffdf")),
       sprintf("NonCompart %s vs PKNCA for every NCA parameter, including the profile with a BLQ value between quantifiable samples, and the SAP parameter-rule flags; the BE model refit as a closed-form period-difference t-test and with nlme::lme().", v("NonCompart")),
       "ADPC times (including the experimental derive_var_nfrlt()), ADSL population flags and the adverse-event counts rebuilt in base R from the SDTM-like data.",
@@ -182,7 +180,7 @@ body_idx <- paste0(
       L("05_qc/qc_nca_side_by_side.csv", "qc_nca_side_by_side.csv", "both engines, every profile")),
     "This is same-author re-derivation: the same person wrote both routes. No second programmer re-derived the results."),
   stage_sec(6, "CSR section 11-style text, checked against the outputs",
-    paste0(lab("sup", "Supported (job): statistical input to CSRs"), lab("led", "Led (job): final statistical reports"), lab("tools", "Tools built: number check")),
+    paste0(lab("tools", "Number check")),
     c("Section 11-style text (data sets analyzed, demographics, compliance, PK and BE results, missing data, conclusions), with every number read from an output file.",
       sprintf("The tlf_interpret number-grounding validator, unchanged: <strong>%d of %d paragraphs</strong> have every number found in the outputs.", n_csr_ok, length(CSR$paragraphs)),
       "Controls: an altered number is rejected; a wrong statement built from real numbers passes, which is the known limitation; 'well tolerated' is flagged for review."),

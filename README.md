@@ -1,13 +1,14 @@
-# Patrick Iben: clinical trial biostatistics portfolio
+# Trial biostatistics toolkit
 
-Independent biostatistician: seven years of clinical trial work (Emmes, Syneos Health), including
-lead biostatistician on early-phase clinical pharmacology studies, shown here through worked examples
-and tools on synthetic data across the clinical trial lifecycle.
+Worked examples, templates, apps and checks for the work a lead biostatistician does on an
+early-phase clinical trial, from sample size to clinical study report text. Free to read, run and
+adapt; every dataset is synthetic, and each page says what was actually run and what was not.
 
 **Site:** <https://patrickiben.github.io/biometrics-ai-portfolio/>. Start at the home page: it carries
 a status strip read from this repository's files, the featured work and the lifecycle grid. The
-[lifecycle page](lifecycle.html) lists every stage with its labels and states the gaps (define.xml
-and ADRG authoring, submission packages, DMC charters, group-sequential interim design); the
+[lifecycle page](lifecycle.html) lists every stage with what you can use here and what is not
+covered (define.xml and ADRG authoring, submission packages, DMC charters, group-sequential interim
+design); the
 [apps](apps.html), [methods](methods.html), [quality and AI use](quality.html) and [about](about.html)
 pages cover the rest.
 
@@ -26,11 +27,6 @@ Each module states what was actually executed:
 | **Structural check** | Inventories, pattern scans or counts, not a numeric comparison |
 | **Manual record** | Entered by hand, not computed |
 | **Under revision** | Known issues are listed on the page; fixes come in the next revision |
-
-The home page's lifecycle labels are narrower still: **Led** (owned, wrote or led the work in a job),
-**Supported** (reviewed, contributed, or created or reviewed), **Tools built** (shown only by
-independent work: code here or public drafts, not job experience), **Gap** (no job experience or no
-worked artifact yet).
 
 ## What is here
 
@@ -71,7 +67,7 @@ which serve the page, see the visitor's IP address (about 30 MB on first visit):
 
 Source and evaluation: <https://github.com/patrickiben/ecrf-pipeline-apps>.
 
-## How I work
+## Using these resources
 
 Validated systems own reported numbers, a named statistician signs every deliverable, and this site
 uses synthetic data only. In a study, reported numbers come from validated, double-programmed SAS/R
@@ -164,10 +160,11 @@ generated pages and readouts match their sources. GitHub Actions runs both on ev
 request. Add `--external` to also request each external link once. It checks
 the package, not the statistics.
 
-## Contact
+## Author
 
-patrickiben@gmail.com · [github.com/patrickiben](https://github.com/patrickiben) ·
-ORCID [0009-0005-2443-7973](https://orcid.org/0009-0005-2443-7973) · St. Petersburg, FL / Remote US
+Built by Patrick Iben ([github.com/patrickiben](https://github.com/patrickiben),
+ORCID [0009-0005-2443-7973](https://orcid.org/0009-0005-2443-7973)). Corrections and questions are
+welcome as issues.
 
 ## License
 

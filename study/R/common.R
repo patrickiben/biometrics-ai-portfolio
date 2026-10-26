@@ -184,7 +184,7 @@ page_html <- function(title, kicker, h1, body, depth = 1, description = NULL, la
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>', esc(title), ' | Patrick Iben</title>
+<title>', esc(title), ' | Trial biostatistics toolkit</title>
 <meta name="description" content="', esc(desc), '">
 ', partial(sprintf("_head-d%d.html", depth + 1)), '
 <link rel="stylesheet" href="', st, 'study.css">
