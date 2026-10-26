@@ -1121,6 +1121,8 @@ def readout(k, v, s, d, href=None, vcls=''):
 
 
 APP_RUNTIME = {'shinylive': 'R Shiny', 'stlite': 'Python', 'javascript': 'JavaScript'}
+# the Pages workflow's runs: it builds the site and smoke-tests the R apps before each deploy
+PAGES_RUNS = 'https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml'
 
 
 def app_counts():
@@ -1156,9 +1158,12 @@ def status_strip():
     ac, builds = app_counts()
     n_apps = sum(ac.values())
     by_lang = ' · '.join(f'{v} {k}' for k, v in ac.items() if v)
-    if verified:
-        dates = sorted(m['browser']['verified'] for m in verified)
-        chk = f'Browser check {esc(dates[0])}'
+    # the R apps' check is the deploy smoke test (a first visit in headless Chrome, on a build served
+    # like the site); the readout says so and dates the last recorded run, never a live status
+    smoked = [m for m in verified if m['browser'].get('runtime') == 'shinylive']
+    if smoked:
+        dates = sorted(m['browser']['verified'] for m in smoked)
+        chk = f'{len(smoked)} R apps smoke-tested before each deploy; local run {esc(dates[0])}'
     else:
         chk = 'Browser check: none yet'
     r.append(readout('Apps', f'{n_apps} <span class="u">apps</span>', esc(by_lang), chk, 'apps.html'))
@@ -1177,8 +1182,9 @@ def status_strip():
         fail(f'TLF libraries: {sas_n} SAS programs but {r_n} R scripts; the status strip reads them as twins')
     r.append(readout('TLF templates', f'{sas_n} <span class="u">SAS/R twins</span>',
                      f'{designs} early-phase designs · R parse-checked · SAS not executed (no license)', 'Pseudocode, not run on data', 'methods.html#libraries'))
+    runs = (f'<span>App smoke test: <a href="{PAGES_RUNS}" rel="noopener">run history</a> ↗</span>') if smoked else ''
     cap = (f'<p class="strip-cap"><span class="k">This site in numbers</span><span>Read from this repository\'s files when the pages are built; '
-           f'updated {upd}; <span class="c-amber">synthetic data only</span></span></p>')
+           f'updated {upd}; <span class="c-amber">synthetic data only</span></span>{runs}</p>')
     return cap + '<div class="strip" role="list">' + ''.join(x.replace('class="readout"', 'class="readout" role="listitem"', 1) for x in r) + '</div>'
 
 

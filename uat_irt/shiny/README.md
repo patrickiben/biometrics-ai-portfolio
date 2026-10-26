@@ -10,7 +10,9 @@ data, no PHI.
 Every panel has content as soon as R is ready; nothing waits for a click:
 
 - a header with a **Synthetic data** badge, a change counter ("Seed data, no changes yet"), the
-  CSV download, Reset to seed and a light/dark switch that starts from the system setting;
+  CSV download, Reset to seed and, in a standalone run, the site's light/dark switch (it starts
+  from the site's saved theme, then the system setting; on the site's launch page the toggle in the
+  top bar sets it);
 - a **Start here** card (collapsible, closed on phones): what the app shows, what each color means,
   three things to try;
 - five KPI boxes, each with a one-line explanation (for example "92% of the 24 executed");
@@ -74,9 +76,12 @@ Two details matter only in the browser:
   function"). `app.R` attaches the same dependency (`dt-core-bootstrap5`, same version) to the
   page, so both tables find DataTables ready.
 - **Nothing heavy runs at startup.** The app reads three small CSVs; every panel is computed from
-  them in well under a second. In a local Shinylive build every panel had content 7.7 to 8.4 s
-  after the page opened (fresh browser profile and reload), almost all of it R and its packages
-  starting. The startup card stays until both tables have drawn their rows.
+  them in well under a second, and the theme is Bootstrap's precompiled one with the site's tokens
+  as CSS variables (`bp_theme()` and `bp_theme_head()` in the shared helper), so no Sass is
+  compiled in the browser. In a local Shinylive build every panel had content 7.0 to 7.3 s after
+  the page opened on a first visit and 6.7 s after a reload (2026-10-25; 7.7 to 8.4 s while the app
+  still compiled a custom theme), almost all of it R and its packages starting. The startup card
+  stays until both tables have drawn their rows.
 - **What only a browser shows** is checked by the deploy smoke test's `smoke.interactions` in
   [`apps/uat_irt/launch.json`](../../apps/uat_irt/launch.json), with real mouse events: a
   double-click on a defect's Status pill opens the editor (the pill lets the pointer through to its

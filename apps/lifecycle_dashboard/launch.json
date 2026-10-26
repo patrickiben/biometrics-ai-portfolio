@@ -7,14 +7,14 @@
     "Pick CP-103 and drag Open queries to 120: its Data score rises, it turns amber and On watch goes from 3 to 4, its query-backlog signal turns red, and the trend marks the what-if with an open circle.",
     "For CP-108, raise Double-programmed % to 80: its Resource score falls, its double-programming lag signal goes and At risk drops to 0. Reset to data undoes every what-if."
   ],
-  "screenshot": {"src": "screenshot.webp", "width": 1280, "height": 755,
-                 "alt": "The Study Lifecycle Monitor running in the browser: KPI boxes reading 8 active studies, 1 at risk (CP-108), 3 on watch, 135 open queries, 46% of deliverables done and the next DB lock in 8 days (CP-105); the portfolio risk heatmap with CP-108 selected; and the ranked early-warning signals, red first.",
-                 "caption": "The app in the browser, scrolled past its Start here card: the KPIs, the risk heatmap with CP-108 selected, and the ranked signals. Synthetic data."},
+  "screenshot": {"src": "screenshot.webp", "src_light": "screenshot-light.webp", "width": 1280, "height": 800,
+                 "alt": "The Study Lifecycle Monitor scrolled past its Start here card: KPI boxes reading 8 active studies, 1 at risk (CP-108), 3 on watch, 135 open queries, 46% of deliverables done and the next DB lock in 8 days (CP-105); the portfolio risk heatmap with CP-108 selected; and the ranked early-warning signals, red first.",
+                 "caption": "The app scrolled past its Start here card: the KPIs, the risk heatmap with CP-108 selected and the ranked signals. It follows the site's light or dark theme. Synthetic data."},
   "links": [
     {"t": "guide", "label": "Guide", "href": "../../lifecycle_dashboard/quarto/lifecycle-guide.html"},
     {"t": "snapshot", "label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
   ],
-  "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
   "smoke": {
     "timeout_s": 150,
     "outputs": ["k_n", "k_n_sub", "k_risk", "k_risk_sub", "k_watch", "k_watch_sub", "k_q", "k_q_sub", "k_del", "k_del_sub",

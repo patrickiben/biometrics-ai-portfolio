@@ -1,5 +1,5 @@
 {
- "note": "Thumbnails for the portfolio pages: 16:10 WebP. Site-page views are captured in both themes from the pages in this repository (bar and breadcrumbs hidden; an id ending in -light is the light-theme twin, served with <picture>); the worked-example figure is the figure file itself; the app and eCRF screenshots are converted from existing real screenshots as captured. Synthetic data only.",
+ "note": "Thumbnails for the portfolio pages: 16:10 WebP. Site-page views are captured in both themes from the pages in this repository (bar and breadcrumbs hidden; an id ending in -light is the light-theme twin, served with <picture>); the worked-example figure is the figure file itself; the three R apps are captured in both themes from the built site (each app full screen on its launch page); the eCRF screenshots are converted from existing real screenshots as captured. Synthetic data only.",
  "images": [
   {
    "id": "carryover",
@@ -158,12 +158,24 @@
    "file": "assets/thumbs/lifecycle-monitor.webp",
    "width": 640,
    "height": 400,
-   "source": "lifecycle_dashboard/screenshots/lifecycle-monitor.png (native run of the Shiny app)",
-   "viewport": "1280x800",
-   "theme": "as captured (the apps are not restyled in this pass)",
+   "source": "apps/lifecycle_dashboard/ (the in-browser app on its launch page, full screen, scrolled past Start here)",
+   "viewport": "1280x800, DPR 1, scaled to 640x400",
+   "theme": "dark",
    "captured": "2026-10-25",
-   "bytes": 23416,
-   "alt": "Study Lifecycle Monitor console: KPI strip, portfolio health heatmap and early-warning signals for a simulated portfolio"
+   "bytes": 27608,
+   "alt": "Study Lifecycle Monitor: KPI boxes, the portfolio risk heatmap with CP-108 selected and the ranked early-warning signals, simulated portfolio"
+  },
+  {
+   "id": "lifecycle-monitor-light",
+   "file": "assets/thumbs/lifecycle-monitor-light.webp",
+   "width": 640,
+   "height": 400,
+   "source": "apps/lifecycle_dashboard/ (the in-browser app on its launch page, full screen, scrolled past Start here)",
+   "viewport": "1280x800, DPR 1, scaled to 640x400",
+   "theme": "light",
+   "captured": "2026-10-25",
+   "bytes": 28302,
+   "alt": "Study Lifecycle Monitor: KPI boxes, the portfolio risk heatmap with CP-108 selected and the ranked early-warning signals, simulated portfolio"
   },
   {
    "id": "sandbox",
@@ -300,24 +312,48 @@
    "file": "assets/thumbs/trialmon.webp",
    "width": 640,
    "height": 400,
-   "source": "sasr_monitoring_wiki/screenshots/trialmon-console.png (native run of the Shiny app)",
-   "viewport": "1280x800",
-   "theme": "as captured (the apps are not restyled in this pass)",
+   "source": "apps/trialmon/ (the in-browser app on its launch page, full screen)",
+   "viewport": "1280x800, DPR 1, scaled to 640x400",
+   "theme": "dark",
    "captured": "2026-10-25",
-   "bytes": 33664,
-   "alt": "TRIALMON console as it opens: overall and study-tier status, RED and AMBER flags by participant, and the ranked worklist, synthetic data"
+   "bytes": 38336,
+   "alt": "TRIALMON console as it opens: the participant packet, the Start here card, the worst-of value boxes and the ranked worklist, synthetic data"
+  },
+  {
+   "id": "trialmon-light",
+   "file": "assets/thumbs/trialmon-light.webp",
+   "width": 640,
+   "height": 400,
+   "source": "apps/trialmon/ (the in-browser app on its launch page, full screen)",
+   "viewport": "1280x800, DPR 1, scaled to 640x400",
+   "theme": "light",
+   "captured": "2026-10-25",
+   "bytes": 38988,
+   "alt": "TRIALMON console as it opens: the participant packet, the Start here card, the worst-of value boxes and the ranked worklist, synthetic data"
   },
   {
    "id": "uat",
    "file": "assets/thumbs/uat.webp",
    "width": 640,
    "height": 400,
-   "source": "uat_irt/screenshots/uat-tracker.png (native run of the Shiny app)",
-   "viewport": "1280x800",
-   "theme": "as captured (the apps are not restyled in this pass)",
+   "source": "apps/uat_irt/ (the in-browser app on its launch page, full screen)",
+   "viewport": "1280x800, DPR 1, scaled to 640x400",
+   "theme": "dark",
    "captured": "2026-10-25",
-   "bytes": 19864,
-   "alt": "IRT/RTSM UAT tracker: KPI tiles, the test-script table and the go-live sign-off gate reading blocked, synthetic test data"
+   "bytes": 30218,
+   "alt": "IRT/RTSM UAT tracker on first load: the Start here guide, the KPI boxes, the test-script table and the go-live gate reading NOT ready, synthetic test data"
+  },
+  {
+   "id": "uat-light",
+   "file": "assets/thumbs/uat-light.webp",
+   "width": 640,
+   "height": 400,
+   "source": "apps/uat_irt/ (the in-browser app on its launch page, full screen)",
+   "viewport": "1280x800, DPR 1, scaled to 640x400",
+   "theme": "light",
+   "captured": "2026-10-25",
+   "bytes": 30580,
+   "alt": "IRT/RTSM UAT tracker on first load: the Start here guide, the KPI boxes, the test-script table and the go-live gate reading NOT ready, synthetic test data"
   }
  ]
 }

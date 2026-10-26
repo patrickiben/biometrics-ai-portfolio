@@ -8,15 +8,15 @@
     "Switch Lab grading to v5.0 in the sidebar: CP101-013's neutrophil count becomes grade 3 and the AMBER count rises from 7 to 8.",
     "On Study tier, set an indicator to RED: the study tier turns RED, and Reset to the feed undoes it."
   ],
-  "screenshot": {"src": "trialmon-app.webp", "width": 1406, "height": 828,
-                 "alt": "The TRIALMON console in light mode: the Start here card with what the console shows, every rule behind RED, AMBER and watch, and four things to try; seven value boxes in one row (overall RED, participants and cohorts RED, study tier AMBER, 5 RED and 7 AMBER flags, 2 watch, 18 dosed participants); and the ranked worklist with CP101-014's row highlighted, the participant whose packet is in the sidebar.",
-                 "caption": "The console as it opens: the Start here card, the worst-of value boxes and the ranked worklist, with the open participant's row highlighted. Synthetic data."},
+  "screenshot": {"src": "trialmon-app.webp", "src_light": "trialmon-app-light.webp", "width": 1280, "height": 800,
+                 "alt": "The TRIALMON console as it opens: the packet for participant CP101-014 (RED) in the sidebar; the Start here card with what the console shows, every rule behind RED, AMBER and watch, and four things to try; seven value boxes (overall RED, participants and cohorts RED, study tier AMBER, 5 RED and 7 AMBER flags, 2 watch, 18 dosed participants); and the top of the ranked worklist.",
+                 "caption": "The console as it opens: the Start here card, the worst-of value boxes and the ranked worklist. It follows the site's light or dark theme. Synthetic data."},
   "links": [
     {"t": "open", "label": "About TRIALMON", "href": "../../sasr_monitoring_wiki/index.html"},
     {"t": "snapshot", "label": "Read-only snapshot", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-dashboard.html"},
     {"t": "guide", "label": "Guide", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html"}
   ],
-  "first_load": {"download_mb": 55, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
   "smoke": {
     "timeout_s": 150,
     "outputs": ["v_overall", "v_part", "v_study", "v_red", "v_amber", "v_watch", "v_n", "worklist", "packet", "window_note"],

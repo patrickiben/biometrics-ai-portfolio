@@ -38,9 +38,10 @@ Select a test and mark it Pass/Fail, close a defect, and the KPIs and the go-liv
 sign-off gate recompute live. Download your results to CSV from the sidebar to drop
 into the [Excel workbook](../UAT_IRT_RTSM_Workbook.xlsx) and the eTMF.
 
-It is also exported as a Shinylive build: [open the Shinylive build](../../apps/uat_irt/)
-(not yet checked in a real browser; Shinylive and webR, so R starts in the browser, the first visit
-downloads about 55 MB, and it works best in Chrome or Edge; Safari support may vary). The app folder carries a copy of the three CSVs in `shiny/templates/`,
+It is also exported as a Shinylive build: [open it in your browser](../../apps/uat_irt/)
+(smoke-tested in headless Chrome before each deploy, [run history](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml); Shinylive and webR, so R
+starts in the browser, the first visit downloads about 65 MB, and it works best in Chrome or Edge;
+Safari support may vary). The app folder carries a copy of the three CSVs in `shiny/templates/`,
 because Shinylive exports only the app folder, and the download is built in the browser (a Blob)
 rather than by a `downloadHandler`.
 

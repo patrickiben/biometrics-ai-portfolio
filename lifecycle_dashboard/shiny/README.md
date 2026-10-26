@@ -49,10 +49,12 @@ study with no milestone rows) instead of leaving it blank.
 ### In the browser
 
 Every panel except the two charts is plain HTML, so the panels follow light and dark without
-being redrawn, and only the milestone track and the query trend use ggplot2. The site's color
-tokens (`PORTFOLIO_TOKENS` in the shared helper) are applied as Bootstrap CSS variables on the
-precompiled Bootstrap theme: `portfolio_theme()` would compile Bootstrap's Sass in the visitor's
-browser, which measured 0.9 s of every start. The app needs no DT.
+being redrawn, and only the milestone track and the query trend use ggplot2. The site's tokens
+(`assets/theme/tokens.css`, through `bp_theme_head()` in the shared helper) are applied as CSS
+variables on the precompiled Bootstrap theme, and the RAG levels, milestone statuses and what-if
+marks are site tones: a custom bslib theme would compile Bootstrap's Sass in the visitor's
+browser, which measured 0.9 s of every start. The app follows the site's light or dark choice
+(input `bp_theme`). The app needs no DT.
 
 Measured on 2026-10-25 with a full local export (as the Pages workflow builds it), served under
 `/biometrics-ai-portfolio/` and opened in headless Chrome 155 at 1440x900 with a fresh profile:
@@ -64,7 +66,9 @@ was ready at 9.0 s. After the review fixes (24 outputs, with the trend note): re
 8.2 s at 1280, 1366, 1440 and 390 px wide, light and dark; the launch page's status line now
 counts the panels as they arrive, so it never says "0 of 24 panels filled" while the app already
 shows them (it did for about 0.5 s before). Inside the app, a study switch takes about 0.8 s, a what-if about 0.9 s,
-Reset 0.6 s and the light or dark switch 0.7 s. Of R's own start in the browser,
+Reset 0.6 s and the light or dark switch 0.7 s. After the move to the site's tokens
+(2026-10-25), the deploy smoke test read 7.9 s to ready and 7.1 s after a reload, and four more
+first visits at 1280 and 390 px, light and dark, 7.5 to 7.9 s. Of R's own start in the browser,
 `library(bslib)` takes 2.0 s and `library(ggplot2)` 0.7 s; the app's own computation is under 1 s.
 
 A click on a study selects it in the picker at once, in the browser. Right after a study switch

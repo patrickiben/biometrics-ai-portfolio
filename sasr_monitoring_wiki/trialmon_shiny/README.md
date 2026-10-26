@@ -73,8 +73,10 @@ grid takes under 0.1 s and the first roll-up about 0.1 s (measured 2026-10-25). 
 dominated by R and its packages loading, so the app avoids the two costs it controls:
 
 - **No Sass in the browser.** A custom bslib theme is compiled with Sass each time the app starts
-  (about 0.6 s). The app uses Bootstrap's precompiled theme and sets the site's color tokens
-  (`site.css`, through `PORTFOLIO_TOKENS`) as CSS variables, light and dark (`R/app_view.R`).
+  (about 0.6 s). The app uses Bootstrap's precompiled theme and takes the site's tokens
+  (`assets/theme/tokens.css`, through `bp_theme_head()` in the shared helper) as CSS variables,
+  light and dark; its four review levels and the liver tests are site tones (`R/app_view.R`), and
+  it follows the site's light or dark choice (input `bp_theme`).
 - **No ggplot2.** Loading it takes about 0.65 s, and each ggplot draws in about 0.3 s; the eDISH
   plot, the liver trajectory and the dose ladder are base graphics, which R has loaded already.
 
@@ -85,7 +87,9 @@ output had content 6.9 to 7.3 s after the launch page opened (8.3 to 8.5 s befor
 6.5 to 6.7 s on a reload (7.9 to 8.3 s before), and each tab filled 0.1 to 0.2 s after a click
 (the Liver tab took 0.9 s before), with no output error in light, dark or phone-width runs. After
 the status lines, notices and text-fitting plots were added, three runs of the deploy smoke test
-(`smoke.mjs`, 2026-10-25) read 6.7 to 6.9 s to ready and 6.3 to 6.5 s on a reload. A slower laptop and a real network add to these
+(`smoke.mjs`, 2026-10-25) read 6.7 to 6.9 s to ready and 6.3 to 6.5 s on a reload; after the move
+to the site's tokens, 6.7 s and 6.2 s, and four more first visits at 1280 and 390 px, light and
+dark, 6.8 to 7.0 s. A slower laptop and a real network add to these
 numbers; the launch page reports each step meanwhile.
 
 ## Files
