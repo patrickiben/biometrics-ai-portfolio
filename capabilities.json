@@ -19,7 +19,7 @@
    "meaning": "no job experience or no worked artifact yet"
   }
  },
- "not_covered_html": "<strong>Not covered here:</strong> define.xml and ADRG authoring, submission packages, DMC charters and group-sequential interim design.",
+ "not_covered_html": "<strong>Not covered here:</strong> define.xml and ADRG authoring, conformant SDTM, submission packages, DMC charters, BOIN/CRM dose escalation, adaptive and group-sequential designs, and independent double programming.",
  "featured": [
   "study",
   "trialmon",
@@ -60,15 +60,19 @@
      "text": "Led"
     },
     {
+     "k": "tools",
+     "text": "Tools built: runs"
+    },
+    {
      "k": "gap",
-     "text": "Gap: no worked design artifact yet"
+     "text": "Gap: dose-escalation, adaptive and group-sequential designs"
     }
    ],
-   "on_site_html": "Research on cluster randomized trial design under spatial interference (<em>Statistics in Medicine</em>, submitted), via the <a href=\"https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md\">research map</a>. Related: an <a href=\"uat_irt/quarto/uat-guide.html\">IRT/RTSM acceptance-test library</a> for randomization logic.",
+   "on_site_html": "The <a href=\"study/index.html#stage1\">worked example, stage 1</a>: an exact-method sample size (PowerTOST), a sensitivity grid, a permuted-block randomization schedule and an <a href=\"study/01_design/protocol_statistics.html\">ICH M11-headed protocol statistics excerpt</a> (synthetic). Research on cluster randomized trial design under spatial interference (<em>Statistics in Medicine</em>, submitted), via the <a href=\"https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md\">research map</a>. Related: an <a href=\"uat_irt/quarto/uat-guide.html\">IRT/RTSM acceptance-test library</a> for randomization logic.",
    "strongest": {
-    "text": "Cluster randomized trial design research",
-    "href": "https://github.com/patrickiben/patrickiben/blob/main/RESEARCH_MAP.md",
-    "note": "research map; related: the IRT/RTSM acceptance-test library"
+    "text": "Worked example, stage 1: sample size and randomization",
+    "href": "study/index.html#stage1",
+    "note": "related: cluster randomized trial design research"
    },
    "modules": [
     "study-1",
@@ -90,7 +94,7 @@
      "text": "Tools built"
     }
    ],
-   "on_site_html": "TLF template libraries for five early-phase designs, in <a href=\"sas_tlf_pseudocode/index.html\">SAS</a> and <a href=\"r_tlf_pseudocode/index.html\">R</a> (pseudocode). A <a href=\"cqtc_hysteresis/index.html\">prespecified C-QTc hysteresis check</a> with its operating characteristics (synthetic).",
+   "on_site_html": "The <a href=\"study/index.html#stage2\">worked example, stage 2</a>: an estimand with the five ICH E9(R1) attributes, a <a href=\"study/02_sap/sap_excerpt.html\">statistical methods excerpt</a> and <a href=\"study/02_sap/mock_shells.html\">six mock shells</a>, with settings the analysis code reads. TLF template libraries for five early-phase designs, in <a href=\"sas_tlf_pseudocode/index.html\">SAS</a> and <a href=\"r_tlf_pseudocode/index.html\">R</a> (pseudocode). A <a href=\"cqtc_hysteresis/index.html\">prespecified C-QTc hysteresis check</a> with its operating characteristics (synthetic).",
    "strongest": {
     "text": "Worked example, stage 2: SAP excerpt and six mock shells",
     "href": "study/index.html#stage2"
@@ -117,7 +121,7 @@
      "text": "Gap: define.xml, ADRG, SDTM mapping"
     }
    ],
-   "on_site_html": "The <a href=\"sim_lifecycle/index.html\">sandbox</a> writes eight ADaM-shaped domains that pass home-grown structural checks (not Pinnacle 21 or CDISC CORE).",
+   "on_site_html": "The <a href=\"study/index.html#stage3\">worked example, stage 3</a>: ADSL, ADPC, ADPP and ADAE with admiral 1.5.0 from SDTM-like inputs, a specification in Pinnacle 21 layout, 24 of 24 metadata checks and SAS XPORT v5 files (not conformant SDTM; no Pinnacle 21 or CDISC CORE run). The <a href=\"sim_lifecycle/index.html\">sandbox</a> writes eight ADaM-shaped domains with home-grown structural checks.",
    "strongest": {
     "text": "Worked example, stage 3: ADaM (admiral), P21-layout specification, XPT",
     "href": "study/index.html#stage3"
@@ -142,7 +146,7 @@
      "text": "Tools built"
     }
    ],
-   "on_site_html": "SAS and R TLF libraries; base-R summary tables in the sandbox.",
+   "on_site_html": "The <a href=\"study/index.html#stage4\">worked example, stage 4</a>: six tables with rtables and tern, each exported to RTF and HTML, three figures and a <a href=\"study/04_analysis/report/report.html\">Quarto results report</a>. SAS and R TLF template libraries (pseudocode; SAS not executed).",
    "strongest": {
     "text": "Table 14.4.3.1 (rtables) and the SAS and R template libraries",
     "href": "study/04_analysis/tlf/t_14_4_3_1.html"
@@ -169,7 +173,7 @@
      "text": "Tools built"
     }
    ],
-   "on_site_html": "A <a href=\"validation_harness/index.html\">QC harness</a> that separates structural checks from executed ones; the eCRF apps' test suite runs in CI. A <a href=\"validation_harness/index.html#teeth\">seeded-defect check</a> reports which planted programming defects the harness catches and which survive.",
+   "on_site_html": "The <a href=\"study/index.html#stage5\">worked example, stage 5</a>: <a href=\"study/05_qc/qc_ledger.html\">40 of 40 re-derivation checks</a> by a second method (same-author re-derivation, not independent double programming). A <a href=\"validation_harness/index.html\">QC harness</a> that separates structural checks from executed ones, including an independent recomputation of the NCA (G9); the eCRF apps' test suite runs in CI. A <a href=\"validation_harness/index.html#teeth\">seeded-defect check</a> reports which planted programming defects the harness catches and which survive.",
    "strongest": {
     "text": "QC harness and seeded-defect check",
     "href": "validation_harness/index.html"
@@ -199,7 +203,7 @@
      "text": "Gap: DMC charters, group-sequential interim design"
     }
    ],
-   "on_site_html": "eCRF assist apps for participant risk screening and central statistical monitoring that run in the browser. A safety-review worked example, <a href=\"sasr_monitoring_wiki/index.html\">TRIALMON</a>, on synthetic data (runs; tests pass).",
+   "on_site_html": "A safety-review worked example, <a href=\"sasr_monitoring_wiki/index.html\">TRIALMON</a>, on synthetic data (runs; tests pass), with a <a href=\"apps/trialmon/\">console that runs in the browser</a>. eCRF assist apps for participant risk screening and central statistical monitoring that run in the browser. SAS/R <a href=\"sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html\">monitoring coverage wiki</a> and <a href=\"sas_r_automation/SAS_R_Trial_Monitoring_Automation.html\">automation macros</a> (SAS not executed).",
    "strongest": {
     "text": "TRIALMON safety review",
     "href": "sasr_monitoring_wiki/index.html"
@@ -257,7 +261,7 @@
      "text": "Gap: submission packages"
     }
    ],
-   "on_site_html": "A <a href=\"tlf_interpret/index.html\">number-grounding check</a> for drafted TLF text: its self-test runs; the language-model step is a stub.",
+   "on_site_html": "The <a href=\"study/index.html#stage6\">worked example, stage 6</a>: CSR section 11-style text in which every number is checked against the outputs (10 of 10 paragraphs); the check confirms that numbers exist, not that statements are correct. A <a href=\"tlf_interpret/index.html\">number-grounding check</a> for drafted TLF text: its self-test runs; the language-model step is a stub.",
    "strongest": {
     "text": "Worked example, stage 6: CSR section 11-style text, number-checked",
     "href": "study/index.html#stage6"
@@ -304,7 +308,7 @@
      "text": "Tools built"
     }
    ],
-   "on_site_html": "A <a href=\"sasr_onleave_wiki/Continuity_Toolkit.html\">continuity and handoff toolkit</a> that runs in the browser.",
+   "on_site_html": "A <a href=\"sasr_onleave_wiki/Continuity_Toolkit.html\">continuity and handoff toolkit</a> that runs in the browser. A <a href=\"lifecycle_dashboard/quarto/lifecycle-guide.html\">study lifecycle monitor</a> and a <a href=\"smartsheet_sasr/Smartsheet_SASR.html\">tracker sync example</a> (synthetic).",
    "strongest": {
     "text": "Continuity and handoff toolkit",
     "href": "sasr_onleave_wiki/Continuity_Toolkit.html"

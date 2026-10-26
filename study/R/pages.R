@@ -112,7 +112,7 @@ stage_sec <- function(num, name, labels, executed, links, gap = NULL) paste0(
 L <- function(href, text, d) sprintf('<a href="%s">%s</a><span class="d">%s</span>', href, esc(text), esc(d))
 P <- DES$planning
 body_idx <- paste0(
-  md("One synthetic early-phase bioequivalence study, taken from sample size to clinical study report text. Every number on this page and on the pages it links to comes from one script, `study/run_all.R`, run on synthetic data. The study builds on the `sim_lifecycle/` sandbox (same priors and model, a 2x2 crossover, N = 40, seed 2026)."),
+  md("One synthetic early-phase bioequivalence study, taken from sample size to clinical study report text. Every number on this page and on the pages it links to comes from one script, `study/run_all.R`, run on synthetic data. The study builds on the [`sim_lifecycle/` sandbox](../sim_lifecycle/index.html) (same priors and model, a 2x2 crossover, N = 40, seed 2026)."),
   '<ol class="flow">',
   sprintf('<li><a href="#stage1">Design</a><span class="v">%s enrolled; %s evaluable for 90%% power</span></li>', P$n_enrolled, P$n_evaluable_90),
   sprintf('<li><a href="#stage2">SAP and shells</a><span class="v">%d table shells</span></li>', n_shells),
@@ -196,7 +196,7 @@ body_idx <- paste0(
      "Rscript study/run_all.R        # from the repository root; regenerates every output above",
      "```",
      "",
-     sprintf("[run_all.R](run_all.R) runs the stages in order and renders the report with Quarto. [renv.lock](renv.lock) pins R %s and the package versions below. Two consecutive local runs produced byte-identical files. The CI workflow `.github/workflows/study.yml` (r-lib/actions v2) runs it on Ubuntu and fails if a committed output changes; the figures and the rendered report are excluded from that byte check because PNG rendering depends on system fonts. The workflow has not yet run on GitHub.", paste(R.version$major, R.version$minor, sep = "."))),
+     sprintf("[run_all.R](run_all.R) runs the stages in order and renders the report with Quarto. [renv.lock](renv.lock) pins R %s and the package versions below. Two consecutive local runs produced byte-identical files. The CI workflow `.github/workflows/study.yml` (r-lib/actions v2) runs it on Ubuntu and fails if a committed output changes; the figures and the rendered report are excluded from that byte check because PNG rendering depends on system fonts. Its [run history](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/study.yml) is public; it first passed on main on 25 October 2026.", paste(R.version$major, R.version$minor, sep = "."))),
   '<details class="versions"><summary>Package versions (renv.lock)</summary>',
   html_table(data.frame(Package = names(VERS), Version = unname(VERS)), caption = "Package versions used by this run (pinned in renv.lock)."),
   '</details>',

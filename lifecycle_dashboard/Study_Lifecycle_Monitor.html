@@ -303,18 +303,18 @@ html:not(.js) .theme-toggle { display: none; }
   <header class="mon-top">
     <div>
       <h1>Study Lifecycle Monitor <span class="badge">Biostatistics Operations</span></h1>
-      <p class="sub">Operational health of studies from protocol to CSR — deliverables, data readiness, TLF production, milestones.</p>
+      <p class="sub">Operational health of studies from protocol to CSR: deliverables, data readiness, TLF production, milestones.</p>
     </div>
     <div class="grow"></div>
     <span class="badge demo">SIMULATED DEMO DATA</span>
-    <select id="studySel" title="Focus study"></select>
+    <select id="studySel" aria-label="Focus study" title="Focus study"></select>
   </header>
 
   <div class="kpis" id="kpis"></div>
 
   <div class="grid">
     <div class="card">
-      <h2>Portfolio health <span class="hint">RAG by dimension — click a cell to drill in</span></h2>
+      <h2>Portfolio health <span class="hint">RAG by dimension; click a cell to drill in</span></h2>
       <div class="hm" id="heat"></div>
       <div class="legend">
         <span><span class="rag bg-g"></span> On track</span>
@@ -327,7 +327,7 @@ html:not(.js) .theme-toggle { display: none; }
         <b>Timeline</b> = overdue milestones + days-to-DBL pressure · <b>Data</b> = open-query backlog +
         (1−clean%) + (1−SDV%), weighted by DBL proximity · <b>TLF</b> = (1−finalized/planned) weighted by
         reporting proximity · <b>Resource</b> = double-programming lag + open discrepancies. Green &lt;33,
-        Watch 33–66, At risk &gt;66. No predictive model, no experimental method — just the numbers your
+        Watch 33–66, At risk &gt;66. No predictive model, no experimental method, just the numbers your
         CTMS/EDC/TLF tracker already hold.
       </details>
     </div>
@@ -338,7 +338,7 @@ html:not(.js) .theme-toggle { display: none; }
   </div>
 
   <div class="card" style="margin-top:14px">
-    <h2>Portfolio trend <span class="hint">8 weeks · all studies — direction of travel</span></h2>
+    <h2>Portfolio trend <span class="hint">8 weeks · all studies · direction of travel</span></h2>
     <div id="trend"></div>
   </div>
 
@@ -379,7 +379,7 @@ html:not(.js) .theme-toggle { display: none; }
    To replace the demo with real data, implement loadPortfolio() to pull
    READ-ONLY operational metadata and return the SAME study objects the demo
    generator produces (see genStudy for the exact shape). NO PHI / participant-level
-   / reported clinical values ever cross — operational fields only.
+   / reported clinical values ever cross: operational fields only.
 
      async function loadPortfolio(){
        const studies = await ctmsStudies();           // CTMS  -> id, phase, milestones, enrolled/target, sites
@@ -503,7 +503,7 @@ function renderKpis(){
     {v:watch,l:'On watch',c:watch?'a':'g'},
     {v:totQ,l:'Open queries (portfolio)',c:''},
     {v:avgDel+'%',l:'Avg deliverables complete',c:avgDel>70?'g':avgDel>45?'a':'r'},
-    {v:nextDBL?nextDBL.daysToDBL+'d':'—',l:'Next DB lock'+(nextDBL?' ('+nextDBL.id+')':''),c:nextDBL&&nextDBL.daysToDBL<14?'a':''}
+    {v:nextDBL?nextDBL.daysToDBL+'d':'none',l:'Next DB lock'+(nextDBL?' ('+nextDBL.id+')':''),c:nextDBL&&nextDBL.daysToDBL<14?'a':''}
   ];
   $('kpis').innerHTML=k.map(function(x){return '<div class="kpi"><div class="v '+x.c+'">'+x.v+'</div><div class="l">'+x.l+'</div></div>';}).join('');
 }
@@ -536,7 +536,7 @@ function renderSignals(){
   });
   sigs.sort(function(a,b){return (b.sev==='r')-(a.sev==='r');});
   $('signals').innerHTML = sigs.length? sigs.slice(0,9).map(function(x){
-    return '<div class="sig"><div class="pip '+(x.sev==='r'?'bg-r':'bg-a')+'"></div><div><div class="t"><span class="who">'+x.who+'</span> — '+x.t+'</div><div class="m">'+x.m+'</div></div></div>';
+    return '<div class="sig"><div class="pip '+(x.sev==='r'?'bg-r':'bg-a')+'"></div><div><div class="t"><span class="who">'+x.who+'</span>: '+x.t+'</div><div class="m">'+x.m+'</div></div></div>';
   }).join('') : '<div class="m" style="color:var(--mut);padding:8px">No operational signals above threshold.</div>';
 }
 
@@ -600,14 +600,14 @@ function renderTable(){
 function openModal(s,dim){
   var sc=s.sc;
   var box='<button class="closex" onclick="document.getElementById(\'modal\').classList.remove(\'open\')">×</button>'+
-    '<h3>'+s.id+' — '+s.name+'</h3><div class="m" style="color:var(--mut)">'+s.design+' · '+s.phase+' · Lead '+s.owner+(dim?' · focus: '+dim:'')+'</div>'+
+    '<h3>'+s.id+': '+s.name+'</h3><div class="m" style="color:var(--mut)">'+s.design+' · '+s.phase+' · Lead '+s.owner+(dim?' · focus: '+dim:'')+'</div>'+
     '<div class="kv">'+
       [['Overall risk',Math.round(sc.overall)+' ('+({g:'on track',a:'watch',r:'at risk'})[rag(sc.overall)]+')'],
        ['Timeline / Data',Math.round(sc.Timeline)+' / '+Math.round(sc.Data)],
        ['TLF / Resource',Math.round(sc.TLF)+' / '+Math.round(sc.Resource)],
        ['Enrollment',s.enrolled+' / '+s.target+' ('+s.sites+' sites)'],
        ['Open queries',s.data.openQ+'  ·  clean '+pct(s.data.cleanPct)+'  ·  SDV '+pct(s.data.sdvPct)],
-       ['Days to DB lock',s.daysToDBL>0?s.daysToDBL:'—'],
+       ['Days to DB lock',s.daysToDBL>0?s.daysToDBL:'n/a'],
        ['TLF planned→final',s.tlf.planned+' → '+s.tlf.programmed+' → '+s.tlf.qcd+' → '+s.tlf.finalized],
        ['Double-programmed',s.prog.dblProgPct+'%  ·  '+s.prog.discrep+' discrepancies']
       ].map(function(x){return '<div><b>'+x[0]+'</b><span>'+x[1]+'</span></div>';}).join('')+
@@ -615,13 +615,13 @@ function openModal(s,dim){
     '<details class="note" open style="margin-top:12px"><summary>Where these numbers would come from</summary>'+
       'Milestones → CTMS · enrollment/queries/clean/SDV → EDC · TLF funnel → the TLF program tracker · '+
       'deliverables → the Protocol→CSR deliverables register. This demo is seeded synthetic data; wire each '+
-      'panel to those sources read-only. Operational fields only — no PHI, no participant-level or reported clinical values.</details>';
+      'panel to those sources read-only. Operational fields only: no PHI, no participant-level or reported clinical values.</details>';
   $('modalBox').innerHTML=box;$('modal').classList.add('open');
 }
 $('modal').onclick=function(e){if(e.target===this)this.classList.remove('open');};
 
 function renderSel(){
-  $('studySel').innerHTML=STUDIES.map(function(s){return '<option value="'+s.id+'"'+(s.id===SEL?' selected':'')+'>'+s.id+' — '+s.phase+'</option>';}).join('');
+  $('studySel').innerHTML=STUDIES.map(function(s){return '<option value="'+s.id+'"'+(s.id===SEL?' selected':'')+'>'+s.id+': '+s.phase+'</option>';}).join('');
   $('studySel').onchange=function(){SEL=this.value;renderAll();};
 }
 function renderTrend(){
@@ -643,9 +643,9 @@ function renderTrend(){
 }
 function renderAll(){renderKpis();renderHeat();renderSignals();renderTrend();renderMs();renderData();renderFunnel();renderDeliv();renderTable();renderSel();}
 renderAll();
-$('foot').innerHTML='Study Lifecycle Monitor · self-contained, offline · <b>SIMULATED DEMO DATA</b> (seeded, reproducible) — not real study data. '+
+$('foot').innerHTML='Study Lifecycle Monitor · self-contained, offline · <b>SIMULATED DEMO DATA</b> (seeded, reproducible), not real study data. '+
   'Operational monitoring only: no PHI, no participant-level data, no reported clinical numbers; reported values always come from validated tools. '+
-  'Transparent operational scoring — no predictive model and no experimental components.';
+  'Transparent operational scoring: no predictive model and no experimental components.';
 </script>
 <!-- gen:ui -->
 <script>
@@ -784,12 +784,38 @@ $('foot').innerHTML='Study Lifecycle Monitor · self-contained, offline · <b>SI
     });
   }
 
+  /* keyboard access: a box that scrolls takes focus; Quarto's and reveal.js's icon-only links get a name */
+  function scrollers() {
+    if (!d.body) return;
+    [].forEach.call(d.body.getElementsByTagName("*"), function (el) {
+      var over = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1, mine = el.hasAttribute("data-scroll-focus");
+      if (over) { var cs = getComputedStyle(el); over = /auto|scroll/.test(cs.overflowX + " " + cs.overflowY); }
+      if (over && !mine && !el.hasAttribute("tabindex") && !el.matches("a[href], button, input, select, textarea, summary") &&
+          !el.querySelector("a[href], button, input, select, textarea, summary, [tabindex]")) {   /* a box with focusable content already scrolls by keyboard */
+        el.setAttribute("tabindex", "0"); el.setAttribute("data-scroll-focus", "");
+        if (!el.hasAttribute("role")) el.setAttribute("role", "region");
+        if (!el.hasAttribute("aria-label") && !el.hasAttribute("aria-labelledby"))
+          el.setAttribute("aria-label", el.matches("pre, div.sourceCode") ? "Code, scrolls" : el.querySelector("table") || el.matches("table") ? "Table, scrolls" : "Scrolling region");
+      } else if (!over && mine) {
+        el.removeAttribute("tabindex"); el.removeAttribute("data-scroll-focus");
+      }
+    });
+  }
+  function names() {
+    d.querySelectorAll("a.quarto-color-scheme-toggle:not([aria-label])").forEach(function (a) { a.setAttribute("aria-label", "Switch Quarto color theme"); });
+    d.querySelectorAll(".slide-menu-button a:not([aria-label])").forEach(function (a) { a.setAttribute("aria-label", "Slide menu"); });
+    d.querySelectorAll('.sourceCode a[href=""]:empty, .sourceCode a[href="#"]:empty').forEach(function (a) { a.setAttribute("aria-hidden", "true"); a.setAttribute("tabindex", "-1"); });
+  }
+
   function init() {
     paint();
     if (saved()) quarto(saved());
     stages();
     d.querySelectorAll("[data-filter]").forEach(filter);
     copyButtons();
+    names(); scrollers();
+    var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(scrollers, 200); });
+    window.addEventListener("load", function () { names(); scrollers(); });
   }
   window.addEventListener("beforeprint", function () { d.querySelectorAll("details:not([open])").forEach(function (x) { x.setAttribute("open", ""); x.setAttribute("data-print-open", ""); }); });
   window.addEventListener("afterprint", function () { d.querySelectorAll("details[data-print-open]").forEach(function (x) { x.removeAttribute("open"); x.removeAttribute("data-print-open"); }); });

@@ -133,12 +133,38 @@
     });
   }
 
+  /* keyboard access: a box that scrolls takes focus; Quarto's and reveal.js's icon-only links get a name */
+  function scrollers() {
+    if (!d.body) return;
+    [].forEach.call(d.body.getElementsByTagName("*"), function (el) {
+      var over = el.scrollWidth > el.clientWidth + 1 || el.scrollHeight > el.clientHeight + 1, mine = el.hasAttribute("data-scroll-focus");
+      if (over) { var cs = getComputedStyle(el); over = /auto|scroll/.test(cs.overflowX + " " + cs.overflowY); }
+      if (over && !mine && !el.hasAttribute("tabindex") && !el.matches("a[href], button, input, select, textarea, summary") &&
+          !el.querySelector("a[href], button, input, select, textarea, summary, [tabindex]")) {   /* a box with focusable content already scrolls by keyboard */
+        el.setAttribute("tabindex", "0"); el.setAttribute("data-scroll-focus", "");
+        if (!el.hasAttribute("role")) el.setAttribute("role", "region");
+        if (!el.hasAttribute("aria-label") && !el.hasAttribute("aria-labelledby"))
+          el.setAttribute("aria-label", el.matches("pre, div.sourceCode") ? "Code, scrolls" : el.querySelector("table") || el.matches("table") ? "Table, scrolls" : "Scrolling region");
+      } else if (!over && mine) {
+        el.removeAttribute("tabindex"); el.removeAttribute("data-scroll-focus");
+      }
+    });
+  }
+  function names() {
+    d.querySelectorAll("a.quarto-color-scheme-toggle:not([aria-label])").forEach(function (a) { a.setAttribute("aria-label", "Switch Quarto color theme"); });
+    d.querySelectorAll(".slide-menu-button a:not([aria-label])").forEach(function (a) { a.setAttribute("aria-label", "Slide menu"); });
+    d.querySelectorAll('.sourceCode a[href=""]:empty, .sourceCode a[href="#"]:empty').forEach(function (a) { a.setAttribute("aria-hidden", "true"); a.setAttribute("tabindex", "-1"); });
+  }
+
   function init() {
     paint();
     if (saved()) quarto(saved());
     stages();
     d.querySelectorAll("[data-filter]").forEach(filter);
     copyButtons();
+    names(); scrollers();
+    var rt; window.addEventListener("resize", function () { clearTimeout(rt); rt = setTimeout(scrollers, 200); });
+    window.addEventListener("load", function () { names(); scrollers(); });
   }
   window.addEventListener("beforeprint", function () { d.querySelectorAll("details:not([open])").forEach(function (x) { x.setAttribute("open", ""); x.setAttribute("data-print-open", ""); }); });
   window.addEventListener("afterprint", function () { d.querySelectorAll("details[data-print-open]").forEach(function (x) { x.removeAttribute("open"); x.removeAttribute("data-print-open"); }); });

@@ -229,6 +229,7 @@ a:hover { color: var(--accent-ink); }
 .sidebar nav[role="doc-toc"] ul > li > a.active, .sidebar nav[role="doc-toc"] ul > li > a:hover { color: var(--accent-ink); }
 div.sourceCode, pre.sourceCode, pre { background: var(--surface-3) !important; border: 1px solid var(--line-2); border-radius: var(--r-md); }
 div.sourceCode pre { border: 0; }
+code span.co, code span.do, code span.an, code span.cv { color: var(--muted) !important; }   /* highlight themes put comments below 4.5:1 on the code panel */
 code { color: var(--accent-ink); }
 pre code { color: var(--ink); }
 .table, table { color: var(--text); font-variant-numeric: tabular-nums; }
