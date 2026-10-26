@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # Run the TRIALMON tests: rule boundaries, the shipped synthetic study, and the Shiny server
-# through shiny::testServer. Needs testthat (>= 3.0) plus the app's packages (shiny, bslib, DT,
-# ggplot2). To use a private library, set TRIALMON_RLIB to its path.
+# through shiny::testServer. Needs testthat (>= 3.0), the app's packages (shiny, bslib, DT) and
+# ggplot2 (one test draws the Quarto pages' eDISH plot). To use a private library, set TRIALMON_RLIB.
 # Run from anywhere:  Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R
 lib <- Sys.getenv("TRIALMON_RLIB")
 if (nzchar(lib)) .libPaths(c(lib, .libPaths()))

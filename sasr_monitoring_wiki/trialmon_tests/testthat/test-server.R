@@ -121,7 +121,7 @@ test_that("Shinylive readiness: allowed packages only, data inside the app folde
   code <- unlist(lapply(files, readLines))
   code <- sub("#.*$", "", code)
   pk <- unique(c(unlist(regmatches(code, gregexpr("(?<=library\\()[A-Za-z0-9.]+", code, perl = TRUE))),
-                 unlist(regmatches(code, gregexpr("[A-Za-z0-9.]+(?=::)", code, perl = TRUE)))))
+                 unlist(regmatches(code, gregexpr("[A-Za-z0-9.]+(?=::[A-Za-z.][A-Za-z0-9._]*\\()", code, perl = TRUE)))))   # pkg::fun( calls, not CSS ::before
   expect_true(all(pk %in% c("shiny", "bslib", "DT", "ggplot2", "utils", "stats", "base")), info = paste(pk, collapse = ", "))
   expect_false(any(grepl("downloadHandler|downloadButton", code)))
   # nothing outside the app folder, except the local fallback path of the shared helper: the Pages
