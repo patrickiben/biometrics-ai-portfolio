@@ -83,11 +83,16 @@ Two details matter only in the browser:
   still compiled a custom theme), almost all of it R and its packages starting. The startup card
   stays until both tables have drawn their rows.
 - **What only a browser shows** is checked by the deploy smoke test's `smoke.interactions` in
-  [`apps/uat_irt/launch.json`](../../apps/uat_irt/launch.json), with real mouse events: a
-  double-click on a defect's Status pill opens the editor (the pill lets the pointer through to its
-  cell, since DataTables ignores a double-click aimed at anything inside the cell), DEF-01 cannot
-  close before its retest, adding the draft test from page 1 pages the table to its highlighted
-  row, and on a 390 px phone the confirmation lies inside the screen.
+  [`apps/uat_irt/launch.json`](../../apps/uat_irt/launch.json), with real mouse and keyboard
+  events: the "Try this" step done as written (double-click DEF-04's Status pill, type Closed,
+  press Enter) closes DEF-04 and the open-defect count drops to 2 (the pill lets the pointer
+  through to its cell, since DataTables ignores a double-click aimed at anything inside the cell,
+  and the editor opens with its text selected, so typing replaces it; DataTables puts the caret
+  after the old status, which made "OpenClosed"), DEF-01 cannot close before its retest, adding
+  the draft test from page 1 pages the table to its highlighted row, and on a 390 px phone the
+  confirmation lies inside the screen. None of them may leave a panel in an error. A typed status
+  that is neither Open nor Closed is refused with what arrived, for example
+  "DEF-04: “maybe” is not a status; type Open or Closed. It stays Open."
 
 ## What's here
 

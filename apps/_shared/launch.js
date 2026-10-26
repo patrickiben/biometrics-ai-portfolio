@@ -14,7 +14,9 @@
    a page the service worker does not control (reloads once, guarded against loops), the
    "ServiceWorker controller was not found" viewer error (reloads once), a loader or app.json that
    did not download, an R error while starting the app, the webR worker stopping, a lost connection,
-   no result after 60 s of visible time, and R busy for more than 45 s after the app was ready.
+   no result after 60 s of visible time (120 s once R has started, because a first visit on a slow
+   connection spends most of its time loading packages; 45 s after the app's page loaded for the
+   first results), a file that does not answer, and R busy for more than 45 s after the app was ready.
    The app follows the site's theme: the toggle in the site's top bar on this page (assets/ui.js,
    saved as bp-theme) or the system setting. The app's page reads the same saved choice when it
    loads (bp_theme_head() in portfolio_app.R) and hears later changes; this page also sets the
@@ -27,7 +29,10 @@
   try { cfg = JSON.parse(document.getElementById('launch-config').textContent) || {}; } catch (e) { cfg = {}; }
   var REL = cfg.relPath || '../../';
   var MB = cfg.download_mb || 55;
-  var TIMEOUT_S = cfg.timeout_s || 60;
+  var TIMEOUT_S = cfg.timeout_s || 60;                         // nothing ready, before R has started
+  var STARTED_S = cfg.timeout_started_s || 2 * TIMEOUT_S;       // once R has started (packages download)
+  var COMPUTE_S = cfg.compute_timeout_s || 45;                  // the first results, after the app's page loaded
+  var ANSWER_S = 20;                                             // a file check that gets no answer
   var BUSY_S = cfg.busy_timeout_s || 45;
   var SETTLE_S = 5;   // once R is idle, how long a still-empty panel may delay "ready"
   var AUTO_RELOAD_KEY = 'launch-reload:' + location.pathname;
@@ -88,7 +93,8 @@
     'engine-died': { title: 'A file R needs did not download', text: 'R (webR) stopped because one of its files failed to download. This is usually a network hiccup, not a bug in the app.', reasons: LOAD_REASONS.slice(0, 1), said: true },
     'viewer-crash': { title: 'The app viewer stopped', text: 'The code that shows the app in this page stopped with an error.', reasons: LOAD_REASONS },
     slow: { title: 'Still not ready after ' + TIMEOUT_S + ' seconds', text: 'The app has not finished starting. It may still finish; the step list shows where it is.', reasons: LOAD_REASONS, tone: 'warn', said: true },
-    'stalled-compute': { title: 'The first results have not arrived after ' + TIMEOUT_S + ' seconds', text: 'The app\'s layout is drawn, but R has not filled it. R has probably stopped, usually because a file it loads on demand failed to download.', reasons: LOAD_REASONS.slice(0, 1), tone: 'warn', said: true },
+    'stalled-compute': { title: 'The first results have not arrived after ' + COMPUTE_S + ' seconds', text: 'The app\'s layout is drawn, but R has not filled it. R has probably stopped, usually because a file it loads on demand failed to download.', reasons: LOAD_REASONS.slice(0, 1), tone: 'warn', said: true },
+    'no-answer': { title: 'A file R needs is not answering', text: 'R may be waiting for a file that the site does not answer for. On a very slow connection it may still finish; if nothing changes, reload the page.', reasons: LOAD_REASONS.slice(0, 1), tone: 'warn', said: true },
     disconnected: { title: 'The app lost its connection to R', text: 'R stopped responding. Reload the page to start the app again; changes made in this visit are not kept.' },
     'busy-long': { title: 'R has been computing for ' + BUSY_S + ' seconds', text: 'An update is taking much longer than usual. R may have stopped.', tone: 'warn' },
     updated: { title: 'The site was updated while the app was open', text: 'Reload the page to keep using the app.', tone: 'warn' }
@@ -128,9 +134,11 @@
       pillText.textContent = L.problem ? 'Problem: ' + title.charAt(0).toLowerCase() + title.slice(1)
         : L.ready ? 'Ready: go to the app' : title + ' (' + Math.round(now()) + ' s)';
     }
-    if (!(L.problem && PROBLEMS[L.problem].fatal)) clock.textContent = L.ready && !L.problem ? '' : Math.round(now()) + ' s';
+    // the clock stops at a hard problem: a count beside "did not start" would read as still loading
+    if (!(L.problem && (PROBLEMS[L.problem].fatal || t === 'error'))) clock.textContent = L.ready && !L.problem ? '' : Math.round(now()) + ' s';
     document.title = (L.problem ? 'Problem: ' : L.ready ? '' : 'Loading: ') + baseTitle;
     barReload.hidden = !L.problem;
+    barReload.classList.toggle('btn--primary', t !== 'warn');   // while it may still finish, waiting comes first
     app.setAttribute('data-state', L.stage);
     if (L.problem) app.setAttribute('data-problem', L.problem); else app.removeAttribute('data-problem');
   }
@@ -186,10 +194,23 @@
       ? 'reload the page. If the error comes back, the read-only snapshot shows the same content without R.'
       : (p.tone === 'warn' ? 'wait a little longer, or reload the page (a second visit is usually faster). '
                            : 'reload the page; a second visit is usually faster. ') + TRY_MORE);
-    problemBox.querySelector('[data-action="dismiss"]').hidden = p.tone !== 'warn';
+    var keep = problemBox.querySelector('[data-action="dismiss"]'), again = problemBox.querySelector('[data-action="reload"]');
+    keep.hidden = p.tone !== 'warn';
+    keep.classList.toggle('btn--primary', p.tone === 'warn');      // still loading: waiting is the first choice
+    again.classList.toggle('btn--primary', p.tone !== 'warn');
     var cur = cover.querySelector('[data-step].active');
+    // a file that did not download before the app's page loaded failed step 3, even when the viewer
+    // has already given the frame its address (it does so after a failed package load too)
+    var eng = cover.querySelector('[data-step="engine"]');
+    if (kind === 'engine-died' && !L.times.frameLoaded && eng) {
+      if (cur && cur !== eng) cur.classList.remove('active');
+      eng.classList.remove('done');
+      [].forEach.call(eng.querySelectorAll('.step-time:not(.step-note)'), function (x) { x.remove(); });
+      cur = eng;
+    }
     if (cur && p.tone !== 'warn') { cur.classList.remove('active'); cur.classList.add('failed'); }
     problemBox.querySelector('.log').textContent = details();
+    if (kind === 'engine-died') diagnose(true);
     render();
   }
   function clearProblem() {
@@ -506,27 +527,55 @@
   if (mqLight && mqLight.addEventListener) mqLight.addEventListener('change', pushTheme);
 
   // ---- when the start stalls: are the app's main files reachable? ---------------------------------
-  var diagnosed = false;
+  var diagnosed = false, diagnosing = false;
   var MAIN_FILES = ['shinylive-sw.js', 'shinylive/shinylive.js', 'shinylive/webr/webr-worker.js', 'shinylive/webr/R.js',
                     'shinylive/webr/R.wasm', 'shinylive/webr/library.data.gz', 'shinylive/webr/packages/metadata.rds'];
-  function diagnose() {
-    if (diagnosed || !window.fetch) return;
-    diagnosed = true;
-    var files = MAIN_FILES.map(function (f) { return REL + f; }).concat(['app.json']);
-    Promise.all(files.map(function (f) {
-      return fetch(f, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
-        return r.ok ? null : f.replace(REL, '') + ' (HTTP ' + r.status + ')';
-      }, function (e) { return f.replace(REL, '') + ' (' + (e && e.message || 'no answer') + ')'; });
-    })).then(function (bad) {
-      bad = bad.filter(Boolean);
-      log('diagnose', bad.length ? 'not reachable: ' + bad.join(', ') : 'the main files are reachable');
+  // the files webR loads on demand while the apps start (R's translations and graphics library, the
+  // plot fonts): webR's own message for one of them does not say which
+  var V = 'shinylive/webr/vfs/', LIB = V + 'usr/lib/R/library/';
+  var LAZY_FILES = [LIB + 'translations.data.gz', LIB + 'translations.js.metadata', LIB + 'parallel.data.gz',
+                    LIB + 'tcltk.data.gz', LIB + 'grDevices/libs.data.gz', LIB + 'grDevices/libs.js.metadata',
+                    V + 'usr/lib/R/share.data.gz', V + 'etc/fonts/fonts.conf', V + 'usr/share/fonts/NotoSans-Regular.ttf',
+                    V + 'usr/share/fonts/NotoSans-Bold.ttf'];
+  function head(f) {
+    var ctl = window.AbortController ? new AbortController() : null, timer = null;
+    var name = f.replace(REL, '');
+    var limit = new Promise(function (res) { timer = setTimeout(function () { if (ctl) ctl.abort(); res({ late: name }); }, ANSWER_S * 1000); });
+    var ask = fetch(f, { method: 'HEAD', cache: 'no-store', signal: ctl ? ctl.signal : undefined }).then(function (r) {
+      return r.ok ? {} : { bad: name + ' (HTTP ' + r.status + ')' };
+    }, function (e) { return { bad: name + ' (' + (e && e.message || 'no answer') + ')' }; });
+    return Promise.race([ask, limit]).then(function (x) { clearTimeout(timer); return x; });
+  }
+  function diagnose(again) {
+    if (!window.fetch || diagnosing || (diagnosed && !again)) return;
+    diagnosed = diagnosing = true;
+    var files = MAIN_FILES.concat(LAZY_FILES).map(function (f) { return REL + f; }).concat(['app.json']);
+    Promise.all(files.map(head)).then(function (res) {
+      var bad = res.map(function (x) { return x.bad; }).filter(Boolean), late = res.map(function (x) { return x.late; }).filter(Boolean);
+      log('diagnose', bad.length || late.length ? 'not reachable: ' + bad.concat(late.map(function (x) { return x + ' (no answer within ' + ANSWER_S + ' s)'; })).join(', ') : 'the app\'s files are reachable');
       if (bad.length && !L.ready) {
-        L.downloadError = 'Not reachable: ' + bad.join(', ');
-        if (L.problem && !PROBLEMS[L.problem].fatal && L.problem !== 'engine-died') { L.problem = null; }
-        showProblem('engine-died', L.downloadError);
-      } else if (L.problem) {
-        problemBox.querySelector('.log').textContent = details();
+        // no file at all answers (offline, or the site is down): say that, not the whole list
+        var down = bad.length === files.length && bad.every(function (x) { return !/\(HTTP \d+\)$/.test(x); });
+        var why = down && /\(([^)]*)\)$/.exec(bad[0]);
+        var said = down ? 'None of the app\'s files can be reached (' + (why ? why[1] : 'no answer') + '): the connection may be down.'
+                        : 'Not reachable: ' + bad.join(', ');
+        if (L.problem === 'engine-died') {   // keep webR's message and name the file
+          var el = problemBox.querySelector('.problem-said');
+          if (el.textContent.indexOf(said) < 0) el.textContent = (el.textContent ? el.textContent + ' ' : 'Message: ') + said;
+          el.hidden = false;
+          L.downloadError = said;
+        } else {
+          L.downloadError = said;
+          if (L.problem && !PROBLEMS[L.problem].fatal) { L.problem = null; }
+          showProblem('engine-died', said);
+        }
+      } else if (late.length && !L.ready && L.problem && PROBLEMS[L.problem].tone === 'warn') {
+        // only once the start is already overdue: a slow connection can delay one check, not the start
+        L.problem = null;
+        showProblem('no-answer', 'No answer within ' + ANSWER_S + ' s: ' + late.join(', '));
       }
+      if (L.problem) problemBox.querySelector('.log').textContent = details();
+      diagnosing = false;
     });
   }
 
@@ -539,9 +588,18 @@
     if (!document.hidden) visible += t - last;
     last = t;
     L.visibleSeconds = +visible.toFixed(1);
-    if (!L.ready && !L.problem && visible >= TIMEOUT_S) {
-      showProblem(L.stage === 'compute' ? 'stalled-compute' : 'slow', L.downloadError);
-      diagnose();
+    if (!L.ready && !L.problem) {
+      // before R starts: TIMEOUT_S of visible time; once it has started (it then loads the packages,
+      // most of a first visit's download), STARTED_S; the first results: COMPUTE_S after the app's
+      // page loaded
+      var lim = L.times.rStarted ? STARTED_S : TIMEOUT_S;
+      if (L.stage === 'compute') {
+        if (L.visibleAtCompute == null) L.visibleAtCompute = visible;
+        if (visible - L.visibleAtCompute >= COMPUTE_S && !dismissed['stalled-compute']) { showProblem('stalled-compute', L.downloadError); diagnose(true); }
+      } else if (visible >= lim && !dismissed.slow) {
+        PROBLEMS.slow.title = 'Still not ready after ' + lim + ' seconds';
+        showProblem('slow', L.downloadError); diagnose(true);
+      }
     }
     if (L.stage === 'engine' && !L.times.rStarted && visible >= 20 && !diagnosed) diagnose();
     // R printed an error and the app's page never arrived: app.R stopped while it was sourced
@@ -593,7 +651,13 @@
   });
   window.addEventListener('pageshow', function (ev) { if (ev.persisted) location.reload(); });
 
+  // full screen covers the page: what is behind it leaves the tab order (inert), and a copy of the
+  // top bar's theme toggle (assets/ui.js handles every .theme-toggle) shows in the app's bar
+  var behind = [].slice.call(document.querySelectorAll('body > .skip, header.top, #main > .wrap, footer.site'));
+  var siteToggle = document.querySelector('header.top .theme-toggle');
+  if (siteToggle && fullBtn) fullBtn.parentNode.insertBefore(siteToggle.cloneNode(true), fullBtn);
   function setFull(on) {
+    behind.forEach(function (el) { if (on) el.setAttribute('inert', ''); else el.removeAttribute('inert'); });
     app.classList.toggle('is-full', on);
     document.body.classList.toggle('launch-full', on);
     fullBtn.setAttribute('aria-pressed', on ? 'true' : 'false');

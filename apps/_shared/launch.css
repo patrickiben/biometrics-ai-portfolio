@@ -96,6 +96,9 @@
 .launch-app.is-full .app-bar { border-radius: 0; border-left: 0; border-right: 0; }
 .launch-app.is-full .app-stage { height: calc(100vh - 54px); height: calc(100dvh - 54px); border-radius: 0; border-left: 0; border-right: 0; border-bottom: 0; box-shadow: none; }
 .launch-app.is-full .launch-note { display: none; }
+/* the top bar is covered in full screen: launch.js puts a copy of its theme toggle in the app's bar */
+.app-tools .theme-toggle { display: none; }
+.launch-app.is-full .app-tools .theme-toggle { display: inline-flex; }
 body.launch-full { overflow: hidden; }
 
 /* the Shinylive viewer (from shinylive.css, which this page does not load) */

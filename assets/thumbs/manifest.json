@@ -161,8 +161,8 @@
    "source": "apps/lifecycle_dashboard/ (the in-browser app on its launch page, full screen, scrolled past Start here)",
    "viewport": "1280x800, DPR 1, scaled to 640x400",
    "theme": "dark",
-   "captured": "2026-10-25",
-   "bytes": 27608,
+   "captured": "2026-10-26",
+   "bytes": 27700,
    "alt": "Study Lifecycle Monitor: KPI boxes, the portfolio risk heatmap with CP-108 selected and the ranked early-warning signals, simulated portfolio"
   },
   {
@@ -173,8 +173,8 @@
    "source": "apps/lifecycle_dashboard/ (the in-browser app on its launch page, full screen, scrolled past Start here)",
    "viewport": "1280x800, DPR 1, scaled to 640x400",
    "theme": "light",
-   "captured": "2026-10-25",
-   "bytes": 28302,
+   "captured": "2026-10-26",
+   "bytes": 28458,
    "alt": "Study Lifecycle Monitor: KPI boxes, the portfolio risk heatmap with CP-108 selected and the ranked early-warning signals, simulated portfolio"
   },
   {
@@ -315,8 +315,8 @@
    "source": "apps/trialmon/ (the in-browser app on its launch page, full screen)",
    "viewport": "1280x800, DPR 1, scaled to 640x400",
    "theme": "dark",
-   "captured": "2026-10-25",
-   "bytes": 38336,
+   "captured": "2026-10-26",
+   "bytes": 38392,
    "alt": "TRIALMON console as it opens: the participant packet, the Start here card, the worst-of value boxes and the ranked worklist, synthetic data"
   },
   {
@@ -327,8 +327,8 @@
    "source": "apps/trialmon/ (the in-browser app on its launch page, full screen)",
    "viewport": "1280x800, DPR 1, scaled to 640x400",
    "theme": "light",
-   "captured": "2026-10-25",
-   "bytes": 38988,
+   "captured": "2026-10-26",
+   "bytes": 39042,
    "alt": "TRIALMON console as it opens: the participant packet, the Start here card, the worst-of value boxes and the ranked worklist, synthetic data"
   },
   {

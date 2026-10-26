@@ -40,12 +40,19 @@ After that the status line says Ready, or Working while R recomputes. It reports
 blank when: the browser has no service worker or the registration fails; the page is not under the
 service worker's control, or the viewer throws "ServiceWorker controller was not found" (the page
 reloads once; a second failure within two minutes shows the problem instead of looping); a file R
-needs does not download (it says which, from webR's messages or a check of the main files);
-`app.R` stops with an R error (it shows R's message); the connection to R is lost; nothing is ready
-after 60 seconds of visible time (it says which step it is on and why that step usually stalls);
-or one update keeps R busy for 45 seconds. Each problem has a Reload button, links to the guide and
-the read-only snapshot, and technical details for a bug report. `window.launchStatus` and
-`data-state` on `#app` expose the same state to tests. The app follows the page's theme: its own
+needs does not download (it says which, from webR's messages or a check of the app's files,
+including the ones webR loads on demand, and marks step 3 as failed when that happened before the
+app's page loaded); `app.R` stops with an R error (it shows R's message); the connection to R is
+lost; nothing is ready after 60 seconds of visible time, or 120 seconds once R has started (a first
+visit on a slow connection spends most of its time loading the packages), or the first results
+have not arrived 45 seconds after the app's page loaded (it says which step it is on and why that
+step usually stalls, and if one of the app's files then gets no answer within 20 seconds, it names
+that file); or one update keeps R busy for 45 seconds. Each problem has a Reload button (Keep
+waiting comes first while the start may still finish), links to the guide and the read-only
+snapshot, and technical details for a bug report; the clock stops at a hard failure.
+`window.launchStatus` and `data-state` on `#app` expose the same state to tests. Full screen covers
+the page: what is behind the app leaves the tab order, and a copy of the top bar's theme toggle sits
+in the app's bar. The app follows the page's theme: its own
 page reads the saved `bp-theme` choice when it loads, and `launch.js` sets `data-bs-theme` on it
 whenever the site's toggle or the system setting changes the page, so its plots redraw in the new
 theme.
@@ -108,21 +115,30 @@ server <- function(input, output, session) {
 `timeout_s`, `outputs` (ids that must have content on first load), `expect` (exact text for some
 of them), `fit` (optional: a CSS selector and a window width at which that element must fit its box
 without sideways scrolling, for example a table at phone width), `tabs` (a tab label and the
-outputs it must fill once clicked) and, optionally, `interactions`: named step lists done with real
-mouse and keyboard events in the app, in order, on the same page, each with expectations, for
-example
+outputs it must fill once clicked; `"theme": true` repeats the theme check on that tab, for its
+plots) and, optionally, `interactions`: named step lists done with real mouse and keyboard events
+in the app, in order, on the same page, each with expectations, for example the UAT tracker's
+"Try this" step as a visitor would follow it
 
 ```json
-{"name": "a double-click on a defect's Status pill opens its editor",
- "viewport": [390, 844],
- "steps": [{"dblclick": "#defects tbody tr:nth-child(4) td:nth-child(3) .uat-pill"}],
- "expect": [{"visible": "#defects tbody tr:nth-child(4) td:nth-child(3) input"}],
- "after": [{"key": "Escape"}]}
+{"name": "Try this, as written: double-click DEF-04's Status, type Closed, press Enter",
+ "steps": [{"dblclick": "#defects tbody tr:nth-child(4) td:nth-child(3) .uat-pill"},
+           {"type": "Closed"}, {"key": "Enter"}],
+ "expect": [{"text": ["#defects tbody tr:nth-child(4) td:nth-child(3)", "Closed"]},
+            {"text": ["#v_def", "2"]}],
+ "after": [{"dblclick": "#defects tbody tr:nth-child(4) td:nth-child(3) .uat-pill"},
+           {"type": "Open"}, {"key": "Enter"}]}
 ```
 
-Steps are `click`, `dblclick` (CSS selectors in the app's page), `key`, `type` and `wait` (ms);
-expectations are `visible`, `text` (a selector and its exact text) and `inViewport`. `viewport`
-(optional) sets the window size for that interaction only; `after` cleans up.
+Steps are `click`, `dblclick`, `focus` (CSS selectors in the app's page), `key`, `type` and `wait`
+(ms); a click, a key and a wait are each followed by waiting for R to finish what they started.
+Expectations are `visible`, `text` (a selector and its exact text), `attr` (a selector, an
+attribute and its exact value), `style` (a selector, a computed style property and a regular
+expression, for example a focus ring), `inViewport` and `focused` (the focused element matches the
+selector). `viewport` (optional) sets the window size for that interaction only; `after` cleans up.
+The lifecycle monitor's interactions tab onto its what-if sliders (no value may change; the focused
+track is a named slider with its value and a ring on the handle) and then move one with an arrow
+key; TRIALMON's moves along its tab strip with an arrow key and expects a 2 px focus outline.
 
 ## The smoke test
 
@@ -137,10 +153,17 @@ It serves the build under `/biometrics-ai-portfolio/` as Pages does, opens each 
 fresh browser profile and fails unless the page text paints within 3 seconds inside the site's
 top bar, the app reaches Ready within `timeout_s`, every listed output has content and no panel
 shows an error, each element listed in `fit` fits its box at its window width, the app shows the
-page's theme and the top bar's toggle switches it to the other theme and back without an error,
-each listed tab fills in, each listed interaction ends with its expectations met, and a reload
-reaches Ready again. The Pages workflow runs it on the build before anything is deployed; its runs
-are listed under [Actions, Pages](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml).
+page's theme and R has it (`input$bp_theme`), the top bar's toggle switches the app's page and R to
+the other theme and back (R idle again within 30 seconds, every listed plot drawn again, no
+error), the controls carry the site's accent in both themes (every checked radio and checkbox
+filled with `--accent`, a slider handle with a visible border, nothing in bslib's compiled default
+blue), each listed tab fills in, each listed interaction ends with its expectations met and leaves
+no panel in an error, the launch page then reports no problem and no failed panel with R idle,
+nothing the visit asked the site for answered 404 (webR would otherwise fetch a missing package from
+elsewhere and still start), the page logged no uncaught error and no console error about one of
+the site's files, and a reload reaches Ready again. The Pages workflow runs it on the build before
+anything is deployed; its runs are listed under
+[Actions, Pages](https://github.com/patrickiben/biometrics-ai-portfolio/actions/workflows/pages.yml).
 `--fault 'REGEX=404'` (or `drop`, `hang`) with
 `--expect-problem KIND` checks an error state instead, for example
 `--fault 'shinylive-sw\.js$=404' --expect-problem sw-failed`.
@@ -160,3 +183,30 @@ same way: a font, font cache, graphics library or webR worker that does not down
 that stops, failing outputs, an endless computation, a hard reload, a repeated viewer error and a
 network throttled to 6 Mbps (ready after about 100 s; the 60-second notice appeared, named the step
 it was on, and cleared by itself). Safari and Firefox were not checked.
+
+Checked again on 2026-10-26, after the review fixes (the extended smoke test described above, the
+UAT editor, the lifecycle sliders by keyboard, the accent and focus rings in the apps and the
+progress-based start watchdog; same machine). In two runs of the smoke test all three apps passed,
+ready 6.4 to 6.6 s (TRIALMON), 6.8 to 7.0 s (UAT tracker) and 7.4 s (lifecycle monitor) on a first
+visit and 6.0 to 6.9 s on a reload, page text in 72 to 92 ms, 65.0 to 65.4 MB served. The same test
+failed, each time for the reason intended, on copies of that build broken on purpose: a theme
+binding that never reaches R, an endless loop when the theme changes, a panel that fails once the
+draft test is added, a bundled package removed (webR fetched it from elsewhere and the app still
+started; the 404 failed the test), the slider fix removed and the UAT editor's text selection
+removed. On the build before these fixes it failed on the blue radios, the borderless slider
+handles, the slider moving on Tab and its missing name and value, the tab strip's missing focus
+outline and the UAT editor's "OpenClosed". 24 more first visits (each app at 1280 and 390 px, light and dark, in two passes) were
+ready in 6.7 to 7.7 s with no serious or critical axe-core 4.14.0 violation on the launch page or in
+the app, and six with a saved theme opposite to the system setting opened in the saved theme. On
+the home, Apps, lifecycle, methods and TRIALMON pages (1280 and 390 px, light and dark) axe-core
+with the WCAG 2.2 AA rules found no serious or critical violation; the lifecycle page's target-size
+violation is gone. The four error states above were re-run and reported as such; a missing `R.wasm`
+is now named. At 10 Mbps with 100 ms latency (throttled in Chrome, fresh profile) TRIALMON and the
+UAT tracker were ready at 64.9 and 65.0 s with no notice (before this change the review saw the
+60-second notice appear at 60.4 s under the same throttling). With `grDevices/libs.data.gz` never
+answering, the 120-second notice appeared and, 20 s later, named that file; a
+`translations.data.gz` that answers 404 was named at 2.6 s, with step 3 failed and the clock
+stopped; going offline once R had started failed step 3, not step 4, and said that none of the
+app's files could be reached. The launch-page screenshots and thumbnails of TRIALMON and the
+lifecycle monitor were captured again from this build (the slider handles now show, and the
+selected worklist row keeps its bar).

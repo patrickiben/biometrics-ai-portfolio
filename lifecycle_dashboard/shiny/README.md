@@ -75,6 +75,15 @@ A click on a study selects it in the picker at once, in the browser. Right after
 the sliders still show the previous study's values until R's update arrives, so a slider moved
 in that moment is ignored rather than written into the new study.
 
+Tabbing onto a what-if slider leaves its value alone. ion.rangeSlider answers its track taking
+focus with a simulated click beside the handle, which moved the value one step, so a keyboard
+visitor passing through the sidebar made a what-if nobody asked for (and again after Reset).
+`app.R` replaces that focus handler on the slider's shared prototype, so the sliders that
+`updateSliderInput()` rebuilds keep the fix; focus still prepares the arrow keys, which move one
+step from the data value. The focused track carries the slider role, its label and its value for
+assistive technology, and the handle shows a focus ring. The deploy smoke test checks all of this
+([`apps/lifecycle_dashboard/launch.json`](../../apps/lifecycle_dashboard/launch.json)).
+
 ## What's here
 
 | File | What it is |

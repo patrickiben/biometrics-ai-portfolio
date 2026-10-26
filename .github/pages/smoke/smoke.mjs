@@ -8,12 +8,22 @@
 //   - every output in smoke.outputs has content (a plot image, table rows, text), each value in
 //     smoke.expect matches, and no output anywhere shows an error (.shiny-output-error that is not
 //     a validate() message);
-//   - the app shows the page's theme, and the theme toggle in the site's top bar switches the app
-//     too (and back), with no output left in an error;
-//   - each tab in smoke.tabs, once clicked, fills its listed outputs with no error;
+//   - the app's controls carry the site's accent, not bslib's compiled default blue: every checked
+//     radio and checkbox is filled with --accent, a slider handle has a visible border, and no
+//     visible element is drawn in rgb(0, 123, 194) (checked in both themes and on every tab);
+//   - the app shows the page's theme and R has it (input$bp_theme), and the theme toggle in the
+//     site's top bar switches the app's page and R too (and back): R goes idle again within 30 s,
+//     every listed plot is drawn again, and no output is left in an error;
+//   - each tab in smoke.tabs, once clicked, fills its listed outputs with no error (a tab with
+//     "theme": true repeats the theme check there, for its plots);
 //   - each step list in smoke.interactions, done with real mouse and keyboard events (optionally at
-//     another window size), ends with every expectation met: an element visible, an element's
-//     exact text, or an element inside the app's viewport;
+//     another window size), ends with every expectation met (an element visible, its exact text,
+//     an attribute or a computed style, inside the app's viewport, or focused) and leaves no
+//     output anywhere in an error;
+//   - after all of that the launch page reports no problem and no failed panel, and R is idle;
+//   - nothing the visit asked the site for answered 404 (webR, for one, falls back to downloading a
+//     missing package from elsewhere, so an app could still start without a file it should ship),
+//     and the page logged no uncaught error and no console error about one of the site's files;
 //   - a reload (the page now controlled by the service worker) reaches ready again.
 // The lists come from apps/<name>/launch.json. Synthetic data only.
 //
@@ -159,20 +169,32 @@ async function waitReady(page, timeoutS, label) {
 }
 // ---- interactions: real mouse and keyboard events in the app's frame --------------------------
 //   {"name": "...", "viewport": [390, 844], "steps": [{"click": "css"}, {"dblclick": "css"},
-//    {"key": "Escape"}, {"type": "text"}, {"wait": 300}], "expect": [{"visible": "css"},
-//    {"text": ["css", "exact text"]}, {"inViewport": "css"}], "after": [steps], "timeout_s": 15}
+//    {"focus": "css"}, {"key": "Escape"}, {"type": "text"}, {"wait": 300}],
+//    "expect": [{"visible": "css"}, {"text": ["css", "exact text"]}, {"inViewport": "css"},
+//    {"focused": "css"} (the focused element matches), {"attr": ["css", "name", "value"]},
+//    {"style": ["css", "computed property", "regex"]} (for example a focus ring)],
+//    "after": [steps], "timeout_s": 15}. A wait, a key and a click are each followed by waiting
+//    (up to 10 s) for R to finish what they started.
 const EXPECT = (list) => list.map((x) => {
-  const sel = x.visible || x.inViewport || (x.text && x.text[0]);
+  if (x.focused) {
+    const a = document.activeElement;
+    const got = a ? a.tagName.toLowerCase() + (a.id ? "#" + a.id : "") + (a.className && typeof a.className === "string" ? "." + a.className.trim().split(/\s+/).join(".") : "") : "nothing";
+    return { sel: x.focused, ok: !!(a && a.matches(x.focused)), got, want: "focused" };
+  }
+  const sel = x.visible || x.inViewport || (x.text && x.text[0]) || (x.attr && x.attr[0]) || (x.style && x.style[0]);
   const e = document.querySelector(sel);
   const r = e && e.getBoundingClientRect();
   const shown = !!(r && r.width > 0 && r.height > 0);
   let ok = shown, got = shown ? "visible" : e ? "not visible" : "missing";
   if (x.text && e) { got = (e.innerText || e.textContent || "").replace(/\s+/g, " ").trim(); ok = got === x.text[1]; }
+  if (x.attr && e) { got = e.getAttribute(x.attr[1]); ok = got === x.attr[2]; got = `${x.attr[1]}=${JSON.stringify(got)}`; }
+  if (x.style && e) { got = getComputedStyle(e)[x.style[1]]; ok = new RegExp(x.style[2]).test(got); got = `${x.style[1]}: ${got}`; }
   if (x.inViewport && shown) {
     got = `left ${Math.round(r.left)}, right ${Math.round(r.right)}, top ${Math.round(r.top)}, bottom ${Math.round(r.bottom)} in ${innerWidth}x${innerHeight}`;
     ok = r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight;
   }
-  return { sel, ok, got, want: x.text ? x.text[1] : x.inViewport ? "inside the viewport" : "visible" };
+  return { sel, ok, got, want: x.text ? x.text[1] : x.attr ? `${x.attr[1]}=${JSON.stringify(x.attr[2])}` : x.inViewport ? "inside the viewport"
+                               : x.style ? `${x.style[1]} matching /${x.style[2]}/` : "visible" };
 });
 const idle = (fr) => fr.evaluate(() => !document.documentElement.classList.contains("shiny-busy")).catch(() => false);
 async function settle(fr, ms = 10000) {
@@ -183,7 +205,12 @@ async function settle(fr, ms = 10000) {
 }
 async function doSteps(page, fr, steps) {
   for (const st of steps || []) {
-    if (st.wait) { await sleep(st.wait); continue; }
+    if (st.wait) { await sleep(st.wait); await settle(fr); continue; }
+    if (st.focus) {
+      const ok = await fr.evaluate((sel) => { const e = document.querySelector(sel); if (e) { e.scrollIntoView({ block: "center" }); e.focus(); } return !!e; }, st.focus);
+      if (!ok) throw new Error(`no element matches ${st.focus}`);
+      await sleep(150); continue;
+    }
     if (st.key) { await page.keyboard.press(st.key); await settle(fr); continue; }
     if (st.type) { await page.keyboard.type(st.type, { delay: 20 }); await settle(fr); continue; }
     const sel = st.click || st.dblclick;
@@ -215,9 +242,13 @@ async function runInteraction(page, it, size, shot) {
       await sleep(250);
     }
     r.forEach((x, k) => { if (!x.ok && x.got === "missing" && seen[k]) x.got = `${seen[k]} (then it went away)`; });
-    const bad = r.filter((x) => !x.ok);
+    const bad = r.filter((x) => !x.ok).map((x) => `${x.sel}: got "${x.got}", expected ${x.want}`);
+    // an interaction must not break another panel (a later reload starts a fresh R, which would hide it)
+    await settle(fr);
+    const after = await fr.evaluate(OUTPUTS, []).catch((e) => ({ errors: [{ id: "the app page", text: String(e) }] }));
+    for (const e of after.errors || []) bad.push(`output ${e.id} shows an error: ${e.text}`);
     if (shot) await shot().catch(() => {});   // before the clean-up steps and at the interaction's size
-    return { ok: !bad.length, detail: bad.map((x) => `${x.sel}: got "${x.got}", expected ${x.want}`).join("; ") };
+    return { ok: !bad.length, detail: bad.join("; ") };
   } catch (e) {
     return { ok: false, detail: String(e && e.message || e) };
   } finally {
@@ -236,6 +267,98 @@ async function waitOutputs(page, ids, timeoutS) {
     await sleep(500);
   }
   return r;
+}
+
+// ---- the site's accent, not bslib's compiled default blue --------------------------------------
+const BRAND = () => {
+  const probe = document.createElement("span");
+  probe.style.color = "var(--accent)"; document.body.appendChild(probe);
+  const accent = getComputedStyle(probe).color; probe.remove();
+  const shown = (e) => { const r = e.getBoundingClientRect(); return r.width > 0 && r.height > 0; };
+  const name = (e) => e.tagName.toLowerCase() + (e.id ? "#" + e.id : "") + (typeof e.className === "string" && e.className.trim() ? "." + e.className.trim().split(/\s+/).slice(0, 2).join(".") : "");
+  const stock = /rgba?\(0, 123, 194\b/;
+  const blue = [];
+  for (const e of document.querySelectorAll("body *")) {
+    if (blue.length >= 6 || !shown(e)) continue;
+    const cs = getComputedStyle(e);
+    for (const k of ["color", "backgroundColor", "borderTopColor", "borderRightColor", "borderBottomColor", "borderLeftColor", "boxShadow"])
+      if (stock.test(cs[k])) { blue.push(`${name(e)} ${k} ${cs[k]}`); break; }
+  }
+  const checks = [...document.querySelectorAll("input[type=radio]:checked, input[type=checkbox]:checked")].filter(shown)
+    .filter((e) => getComputedStyle(e).backgroundColor !== accent).map((e) => `${name(e)} ${getComputedStyle(e).backgroundColor}`);
+  const handles = [...document.querySelectorAll(".irs-handle")].filter(shown)
+    .filter((e) => !(parseFloat(getComputedStyle(e).borderTopWidth) > 0)).map(name);
+  return { accent, blue, checks, handles };
+};
+async function checkBrand(fr, where, fail) {
+  const b = await fr.evaluate(BRAND).catch((e) => ({ error: String(e) }));
+  if (b.error) { fail(`${where}: cannot read the app's colors: ${b.error}`); return; }
+  for (const x of b.blue) fail(`${where}: ${x} is bslib's default blue, not the site's accent`);
+  for (const x of b.checks) fail(`${where}: the checked ${x} is not filled with the accent (${b.accent})`);
+  for (const x of b.handles) fail(`${where}: the slider handle ${x} has no visible border`);
+}
+
+// ---- the site's theme, in the app's page and in R --------------------------------------------
+const THEME_WAIT_S = 30;
+const pageTheme = (page) => page.evaluate(() => document.documentElement.getAttribute("data-theme") ||
+  (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
+const APP_THEME = (ids) => {
+  const S = window.Shiny, iv = S && S.shinyapp && S.shinyapp.$inputValues;
+  const plots = {};
+  for (const id of ids) {
+    const e = document.getElementById(id);
+    if (e && e.classList.contains("shiny-plot-output") && (e.offsetWidth || e.offsetHeight)) plots[id] = (e.querySelector("img") || {}).src || "";
+  }
+  return { bs: document.documentElement.getAttribute("data-bs-theme"), input: iv ? iv.bp_theme ?? null : null,
+           busy: document.documentElement.classList.contains("shiny-busy"), plots };
+};
+// toggle to the other theme and back; returns { ok, plots: how many plots were compared }
+async function checkTheme(page, ids, t1, where, fail) {
+  const appTheme = () => appFrame(page).evaluate(APP_THEME, ids).catch(() => null);
+  let a = await appTheme(), ok = true, plots = 0;
+  const bad = (m) => { ok = false; fail(where + m); };
+  if (!a || a.bs !== t1) { bad(`the app shows the ${a && a.bs} theme on a ${t1} page`); return { ok, plots }; }
+  if (a.input !== t1) { bad(`R has input$bp_theme = ${JSON.stringify(a.input)} on a ${t1} page`); return { ok, plots }; }
+  await checkBrand(appFrame(page), `${where}${t1} theme`, fail);
+  // R idle with the same images twice in a row: a redraw that a resize started must not pass for
+  // the redraw that the theme starts
+  const steady = async (ms) => {
+    const end = Date.now() + ms;
+    let x = await appTheme();
+    while (Date.now() < end) {
+      await sleep(600);
+      const y = await appTheme();
+      if (x && y && !x.busy && !y.busy && JSON.stringify(x.plots) === JSON.stringify(y.plots)) return y;
+      x = y;
+    }
+    return x;
+  };
+  for (const want of [t1 === "dark" ? "light" : "dark", t1]) {
+    const before = ((await steady(15000)) || {}).plots || {};
+    plots = Object.values(before).filter(Boolean).length;
+    await page.click("header.top .theme-toggle");
+    const end = Date.now() + THEME_WAIT_S * 1000;
+    await sleep(300);
+    // the plot test belongs inside the wait: R may not have gone busy yet when the loop starts
+    const redrawn = (x) => Object.keys(before).every((id) => !before[id] || (x.plots[id] && x.plots[id] !== before[id]));
+    while (Date.now() < end) {
+      a = await appTheme();
+      if ((await pageTheme(page)) === want && a && a.bs === want && a.input === want && !a.busy && redrawn(a)) {
+        const b = await steady(5000);   // and nothing redraws again just after
+        if (b && !b.busy && JSON.stringify(b.plots) === JSON.stringify(a.plots)) break;
+      }
+      await sleep(200);
+    }
+    if (!a || a.bs !== want) { bad(`the theme toggle set the page to ${await pageTheme(page)}, the app stayed ${a && a.bs}`); break; }
+    if (a.input !== want) { bad(`after switching to the ${want} theme, R still has input$bp_theme = ${JSON.stringify(a.input)}`); break; }
+    if (a.busy) { bad(`after switching to the ${want} theme, R was still busy after ${THEME_WAIT_S} s`); break; }
+    const same = Object.keys(before).filter((id) => before[id] && a.plots[id] === before[id]);
+    if (same.length) bad(`after switching to the ${want} theme, ${same.join(", ")} kept the image drawn for the other theme`);
+    const rt = await waitOutputs(page, ids, 30);
+    for (const e of rt.errors || []) bad(`after switching to the ${want} theme: output ${e.id} shows an error: ${e.text}`);
+    if (want !== t1) await checkBrand(appFrame(page), `${where}${want} theme`, fail);
+  }
+  return { ok, plots };
 }
 
 // ---- one app ----------------------------------------------------------------------------------
@@ -257,6 +380,7 @@ async function checkApp(spec) {
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300)); });
     const url = `${BASE}/apps/${spec.name}/`;
     served.bytes = 0; served.requests = 0; served.since = Date.now();
+    const notFound0 = served.notFound.length;
     if (LOG_REQUESTS) requestLog.push(`# ${spec.name}`);
     const start = Date.now();
     say(`${spec.name}: open ${url}`);
@@ -350,23 +474,14 @@ async function checkApp(spec) {
         }
       }
       if ((smoke.fit || []).length) { await page.setViewport({ width: 1440, height: 900 }); await sleep(500); }
-      // the site's theme: the app shows the page's theme, and the top bar's toggle switches both
-      const pageTheme = () => page.evaluate(() => document.documentElement.getAttribute("data-theme") ||
-        (matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"));
-      const appTheme = () => appFrame(page).evaluate(() => document.documentElement.getAttribute("data-bs-theme")).catch(() => null);
-      const t1 = await pageTheme();
-      if ((await appTheme()) !== t1) fail(`the app shows the ${await appTheme()} theme on a ${t1} page`);
-      for (const want of [t1 === "dark" ? "light" : "dark", t1]) {
-        await page.click("header.top .theme-toggle");
-        const end = Date.now() + 10000;
-        while (Date.now() < end && ((await pageTheme()) !== want || (await appTheme()) !== want)) await sleep(150);
-        await settle(appFrame(page));
-        if ((await appTheme()) !== want) { fail(`the theme toggle set the page to ${await pageTheme()}, the app stayed ${await appTheme()}`); break; }
-        const rt = await waitOutputs(page, smoke.outputs, 30);
-        for (const e of rt.errors || []) fail(`after switching to the ${want} theme: output ${e.id} shows an error: ${e.text}`);
-      }
-      res.theme = { page: t1, toggled: !res.failures.some((f) => /theme/.test(f)) };
-      say(`${spec.name}: the app follows the site's theme (${t1}, toggled and back)`);
+      // the site's theme: the app shows the page's theme, R has it as input$bp_theme, and the top
+      // bar's toggle switches the page, the app's page and R, after which R goes idle again and
+      // every listed plot is drawn again (its image changes); the controls carry the accent in both
+      const t1 = await pageTheme(page);
+      const th = await checkTheme(page, smoke.outputs || [], t1, "", fail);
+      res.theme = { page: t1, toggled: th.ok, plots_redrawn: th.plots };
+      if (th.ok) say(`${spec.name}: the app follows the site's theme (${t1}, toggled and back; R had input$bp_theme each time` +
+                     (th.plots ? `, ${th.plots} plot${th.plots > 1 ? "s" : ""} redrawn each time)` : `; no plot on this page)`));
       // the tabs
       for (const tab of smoke.tabs || []) {
         const fr = appFrame(page);
@@ -385,6 +500,12 @@ async function checkApp(spec) {
         }
         for (const e of rt.errors || []) fail(`tab "${tab.tab}": output ${e.id} shows an error: ${e.text}`);
         say(`${spec.name}: tab "${tab.tab}" filled in ${((Date.now() - tt) / 1000).toFixed(1)} s`);
+        await checkBrand(fr, `tab "${tab.tab}"`, fail);
+        if (tab.theme) {
+          const t = await pageTheme(page);
+          const th = await checkTheme(page, tab.outputs, t, `tab "${tab.tab}": `, fail);
+          if (th.ok) say(`${spec.name}: tab "${tab.tab}" follows the theme (${th.plots} plot${th.plots === 1 ? "" : "s"} redrawn each time)`);
+        }
         if (SHOTS) {
           const stage = await page.$("#app .app-stage");
           if (stage) await stage.screenshot({ path: path.join(SHOTS, `${spec.name}-tab-${tab.tab.replace(/[^A-Za-z0-9]+/g, "_")}.png`) });
@@ -402,6 +523,14 @@ async function checkApp(spec) {
         else say(`${spec.name}: interaction "${it.name}" passed in ${((Date.now() - tt) / 1000).toFixed(1)} s`);
         (res.interactions = res.interactions || []).push({ name: it.name, ok: r.ok, detail: r.detail || "" });
       }
+      // still healthy after everything above: no problem reported, no failed panel, R idle
+      const fin = await page.evaluate(LAUNCH).catch(() => null);
+      if (!fin || fin.problem || (fin.outputs && fin.outputs.failed > 0))
+        fail(`after the checks the launch page reports problem ${fin && fin.problem}, outputs ${JSON.stringify(fin && fin.outputs)}`);
+      else if ((await idle(appFrame(page))) === false) {
+        await settle(appFrame(page), 30000);
+        if (!(await idle(appFrame(page)))) fail("after the checks R is still busy 30 s later");
+      }
       // a second visit: the service worker now controls the page from the start
       if (RELOAD) {
         await page.reload({ waitUntil: "domcontentloaded" });
@@ -416,6 +545,11 @@ async function checkApp(spec) {
         }
       }
     }
+    const missing = [...new Set(served.notFound.slice(notFound0))];
+    if (missing.length && !EXPECT_PROBLEM) fail(`the site answered 404 for ${missing.slice(0, 8).join(", ")}${missing.length > 8 ? ` and ${missing.length - 8} more` : ""}`);
+    // an uncaught error on the page, or a console error about one of the site's own files
+    const own = consoleErrors.filter((m) => m.startsWith("pageerror:") || m.includes(PREFIX + "/"));
+    if (own.length && !EXPECT_PROBLEM) fail(`the page logged ${own.length} error${own.length > 1 ? "s" : ""}: ${own.slice(0, 3).join(" | ")}`);
     const claimed = spec.first_load && spec.first_load.download_mb;
     if (claimed && res.served_mb && Math.abs(res.served_mb - claimed) / claimed > 0.35)
       res.warnings.push(`the first visit served ${res.served_mb} MB; the launch page says about ${claimed} MB`);

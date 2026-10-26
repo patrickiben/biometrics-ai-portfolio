@@ -22,13 +22,19 @@
     "outputs": ["v_overall", "v_part", "v_study", "v_red", "v_amber", "v_watch", "v_n", "worklist", "packet", "window_note"],
     "expect": {"v_overall": "RED", "v_part": "RED", "v_study": "AMBER", "v_red": "5", "v_amber": "7", "v_watch": "2", "v_n": "18"},
     "tabs": [
-      {"tab": "Liver (eDISH)", "outputs": ["edish", "traj", "liver_tbl"]},
+      {"tab": "Liver (eDISH)", "outputs": ["edish", "traj", "liver_tbl"], "theme": true},
       {"tab": "Convention grid", "outputs": ["grid_tbl", "grid_note"]},
       {"tab": "QTcF", "outputs": ["qtc_cat", "qtc_tbl"]},
       {"tab": "Labs (CTCAE)", "outputs": ["shift", "shift_note"]},
       {"tab": "Adverse events", "outputs": ["ae_tbl", "ae_note"]},
       {"tab": "Dose escalation", "outputs": ["dlt_tbl", "ladder"]},
       {"tab": "Study tier", "outputs": ["study_tbl"]}
+    ],
+    "interactions": [
+      {"name": "the keyboard moving along the tab strip shows a focus ring",
+       "steps": [{"focus": ".nav-tabs .nav-link.active"}, {"key": "ArrowLeft"}],
+       "expect": [{"focused": ".nav-tabs .nav-link"}, {"style": [".nav-tabs .nav-link:focus", "outlineStyle", "^solid$"]},
+                  {"style": [".nav-tabs .nav-link:focus", "outlineWidth", "^2px$"]}]}
     ]
   }
 }
