@@ -23,18 +23,28 @@ green(){ [ "$1" = green ] && echo green || echo red; }
 echo "== Trial-Management Validation Harness =="
 
 # ---- G1 Reproducibility & environment --------------------------------------
-read RTOT RBAD < <(Rscript -e 'f<-list.files(c("'$R'","sim_lifecycle","'$SAS'/.."),pattern="[.]R$",recursive=TRUE,full.names=TRUE); f<-unique(normalizePath(f)); b<-sum(vapply(f,function(x)inherits(try(parse(x),silent=TRUE),"try-error"),logical(1))); cat(length(f),b)' 2>/dev/null)
+# Parse check: every .R file in the repository, hidden directories such as .github included and
+# .git excluded, each file counted once (paths are normalized before unique()).
+read RTOT RBAD < <(Rscript -e 'f<-list.files(".",pattern="[.]R$",recursive=TRUE,full.names=TRUE,all.files=TRUE); f<-f[!grepl("(^|/)[.]git(/|$)",f)]; f<-unique(normalizePath(f)); b<-sum(vapply(f,function(x)inherits(try(parse(x),silent=TRUE),"try-error"),logical(1))); cat(length(f),b)' 2>/dev/null)
 # doubles are written at 12 significant digits, exactly as run_lifecycle.R writes them
 REPRO=$(Rscript -e 'setwd("'"$REPO"'"); suppressWarnings(source("sim_lifecycle/simulate_adam.R")); set.seed(2026); s<-simulate_study(sample_design("BE",N=40),seed=2026); td<-tempfile(); dir.create(td); for(nm in c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg")) { d<-s[[nm]]; dbl<-vapply(d,is.double,logical(1)); d[dbl]<-lapply(d[dbl],signif,digits=12); write.csv(d,file.path(td,paste0(nm,".csv")),row.names=FALSE) }; same<-vapply(c("adsl","adex","adpc","adpp","adae","advs","adlb","adeg"),function(nm) identical(readLines(file.path(td,paste0(nm,".csv"))),readLines(file.path("sim_lifecycle/out",paste0(nm,".csv")))),logical(1)); cat(sum(same))' 2>/dev/null)
 G1=green; [ "${RBAD:-1}" = 0 ] && [ "${REPRO:-0}" = 8 ] || G1=red
 add "G1 Reproducibility & environment" "the sandbox's eight committed output files regenerate byte for byte from code and seed, and every R program parses" "$G1" \
-    "$RTOT R programs parse (${RBAD:-?} fail); the synthetic study regenerates ${REPRO:-0} of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)"
+    "$RTOT R files parse (${RBAD:-?} fail; every .R file in the repository, each counted once, hidden directories included, .git excluded); the synthetic study regenerates ${REPRO:-0} of 8 committed ADaM-shaped files (adsl, adex, adpc, adpp, adae, advs, adlb, adeg) byte for byte from seed 2026 (base R)"
 
 # ---- G2 Numeric-provenance (numbers <- validated tool) ---------------------
-# Per-program check (replaces a repo-wide grep that one file anywhere could satisfy):
-# every R PK program must take geometric statistics from the log scale (via pkstats(),
-# whose own body is checked, or an explicit log()), no program may assign geomean from
-# a non-log expression, and every SAS twin must use log().
+# Log-scale geometric statistics, program by program (checks/g2_geo.py). Until 2026-10-26 this was
+# a repo-wide grep that one file anywhere could satisfy. The R programs are found by content
+# (pkstats(), geomean or geocv, a Geo Mean or Geo CV% column, exp(mean()) or 10^mean(), or a model
+# with a dose, treatment, period or sequence term). Comments are ignored and strings are never read
+# as code. Every geomean and Geo Mean column must be exp() or 10^ of a log-derived value (or NA),
+# every geocv and Geo CV% column exp() of a log-scale variance (or NA), every model response must be
+# log-derived, and each program must use log() or pkstats(), whose body is held to the same rules.
+# Each SAS twin at the same path must assign geomean only as exp() of a PROC MEANS mean of a
+# log-derived variable, geocv only from exp() of its log-scale SD or variance, and every MODEL
+# response must be log-derived; it must also call a passing %pkstats or back-transform its own
+# such mean with exp() (a model-only program's twin must fit a MODEL). The script prints
+# <passing> <checked> <evidence>; G2 is green only when the two counts are equal and not 0.
 read -r GEO GEOTOT GEOE < <(python3 validation_harness/checks/g2_geo.py "$R" "$SAS")
 NDIST=$(( $(grep -rl 'n_distinct(USUBJID)' $R 2>/dev/null | wc -l) + $(grep -rl 'CLASS USUBJID\|distinct USUBJID' $SAS 2>/dev/null | wc -l) ))
 DRAFT=$(grep -rilE 'hallucinat|reject.*number|number.*not (in|from)|selftest|self-test' tlf_interpret 2>/dev/null | wc -l | tr -d ' ')
