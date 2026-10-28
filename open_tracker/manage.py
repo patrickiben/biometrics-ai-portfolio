@@ -84,10 +84,15 @@ def new_config(url=""):
 
 def email_environment(config):
     mail = config["email"]
+    # Inactive SMTP credentials may be incomplete (for example after an admin
+    # removes a saved password). Keep them on disk for editing, but pass them to
+    # the transport only when live delivery is explicitly enabled.
+    live = mail["mode"] == "smtp"
     result = {"TRACKER_ALERT_TO": mail["recipients"] if mail["mode"] != "off" else "",
               "TRACKER_SMTP_HOST": mail["host"], "TRACKER_SMTP_PORT": str(mail["port"]),
               "TRACKER_SMTP_SECURITY": mail["security"], "TRACKER_SMTP_FROM": mail["sender"],
-              "TRACKER_SMTP_USERNAME": mail["username"], "TRACKER_SMTP_PASSWORD": mail["password"],
+              "TRACKER_SMTP_USERNAME": mail["username"] if live else "",
+              "TRACKER_SMTP_PASSWORD": mail["password"] if live else "",
               "TRACKER_PUBLIC_URL": config["public_url"]}
     return result
 
@@ -488,6 +493,9 @@ def main(argv=None):
     launch = commands.add_parser("start", help="Start the shared workspace and its configured email worker")
     launch.add_argument("--host", default="127.0.0.1")
     launch.add_argument("--port", type=int, default=8080)
+    web = commands.add_parser("web", help="Start the browser setup and administrator console")
+    web.add_argument("--host", default="127.0.0.1")
+    web.add_argument("--port", type=int, default=None)
     commands.add_parser("email", help="Configure off, local preview or SMTP delivery")
     test_mail = commands.add_parser("email-test", help="Preview a generic setup message locally, or explicitly send one test")
     test_mail.add_argument("--send", action="store_true", help="Explicitly send one test using saved SMTP settings")
@@ -509,6 +517,15 @@ def main(argv=None):
         command = args.command or "start"
         if command not in ("backup", "email-test"):
             ensure_runtime(workspace, argv, install=command != "doctor")
+        if command == "web":
+            try:
+                from . import web_setup
+            except ImportError:
+                import web_setup
+            arguments = ["--workspace", str(workspace), "--host", args.host]
+            if args.port is not None:
+                arguments += ["--port", str(args.port)]
+            return web_setup.main(arguments)
         if command == "setup":
             setup(workspace, args.public_url, args.demo)
             return 0

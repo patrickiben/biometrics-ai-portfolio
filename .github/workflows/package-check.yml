@@ -3,6 +3,39 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  tracker-windows:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Install shared tracker components
+        run: python -m pip install -r open_tracker/requirements-shared.txt
+      - name: Check native workspace locks and desktop loading server
+        run: python -m unittest discover -s open_tracker/tests -p test_desktop.py -v
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tools/browser-qc/package-lock.json
+      - name: Install development-only browser checks
+        run: |
+          npm ci --prefix tools/browser-qc
+          tools/browser-qc/node_modules/.bin/playwright install chromium
+      - name: Exercise browser setup and administration on Windows
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/tracker-windows-qc
+          TRACKER_PYTHON: python
+        run: node open_tracker/tests/admin_browser_qc.cjs
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: tracker-windows-qc
+          path: ${{ runner.temp }}/tracker-windows-qc
+          retention-days: 7
   tracker-container:
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -15,11 +48,18 @@ jobs:
         env:
           QA_OUTPUT_DIR: ${{ runner.temp }}/tracker-container-qc
         run: python open_tracker/tests/container_smoke.py
+      - name: Exercise browser-first setup and administration in Compose
+        env:
+          QA_OUTPUT_DIR: ${{ runner.temp }}/tracker-container-browser-qc
+          TRACKER_CONTAINER_BROWSER: '1'
+        run: python open_tracker/tests/container_smoke.py
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: tracker-container-qc
-          path: ${{ runner.temp }}/tracker-container-qc
+          path: |
+            ${{ runner.temp }}/tracker-container-qc
+            ${{ runner.temp }}/tracker-container-browser-qc
           retention-days: 7
   package:
     runs-on: ubuntu-latest
@@ -62,6 +102,11 @@ jobs:
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
           QA_OUTPUT_DIR: ${{ runner.temp }}/tracker-browser-qc
         run: node open_tracker/tests/browser_qc.cjs
+      - name: Exercise point-and-click setup, people, email and workspace settings
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/tracker-admin-browser-qc
+        run: node open_tracker/tests/admin_browser_qc.cjs
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -70,6 +115,7 @@ jobs:
           path: |
             ${{ runner.temp }}/portfolio-browser-qc
             ${{ runner.temp }}/tracker-browser-qc
+            ${{ runner.temp }}/tracker-admin-browser-qc
   r-tools:
     runs-on: ubuntu-latest
     timeout-minutes: 30

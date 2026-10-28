@@ -178,6 +178,7 @@ def create_app(config=None):
         PERMANENT_SESSION_LIFETIME=timedelta(seconds=SESSION_SECONDS),
         SESSION_REFRESH_EACH_REQUEST=False,
         TRUSTED_HOSTS=[value.strip() for value in os.environ.get("TRACKER_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",") if value.strip()],
+        WORKSPACE=None,
     )
     if config:
         app.config.update(config)
@@ -318,6 +319,9 @@ def create_app(config=None):
 
     @app.get("/")
     def index():
+        if app.config.get("WORKSPACE") and not (Path(app.config["WORKSPACE"]) / "config.json").is_file():
+            from flask import redirect
+            return redirect("/setup")
         page = tracker.TEMPLATE.read_text(encoding="utf-8")
         empty = json.dumps(dict(schema_version=1, exported_at=None, last_import_at=None, rows=[], events=[]))
         pattern = r'(<script\b[^>]*\bid=["\x27]tracker-data["\x27][^>]*>).*?(</script\s*>)'
@@ -329,13 +333,17 @@ def create_app(config=None):
         page = re.sub(r"<script\b", lambda _: '<script nonce="' + g.nonce + '"', page, flags=re.I)
         page = page.replace('href="README.md"', 'href="https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/open_tracker#readme"')
         page = page.replace('href="SHARED.md"', 'href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/open_tracker/SHARED.md"')
+        page = page.replace('href="SETUP.html"', 'href="https://patrickiben.github.io/biometrics-ai-portfolio/open_tracker/SETUP.html"')
         page = page.replace('href="../Operations.html"', 'href="https://patrickiben.github.io/biometrics-ai-portfolio/Operations.html"')
         page = page.replace('href="../LICENSE"', 'href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/LICENSE"')
         return app.response_class(page, mimetype="text/html")
 
     @app.get("/api/session")
     def session_info():
-        return jsonify(user=current_user(), csrf_token=csrf())
+        user = current_user()
+        if user and app.config.get("WORKSPACE"):
+            user["admin_ui"] = True
+        return jsonify(user=user, csrf_token=csrf())
 
     @app.post("/api/login")
     def login():
@@ -384,7 +392,10 @@ def create_app(config=None):
         session.clear()
         session.permanent = True
         session["token"] = token
-        return jsonify(user=dict(username=username, role=user["role"]), csrf_token=csrf())
+        info = dict(username=username, role=user["role"])
+        if app.config.get("WORKSPACE"):
+            info["admin_ui"] = True
+        return jsonify(user=info, csrf_token=csrf())
 
     @app.post("/api/logout")
     def logout():
@@ -417,6 +428,12 @@ def create_app(config=None):
                        transaction_guard=require_write)
         return jsonify(snapshot=tracker.snapshot(app.config["DATABASE"], transaction_guard=require_read), user=user)
 
+    if app.config.get("WORKSPACE"):
+        try:
+            from . import admin
+        except ImportError:
+            import admin
+        admin.register(app, database, current_user, body)
     return app
 
 

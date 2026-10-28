@@ -46,6 +46,15 @@ class ThemeGenerationTests(unittest.TestCase):
     def test_html_fragments_are_untouched(self):
         self.assertEqual(self.generate("<section>Example</section>"), {})
 
+    def test_new_tracker_pages_refresh_tokens_without_duplicate_controls(self):
+        source = '<html><head><style id="tracker-theme-tokens">old palette</style></head><body><button class="theme-toggle">Theme</button></body></html>'
+        result = self.generate(source)["guide.html"]
+        self.assertNotIn("old palette", result)
+        self.assertIn("/* theme fixture */", result)
+        self.assertEqual(result.count('class="theme-toggle"'), 1)
+        self.assertNotIn("toolkit-theme:start", result)
+        self.assertEqual(self.generate(result)["guide.html"], result)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -4,7 +4,7 @@ Open-source tools, templates and worked examples for **biostatistics consultants
 
 **[Choose your task and get started](GET_STARTED.html)** · [Home](index.html) · [Full library](START_HERE.html)
 
-Try the browser demos with no installation. A shared R launcher starts the five local Shiny apps; the tracker also has a standalone browser workspace and a Python CLI. [Guided shared-tracker setup](open_tracker/SHARED.md) starts accounts and email previews with `python3 open_tracker/manage.py`; a portable Docker recipe adds HTTPS team hosting, and the email wizard connects your chosen SMTP service. **This is a general-purpose toolkit, not a deployment for a specific client.** Examples (CP-101 to CP-108) are synthetic. Study use still needs input mapping, method/threshold review and your organization's verification process.
+Try the browser demos with no installation. A shared R launcher starts the five local Shiny apps; the tracker also has a standalone browser workspace and a Python CLI. [Point-and-click shared-tracker setup](open_tracker/SETUP.html) provides double-click launchers, a browser wizard, account administration and email settings. An optional hosting shortcut and a portable Docker recipe support HTTPS team access. **This is a general-purpose toolkit, not a deployment for a specific client.** Examples (CP-101 to CP-108) are synthetic. Study use still needs input mapping, method/threshold review and your organization's verification process.
 
 ```sh
 # From a downloaded or cloned checkout; R is required for the Shiny apps.

@@ -1,0 +1,24 @@
+# Optional browser-only hosting path. Review the provider's paid service and
+# persistent-disk charges before approving deployment. No client is configured.
+services:
+  - type: web
+    name: open-study-tracker
+    runtime: python
+    plan: 0.5c-512mb
+    rootDir: open_tracker
+    buildCommand: python -m pip install -r requirements-shared.txt
+    startCommand: python web_setup.py --workspace /var/data/tracker --host 0.0.0.0
+    healthCheckPath: /healthz
+    autoDeployTrigger: 'off'
+    numInstances: 1
+    disk:
+      name: tracker-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: TRACKER_SETUP_TOKEN
+        generateValue: true
+      - key: PYTHONDONTWRITEBYTECODE
+        value: '1'
+      - key: PYTHONUNBUFFERED
+        value: '1'

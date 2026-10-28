@@ -1,14 +1,44 @@
 # Shared accounts and email alerts
 
-Start a shared Open Study Tracker with one guided command. The launcher creates private storage, helps you create the first account, and runs the web server and automatic email worker together. Use the same open-source setup for your own team or adapt a separate workspace for each engagement. It has no client-specific settings or required hosting or email provider.
+Use the [point-and-click setup guide](SETUP.html) to start a workspace and manage it in the browser. The open-source tracker has no client-specific settings or required mail provider.
 
-| Start here | What you need | What you get |
-| --- | --- | --- |
-| [Local evaluation](#one-command-local-start) | Python 3.10+ and a complete repository checkout | Individual sign-in, a shared database on your computer and local email previews. |
-| [Team access](#team-hosting-with-docker-compose) | A host you control, Docker Compose and a hostname | The same tracker behind HTTPS, persistent storage and automatic restart. |
-| [Live email](#email-preview-first-connect-your-service-when-ready) | SMTP settings from your chosen mail service | Automatic operational alerts to the recipients you configure. |
+## Local setup without terminal steps
 
-The public GitHub Pages demo is an offline browser workspace. Shared access runs on your chosen host. Nothing in this setup creates a client deployment or signs up for a service on your behalf.
+1. Download and unzip the complete toolkit.
+2. Open **Start Tracker.command** on macOS or **Start Tracker.cmd** on Windows. Install Python 3.10+ with its normal installer if the launcher asks for it.
+3. Complete the browser form to create the first administrator. The local launcher carries a temporary setup key privately to that form.
+4. Sign in and open **Settings**. Use **People** for accounts, **Email** for notification settings, and **Shared access** for the workspace URL. Download backups from the overview.
+
+The launcher prepares required components automatically. A progress window may appear; no terminal commands are needed. The default workspace is empty and email starts in preview mode. Select the fictional example only if you want sample tasks. Configuration and data stay in your private home-folder workspace, outside the downloaded toolkit. Reopen the launcher to resume.
+
+## Host a team workspace through a browser
+
+The [setup page](SETUP.html#team) includes an optional **Open Render setup** button. It opens your own hosting account for review; a paid service and persistent disk are required. The supplied template disables automatic deployment of later repository changes. You choose and approve any hosting purchase yourself.
+
+After the service becomes ready, open its URL. Copy the generated **TRACKER_SETUP_TOKEN** from the host's **Environment** screen into the setup-key field, then create the first administrator. The setup key cannot create another administrator after initialization. It does not replace account passwords.
+
+The same browser setup works with the [generic Docker browser recipe](deploy/compose.browser.yaml). An operator configures the HTTPS URL, persistent volume and a private setup key in the chosen host. Existing deployments can keep their database and configuration. The public GitHub Pages demo remains a separate offline workspace.
+
+Render is a convenience option, not a client requirement or a dependency of the application. See its [deployment-button documentation](https://render.com/docs/deploy-to-render) and [persistent-disk requirements](https://render.com/docs/disks). The standalone Docker recipe remains available for other suitable hosts.
+
+## Manage the workspace in Settings
+
+| Page | Point-and-click actions |
+| --- | --- |
+| Overview | Check storage and notification status, open the tracker, and download a consistent database backup. |
+| People | Add accounts, set viewer/editor/admin access, reset passwords, and enable or disable accounts. The browser prevents removing the last enabled administrator or locking out the active administrator. |
+| Email | Choose off, preview or SMTP; enter provider settings; preview a generic message; explicitly send one test to a chosen address; enable automatic delivery. |
+| Shared access | Copy the hosted workspace URL and review the access boundary. A loopback-only workspace is not reachable by colleagues on other computers. |
+
+Only administrators can open these controls. All members can read their workspace's tracker and history. Viewers cannot edit; editors can edit deliverables; administrators can also manage people and settings. Use separate workspaces/services for separate teams when they need separate access boundaries.
+
+Email passwords are never returned to the browser. A blank password field can retain a saved credential when indicated; use the explicit clear control to remove it. Saving email settings applies automatically in the browser-managed runtime. **Enable automatic delivery** and **Send test email** are distinct actions. A test sends one generic message only to the specified address; it does not flush the operational alert queue. Starting automatic SMTP delivery can send currently eligible queued alerts as well as future changes.
+
+Backups contain private workspace data, accounts and history. Store them privately. No user account is automatically subscribed to email: recipient settings are separate. Hosting infrastructure, public DNS and mail-provider authorization remain under the operator's control.
+
+## Advanced and existing command-line workflows
+
+The commands below remain available for operators, automated jobs and existing deployments. The browser-managed runtime is the recommended path for point-and-click setup. The older command-line `start` runtime reads configuration when it starts and requires a restart after changes; the browser runtime applies email settings automatically.
 
 ## One-command local start
 
@@ -70,7 +100,7 @@ Password commands prompt privately. Passwords must contain 12–256 characters; 
 | --- | --- |
 | `viewer` | Read, filter and download snapshots. |
 | `editor` | Viewer access plus add/edit deliverables. |
-| `admin` | The same web permissions as editor. Account administration is a host command. |
+| `admin` | Editor access plus browser account/email administration when running the browser-managed service. The lower-level server can still be managed with host commands. |
 
 Everyone with an account can read the entire workspace, including its history and exports. Use separate workspaces and services for separate access boundaries. Public signup, password-recovery email, SSO, MFA and per-study permissions are outside this tool's scope.
 

@@ -22,6 +22,9 @@ __pycache__/
 config.json
 .open-study-tracker/
 mail-preview/
+.desktop-state.json
+.desktop.lock
+launcher.log
 
 # Quarto build cache / render artifacts
 **/.quarto/

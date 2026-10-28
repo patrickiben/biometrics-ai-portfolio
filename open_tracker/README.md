@@ -4,7 +4,13 @@ An MIT-licensed tracker for study deliverables, owners, deadlines, and operation
 
 **Reusable evaluation tool:** for consultants and in-house teams adapting study operations. The browser demo works immediately. A guided launcher sets up individual accounts, private storage and automatic local email previews; the same setup can run on your chosen host with your chosen SMTP service. No client workspace or provider account is preconfigured.
 
-[Open the browser workspace](index.html) · [Shared accounts and email setup](SHARED.md) · [Synthetic CSV example](examples/status.csv) · [Source code](tracker.py) · [MIT license](../LICENSE)
+[Open the browser workspace](index.html) · [Point-and-click accounts and email setup](SETUP.html) · [Synthetic CSV example](examples/status.csv) · [Source code](tracker.py) · [MIT license](../LICENSE)
+
+## Set up accounts and email with clicks
+
+[Open the setup guide](SETUP.html). Download and unzip the complete toolkit, then open **Start Tracker.command** on macOS or **Start Tracker.cmd** on Windows. With Python 3.10+ installed, the launcher prepares dependencies and opens the browser wizard. Create the first administrator, then use **Settings** to manage people, email, shared access and backups. Preview is the initial email mode.
+
+For a hosted team workspace, the guide includes an optional browser-led hosting shortcut. Each team owns its host and mail settings; no client service is preconfigured. [Operator and command-line reference](SHARED.md).
 
 ## Try it
 
@@ -23,7 +29,7 @@ python3 open_tracker/tracker.py --db open_tracker/out/tracker.sqlite check --sta
 
 Open `open_tracker/out/tracker.html` to review the database snapshot offline. The demo intentionally has blocked and at-risk tasks, so the final command returns **2**, meaning attention is needed. Due-date checks use UTC.
 
-## Start shared access with one command
+## Optional command-line setup
 
 From a complete checkout, with Python 3.10+ installed:
 
@@ -63,7 +69,7 @@ SAS / R / any CSV-producing job
                  tracker.py upsert
 ```
 
-The browser is a **snapshot editor**, not a live database connection. Its edits do not reach SQLite until you import the downloaded JSON. Then export a fresh HTML snapshot. Each embedded snapshot has its own browser-storage identity so an older saved copy cannot silently replace a newly generated snapshot. File movement, private browsing, and browser-specific `file://` storage behavior can affect local persistence; the visible save indicator and JSON downloads are the fallback.
+In offline mode, the browser is a **snapshot editor**. Its edits reach SQLite when you import the downloaded JSON. In a running shared workspace, browser edits save directly to its database. Then export a fresh HTML snapshot. Each embedded snapshot has its own browser-storage identity so an older saved copy cannot silently replace a newly generated snapshot. File movement, private browsing, and browser-specific `file://` storage behavior can affect local persistence; the visible save indicator and JSON downloads are the fallback.
 
 ```sh
 python3 open_tracker/tracker.py --db open_tracker/out/tracker.sqlite upsert --json /path/to/downloaded-tracker.json --dry-run
