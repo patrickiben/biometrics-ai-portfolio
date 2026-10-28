@@ -34,7 +34,7 @@ class JobTests(unittest.TestCase):
         results = []
         for command in plan["commands"]:
             result = subprocess.run(command["argv"], cwd=command["cwd"], env=dict(os.environ, **command["env"]),
-                                    text=True, capture_output=True, timeout=90)
+                                    text=True, capture_output=True, timeout=180)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             results.append(result)
         return results

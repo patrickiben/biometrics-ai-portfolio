@@ -132,7 +132,7 @@ while True:
             self.assertEqual(csv.stat().st_mode & 0o777, 0o600)
         inventory = self.source / "toolkit_launcher/source_manifest.json"
         original = json.loads(inventory.read_text())
-        for name in ["../outside.txt", ".git/config", "data.sqlite", "launcher-settings.json", "toolkit_configuration/private.json"]:
+        for name in ["../outside.txt", ".git/config", "data.sqlite", "launcher-settings.json", "toolkit_configuration/private.json", "template_inputs/localmind/findings.csv", "template_outputs/interpretation/private.html"]:
             target = self.source / name
             target.parent.mkdir(exist_ok=True, parents=True)
             target.write_text("PRIVATE")

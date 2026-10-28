@@ -18,6 +18,8 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           r-version: '4.6.0'
+      - name: Install R dependency for independent guided-preview verification
+        run: Rscript -e 'if (!requireNamespace("jsonlite", quietly=TRUE)) install.packages("jsonlite", repos="https://cloud.r-project.org"); stopifnot(requireNamespace("jsonlite", quietly=TRUE))'
       - name: Check private-project source inventory
         run: python toolkit_launcher/source_inventory.py --check
       - name: Check local API, private files, job lifecycle and native R adapters
@@ -47,6 +49,12 @@ jobs:
           TOOLKIT_PYTHON: python
           QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-browser-qc
         run: node toolkit_launcher/tests/real_browser_qc.cjs
+      - name: Exercise guided template setup and reusable profiles
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          TOOLKIT_PYTHON: python
+          QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-browser-qc
+        run: node toolkit_launcher/tests/guided_browser_qc.cjs
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -186,6 +194,8 @@ jobs:
           Rscript -e 'packages <- c("shiny", "bslib", "DT", "ggplot2", "testthat"); install.packages(packages, repos="https://cloud.r-project.org"); missing <- packages[!vapply(packages, requireNamespace, logical(1), quietly=TRUE)]; if(length(missing)) stop("Required packages failed to install: ", paste(missing, collapse=", "))'
       - name: Launcher, publication-filter and theme-generation regression checks
         run: python3 -m unittest discover -s tools/tests -v
+      - name: Recompute guided AE and PK previews with the original R extractors
+        run: python3 -m unittest toolkit_launcher.tests.test_guided_modules -v
       - name: Logic and Shiny server regression checks
         run: |
           Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R

@@ -1,6 +1,6 @@
 # Early-Phase Clinical Pharmacology: SAS TLF Pseudocode Library
 
-Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to create a private project containing both SAS and R libraries, prepare settings and open the selected design in your licensed SAS editor. These remain pseudocode requiring study-specific implementation and verification.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to choose design and outputs, upload study CSVs, map columns and generate a configured SAS package. Open the supplied driver in your licensed SAS application; paths and variable mappings are generated from the form. Save profiles for reuse and read the setup report for unfinished source logic. SAS execution and study validation remain separate.
 
 ADaM-based SAS **pseudocode** for every Table, Listing, and Figure (TLF) in an early-phase
 clin-pharm study, with a **complete separate set per study design**. **SAS code not executed (no license):** none of these programs has been run in SAS. Illustrative

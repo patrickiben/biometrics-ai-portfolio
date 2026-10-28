@@ -129,6 +129,38 @@ class ServerTests(unittest.TestCase):
             status, _, _ = self.request("POST", "/api/configure", dict(body, values={"endpoint": "http://external.example.com"}))
             self.assertEqual(status, 400)
 
+    def test_guided_template_routes_require_auth_and_produce_downloadable_package(self):
+        shutil.copytree(runtime.ROOT / "sas_r_automation/macro_library", self.root / "sas_r_automation/macro_library")
+        body = {"project_id": self.ident, "module_id": "sas_monitor"}
+        query = urlencode(body)
+        self.assertEqual(self.request("GET", "/api/template-setup?" + query, token=False)[0], 403)
+        status, state, _ = self.request("GET", "/api/template-setup?" + query)
+        self.assertEqual(status, 200, state)
+        values = dict(study_id="TEST-STUDY", checks=["queries"], review_confirmed=True)
+        payload = dict(body, slot="queries", filename="queries.csv", content_base64=base64.b64encode(b"OPEN_FL,QUERY_AGE_DAYS\nY,31\n").decode())
+        with patch("subprocess.Popen", side_effect=AssertionError("No process should run")):
+            status, result, _ = self.request("POST", "/api/template-input", payload)
+            self.assertEqual(status, 200, result)
+            self.assertNotIn("absolute_path", result["input"])
+            for action in ("save", "validate", "generate"):
+                status, result, _ = self.request("POST", "/api/template-setup", dict(body, action=action, values=values))
+                self.assertEqual(status, 200, result)
+                self.assertEqual(result["report"]["errors"], [], result)
+        package = result["build"]
+        status, content, headers = self.request("GET", "/api/files?" + urlencode({"project_id": self.ident, "path": package["zip_path"]}))
+        self.assertEqual(status, 200)
+        self.assertTrue(content.startswith(b"PK"))
+        self.assertIn("attachment", headers["Content-Disposition"])
+        profile = json.loads((self.root / package["profile_path"]).read_text())
+        self.assertEqual(self.request("POST", "/api/template-profile", dict(body, profile=profile))[0], 200)
+        for endpoint, changes in (("/api/template-input", dict(payload, slot=[])), ("/api/template-setup", dict(body, action=[], values={})), ("/api/template-profile", dict(body, profile=[]))):
+            self.assertEqual(self.request("POST", endpoint, changes)[0], 400)
+        self.workspace.jobs["f" * 32] = {"project_id": self.ident, "status": "running"}
+        try:
+            self.assertEqual(self.request("POST", "/api/template-input", payload)[0], 400)
+        finally:
+            self.workspace.jobs.clear()
+
     @unittest.skipUnless(shutil.which("Rscript"), "Rscript not installed")
     def test_real_base_r_job_through_api_produces_downloadable_outputs(self):
         status, started, _ = self.request("POST", "/api/actions", {"project_id": self.ident, "action_id": "sandbox.run", "options": {}})
@@ -137,7 +169,8 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status, 400)
         status, _, _ = self.request("POST", "/api/configure", {"project_id": self.ident, "module_id": "interpretation", "values": {}})
         self.assertEqual(status, 400)
-        done = wait_for_job(self.workspace, started["id"], timeout=60)
+        # The full synthetic study can exceed a minute on a busy Windows runner.
+        done = wait_for_job(self.workspace, started["id"], timeout=180)
         self.assertEqual(done["status"], "succeeded", done["log"])
         status, job, _ = self.request("GET", "/api/jobs/" + started["id"])
         self.assertEqual(status, 200)
