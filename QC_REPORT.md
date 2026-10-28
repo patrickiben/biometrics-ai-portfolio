@@ -10,6 +10,7 @@ Review date: 28 October 2026. Scope: the complete repository, its published-page
 - Hardened tracker input limits, Unicode/date parsing, monotonic row versions, atomic authorization checks, host validation, local-only HTTP enforcement, and export destination protection. Local draft identity, cross-tab conflicts, canceled saves and sign-out races have browser regressions.
 - Corrected notification cancellation/revival and overlapping-worker races; preserved at-least-once delivery semantics. Successful SMTP acceptance is not proof of inbox receipt, and an in-flight message cannot be recalled.
 - Corrected risk-weight and lifecycle-count validation, hours estimates/reserve handling, fractional shortfalls, a risk-table column mismatch, and UAT traceability/input checks. Existing hours overruns now consume contingency before a new request is called absorbable, and edited contingency survives CSV export. Explicitly supplied missing input paths now fail instead of silently substituting demonstration data.
+- Linux CI exposed a missing libuv development dependency in the current `fs` source package. The launcher and CI now request its bundled libuv build; CI fails immediately if required packages did not install.
 - Excluded local databases, recovery files, environment files and email previews from repository publication, including a second filter in the Pages build.
 - Corrected stale pipeline-document framing/navigation and reviewed downloadable workbook gates and PDF layout. The detailed artifact results are below.
 

@@ -91,6 +91,10 @@ main <- function() {
     if (!dir.exists(user_library) && !dir.create(user_library, recursive = TRUE, showWarnings = FALSE)) stop("Cannot create the user package library. Set BIOMETRICS_R_LIB to a writable location.", call. = FALSE)
     if (file.access(user_library, 2L) != 0L) stop("User package library is not writable. Set BIOMETRICS_R_LIB to a writable location.", call. = FALSE)
     cat("Installing into the user library: ", paste(missing, collapse = ", "), "\n", sep = "")
+    # On Linux, fs >= 2.1 otherwise requires a separately installed libuv SDK.
+    # Its bundled build avoids needing administrator access; honor an explicit choice.
+    if (identical(Sys.info()[["sysname"]], "Linux") && !nzchar(Sys.getenv("USE_BUNDLED_LIBUV")))
+      Sys.setenv(USE_BUNDLED_LIBUV = "1")
     utils::install.packages(missing, lib = user_library, repos = "https://cloud.r-project.org", dependencies = NA)
     # Restart after installing: old loaded namespaces/DLLs must not shadow a
     # newly installed version, especially on Windows.
