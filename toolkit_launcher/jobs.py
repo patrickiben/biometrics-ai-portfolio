@@ -26,7 +26,7 @@ SHINY = {
     "hours": ("Hours reconciliation", "budget_reconciliation/shiny", "budget_reconciliation/templates"),
 }
 
-ANALYSIS_PACKAGES = ("dplyr", "tidyr", "stringr", "purrr", "tibble", "rtables", "ggplot2", "ggrepel", "emmeans", "lme4", "lmerTest", "pbkrtest", "nlme", "broom", "broom.mixed", "jsonlite")
+ANALYSIS_PACKAGES = ("dplyr", "tidyr", "stringr", "purrr", "tibble", "rtables", "ggplot2", "ggrepel", "patchwork", "emmeans", "lme4", "lmerTest", "pbkrtest", "nlme", "broom", "broom.mixed", "jsonlite")
 
 TEETH_PACKAGES = ("testthat", "shiny", "bslib", "DT", "ggplot2", "htmltools")
 

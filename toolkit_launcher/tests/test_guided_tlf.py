@@ -2,6 +2,7 @@
 import csv
 import io
 import json
+import re
 import shutil
 import subprocess
 import tempfile
@@ -41,6 +42,18 @@ class GuidedTLFTests(unittest.TestCase):
 
     def pk_values(self, **kw):
         return self.base(pk_yes="Included", columns={"adpp": {"USUBJID": "participant", "TRT01A": "arm", "PKFL": "included", "PARAMCD": "parameter", "PARAM": "parameter_label", "AVAL": "value", "AVALU": "unit"}}, **kw)
+
+    def test_every_r_output_retains_its_sas_reference_tlf_number(self):
+        checked = 0
+        for program in (ROOT / 'r_tlf_pseudocode').glob('*/*.R'):
+            twin = ROOT / 'sas_tlf_pseudocode' / program.parent.name / (program.stem + '.sas')
+            r_number = re.search(r'num\s*=\s*"?([0-9]+(?:\.[0-9]+)+)', program.read_text(encoding='utf-8'))
+            sas_number = re.search(r'num\s*=\s*"?([0-9]+(?:\.[0-9]+)+)', twin.read_text(encoding='utf-8'))
+            self.assertIsNotNone(r_number, str(program))
+            self.assertIsNotNone(sas_number, str(twin))
+            self.assertEqual(r_number[1], sas_number[1], str(program))
+            checked += 1
+        self.assertEqual(checked, 221)
 
     def test_mapping_preserves_ids_and_supplies_loader_and_driver(self):
         inputs = self.pk_input()

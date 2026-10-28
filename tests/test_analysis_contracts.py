@@ -13,6 +13,7 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from toolkit_launcher.analysis_contracts import required_columns, optional_columns
+from toolkit_launcher.jobs import ANALYSIS_PACKAGES
 
 DESIGNS = ("parallel", "crossover", "single_sequence", "sad", "mad")
 R_CHECK = r'''
@@ -92,7 +93,8 @@ class AnalysisContractsTests(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which("Rscript"), "Rscript is not installed")
     def test_all_221_execute_with_only_contract_columns(self):
-        probe = subprocess.run(["Rscript", "-e", 'p<-c("jsonlite","dplyr","tidyr","tibble","ggplot2","lmerTest","emmeans","nlme","rtables");quit(status=if(all(vapply(p,requireNamespace,logical(1),quietly=TRUE)))0 else 42)'], capture_output=True, text=True, timeout=60)
+        expression = "p<-c(" + ",".join(json.dumps(x) for x in ANALYSIS_PACKAGES) + ");quit(status=if(all(vapply(p,requireNamespace,logical(1),quietly=TRUE)))0 else 42)"
+        probe = subprocess.run(["Rscript", "-e", expression], capture_output=True, text=True, timeout=60)
         if probe.returncode == 42:
             self.skipTest("Required analysis packages are not installed; no packages downloaded")
         self.assertEqual(probe.returncode, 0, probe.stderr)

@@ -5,7 +5,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 source("../01_analysis_models.R")
 dv <- design_vars("SAD")
-ttl <- tfl_titles(num = "f_cqtc_hysteresis", type = "Figure",
+ttl <- tfl_titles(num = "14.3.5.4", type = "Figure",
   text = "Exploratory Mean Concentration-QTc Loop Profiles", pop = "Safety ECG and PK concentration populations",
   foot = "ddQTcF is the individual supplied QTcF change minus the same-day time-matched placebo mean. Error bars include active-participant variance plus the placebo mean variance. Arrows follow nominal time; a dotted line closes the polygon. This descriptive figure does not establish a drug effect or regulatory conclusion.")
 prepared <- tfl_model_cqtc_data(adam$adpc, adam$adeg, mad = FALSE)

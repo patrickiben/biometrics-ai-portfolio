@@ -22,7 +22,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 
 rep <- ada_summary(adam$adis, dv$trtvar)
-ttl <- tfl_titles("14.5.1.1", text="Summary of Anti-Drug Antibody Incidence", pop="ADA-Evaluable Population",
+ttl <- tfl_titles(num = "14.5.1.1", text="Summary of Anti-Drug Antibody Incidence", pop="ADA-Evaluable Population",
   foot="Denominator: distinct ADA-evaluable participants in ADIS by treatment. Classification uses supplied study-derived flags; unknown statuses are reported separately. Total counts each participant once. NAb percentage uses the ADA-evaluable population.")
 print(rep)
 by_period <- ada_summary(adam$adis, dv$trtvar, period=TRUE)

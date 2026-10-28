@@ -19,5 +19,5 @@ dv  <- design_vars("PARALLEL")                 # column = TRT01A (= dose level)
 # Preserve study-specific method: crossover uses limit multiples; other designs use supplied grades.
 denom <- bign(adam$adsl, dv$trtvar, "SAFFL")
 tab <- marked_lab_summary(check_analysis_units(adam$adlb), dv$trtvar, denom, method="grade")
-ttl <- tfl_titles("14.3.4.3", text="Participants with Markedly Abnormal Laboratory Values", foot="Markedly abnormal: supplied post-baseline grade at least the configured threshold and worse than supplied baseline grade. Missing grades or required limits remain unknown. Participants count once per parameter/criterion; Unknown evaluability may overlap a qualifying result at another visit. Denominator source: ADSL safety population.")
+ttl <- tfl_titles(num = "14.3.4.3", text="Participants with Markedly Abnormal Laboratory Values", foot="Markedly abnormal: supplied post-baseline grade at least the configured threshold and worse than supplied baseline grade. Missing grades or required limits remain unknown. Participants count once per parameter/criterion; Unknown evaluability may overlap a qualifying result at another visit. Denominator source: ADSL safety population.")
 print(tab)

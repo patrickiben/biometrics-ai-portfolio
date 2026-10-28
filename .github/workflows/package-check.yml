@@ -55,7 +55,9 @@ jobs:
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
           TOOLKIT_PYTHON: python
           QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-browser-qc
-        run: node toolkit_launcher/tests/guided_browser_qc.cjs
+        # CI-only access to its installed jsonlite; production projects keep
+        # their explicitly managed private R library.
+        run: node -e "process.env.R_LIBS_SITE=[process.env.R_LIBS_USER,process.env.R_LIBS_SITE].filter(Boolean).join(require('node:path').delimiter); require('./toolkit_launcher/tests/guided_browser_qc.cjs')"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -262,6 +264,7 @@ jobs:
             any::rtables
             any::ggplot2
             any::ggrepel
+            any::patchwork
             any::emmeans
             any::lme4
             any::lmerTest

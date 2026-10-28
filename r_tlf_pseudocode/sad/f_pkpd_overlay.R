@@ -5,7 +5,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 source("../01_analysis_models.R")
 dv <- design_vars("SAD")
-ttl <- tfl_titles(num = "f_pkpd_overlay", type = "Figure",
+ttl <- tfl_titles(num = "14.4.5.1", type = "Figure",
   text = "Aligned PK Concentration and PD Response Profiles", pop = "PK- and PD-evaluable populations",
   foot = "Means are computed independently in the PK and PD populations at each nominal time. Separate panels retain original units and avoid arbitrary rescaling. This temporal comparison is descriptive, with no fitted PK/PD relationship or steady-state conclusion.")
 profiles <- tfl_model_overlay(adam$adpc, adam$adpd, dv)

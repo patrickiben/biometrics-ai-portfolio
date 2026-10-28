@@ -20,5 +20,5 @@ dv  <- design_vars("CROSSOVER")                 # trtvar = TRTA ; byperiod = APE
 # Preserve study-specific method: crossover uses limit multiples; other designs use supplied grades.
 denom <- bign(adam$adex, dv$trtvar, "SAFFL")
 tab <- marked_lab_summary(check_analysis_units(adam$adlb), dv$trtvar, denom, method="limits")
-ttl <- tfl_titles("14.3.4.3", text="Participants with Markedly Abnormal Laboratory Values", foot="Markedly abnormal: configured multiples of upper/lower reference limits. Missing grades or required limits remain unknown. Participants count once per parameter/criterion; Unknown evaluability may overlap a qualifying result at another visit. Denominator source: ADEX dosed safety population.")
+ttl <- tfl_titles(num = "14.3.4.3", text="Participants with Markedly Abnormal Laboratory Values", foot="Markedly abnormal: configured multiples of upper/lower reference limits. Missing grades or required limits remain unknown. Participants count once per parameter/criterion; Unknown evaluability may overlap a qualifying result at another visit. Denominator source: ADEX dosed safety population.")
 print(tab)

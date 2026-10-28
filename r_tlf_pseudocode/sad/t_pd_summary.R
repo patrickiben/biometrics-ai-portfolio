@@ -5,7 +5,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 source("../01_analysis_models.R")
 dv <- design_vars("SAD")
-ttl <- tfl_titles(num = "t_pd_summary", type = "Table",
+ttl <- tfl_titles(num = "14.4.6.1", type = "Table",
   text = "Pharmacodynamic Endpoints by Treatment, Period, Day, Visit and Time", pop = "PD-evaluable population",
   foot = "Descriptive summaries of supplied ADaM values and baseline changes. Counts are participants with finite values at each analysis time; missing counts are separate. Repeated days and periods remain separate. No clinical conclusion is implied.")
 pd <- tfl_model_pd_data(adam$adpd, dv)

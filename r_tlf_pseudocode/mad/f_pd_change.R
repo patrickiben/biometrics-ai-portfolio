@@ -5,7 +5,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 source("../01_analysis_models.R")
 dv <- design_vars("MAD")
-ttl <- tfl_titles(num = "f_pd_change", type = "Figure",
+ttl <- tfl_titles(num = "14.4.6.2", type = "Figure",
   text = "Pharmacodynamic Change from Baseline over Time", pop = "PD-evaluable population",
   foot = "Mean supplied change from baseline with plus/minus one standard error; n is the number of participants at each time. Periods and days remain separate. With fewer than two participants the standard error is not estimable.")
 pd <- tfl_model_pd_data(adam$adpd, dv)

@@ -16,9 +16,10 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from toolkit_launcher import guided_tlf as tlf
+from toolkit_launcher.jobs import ANALYSIS_PACKAGES
 
 DESIGNS = ("parallel", "crossover", "single_sequence", "sad", "mad")
-PACKAGES = ("jsonlite", "dplyr", "tidyr", "stringr", "purrr", "tibble", "rtables", "ggplot2", "emmeans", "lme4", "lmerTest", "nlme", "broom", "broom.mixed", "ggrepel")
+PACKAGES = ANALYSIS_PACKAGES
 
 
 class GeneratedAnalysisTests(unittest.TestCase):

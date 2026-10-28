@@ -2,6 +2,7 @@
 import csv
 import hashlib
 import json
+import re
 from pathlib import Path
 import shutil
 import subprocess
@@ -58,6 +59,46 @@ class AnalysisJobsTests(unittest.TestCase):
         (folder / 'output_manifest.json').write_text(json.dumps(dict(identity, schema=1, status='succeeded', approved=False, outputs=[{'id':'interpretation','status':'completed','files':['table.csv']} ])), encoding='utf-8')
         (folder / 'execution_status.csv').write_text('output,status,error\ninterpretation,completed,\n', encoding='utf-8')
 
+
+    def test_every_explicit_r_dependency_is_installed_by_launcher_and_analysis_ci(self):
+        # Inspect real executable calls, excluding comments that discuss optional
+        # alternatives. A locally preinstalled package must not hide a missing
+        # Check/Install dependency on a clean user's machine or a CI runner.
+        def without_comments(text):
+            result, quote, escaped = [], None, False
+            for line in text.splitlines(keepends=True):
+                for char in line:
+                    if quote:
+                        result.append(char)
+                        if escaped:
+                            escaped = False
+                        elif char == chr(92):
+                            escaped = True
+                        elif char == quote:
+                            quote = None
+                    elif char == '#':
+                        result.append('\n')
+                        break
+                    else:
+                        result.append(char)
+                        if char in ('"', "'", '`'):
+                            quote = char
+            return ''.join(result)
+        sources = list((runtime.ROOT / 'r_tlf_pseudocode').rglob('*.R'))
+        sources += [runtime.ROOT / 'toolkit_launcher/analysis_runner.R', runtime.ROOT / 'toolkit_launcher/analysis_monitor.R']
+        dependencies = set()
+        for source in sources:
+            text = without_comments(source.read_text(encoding='utf-8'))
+            dependencies.update(re.findall(r'\b([A-Za-z][A-Za-z0-9.]*)::', text))
+            dependencies.update(re.findall(r'\b(?:library|require)\(\s*[\"\']?([A-Za-z][A-Za-z0-9.]*)', text))
+            dependencies.update(re.findall(r'\brequireNamespace\(\s*[\"\']([A-Za-z][A-Za-z0-9.]*)[\"\']', text))
+        base_packages = {'base','compiler','datasets','graphics','grDevices','grid','methods','parallel','splines','stats','stats4','tcltk','tools','utils'}
+        needed = dependencies - base_packages
+        self.assertIn('patchwork', needed)
+        self.assertFalse(needed - set(jobs.ANALYSIS_PACKAGES), 'Missing launcher packages: ' + ', '.join(sorted(needed-set(jobs.ANALYSIS_PACKAGES))))
+        workflow = (runtime.ROOT / '.github/workflows/package-check.yml').read_text(encoding='utf-8').split('  runnable-analysis:', 1)[1]
+        installed = set(re.findall(r'any::([A-Za-z][A-Za-z0-9.]*)', workflow))
+        self.assertFalse(needed-installed, 'Missing clean-CI packages: ' + ', '.join(sorted(needed-installed)))
 
     def test_revision_is_pinned_and_runs_never_reuse_a_results_folder(self):
         record, bundle = analysis.resolve_build(self.root, self.module, self.build_id)
@@ -134,7 +175,7 @@ class AnalysisJobsTests(unittest.TestCase):
         with patch.object(analysis.subprocess, 'run', side_effect=fake_r):
             self.assertEqual(analysis.execute(folder / 'plan.json', 'fixed-Rscript'), 0)
         with zipfile.ZipFile(folder / 'results.zip') as archive:
-            self.assertEqual(archive.read('table.csv'), b'group,n\nA,5\n')
+            self.assertEqual(archive.read('table.csv'), (folder / 'table.csv').read_bytes())
         (folder / 'table.csv').unlink()
         with self.assertRaises(runtime.InputError):
             analysis.verify_results(folder)
