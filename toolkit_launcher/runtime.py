@@ -488,6 +488,8 @@ class Workspace:
                     env = {k: v for k, v in os.environ.items() if not k.startswith(('TRACKER_', 'TOOLKIT_')) and k not in {'RENDER_EXTERNAL_URL', 'PORT'}}
                     env.update(command.get('env', {}))
                     env['PYTHONUNBUFFERED'] = '1'
+                    env['PYTHONIOENCODING'] = 'utf-8'
+                    env['PYTHONUTF8'] = '1'
                     process = spawn_owned_process(command['argv'], command['cwd'], env, log)
                     process._toolkit_stop_lock = threading.Lock()
                     process._toolkit_stopped = False

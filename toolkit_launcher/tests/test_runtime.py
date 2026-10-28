@@ -104,6 +104,15 @@ while True:
         time.sleep(.1)
         self.assertFalse(marker.exists())
 
+    def test_job_logs_use_utf8_even_with_a_competing_console_encoding(self):
+        message = "QC \u2713 \u2013 \u0394"
+        plan = self.plan("print(" + repr(message) + ")")
+        with patch.dict(os.environ, {'PYTHONIOENCODING': 'ascii', 'PYTHONUTF8': '0'}), patch.object(jobs, 'build_plan', return_value=plan):
+            record = self.workspace.start(self.ident, 'sandbox.run', {})
+            done = wait_for_job(self.workspace, record['id'])
+        self.assertEqual(done['status'], 'succeeded', done['log'])
+        self.assertIn(message, done['log'])
+
     def test_cleanup_failure_is_persisted_instead_of_leaving_job_running(self):
         plan = self.plan("print('command finished')")
         with patch.object(jobs, 'build_plan', return_value=plan), patch.object(runtime.Workspace, '_terminate', side_effect=runtime.InputError('cleanup fixture')):
