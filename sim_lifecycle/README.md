@@ -1,6 +1,6 @@
 # PK, NCA and bioequivalence sandbox (synthetic)
 
-Use the [point-and-click toolkit setup](../TOOLKIT_SETUP.html) to create a private project and run the synthetic sandbox; its generated CSVs and log stay in that project. Open the R source in your editor to adapt the simulation or analysis.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to create a private project and run the synthetic sandbox; its generated CSVs and log stay in that project. Open the R source in your editor to adapt the simulation or analysis.
 
 One synthetic early-phase clinical pharmacology study, taken through the analysis steps:
 **synthetic ADaM, PK and NCA, then summary computations.** Base R, seeded, runs offline.

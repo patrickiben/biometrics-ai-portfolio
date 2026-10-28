@@ -1,6 +1,6 @@
 # The Trial‑Management Validation Harness
 
-Use the [point-and-click toolkit setup](../TOOLKIT_SETUP.html) to run the portable QC harness or seeded-defect check in a private project. Their evidence stays in that project; manual review and sign-off remain explicit gates.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to run the portable QC harness or seeded-defect check in a private project. Their evidence stays in that project; manual review and sign-off remain explicit gates.
 
 *A reusable, field‑general procedure for being confident in a clinical‑biometrics deliverable
 (an analysis dataset, a table/listing/figure, a monitoring output) before it is used to inform a

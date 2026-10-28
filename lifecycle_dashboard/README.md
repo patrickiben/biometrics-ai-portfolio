@@ -1,6 +1,6 @@
 # Study Lifecycle Monitor
 
-Use the [point-and-click toolkit setup](../TOOLKIT_SETUP.html) to create a private project, upload the documented portfolio CSVs and launch the lifecycle app. What-if sliders do not write back to those input files.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to create a private project, upload the documented portfolio CSVs and launch the lifecycle app. What-if sliders do not write back to those input files.
 
 A self-contained, offline dashboard for **biostatisticians to monitor study lifecycles**,
 protocol → CSR, at the *operational* level. Open [`Study_Lifecycle_Monitor.html`](Study_Lifecycle_Monitor.html)

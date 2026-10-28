@@ -1,6 +1,6 @@
 # Open Study Tracker
 
-Use the [whole-toolkit control panel setup](../TOOLKIT_SETUP.html) to open this tracker from a private project. The tracker’s [own guided setup](SETUP.html) manages shared accounts and optional email; browser-only work needs JSON/CSV exports. The shared database and settings live outside the toolkit workspace ZIP; preserve them through the tracker’s separate backup controls.
+Use the [whole-toolkit control panel setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to open this tracker from a private project. The tracker’s [own guided setup](SETUP.html) manages shared accounts and optional email; browser-only work needs JSON/CSV exports. The shared database and settings live outside the toolkit workspace ZIP; preserve them through the tracker’s separate backup controls.
 
 An MIT-licensed tracker for study deliverables, owners, deadlines, and operational exceptions. The offline workflow needs only **Python 3.10+ and its standard library**, with no account, API token, cloud service, or package installation. R and SAS jobs can produce the same plain CSV input. Optional shared mode adds individual logins, viewer/editor permissions, conflict detection, and automatic email alerts through your SMTP server.
 

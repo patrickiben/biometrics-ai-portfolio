@@ -1,6 +1,6 @@
 # Early-Phase Clinical Pharmacology: R TLF Pseudocode Library
 
-Use the [point-and-click toolkit setup](../TOOLKIT_SETUP.html) to create a private project containing both R and SAS libraries, prepare settings, parse the R templates and open the selected design in your R editor. Parsing checks syntax; it does not execute a study analysis.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to create a private project containing both R and SAS libraries, prepare settings, parse the R templates and open the selected design in your R editor. Parsing checks syntax; it does not execute a study analysis.
 
 R twin of `../sas_tlf_pseudocode/`. ADaM-based R **pseudocode** for every Table, Listing, and
 Figure (TLF) in an early-phase clin-pharm study, with a **complete separate set per study design**.

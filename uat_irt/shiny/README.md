@@ -1,6 +1,6 @@
 # IRT / RTSM UAT Tracker - Shiny app
 
-For a graphical start, follow the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html), create a private project, then choose the UAT card to check packages, upload the listed inputs and start the app. Save supported app downloads before closing; the terminal instructions below are an optional interface.
+For a graphical start, follow the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html), create a private project, then choose the UAT card to check packages, upload the listed inputs and start the app. Save supported app downloads before closing; the terminal instructions below are an optional interface.
 
 A runnable, editable version of the UAT execution & sign-off tracker. Select a test, record its
 result, close a defect once its test passes a retest, add a draft test for the untraced
