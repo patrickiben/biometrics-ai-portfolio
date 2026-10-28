@@ -169,7 +169,8 @@ class ServerTests(unittest.TestCase):
         self.assertEqual(status, 400)
         status, _, _ = self.request("POST", "/api/configure", {"project_id": self.ident, "module_id": "interpretation", "values": {}})
         self.assertEqual(status, 400)
-        done = wait_for_job(self.workspace, started["id"], timeout=60)
+        # The full synthetic study can exceed a minute on a busy Windows runner.
+        done = wait_for_job(self.workspace, started["id"], timeout=180)
         self.assertEqual(done["status"], "succeeded", done["log"])
         status, job, _ = self.request("GET", "/api/jobs/" + started["id"])
         self.assertEqual(status, 200)

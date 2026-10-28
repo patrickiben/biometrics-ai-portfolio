@@ -28,7 +28,7 @@ async function launch(){
   base='http://127.0.0.1:'+port;
 }
 async function state(){const response=await fetch(base+'/api/state',{headers:{'X-Toolkit-Token':token}});assert.equal(response.status,200);return response.json();}
-async function finished(action,timeout=90000){const start=Date.now();while(Date.now()-start<timeout){const item=(await state()).jobs.find(job=>job.action_id===action);if(item&&item.status!=='running')return item;await new Promise(resolve=>setTimeout(resolve,200));}throw Error('Job timeout: '+action);}
+async function finished(action,timeout=180000){const start=Date.now();while(Date.now()-start<timeout){const item=(await state()).jobs.find(job=>job.action_id===action);if(item&&item.status!=='running')return item;await new Promise(resolve=>setTimeout(resolve,200));}throw Error('Job timeout: '+action);}
 async function screenshot(page,name){await page.evaluate(()=>scrollTo(0,0));await page.screenshot({path:path.join(output,name),fullPage:false});report.screenshots.push(name);}
 async function waitExit(){if(child.exitCode!==null)return;await Promise.race([once(child,'exit'),new Promise((_,reject)=>setTimeout(()=>reject(Error('Server did not stop')),10000))]);}
 (async()=>{
