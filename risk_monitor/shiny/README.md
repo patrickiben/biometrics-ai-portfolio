@@ -6,12 +6,33 @@ signal and change its level to watch the tier and overall risk move - the roll-u
 is transparent. The console flags and drafts; the SRC, the DSMB and the medical monitor
 decide. Synthetic, no PHI, no participant records.
 
-## Run it
+## Run it locally for evaluation
 
-```r
-install.packages(c("shiny", "bslib", "DT"))   # once
-shiny::runApp("risk_monitor/shiny")
+Install R 4.1 or later and keep the complete repository checkout. In a terminal at
+the repository root, run:
+
+```sh
+Rscript launch_app.R risk --install   # first run: install missing packages in a user library
+Rscript launch_app.R risk             # later runs: no package downloads
 ```
+
+The launcher opens your browser and binds Shiny to `127.0.0.1`. Stop it with
+Ctrl+C. `Rscript launch_app.R --check risk` checks packages without starting a
+server. Packages go into an R-version-specific user cache; set
+`BIOMETRICS_R_LIB` to choose a separate user library. System/site libraries are
+never installation targets. This evaluation environment reports package versions;
+it is not a frozen study environment.
+
+From another working directory, pass the quoted absolute path to the launcher,
+for example `Rscript "/path/to/biometrics-ai-portfolio/launch_app.R" risk`.
+In an R console that is already inside this app folder, use `shiny::runApp()`
+after checking dependencies with the launcher.
+
+Interactive changes are local to the running app session. Keep separate input
+copies for each client/study and save the supported downloads before closing;
+this example does not provide a shared, persistent study database. The risk
+sliders are what-ifs only: they do not write back to `data/signals.csv`, and this
+app has no session export.
 
 ## What's here
 

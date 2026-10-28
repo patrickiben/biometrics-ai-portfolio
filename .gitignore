@@ -3,6 +3,23 @@
 node_modules/
 __pycache__/
 
+# Local workspaces, account databases and notification/configuration state.
+# Apply at repository root too: optional tools can be launched from any folder.
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.db
+*.db-*
+*.eml
+.env
+.env.*
+!.env.example
+*.env
+*.env.*
+!*.env.example
+.venv/
+
 # Quarto build cache / render artifacts
 **/.quarto/
 **/*_files/

@@ -204,7 +204,7 @@ class SharedTrackerTests(unittest.TestCase):
 
     def test_secure_cookie_is_default_and_short_secret_is_rejected(self):
         with patch.dict("os.environ", {}, clear=True):
-            secure_app = server.create_app(dict(DATABASE=self.db, SECRET_KEY="a" * 40, TESTING=True))
+            secure_app = server.create_app(dict(DATABASE=self.db, SECRET_KEY="a" * 40, TRUSTED_HOSTS=["tracker.example"], TESTING=True))
         response = secure_app.test_client().get("/api/session", base_url="https://tracker.example")
         self.assertIn("Secure", response.headers["Set-Cookie"])
         self.assertIn("Strict-Transport-Security", response.headers)
@@ -229,6 +229,145 @@ class SharedTrackerTests(unittest.TestCase):
     def test_insecure_nonloopback_cli_bind_is_rejected(self):
         with patch.dict("os.environ", {"TRACKER_INSECURE_LOCAL": "1"}):
             self.assertEqual(server.main(["--db", self.db, "serve", "--host", "0.0.0.0"]), 1)
+
+    def test_revocation_during_write_cannot_commit(self):
+        original = tracker.upsert
+        for index, command in enumerate(("disable-user", "set-role", "set-password")):
+            username = f"race{index}"
+            server.manage_user(self.db, "add-user", username, self.PASSWORD, "editor")
+            self.assertEqual(self.login(username).status_code, 200)
+
+            def revoke_then_write(*args, **kwargs):
+                server.manage_user(self.db, command, username,
+                                   "changed-password-9876" if command == "set-password" else None,
+                                   "viewer" if command == "set-role" else "editor")
+                return original(*args, **kwargs)
+
+            with self.subTest(command=command), patch.object(tracker, "upsert", side_effect=revoke_then_write):
+                response = self.save(dict(self.ROW, task_id=f"RACE-{index}"))
+            self.assertEqual(response.status_code, 401)
+        self.assertEqual(tracker.snapshot(self.db)["rows"], [])
+
+    def test_revocation_during_snapshot_cannot_expose_rows(self):
+        tracker.upsert(self.db, [dict(self.ROW, title="Private operational title")], "test")
+        self.login()
+        original = tracker.snapshot
+
+        def revoke_then_read(*args, **kwargs):
+            server.manage_user(self.db, "disable-user", "editor")
+            return original(*args, **kwargs)
+
+        with patch.object(tracker, "snapshot", side_effect=revoke_then_read):
+            response = self.client.get("/api/snapshot")
+        self.assertEqual(response.status_code, 401)
+        self.assertNotIn("Private operational title", response.get_data(as_text=True))
+
+    def test_web_json_rejects_duplicate_properties_and_nonfinite_constants(self):
+        token = self.csrf()
+        for raw in (
+            '{"username":"unknown","username":"editor","password":"' + self.PASSWORD + '"}',
+            '{"username":NaN,"password":"x"}',
+            '{"username":"editor","password":Infinity}',
+        ):
+            with self.subTest(raw=raw):
+                response = self.client.post("/api/login", data=raw, content_type="application/json", headers={"X-CSRF-Token": self.csrf()})
+                self.assertEqual(response.status_code, 400)
+        self.login()
+        raw = json.dumps(dict(row=self.ROW, expected_updated_at=None)).replace('"progress": 20', '"progress": 20, "progress": 90')
+        response = self.client.post("/api/tasks", data=raw, content_type="application/json", headers={"X-CSRF-Token": self.csrf()})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(tracker.snapshot(self.db)["rows"], [])
+
+    def test_malformed_deep_large_and_nonjson_bodies_fail_without_writes(self):
+        self.login()
+        headers = {"X-CSRF-Token": self.csrf()}
+        for raw in ('{', '[' * 1500 + '0' + ']' * 1500, '\xff'):
+            with self.subTest(raw=raw[:20]):
+                response = self.client.post("/api/tasks", data=raw.encode("latin-1"), content_type="application/json", headers=headers)
+                self.assertEqual(response.status_code, 400)
+        response = self.client.post("/api/tasks", data="x" * 70000, content_type="application/json", headers=headers)
+        self.assertEqual(response.status_code, 413)
+        response = self.client.post("/api/tasks", data="{}", content_type="text/plain", headers=headers)
+        self.assertEqual(response.status_code, 415)
+        self.assertEqual(tracker.snapshot(self.db)["rows"], [])
+
+    def test_arbitrary_host_and_nonloopback_insecure_peer_are_rejected(self):
+        self.assertEqual(self.client.get("/api/session", headers={"Host": "attacker.example"}).status_code, 400)
+        response = self.client.get("/api/session", environ_overrides={"REMOTE_ADDR": "203.0.113.7"})
+        self.assertEqual(response.status_code, 403)
+        response = self.client.get("/api/session", environ_overrides={"REMOTE_ADDR": "203.0.113.7"},
+                                   headers={"X-Forwarded-For": "127.0.0.1", "Forwarded": "for=127.0.0.1;host=localhost"})
+        self.assertEqual(response.status_code, 403)
+
+    def test_cross_origin_unsafe_requests_rejected_even_with_valid_token(self):
+        token = self.csrf()
+        for origin in ("https://attacker.example", "null", "http://localhost.attacker.example", "http://localhost:8001"):
+            with self.subTest(origin=origin):
+                response = self.client.post("/api/login", json=dict(username="editor", password=self.PASSWORD),
+                                             headers={"X-CSRF-Token": self.csrf(), "Origin": origin})
+                self.assertEqual(response.status_code, 403)
+        response = self.client.post("/api/login", json=dict(username="editor", password=self.PASSWORD),
+                                     headers={"X-CSRF-Token": self.csrf(), "Origin": "http://localhost"})
+        self.assertEqual(response.status_code, 200)
+
+    def test_untrusted_forwarded_headers_do_not_bypass_login_throttle(self):
+        token = self.csrf()
+        for index in range(6):
+            response = self.client.post("/api/login", json=dict(username="editor", password="wrong-password"),
+                headers={"X-CSRF-Token": token, "X-Forwarded-For": f"198.51.100.{index + 1}", "X-Real-IP": f"198.51.100.{index + 1}"})
+            self.assertEqual(response.status_code, 401 if index < 5 else 429)
+
+    def test_tampered_cookie_and_anonymous_file_routes_expose_nothing(self):
+        self.login()
+        cookie = self.client.get_cookie("open_tracker_session").value
+        self.client.set_cookie("open_tracker_session", cookie + "tampered")
+        self.assertEqual(self.client.get("/api/snapshot").status_code, 401)
+        for path in ("/tracker.sqlite", "/.env", "/api/users", "/api/export", "/../server.py", "/open_tracker/server.py"):
+            with self.subTest(path=path):
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 404)
+                self.assertNotIn("password_hash", response.get_data(as_text=True))
+
+    def test_role_is_rechecked_under_write_lock_even_without_session_revocation(self):
+        self.login()
+        original = tracker.upsert
+
+        def downgrade_then_write(*args, **kwargs):
+            with closing(sqlite3.connect(self.db)) as db, db:
+                db.execute("UPDATE users SET role='viewer' WHERE username='editor'")
+            return original(*args, **kwargs)
+
+        with patch.object(tracker, "upsert", side_effect=downgrade_then_write):
+            self.assertEqual(self.save().status_code, 403)
+        self.assertEqual(tracker.snapshot(self.db)["rows"], [])
+
+    def test_https_origin_works_through_proxy_without_trusting_forwarded_headers(self):
+        app = server.create_app(dict(DATABASE=self.db, SECRET_KEY="proxy-test-" + "z" * 40,
+                                     COOKIE_SECURE=True, TRUSTED_HOSTS=["tracker.example"], TESTING=True))
+        client = app.test_client()
+        token = client.get("/api/session", base_url="https://tracker.example").json["csrf_token"]
+        # The proxy preserves Host and terminates TLS; its upstream WSGI scheme
+        # may be HTTP. The application derives the expected origin from its
+        # secure-cookie setting rather than untrusted X-Forwarded-* values.
+        response = client.post("/api/login", base_url="https://tracker.example",
+            environ_overrides={"wsgi.url_scheme": "http"},
+            json=dict(username="editor", password=self.PASSWORD),
+            headers={"X-CSRF-Token": token, "Origin": "https://tracker.example:443", "X-Forwarded-Host": "attacker.example"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("Secure", response.headers["Set-Cookie"])
+
+    def test_ipv6_loopback_and_invalid_host_configuration(self):
+        response = self.client.get("/api/session", base_url="http://[::1]:8080", environ_overrides={"REMOTE_ADDR": "::1"})
+        self.assertEqual(response.status_code, 200)
+        for hosts in ([], [".example.com"], ["https://example.com"], ["example.com/path"]):
+            with self.subTest(hosts=hosts), self.assertRaises(tracker.TrackerError):
+                server.create_app(dict(DATABASE=self.db, SECRET_KEY="test-" + "z" * 40, TRUSTED_HOSTS=hosts))
+
+    def test_invalid_unicode_cli_password_fails_without_account(self):
+        with self.assertRaises(tracker.TrackerError):
+            server.manage_user(self.db, "add-user", "invalid", "a" * 20 + "\ud800")
+        with closing(sqlite3.connect(self.db)) as db:
+            self.assertIsNone(db.execute("SELECT username FROM users WHERE username='invalid'").fetchone())
 
 
 if __name__ == "__main__":

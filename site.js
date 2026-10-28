@@ -1,26 +1,7 @@
-/* Mission-control live touches for the Trial biostatistics toolkit site: a UTC mission clock,
-   an "all sectors nominal" status readout in the command bar, and sector codes on the
-   home-page modules. Pure enhancement — the pages read fine without it. */
+/* Decorative sector codes for the toolkit home page. No operational status is implied. */
 (function () {
   "use strict";
-  var top = document.querySelector(".top");
-  if (top && !top.querySelector(".mc-status")) {
-    var status = document.createElement("span");
-    status.className = "mc-status";
-    status.innerHTML = '<span class="dot"></span> All sectors nominal';
-    var clock = document.createElement("span");
-    clock.className = "mc-clock";
-    top.appendChild(status);
-    top.appendChild(clock);
-    var pad = function (n) { return String(n).padStart(2, "0"); };
-    var tick = function () {
-      var d = new Date();
-      clock.textContent = pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + ":" + pad(d.getUTCSeconds()) + " UTC";
-    };
-    tick();
-    setInterval(tick, 1000);
-  }
-  // sector codes + ONLINE status on the home-page section modules
+  // Sector codes on the home-page section modules.
   var codes = { ops: "OPS-01", bio: "BIO-02", mgmt: "MGT-03" };
   document.querySelectorAll(".sec").forEach(function (sec) {
     var cls = sec.classList.contains("ops") ? "ops"
@@ -30,7 +11,7 @@
     if (cls && k && !k.querySelector(".code")) {
       var code = document.createElement("span");
       code.className = "code";
-      code.textContent = codes[cls] + " · ONLINE";
+      code.textContent = codes[cls];
       k.appendChild(code);
     }
   });

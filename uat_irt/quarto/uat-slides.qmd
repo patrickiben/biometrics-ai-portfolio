@@ -5,6 +5,7 @@ format:
   revealjs:
     theme: dark
     embed-resources: true
+    html-math-method: plain
     slide-number: true
     smaller: true
     transition: fade
@@ -37,7 +38,7 @@ You confirm, in a test environment, that the vendor's randomization and drug-sup
 flowchart LR
   URS["URS + specs"] --> TC["Test cases"] --> EX["Execute in<br/>staging IRT"]
   EX --> DEF["Defects"] --> EX
-  EX --> TR["Traceability"] --> GATE{{"Go-live gate"}} --> PROD["Production"]
+  EX --> TR["Traceability"] --> GATE{{"Readiness screen"}} --> REVIEW["Evidence review<br/>+ named approval"] --> PROD["Production"]
 ```
 
 Operations-only, synthetic, no PHI.
@@ -51,7 +52,7 @@ Operations-only, synthetic, no PHI.
 
 The workbook does not connect to the IRT. You transcribe on purpose, so the record is attributable and stands alone for an auditor.
 
-## The live gate, computed now {.scrollable}
+## Readiness snapshot, computed when built {.scrollable}
 
 ```{r results='asis'}
 tick <- function(ok, txt) sprintf('<div style="margin:6px 0;font-size:24px"><span style="color:%s;font-weight:700">%s</span> %s</div>',
@@ -59,13 +60,13 @@ tick <- function(ok, txt) sprintf('<div style="margin:6px 0;font-size:24px"><spa
 bg <- if (g$go) "#1e3a28" else "#3a1e24"; bd <- if (g$go) "#43c47d" else "#e8657a"
 cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:12px;padding:18px 22px;max-width:820px">', bg, bd))
 cat(sprintf('<div style="font-size:30px;font-weight:700;margin-bottom:8px;color:#e9edf7">%s</div>', g$verdict))
-cat(tick(g$crit_fail == 0, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
-cat(tick(g$open_cm == 0,  sprintf("<b>%d</b> open critical/major defect(s)", g$open_cm)))
-cat(tick(g$trace_gap == 0, sprintf("<b>%d</b> requirement(s) without a test", g$trace_gap)))
+cat(tick(g$tests_ok, sprintf("<b>%d</b> critical tests not passing", g$crit_fail)))
+cat(tick(g$defects_ok, sprintf("<b>%d</b> open critical/major; <b>%d</b> unretested closed; <b>%d</b> untracked failures", g$open_cm, g$unretested, g$untracked)))
+cat(tick(g$trace_ok, sprintf("<b>%d</b> invalid/missing coverage; <b>%d</b> unfinished tests", g$trace_gap, g$not_run)))
 cat('</div>')
 ```
 
-**Conjunctive:** all critical pass **AND** 0 open critical/major defects **AND** 100% traceability.
+**All groups must clear:** critical tests pass; defect and linked-retest checks clear; valid test references and completed execution. Evidence, coverage completeness, and signed approval still require human review. The workbook has separate automatic and manual checks.
 
 ## Snapshot
 
@@ -127,12 +128,11 @@ One open Critical or Major defect holds the gate. That is the whole point: sever
 
 The interactive tool is a real R Shiny app you own:
 
-```r
-shiny::runApp("uat_irt/shiny")
-# needs: install.packages(c("shiny","bslib","DT","ggplot2"))
+```bash
+Rscript launch_app.R uat --install
 ```
 
-Mark a test Pass/Fail, close a defect, and the KPIs and go-live gate recompute live. The gate math lives in `shiny/R/logic.R`, shared by the app, these slides, and the unit tests. Change the CSV to your study's tests and it is your tracker.
+Mark tests, retest fixes, and update traceability to recompute the screen. R logic is shared by the app, these slides, and tests. Adapt and validate all three input files before reuse. CSV export contains tests only: preserve defects, traceability, evidence, and approvals separately.
 
 ## Pick your mode {.scrollable}
 

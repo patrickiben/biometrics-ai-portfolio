@@ -94,9 +94,9 @@ flowchart LR
 The workbook does not connect to the IRT. You **transcribe** results into it, on purpose, so the record is attributable and stands on its own for an auditor. Every number comes from the validated systems (the IRT, the test list, your reconciliation), never from an assistant.
 :::
 
-## The live tracker, computed from the data {#live}
+## Readiness snapshot, computed when this page is built {#live}
 
-This is the same logic the Shiny app and the Excel gate use, rendered here from the three data files: [`test_scripts.csv`](../templates/test_scripts.csv), [`defect_log.csv`](../templates/defect_log.csv), and [`traceability_matrix.csv`](../templates/traceability_matrix.csv) (in the [`templates/`](../templates/) folder). Edit those CSVs (or run the app) and these move.
+This static snapshot uses the Shiny app's R logic and three synthetic data files: [`test_scripts.csv`](../templates/test_scripts.csv), [`defect_log.csv`](../templates/defect_log.csv), and [`traceability_matrix.csv`](../templates/traceability_matrix.csv). Rebuild this page to refresh it, or run the app for interactive changes. The Excel workbook has separate automatic checks and manual review fields; its result is not a claim of implementation parity or go-live approval.
 
 ```{r kpis, results='asis'}
 box <- function(label, value, col) sprintf(
@@ -121,13 +121,13 @@ tick <- function(ok, txt) sprintf('<div style="margin:6px 0;font-size:15px;color
 bg <- if (g$go) "var(--green-soft)" else "var(--red-soft)"; bd <- if (g$go) "var(--green)" else "var(--red)"
 cat(sprintf('<div style="background:%s;border:1px solid %s;border-radius:12px;padding:16px 18px;max-width:660px">', bg, bd))
 cat(sprintf('<div style="font-size:22px;font-weight:700;margin-bottom:8px;color:var(--ink)">%s</div>', g$verdict))
-cat(tick(g$crit_fail == 0, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
-cat(tick(g$open_cm == 0,  sprintf("<b>%d</b> open critical/major defect(s)", g$open_cm)))
-cat(tick(g$trace_gap == 0, sprintf("<b>%d</b> requirement(s) without a test", g$trace_gap)))
+cat(tick(g$tests_ok, sprintf("<b>%d</b> critical test(s) not yet passing", g$crit_fail)))
+cat(tick(g$defects_ok, sprintf("<b>%d</b> open critical/major defects; <b>%d</b> closed defects without a passing linked retest; <b>%d</b> failures without a tracked defect", g$open_cm, g$unretested, g$untracked)))
+cat(tick(g$trace_ok, sprintf("<b>%d</b> requirements without valid test references; <b>%d</b> tests unfinished", g$trace_gap, g$not_run)))
 cat('<div style="font-size:12px;color:var(--muted);margin-top:10px">The gate packages the evidence; a named human signs. It does not grant approval.</div></div>')
 ```
 
-The gate is deliberately **conjunctive**: all three conditions must hold. In the seed data it reads *blocked* because a critical test is still failing, two critical/major defects are open, and one requirement has no test yet. Fix those in the app and watch it flip.
+All three groups must clear: critical tests pass; defect checks clear (including linked retests and tracked failures); and valid requirement coverage plus completed test execution. The seed data is blocked. Update the underlying tests, defects, and traceability in the app to see each blocker. A clear screen still needs evidence review, study-specific coverage assessment, and named approval; a minor defect may require a documented waiver.
 
 ### Execution by area
 
@@ -155,15 +155,14 @@ kable(od, col.names = c("Defect","Severity","In test","Description"), row.names 
 
 The interactive tool is a real R Shiny app you own. From the package root:
 
-```r
-install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
-shiny::runApp("uat_irt/shiny")
+```bash
+Rscript launch_app.R uat --install
 ```
 
-Select a test, mark it Pass/Fail, close a defect, and the KPIs and the go-live gate recompute live. Download your results to CSV to drop into the Excel workbook and the eTMF.
+Select a test, mark it Pass/Fail, close a defect after retest, and the KPIs and readiness screen recompute. The CSV download contains the test table only; preserve the defect log, traceability matrix, evidence, and approvals separately. The app does not produce a complete signed eTMF package.
 
 ::: {.callout-tip appearance="simple"}
-**You want to build these yourself.** `shiny/R/logic.R` holds the gate and KPI math (the functions this page also called), and `shiny/app.R` is the UI and reactivity. The [build-it walkthrough](uat-build.html) takes you through the complete source, line by line. Change the CSV to your study's tests and it is your tracker.
+**You want to build these yourself.** `shiny/R/logic.R` holds the gate and KPI math, and `shiny/app.R` is the UI and reactivity. The [build-it walkthrough](uat-build.html) walks through the source. Adapt and check all three input files, agree the study's coverage and evidence requirements, and test the result before operational use.
 :::
 
 ## How to write a test that is actually executable

@@ -2,6 +2,8 @@
 
 Open Study Tracker has an optional self-hosted server for people who need a shared tracker. Everyone signs in with an individual account and reads the same local SQLite database. An independent email worker observes recorded changes and delivers queued notifications through your SMTP service. The server and worker are open source under the repository's MIT license.
 
+**Scope:** these are reusable setup instructions for consultants and employees, not a service configured for a specific client. Shared access needs hosting; live email needs SMTP configuration. Both are optional. Local sign-in and email previews let you evaluate the features before choosing any deployment.
+
 The GitHub Pages demo remains an offline workspace. GitHub Pages cannot host the Python server, user accounts, or email worker. Run these on a machine you control; keep the database and environment file outside the published repository.
 
 ## Start a local shared workspace
@@ -31,7 +33,7 @@ Open `http://127.0.0.1:8080` and sign in. Start with an empty shared workspace o
 python3 open_tracker/tracker.py --db open_tracker/out/shared.sqlite upsert --csv open_tracker/examples/status.csv --actor synthetic-demo
 ```
 
-Use **Refresh** in the shared workspace after a scheduled import or another user's edit. Shared mode saves directly to SQLite, does not write drafts to browser storage, and records the authenticated username. Stale saves return a conflict instead of overwriting newer work; preserve your edits, refresh, and compare the current row before trying again. A manual edit does not refresh the scheduled-import heartbeat.
+Use **Refresh** in the shared workspace after a scheduled import or another user's edit. Shared mode saves directly to SQLite, does not store task data in localStorage (only the light/dark preference may be stored there), and records the authenticated username. Stale saves return a conflict instead of overwriting newer work; preserve your edits, refresh, and compare the current row before trying again. A manual edit does not refresh the scheduled-import heartbeat.
 
 ## Accounts and permissions
 
@@ -84,13 +86,13 @@ python3 open_tracker/notifications.py --db /absolute/path/to/shared.sqlite --int
 
 The loop checks for changes every 60 seconds. Alternatively, schedule `--once` with cron or Task Scheduler. Run only one worker per database in normal operation; database leases protect against overlapping workers.
 
-Alerts are queued when a task enters **At risk** or **Blocked**. Re-running an unchanged import or editing a note while the status stays the same does not enqueue another status alert. If several transitions happen between worker polls, only the latest still-current status is considered. Resolved/superseded pending alerts are canceled. Daily digests cover unfinished overdue tasks and stale scheduled imports; a changed exception set can trigger an updated digest within the same UTC day. Use `--stale-hours 0` to disable stale-import alerts for a workspace maintained entirely by people; overdue alerts remain enabled. The default stale threshold is 24 hours. An empty workspace does not produce a stale-data email.
+Alerts are queued when a task enters **At risk** or **Blocked**. Re-running an unchanged import or editing a note while the status stays the same does not enqueue another status alert. If several transitions happen between worker polls, only the latest still-current status is considered. Resolved/superseded pending alerts are canceled. A send already in flight cannot be recalled. If an identical digest was already sent that UTC day, disappearance and recurrence of that same exception set does not send it again that day. Daily digests cover unfinished overdue tasks and stale scheduled imports; a changed exception set can trigger an updated digest within the same UTC day. Use `--stale-hours 0` to disable stale-import alerts for a workspace maintained entirely by people; overdue alerts remain enabled. The default stale threshold is 24 hours. An empty workspace does not produce a stale-data email.
 
 The outbox records a separate delivery for each recipient. Failures remain queued with exponential retry delays. Delivery is **at least once**: a crash after SMTP accepts a message but before the database marks it sent can result in a duplicate on retry. A stable Message-ID helps mail clients recognize it. Successful SMTP acceptance does not prove inbox receipt. Previewed messages remain eligible for later real delivery when sending is enabled. Removed recipients' pending messages are canceled; adding a recipient affects subsequent transitions and current digests, without replaying already-consumed status transitions. Restart a running worker after changing its environment.
 
 ## Host for a team
 
-Run the web service with Waitress behind an HTTPS reverse proxy. Leave it bound to `127.0.0.1`; expose only the proxy. Unset `TRACKER_INSECURE_LOCAL` for team access so cookies require HTTPS. Store a stable, random `TRACKER_SECRET_KEY` of at least 32 characters in the service environment. Restarting with a different signing key logs users out. The application does not trust forwarded headers or add permissive cross-origin access.
+Run the web service with Waitress behind an HTTPS reverse proxy. Leave it bound to `127.0.0.1`; expose only the proxy. Unset `TRACKER_INSECURE_LOCAL` for team access so cookies require HTTPS. Store a stable, random `TRACKER_SECRET_KEY` of at least 32 characters in the service environment. Restarting with a different signing key logs users out. Set `TRACKER_ALLOWED_HOSTS` to your public hostname (for example `tracker.example.org`); the default allows only `localhost`, `127.0.0.1` and `[::1]`. The application rejects other Host headers, does not trust forwarded headers, and does not add permissive cross-origin access. A reverse proxy must preserve the intended Host header. Rate limiting sees the proxy address, so proxied users share its IP limit; configure edge limits for the expected team size. Local HTTP mode additionally requires a loopback peer and host.
 
 The server uses CSRF tokens for mutations, HttpOnly/SameSite cookies, expiring server-side sessions, and role checks on each request. The web routes expose neither SQLite files nor account records. Downloads contain task data and history; an authorized viewer can share them outside the server.
 

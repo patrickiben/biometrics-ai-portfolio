@@ -130,3 +130,13 @@ footer b{color:var(--mut);letter-spacing:.06em;text-transform:uppercase;font-siz
 .heads{font-size:12.5px;color:var(--mut);margin:8px 0 0}.heads b{color:var(--gold)}
 
 @media(max-width:860px){.sections,.grid,.pkgs,.qprow{grid-template-columns:1fr}}
+
+/* Responsive content, including app launch stubs. */
+.top{flex-wrap:wrap}.top>*{min-width:0}.top b{overflow-wrap:anywhere}
+img,video,canvas{max-width:100%;height:auto}pre{max-width:100%;overflow:auto}code{overflow-wrap:anywhere}
+.grid>*,.sections>*,.pkgs>*,.qprow>*{min-width:0}
+@media(max-width:700px){.top{gap:8px;padding:9px 12px}.top .nav{margin-left:0}.wrap{padding-left:14px;padding-right:14px}table{display:block;max-width:100%;overflow-x:auto}}
+
+/* Keep each status badge together when a card heading wraps. */
+.card h3 .pill{display:inline-block;white-space:nowrap}
+@media(max-width:700px){.card h3 .pill{display:block;width:max-content;max-width:100%;margin:6px 0 4px}}

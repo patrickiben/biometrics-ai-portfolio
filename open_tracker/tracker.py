@@ -12,7 +12,7 @@ import re
 import sqlite3
 import sys
 import tempfile
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 FIELDS = ("task_id", "title", "status", "owner", "due", "progress", "notes")
 STATUSES = ("Not started", "In progress", "At risk", "Blocked", "Done")
@@ -45,9 +45,11 @@ def unique_object(pairs):
 
 def read_input(path, kind):
     path = Path(path)
-    if path.stat().st_size > MAX_BYTES:
+    with path.open("rb") as stream:
+        raw = stream.read(MAX_BYTES + 1)
+    if len(raw) > MAX_BYTES:
         raise TrackerError("Input exceeds 5 MiB.")
-    text = path.read_text(encoding="utf-8-sig")
+    text = raw.decode("utf-8-sig")
     if kind == "csv":
         reader = csv.reader(io.StringIO(text, newline=""), strict=True)
         headers = next(reader, [])
@@ -66,8 +68,13 @@ def read_input(path, kind):
                     raise TrackerError(f"CSV row {number}: progress must be an integer from 0 to 100.")
                 row["progress"] = int(row["progress"])
             rows.append(row)
+            if len(rows) > MAX_ROWS:
+                raise TrackerError("An import must contain 1 to 10000 rows.")
     else:
-        document = json.loads(text, object_pairs_hook=unique_object)
+        try:
+            document = json.loads(text, object_pairs_hook=unique_object)
+        except RecursionError as error:
+            raise TrackerError("JSON nesting is too deep.") from error
         if not isinstance(document, dict) or type(document.get("schema_version")) is not int or document["schema_version"] != 1:
             raise TrackerError("JSON requires schema_version: 1 and a rows array.")
         if set(document) - {"schema_version", "rows", "exported_at", "last_import_at", "events"}:
@@ -152,8 +159,9 @@ def create_schema(db):
     db.execute("PRAGMA user_version=1")
 
 
-def upsert(path, patches, actor, dry_run=False, expected_versions=None, refresh_heartbeat=True):
-    if not actor.strip() or len(actor) > 120 or any(ord(c) < 32 for c in actor):
+def upsert(path, patches, actor, dry_run=False, expected_versions=None, refresh_heartbeat=True,
+           transaction_guard=None):
+    if not isinstance(actor, str) or not actor.strip() or len(actor) > 120 or any(ord(c) < 32 or 0xD800 <= ord(c) <= 0xDFFF for c in actor):
         raise TrackerError("actor must be nonblank text of at most 120 characters without control codes.")
     path = Path(path)
     new = not path.exists()
@@ -180,6 +188,8 @@ def upsert(path, patches, actor, dry_run=False, expected_versions=None, refresh_
             create_schema(db)
         else:
             check_schema(db)
+        if transaction_guard is not None:
+            transaction_guard(db)
         counts = dict(created=0, updated=0, unchanged=0, dry_run=dry_run)
         timestamp = now()
         for patch in patches:
@@ -203,15 +213,25 @@ def upsert(path, patches, actor, dry_run=False, expected_versions=None, refresh_
             if not changes:
                 counts["unchanged"] += 1
                 continue
+            row_timestamp = timestamp
+            if old:
+                # Row versions must advance even if the system clock repeats or
+                # moves backward. Otherwise a stale browser edit could be accepted.
+                previous = datetime.fromisoformat(old["updated_at"].replace("Z", "+00:00"))
+                current = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                if previous.tzinfo is None:
+                    raise TrackerError("Stored row version lacks a timezone.")
+                if current <= previous:
+                    row_timestamp = (previous + timedelta(microseconds=1)).astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
             if old:
                 db.execute("UPDATE tasks SET title=?, status=?, owner=?, due=?, progress=?, notes=?, updated_at=? WHERE task_id=?",
-                           tuple(merged[key] for key in FIELDS[1:]) + (timestamp, merged["task_id"]))
+                           tuple(merged[key] for key in FIELDS[1:]) + (row_timestamp, merged["task_id"]))
                 counts["updated"] += 1
             else:
-                db.execute("INSERT INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?)", tuple(merged[key] for key in FIELDS) + (timestamp,))
+                db.execute("INSERT INTO tasks VALUES (?, ?, ?, ?, ?, ?, ?, ?)", tuple(merged[key] for key in FIELDS) + (row_timestamp,))
                 counts["created"] += 1
             db.execute("INSERT INTO events (task_id,changed_at,actor,changes) VALUES (?,?,?,?)",
-                       (merged["task_id"], timestamp, actor, json.dumps(changes, ensure_ascii=False)))
+                       (merged["task_id"], row_timestamp, actor, json.dumps(changes, ensure_ascii=False)))
         if refresh_heartbeat:
             db.execute("INSERT INTO metadata (key,value) VALUES ('last_import_at',?) ON CONFLICT(key) DO UPDATE SET value=excluded.value", (timestamp,))
         db.execute("ROLLBACK" if dry_run else "COMMIT")
@@ -226,10 +246,12 @@ def upsert(path, patches, actor, dry_run=False, expected_versions=None, refresh_
         # have opened that inode. A later valid import initializes it safely above.
 
 
-def snapshot(path):
+def snapshot(path, transaction_guard=None):
     db = connect_readonly(path)
     try:
         db.execute("BEGIN")
+        if transaction_guard is not None:
+            transaction_guard(db)
         rows = [dict(row) for row in db.execute("SELECT * FROM tasks ORDER BY task_id")]
         events = []
         for event in db.execute("SELECT * FROM events ORDER BY id"):
@@ -244,7 +266,11 @@ def snapshot(path):
 
 def atomic_write(path, content, database):
     path = Path(path).resolve()
-    if path in {Path(database).resolve(), TEMPLATE.resolve(), Path(__file__).resolve()}:
+    database_path = Path(database).resolve()
+    protected = {database_path, *(Path(str(database_path) + suffix) for suffix in ("-wal", "-shm", "-journal")),
+                 TEMPLATE.resolve(), Path(__file__).resolve(),
+                 Path(__file__).with_name("server.py").resolve(), Path(__file__).with_name("notifications.py").resolve()}
+    if path in protected:
         raise TrackerError("Export destination must not overwrite the database or program files.")
     fd, temporary = tempfile.mkstemp(prefix=".tracker-", dir=path.parent)
     try:

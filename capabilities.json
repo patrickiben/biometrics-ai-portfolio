@@ -1,6 +1,6 @@
 {
  "schema": 1,
- "updated": "2026-10-25",
+ "updated": "2026-10-28",
  "not_covered_html": "<strong>Not covered here:</strong> define.xml and ADRG authoring, conformant SDTM, submission packages, DMC charters, BOIN/CRM dose escalation, adaptive and group-sequential designs, and independent double programming.",
  "featured": [
   "study",

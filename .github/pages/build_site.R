@@ -73,6 +73,10 @@ APPS <- lapply(specs, function(f) {
 names(APPS) <- vapply(APPS, `[[`, "", "name")
 miss <- PARTIALS[!file.exists(PARTIALS)]
 if (length(miss)) fail("missing ", paste(miss, collapse = ", "), "; run python3 build_pages.py")
+
+# Refresh portable theme adapters after any local Quarto render, before copying files.
+# Generated source stays deterministic and is also checked in the Pages workflow.
+if (system2("python3", "build_pages.py") != 0L) fail("shared-page/theme generation failed")
 CHROME <- lapply(PARTIALS, function(f) paste(readLines(f, warn = FALSE, encoding = "UTF-8"), collapse = "\n"))
 
 # 1. static site ------------------------------------------------------------
@@ -80,6 +84,10 @@ files <- system2("git", c("-c", "core.quotepath=off", "ls-files", "--cached", "-
                  stdout = TRUE)
 files <- files[(!grepl("^(\\.git|apps/|_site/)", files) | files %in% PUBLISHED_SHARED) &
                file.exists(files) & !dir.exists(files)]
+# Runtime state must never become a public download, even if accidentally tracked.
+private_runtime <- grepl("(^|/)[^/]*\\.env($|\\.)|\\.(sqlite3?|db)(-(wal|shm|journal))?$|\\.eml$", files, ignore.case = TRUE)
+private_runtime <- private_runtime & !grepl("\\.env\\.example$", files, ignore.case = TRUE)
+files <- files[!private_runtime]
 for (d in unique(dirname(files))) dir.create(file.path(out, d), recursive = TRUE, showWarnings = FALSE)
 ok <- file.copy(files, file.path(out, files), copy.date = TRUE)
 if (!all(ok)) fail("could not copy: ", paste(files[!ok], collapse = ", "))
@@ -92,8 +100,12 @@ for (a in APPS) {
   t0 <- Sys.time()
   stage <- file.path(stage_root, a$name)
   dir.create(stage)
-  src <- list.files(a$source, all.files = FALSE, full.names = TRUE, no.. = TRUE)
-  if (!all(file.copy(src, stage, recursive = TRUE, copy.date = TRUE))) fail(a$name, ": could not stage ", a$source)
+  # Stage the same reviewed Git file set as the static copy. A recursive directory
+  # copy would also bundle ignored local data, databases or environment files.
+  src <- files[startsWith(files, paste0(a$source, "/"))]
+  relative <- substring(src, nchar(a$source) + 2L)
+  for (d in unique(dirname(relative))) dir.create(file.path(stage, d), recursive = TRUE, showWarnings = FALSE)
+  if (!length(src) || !all(file.copy(src, file.path(stage, relative), copy.date = TRUE))) fail(a$name, ": could not stage ", a$source)
   if (!file.copy(HELPER, file.path(stage, "portfolio_app.R"))) fail(a$name, ": could not add ", HELPER)
   config <- jsonlite::toJSON(list(app = a$name, relPath = "../../", download_mb = a$first_load$download_mb,
                                   timeout_s = LOAD_TIMEOUT_S, timeout_started_s = STARTED_TIMEOUT_S,

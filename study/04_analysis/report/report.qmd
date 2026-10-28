@@ -9,7 +9,7 @@ format:
     toc: true
     toc-depth: 2
     css:
-      - ../../../site.css
+      - ../../../assets/toolkit.css
       - ../../study.css
       - report.css
     include-before-body:

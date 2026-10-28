@@ -1,0 +1,6 @@
+{
+  "name": "biometrics-toolkit-browser-qc",
+  "private": true,
+  "description": "Development-only Chromium regression checks for the portable toolkit",
+  "devDependencies": { "playwright": "1.62.1" }
+}

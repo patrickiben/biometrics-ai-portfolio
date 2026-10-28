@@ -31,12 +31,32 @@ what-if. The header says the data are synthetic and gives the snapshot date (21 
 sidebar says whether a what-if is in effect, and Reset to data undoes every what-if. On a phone
 the study picker and the sliders sit behind the arrow button at the top left.
 
-## Run it
+## Run it locally for evaluation
 
-```r
-install.packages(c("shiny", "bslib", "ggplot2"))   # once
-shiny::runApp("lifecycle_dashboard/shiny")
+Install R 4.1 or later and keep the complete repository checkout. In a terminal at
+the repository root, run:
+
+```sh
+Rscript launch_app.R lifecycle --install   # first run: install missing packages in a user library
+Rscript launch_app.R lifecycle             # later runs: no package downloads
 ```
+
+The launcher opens your browser and binds Shiny to `127.0.0.1`. Stop it with
+Ctrl+C. `Rscript launch_app.R --check lifecycle` checks packages without starting a
+server. Packages go into an R-version-specific user cache; set
+`BIOMETRICS_R_LIB` to choose a separate user library. System/site libraries are
+never installation targets. This evaluation environment reports package versions;
+it is not a frozen study environment.
+
+From another working directory, pass the quoted absolute path to the launcher,
+for example `Rscript "/path/to/biometrics-ai-portfolio/launch_app.R" lifecycle`.
+In an R console that is already inside this app folder, use `shiny::runApp()`
+after checking dependencies with the launcher.
+
+Interactive changes are local to the running app session. Keep separate input
+copies for each client/study and save the supported downloads before closing;
+this example does not provide a shared, persistent study database. The sliders
+are what-ifs only: they do not write back to the seed CSVs.
 
 It also runs in the browser with Shinylive (webR): the site's Pages workflow exports this folder,
 data included, to `apps/lifecycle_dashboard/`. `app.R` sources the shared status and error helpers, [`apps/_shared/portfolio_app.R`](../../apps/_shared/portfolio_app.R)

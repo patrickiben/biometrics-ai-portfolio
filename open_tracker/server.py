@@ -1,11 +1,18 @@
 #!/usr/bin/env python3
-"""Shared Open Study Tracker: local accounts and a session-protected browser API."""
+"""Shared Open Study Tracker: an evaluation prototype with local account access.
+
+This is not a production security certification. The host operator controls the
+SQLite file and account CLI; every account can read the complete tracker. No
+forwarded headers are trusted. Behind a proxy, login IP limits therefore apply
+to the proxy peer, and the proxy must preserve an allowlisted Host header.
+"""
 
 import argparse
 from datetime import timedelta
 import getpass
 import hashlib
 import hmac
+import ipaddress
 import json
 import os
 from pathlib import Path
@@ -14,9 +21,10 @@ import secrets
 import sqlite3
 import sys
 import time
+from urllib.parse import urlsplit
 
 from flask import Flask, g, jsonify, request, session
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, BadRequest, Forbidden, Unauthorized, UnsupportedMediaType
 from werkzeug.security import check_password_hash, generate_password_hash
 
 try:
@@ -75,6 +83,10 @@ def username_value(value):
 def password_value(value):
     if not isinstance(value, str) or not 12 <= len(value) <= 256:
         raise tracker.TrackerError("Password must contain 12–256 characters.")
+    try:
+        value.encode("utf-8")
+    except UnicodeError:
+        raise tracker.TrackerError("Password must contain valid Unicode text.") from None
     return value
 
 
@@ -119,6 +131,40 @@ def digest(value):
     return hashlib.sha256(value.encode("utf-8")).hexdigest()
 
 
+def loopback(value):
+    try:
+        parsed = ipaddress.ip_address(value)
+        return parsed.is_loopback or bool(getattr(parsed, "ipv4_mapped", None) and parsed.ipv4_mapped.is_loopback)
+    except ValueError:
+        return False
+
+
+def origin_parts(value):
+    """Normalize an Origin without trusting proxy headers or URL credentials."""
+    try:
+        parsed = urlsplit(value)
+        if (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment
+                or any(c.isspace() or ord(c) < 32 for c in value)):
+            return None
+        return parsed.scheme, parsed.hostname.lower(), parsed.port or (443 if parsed.scheme == "https" else 80)
+    except ValueError:
+        return None
+
+
+def host_name(value):
+    """Extract one exact DNS/IP host, including bracketed IPv6, without a port."""
+    try:
+        parsed = urlsplit("http://" + value)
+        if (not parsed.hostname or parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment
+                or any(c.isspace() or ord(c) < 32 for c in value)
+                or parsed.port is not None and not 1 <= parsed.port <= 65535):
+            return None
+        return parsed.hostname.encode("idna").decode("ascii").lower()
+    except (ValueError, UnicodeError):
+        return None
+
+
 def create_app(config=None):
     app = Flask(__name__, static_folder=None)
     app.config.update(
@@ -131,12 +177,25 @@ def create_app(config=None):
         SESSION_COOKIE_SAMESITE="Lax",
         PERMANENT_SESSION_LIFETIME=timedelta(seconds=SESSION_SECONDS),
         SESSION_REFRESH_EACH_REQUEST=False,
+        TRUSTED_HOSTS=[value.strip() for value in os.environ.get("TRACKER_ALLOWED_HOSTS", "localhost,127.0.0.1,[::1]").split(",") if value.strip()],
     )
     if config:
         app.config.update(config)
     secret = app.config.get("SECRET_KEY")
     if not isinstance(secret, str) or len(secret) < 32:
         raise tracker.TrackerError("Set TRACKER_SECRET_KEY to a random secret of at least 32 characters.")
+    hosts = app.config.get("TRUSTED_HOSTS")
+    if not isinstance(hosts, (list, tuple)) or not hosts or any(
+        not isinstance(host, str) or not host or re.search(r"[\s/@?#\\]", host) or host.startswith(".")
+        for host in hosts
+    ):
+        raise tracker.TrackerError("TRACKER_ALLOWED_HOSTS must list exact hostnames, without schemes, paths or wildcard suffixes.")
+    allowed_hosts = {host_name(host) for host in hosts}
+    if None in allowed_hosts:
+        raise tracker.TrackerError("TRACKER_ALLOWED_HOSTS contains an invalid hostname.")
+    # Werkzeug 3.1's trusted-host comparison splits IPv6 references at the first
+    # colon. Apply an exact normalized allowlist below, including IPv6 literals.
+    app.config["TRUSTED_HOSTS"] = None
     app.config["SESSION_COOKIE_SECURE"] = bool(app.config["COOKIE_SECURE"])
     initialize(app.config["DATABASE"])
     dummy_hash = generate_password_hash(secrets.token_urlsafe(32), method="scrypt")
@@ -157,15 +216,27 @@ def create_app(config=None):
             session["csrf"] = secrets.token_urlsafe(32)
         return session["csrf"]
 
-    def current_user():
+    def current_user(db=None):
         token = session.get("token")
         if not isinstance(token, str):
             return None
-        row = database().execute("""SELECT u.username,u.role FROM web_sessions s
+        row = (db if db is not None else database()).execute("""SELECT u.username,u.role FROM web_sessions s
             JOIN users u ON u.username=s.username
             WHERE s.token_hash=? AND s.expires_at>? AND u.enabled=1
               AND s.auth_version=u.auth_version""", (digest(token), time.time())).fetchone()
         return dict(row) if row else None
+
+    def require_read(db):
+        user = current_user(db)
+        if user is None:
+            raise Unauthorized("Sign in to view this tracker.")
+        return user
+
+    def require_write(db):
+        user = require_read(db)
+        if user["role"] not in ("editor", "admin"):
+            raise Forbidden("Your account has read-only access.")
+        return user
 
     def revoke_session():
         token = session.get("token")
@@ -174,7 +245,17 @@ def create_app(config=None):
 
     @app.before_request
     def request_guard():
+        if host_name(request.headers.get("Host", "")) not in allowed_hosts:
+            raise BadRequest("This Host header is not allowed.")
+        # The CLI bind restriction is also enforced at the application boundary
+        # for WSGI imports. A proxy's claimed client IP cannot relax local mode.
+        if not app.config["COOKIE_SECURE"] and not loopback(request.remote_addr or ""):
+            return jsonify(error="Insecure evaluation mode accepts loopback peers only."), 403
         if request.method in ("POST", "PUT", "PATCH", "DELETE"):
+            origin = request.headers.get("Origin")
+            expected_origin = ("https" if app.config["COOKIE_SECURE"] else request.scheme) + "://" + request.host
+            if origin is not None and (origin_parts(origin) is None or origin_parts(origin) != origin_parts(expected_origin)):
+                return jsonify(error="Cross-origin requests are not allowed."), 403
             expected, supplied = session.get("csrf"), request.headers.get("X-CSRF-Token", "")
             if not isinstance(expected, str) or not hmac.compare_digest(expected.encode("utf-8"), supplied.encode("utf-8")):
                 return jsonify(error="CSRF verification failed. Reload the page and try again."), 403
@@ -220,7 +301,17 @@ def create_app(config=None):
         return jsonify(error="The server could not complete this request. Contact the tracker administrator."), 500
 
     def body(keys):
-        data = request.get_json()
+        if not request.is_json:
+            raise UnsupportedMediaType("Use application/json for this request.")
+        try:
+            # Match file-import semantics: duplicate keys and NaN/Infinity are
+            # ambiguous/nonstandard input, including inside a task object.
+            def reject_constant(_value):
+                raise ValueError("Non-finite JSON constant")
+            data = json.loads(request.get_data().decode("utf-8"),
+                              object_pairs_hook=tracker.unique_object, parse_constant=reject_constant)
+        except (ValueError, UnicodeError, RecursionError):
+            raise BadRequest("Send valid UTF-8 JSON with unique properties and finite values.") from None
         if not isinstance(data, dict) or set(data) != set(keys):
             raise tracker.TrackerError("Request contains missing or unknown fields.")
         return data
@@ -304,9 +395,7 @@ def create_app(config=None):
 
     @app.get("/api/snapshot")
     def snapshot():
-        if current_user() is None:
-            return jsonify(error="Sign in to view this tracker."), 401
-        return jsonify(tracker.snapshot(app.config["DATABASE"]))
+        return jsonify(tracker.snapshot(app.config["DATABASE"], transaction_guard=require_read))
 
     @app.post("/api/tasks")
     def save_task():
@@ -324,8 +413,9 @@ def create_app(config=None):
         patch = {key: row[key] for key in tracker.FIELDS}
         tracker.validate_row(patch)
         tracker.upsert(app.config["DATABASE"], [patch], actor=user["username"],
-                       expected_versions={patch["task_id"]: expected}, refresh_heartbeat=False)
-        return jsonify(snapshot=tracker.snapshot(app.config["DATABASE"]), user=user)
+                       expected_versions={patch["task_id"]: expected}, refresh_heartbeat=False,
+                       transaction_guard=require_write)
+        return jsonify(snapshot=tracker.snapshot(app.config["DATABASE"], transaction_guard=require_read), user=user)
 
     return app
 

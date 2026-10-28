@@ -10,16 +10,40 @@ STATUSES  <- c("Pass", "Fail", "Blocked", "In Progress", "Not Run")
 RUN_STATUSES <- c("Pass", "Fail")    # executed; the other three mean the test has not been run
 SEVERITIES <- c("Critical", "Major", "Minor")
 
+uat_validate <- function(tests, defects, trace) {
+  required <- list(tests = c("TestID", "Area", "RequirementID", "TestTitle", "Priority", "Steps", "ExpectedResult", "Status", "LinkedDefect"),
+                   defects = c("DefectID", "Severity", "Status", "FoundInTest", "Description", "DateRaised", "Resolution"),
+                   trace = c("RequirementID", "RequirementDescription", "CoveringTests", "Covered"))
+  frames <- list(tests = tests, defects = defects, trace = trace)
+  keys <- c(tests = "TestID", defects = "DefectID", trace = "RequirementID")
+  for (name in names(frames)) {
+    frame <- frames[[name]]
+    if (!is.data.frame(frame) || anyDuplicated(names(frame)) || !all(required[[name]] %in% names(frame)))
+      stop("Missing or duplicated UAT columns in ", name, ".")
+    key <- frame[[keys[[name]]]]
+    if (anyNA(key) || any(!nzchar(trimws(key))) || anyDuplicated(key)) stop("UAT identifiers must be nonblank and unique in ", name, ".")
+  }
+  if (!nrow(tests) || !nrow(trace)) stop("At least one test and one requirement are required; an empty register cannot be ready.")
+  allowed <- list(tests$Status %in% STATUSES, tests$Priority %in% c("Critical", "High", "Medium", "Low"),
+                  defects$Severity %in% SEVERITIES, defects$Status %in% c("Open", "Closed"), trace$Covered %in% c("Y", "N", "N (GAP)"))
+  if (!all(unlist(allowed))) stop("Unknown or missing UAT status, priority, severity or coverage flag.")
+  invisible(TRUE)
+}
+
 uat_load <- function(dir = NULL) {
-  cand <- c(dir, "../templates", "templates", "uat_irt/templates")
+  if (!is.null(dir) && (!is.character(dir) || length(dir) != 1 || is.na(dir) || !nzchar(dir)))
+    stop("Supply one explicit input path, or omit it to use the bundled example.")
+  cand <- if (!is.null(dir)) dir else c( "../templates", "templates", "uat_irt/templates")
   cand <- Filter(Negate(is.null), cand)
   base <- Find(function(d) file.exists(file.path(d, "test_scripts.csv")), cand)
   if (is.null(base)) stop("Cannot find templates/test_scripts.csv (looked in: ",
                           paste(cand, collapse = ", "), ")")
   rd <- function(f) utils::read.csv(file.path(base, f), stringsAsFactors = FALSE, check.names = FALSE)
-  list(tests   = rd("test_scripts.csv"),
+  data <- list(tests   = rd("test_scripts.csv"),
        defects = rd("defect_log.csv"),
        trace   = rd("traceability_matrix.csv"))
+  uat_validate(data$tests, data$defects, data$trace)
+  data
 }
 
 # The go-live sign-off gate: three criteria, all of which must hold (conjunctive).
@@ -44,16 +68,18 @@ uat_gate <- function(tests, defects, trace) {
 }
 
 uat_summary <- function(tests, defects, trace) {
+  uat_validate(tests, defects, trace)
   total    <- nrow(tests)
   pass     <- sum(tests$Status == "Pass")
   fail     <- sum(tests$Status == "Fail")
   open_now <- sum(!tests$Status %in% RUN_STATUSES)
   run      <- sum(tests$Status %in% RUN_STATUSES)
   open_def <- sum(defects$Status == "Open")
-  traced   <- sum(trace$Covered == "Y")
+  covered <- uat_valid_coverage(tests, trace)
+  traced   <- sum(covered)
   run_ids  <- tests$TestID[tests$Status %in% RUN_STATUSES]
   covering <- uat_covering_tests(trace)
-  req_run  <- sum(trace$Covered == "Y" & vapply(covering, function(t) length(t) > 0 && all(t %in% run_ids), NA))
+  req_run  <- sum(covered & vapply(covering, function(t) length(t) > 0 && all(t %in% run_ids), NA))
   list(total = total, pass = pass, fail = fail, open_now = open_now,
        open_def = open_def, traced = traced, req_run = req_run, n_urs = nrow(trace),
        cov = round(100 * traced / nrow(trace)),
@@ -72,6 +98,12 @@ uat_covering_tests <- function(trace) {
   lapply(strsplit(x, "[;,[:space:]]+"), function(v) v[nzchar(v)])
 }
 
+# A manually typed Y flag is not evidence that the referenced tests exist.
+uat_valid_coverage <- function(tests, trace) {
+  trace$Covered == "Y" & vapply(uat_covering_tests(trace),
+    function(ids) length(ids) > 0 && all(ids %in% tests$TestID), logical(1))
+}
+
 # The status of the test each defect was found in (NA when the defect names no test in the table).
 defect_test_status <- function(tests, defects) {
   tests$Status[match(defects$FoundInTest, tests$TestID)]
@@ -87,6 +119,7 @@ defect_test_status <- function(tests, defects) {
 #   not_run     tests not run yet: Not Run, In Progress or Blocked               (criterion 3)
 #   minor_open  open minor defects: they do not block, but the signer must fix or waive them
 uat_blockers <- function(tests, defects, trace) {
+  uat_validate(tests, defects, trace)
   found_st <- defect_test_status(tests, defects)
   is_open  <- defects$Status == "Open"
   named    <- !is.na(defects$FoundInTest) & nzchar(defects$FoundInTest)
@@ -101,7 +134,7 @@ uat_blockers <- function(tests, defects, trace) {
                        TestStatus = found_st[unret]),
     untracked  = tests[tests$Status == "Fail" & !tests$TestID %in% c(open_for, defects$FoundInTest[unret]),
                        c("TestID", "Status"), drop = FALSE],
-    gaps       = trace[trace$Covered != "Y", c("RequirementID", "RequirementDescription"), drop = FALSE],
+    gaps       = trace[!uat_valid_coverage(tests, trace), c("RequirementID", "RequirementDescription"), drop = FALSE],
     not_run    = tests[!tests$Status %in% RUN_STATUSES, c("TestID", "Status", "RequirementID"), drop = FALSE],
     minor_open = defects[is_open & defects$Severity == "Minor", c("DefectID", "FoundInTest"), drop = FALSE])
 }
@@ -131,7 +164,7 @@ uat_defect_status <- function(x) {
 uat_cover_gap <- function(tests, trace, req_id) {
   i <- match(req_id, trace$RequirementID)
   if (is.na(i)) stop("No requirement ", req_id, " in the traceability matrix")
-  if (identical(trace$Covered[i], "Y")) return(list(tests = tests, trace = trace, test_id = NA_character_))
+  if (isTRUE(uat_valid_coverage(tests, trace)[i])) return(list(tests = tests, trace = trace, test_id = NA_character_))
   stem <- sub("-[0-9]+$", "-", req_id)                                # "URS-SUP-"
   kin <- tests[startsWith(tests$RequirementID, stem), , drop = FALSE]
   area <- if (nrow(kin)) names(sort(table(kin$Area), decreasing = TRUE))[1] else "Unassigned"

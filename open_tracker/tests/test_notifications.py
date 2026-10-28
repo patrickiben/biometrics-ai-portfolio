@@ -227,6 +227,185 @@ class NotificationsTests(unittest.TestCase):
             db.execute("DELETE FROM metadata")
         self.assertEqual(self.run_worker(stale_hours=24)["sent"], 0)
 
+    def test_cancelled_digest_revives_when_same_exceptions_return(self):
+        self.update(due="2000-01-01")
+        self.run_worker(preview=True)
+        original = self.outbox()[0]
+        self.update(due="2000-01-02")
+        self.run_worker(preview=True, clock=self.clock + 1)
+        self.update(due="2000-01-01")
+        result = self.run_worker(clock=self.clock + 2)
+        self.assertEqual(result["sent"], 1)
+        revived = self.outbox()[0]
+        self.assertEqual(revived["state"], "sent")
+        self.assertEqual(revived["message_id"], original["message_id"])
+        self.assertEqual(self.outbox()[1]["state"], "cancelled")
+
+    def test_removed_then_readded_recipient_receives_current_unsent_digest(self):
+        self.update(due="2000-01-01")
+        self.run_worker(preview=True)
+        other = mail.Config.from_env(dict(self.env, TRACKER_ALERT_TO="different@example.invalid"))
+        self.run_worker(other, preview=True, clock=self.clock + 1)
+        self.assertEqual(self.outbox()[0]["state"], "cancelled")
+        self.assertEqual(self.run_worker(clock=self.clock + 2)["sent"], 1)
+        self.assertEqual(self.outbox()[0]["state"], "sent")
+
+    def test_previously_sent_digest_is_not_replayed_when_conditions_return(self):
+        self.update(due="2000-01-01")
+        self.assertEqual(self.run_worker()["sent"], 1)
+        self.update(due="2999-01-01")
+        self.assertEqual(self.run_worker(clock=self.clock + 1)["sent"], 0)
+        self.update(due="2000-01-01")
+        self.assertEqual(self.run_worker(clock=self.clock + 2)["sent"], 0)
+        self.assertEqual(len(self.outbox()), 1)
+
+    def test_expired_lease_does_not_revive_superseded_same_status_event(self):
+        self.update(status="At risk")
+        with closing(mail.connect(self.db)) as db:
+            mail.queue_notifications(db, self.config, self.clock, 0)
+            leased = mail.claim(db, self.config.recipients, self.clock)
+            self.update(status="Blocked")
+            mail.queue_notifications(db, self.config, self.clock + 1, 0)
+            self.update(status="At risk")
+            mail.queue_notifications(db, self.config, self.clock + 2, 0)
+        result = self.run_worker(clock=self.clock + 301)
+        self.assertEqual(result["sent"], 1)
+        self.assertEqual(self.outbox()[0]["id"], leased["id"])
+        self.assertEqual(self.outbox()[0]["state"], "cancelled")
+        self.assertEqual(self.outbox()[-1]["state"], "sent")
+
+    def test_failed_inflight_send_cannot_resurrect_cancelled_delivery(self):
+        self.update(status="At risk")
+        def fail_after_resolution(*_args):
+            self.update(status="Done")
+            with closing(mail.connect(self.db)) as other:
+                mail.queue_notifications(other, self.config, self.clock + 1, 0)
+            raise smtplib.SMTPServerDisconnected("fake transport failure")
+        with patch.object(mail, "smtp_send", side_effect=fail_after_resolution):
+            result = self.run_worker()
+        self.assertEqual(result["failed"], 1)
+        self.assertEqual(self.outbox()[0]["state"], "cancelled")
+        self.assertEqual(self.run_worker(clock=self.clock + 400)["sent"], 0)
+
+    def test_digest_revival_preserves_failed_delivery_backoff(self):
+        self.update(due="2000-01-01")
+        FakeSMTP.fail = True
+        self.run_worker()
+        first = self.outbox()[0]
+        self.update(due="2999-01-01")
+        self.run_worker(clock=self.clock + 1)
+        self.update(due="2000-01-01")
+        FakeSMTP.fail = False
+        self.assertEqual(self.run_worker(clock=self.clock + 2)["sent"], 0)
+        self.assertEqual(self.outbox()[0]["next_attempt_at"], first["next_attempt_at"])
+        self.assertEqual(self.run_worker(clock=first["next_attempt_at"] + 1)["sent"], 1)
+
+    def test_crash_after_acceptance_retries_same_message_id_after_lease(self):
+        self.update(status="At risk")
+        accepted = []
+        def accept_then_crash(message, *_args):
+            accepted.append(message["Message-ID"])
+            raise KeyboardInterrupt()
+        with patch.object(mail, "smtp_send", side_effect=accept_then_crash):
+            with self.assertRaises(KeyboardInterrupt):
+                self.run_worker()
+        self.assertEqual(self.outbox()[0]["state"], "pending")
+        self.assertEqual(self.run_worker(clock=self.clock + 299)["sent"], 0)
+        def accept(message, *_args):
+            accepted.append(message["Message-ID"])
+        with patch.object(mail, "smtp_send", side_effect=accept):
+            self.assertEqual(self.run_worker(clock=self.clock + 301)["sent"], 1)
+        self.assertEqual(accepted, [accepted[0], accepted[0]])
+        self.assertEqual(self.outbox()[0]["attempts"], 2)
+
+    def test_next_utc_day_replaces_unsent_previous_day_digest(self):
+        from datetime import datetime, timezone
+        before_midnight = datetime(2026, 10, 28, 23, 59, 59, tzinfo=timezone.utc).timestamp()
+        self.update(due="2000-01-01")
+        self.run_worker(preview=True, clock=before_midnight)
+        self.assertEqual(self.run_worker(clock=before_midnight + 2)["sent"], 1)
+        rows = self.outbox()
+        self.assertEqual([row["state"] for row in rows], ["cancelled", "sent"])
+        self.assertIn("2026-10-29 (UTC)", rows[1]["body"])
+
+    def test_large_backlog_drains_in_bounded_polls_without_duplicates(self):
+        tasks = [dict(task_id=f"TASK-{i:03d}", title="Synthetic", status="At risk") for i in range(120)]
+        tracker.upsert(self.db, tasks, "synthetic test")
+        config = mail.Config.from_env(dict(self.env, TRACKER_ALERT_TO="one@example.invalid,two@example.invalid"))
+        accepted = []
+        with patch.object(mail, "smtp_send", side_effect=lambda message, *_args: accepted.append(message["Message-ID"])):
+            results = [self.run_worker(config, clock=self.clock + i) for i in range(3)]
+        self.assertEqual([result["sent"] for result in results], [100, 100, 40])
+        self.assertEqual([result["pending"] for result in results], [140, 40, 0])
+        self.assertEqual(len(set(accepted)), 240)
+
+    def test_concurrent_workers_deliver_each_pending_message_once(self):
+        tasks = [dict(task_id=f"CONCURRENT-{i}", title="Synthetic", status="At risk") for i in range(8)]
+        tracker.upsert(self.db, tasks, "synthetic test")
+        barrier = threading.Barrier(2)
+        accepted, results, errors = [], [], []
+        def smtp(message, *_args):
+            accepted.append(message["Message-ID"])
+            time.sleep(0.002)
+        def worker():
+            try:
+                barrier.wait(timeout=5)
+                results.append(self.run_worker())
+            except BaseException as error:
+                errors.append(error)
+        with patch.object(mail, "smtp_send", side_effect=smtp):
+            workers = [threading.Thread(target=worker) for _ in range(2)]
+            for worker in workers:
+                worker.start()
+            for worker in workers:
+                worker.join(timeout=10)
+        self.assertFalse(any(worker.is_alive() for worker in workers))
+        self.assertFalse(errors)
+        self.assertEqual(sum(result["sent"] for result in results), 8)
+        self.assertEqual(len(accepted), len(set(accepted)))
+        self.assertTrue(all(row["state"] == "sent" for row in self.outbox()))
+
+    def test_corrupt_data_cli_error_does_not_print_stored_text_or_traceback(self):
+        self.update(status="At risk")
+        with closing(sqlite3.connect(self.db)) as db, db:
+            db.execute("UPDATE metadata SET value='SECRET-MALFORMED-TIMESTAMP' WHERE key='last_import_at'")
+        with patch.dict(mail.os.environ, self.env, clear=True), patch("sys.stderr") as error_output:
+            code = mail.main(["--db", str(self.db), "--once"])
+        printed = "".join(call.args[0] for call in error_output.write.call_args_list)
+        self.assertEqual(code, 1)
+        self.assertIn("import timestamp", printed)
+        self.assertNotIn("SECRET", printed)
+        self.assertNotIn("Traceback", printed)
+        self.assertFalse(FakeSMTP.instances)
+
+    def test_smtp_close_error_after_acceptance_is_not_retried(self):
+        self.update(status="At risk")
+        with patch.object(FakeSMTP, "close", side_effect=OSError("fake close failure")):
+            result = self.run_worker()
+        self.assertEqual((result["sent"], result["failed"]), (1, 0))
+        self.assertEqual(self.outbox()[0]["state"], "sent")
+
+    def test_malformed_stored_values_abort_without_consuming_events(self):
+        cases = [
+            ("UPDATE tasks SET due='2026-02-30'", "due date"),
+            ("UPDATE metadata SET value='not a date' WHERE key='last_import_at'", "import timestamp"),
+            ("UPDATE metadata SET value='2026-10-28T12:00:00' WHERE key='last_import_at'", "import timestamp"),
+            ("UPDATE events SET changes='[]' WHERE id=(SELECT MAX(id) FROM events)", "event history"),
+        ]
+        for index, (sql, message) in enumerate(cases):
+            with self.subTest(sql=sql):
+                fresh = self.root / f"corrupt-{index}.sqlite"
+                tracker.upsert(fresh, [dict(task_id="A", title="Synthetic", status="At risk")], "test")
+                with closing(sqlite3.connect(fresh)) as db, db:
+                    db.execute(sql)
+                with self.assertRaisesRegex(tracker.TrackerError, message):
+                    mail.run_once(fresh, self.config, stale_hours=24, now=self.clock)
+                with closing(sqlite3.connect(fresh)) as db:
+                    self.assertEqual(db.execute("SELECT value FROM notification_meta WHERE key='event_cursor'").fetchone()[0], "0")
+                    self.assertEqual(db.execute("SELECT COUNT(*) FROM notification_outbox").fetchone()[0], 0)
+                fresh.unlink()
+        self.assertFalse(FakeSMTP.instances)
+
     def test_starttls_verifies_certificates_before_login(self):
         config = mail.Config.from_env(dict(self.env, TRACKER_SMTP_USERNAME="user", TRACKER_SMTP_PASSWORD="not-a-real-password"))
         self.update(status="At risk")

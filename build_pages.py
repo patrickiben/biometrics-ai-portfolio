@@ -1433,6 +1433,9 @@ if '--rendered' in sys.argv or CHECK:
 # ---------------------------------------------------------------------------------------------
 # 12. write or check
 # ---------------------------------------------------------------------------------------------
+from apply_themes import theme_updates
+OUT.update(theme_updates(ROOT, OUT))
+
 changed = []
 for p, text in OUT.items():
     cur = rd(p) if exists(p) else None

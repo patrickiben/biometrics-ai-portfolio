@@ -13,7 +13,9 @@ state. SMTP acceptance means accepted by the server, not inbox delivery.
 
 Digest keys include the UTC date and current overdue/stale content. Unchanged
 conditions produce one digest per day; changed exceptions may produce another.
-A stale threshold of zero disables that check; empty trackers are not stale.
+Cancelled unsent digests can become eligible again if their conditions return.
+Cancellation prevents later claims; a delivery already in progress may still
+finish. A stale threshold of zero disables that check; empty trackers are not stale.
 Each poll processes at most 100 deliveries. Five-minute leases permit recovery
 after worker failure, with exponential retry delay capped at one hour. Durable
 outbox rows contain addresses and operational identifiers; protect the database.
@@ -154,6 +156,41 @@ def connect(path):
         raise
 
 
+def stored_date(value):
+    try:
+        if not isinstance(value, str) or not re.fullmatch(r"[0-9]{4}-[0-9]{2}-[0-9]{2}", value):
+            raise ValueError()
+        return date.fromisoformat(value)
+    except (TypeError, ValueError) as error:
+        raise tracker.TrackerError("Stored tracker due date is invalid; repair the database before notifying.") from error
+
+
+def stored_timestamp(value):
+    try:
+        if not isinstance(value, str):
+            raise ValueError()
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if parsed.tzinfo is None or parsed.utcoffset() is None:
+            raise ValueError()
+        return parsed.timestamp()
+    except (TypeError, ValueError, OverflowError) as error:
+        raise tracker.TrackerError("Stored tracker import timestamp must include a valid UTC offset; repair the database before notifying.") from error
+
+
+def status_change(event):
+    try:
+        changes = json.loads(event["changes"])
+        if not isinstance(changes, dict):
+            raise ValueError()
+        change = changes.get("status")
+        if change is not None and (not isinstance(change, dict) or set(change) != {"before", "after"}
+                or change["before"] not in (None, *tracker.STATUSES) or change["after"] not in tracker.STATUSES):
+            raise ValueError()
+        return change
+    except (TypeError, ValueError) as error:
+        raise tracker.TrackerError("Stored tracker event history is invalid; repair the database before notifying.") from error
+
+
 def queue_notifications(db, config, timestamp, stale_hours=24):
     """Atomically queue current transitions/daily digests and advance the cursor.
 
@@ -173,7 +210,7 @@ def queue_notifications(db, config, timestamp, stale_hours=24):
         rows = {row["task_id"]: dict(row) for row in db.execute("SELECT task_id,status,due FROM tasks")}
         latest = {}
         for event in events:
-            change = json.loads(event["changes"]).get("status")
+            change = status_change(event)
             if change and change["before"] != change["after"]:
                 latest[event["task_id"]] = (event, change["after"])
         queued = 0
@@ -184,14 +221,18 @@ def queue_notifications(db, config, timestamp, stale_hours=24):
                 body += "\nOpen tracker: " + config.public_url + "\n"
             for recipient in config.recipients:
                 digest = hashlib.sha256((instance + "\0" + key + "\0" + recipient).encode()).hexdigest()
-                result = db.execute("INSERT OR IGNORE INTO notification_outbox (dedupe_key,recipient,kind,task_id,expected_status,subject,body,message_id,created_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                result = db.execute("INSERT INTO notification_outbox (dedupe_key,recipient,kind,task_id,expected_status,subject,body,message_id,created_at) VALUES (?,?,?,?,?,?,?,?,?) ON CONFLICT(dedupe_key,recipient) DO UPDATE SET state='pending',last_error=NULL,body=excluded.body WHERE notification_outbox.state='cancelled' AND excluded.kind='digest'",
                     (key, recipient, kind, task_id, status, "Open Study Tracker: " + ("status alert" if kind == "status" else "daily exceptions"), body, f"<{digest}@open-study-tracker.local>", timestamp))
+                # Revive an unsent current digest, retaining its lease, retry
+                # delay and Message-ID. A sent digest is never replayed that day.
                 count += result.rowcount
             return count
 
         for task_id, (event, status) in latest.items():
-            # New transitions supersede unsent status messages, including previews.
-            db.execute("UPDATE notification_outbox SET state='cancelled',last_error='Superseded' WHERE task_id=? AND kind='status' AND state IN ('pending','previewed') AND lease_until<=?", (task_id, timestamp))
+            # Mark even leased messages superseded: a crashed lease must not
+            # become eligible later merely because the same status returns.
+            # An SMTP exchange already in progress cannot be recalled.
+            db.execute("UPDATE notification_outbox SET state='cancelled',last_error='Superseded' WHERE task_id=? AND kind='status' AND state IN ('pending','previewed')", (task_id,))
             if status in ("At risk", "Blocked") and rows.get(task_id, {}).get("status") == status:
                 body = f"Task {json.dumps(task_id, ensure_ascii=False)} entered {status}.\nRecorded at {event['changed_at']}.\n\nOperational status only; review the tracker for details.\n"
                 queued += insert(f"event:{event['id']}", "status", body, task_id, status)
@@ -201,10 +242,10 @@ def queue_notifications(db, config, timestamp, stale_hours=24):
         today = datetime.fromtimestamp(timestamp, timezone.utc).date()
         lines = []
         for task_id, row in sorted(rows.items()):
-            if row["due"] and row["status"] != "Done" and date.fromisoformat(row["due"]) < today:
+            if row["due"] and row["status"] != "Done" and stored_date(row["due"]) < today:
                 lines.append(f"Task {json.dumps(task_id, ensure_ascii=False)}: overdue ({row['due']}); {row['status']}.")
         last = db.execute("SELECT value FROM metadata WHERE key='last_import_at'").fetchone()
-        if rows and stale_hours and (not last or timestamp - datetime.fromisoformat(last[0].replace("Z", "+00:00")).timestamp() > stale_hours * 3600):
+        if rows and stale_hours and (not last or timestamp - stored_timestamp(last[0]) > stale_hours * 3600):
             lines.append(f"Tracker import is stale (threshold {stale_hours:g} hours).")
         if lines:
             # One content-specific digest per UTC day. Changed exceptions can
@@ -215,9 +256,9 @@ def queue_notifications(db, config, timestamp, stale_hours=24):
             queued += insert(digest_key, "digest", f"Exceptions as of {today} (UTC):\n\n{content}\n")
         else:
             digest_key = ""
-        db.execute("UPDATE notification_outbox SET state='cancelled',last_error='Superseded' WHERE kind='digest' AND dedupe_key!=? AND state IN ('pending','previewed') AND lease_until<=?", (digest_key, timestamp))
+        db.execute("UPDATE notification_outbox SET state='cancelled',last_error='Superseded' WHERE kind='digest' AND dedupe_key!=? AND state IN ('pending','previewed')", (digest_key,))
         placeholders = ",".join("?" for _ in config.recipients)
-        db.execute(f"UPDATE notification_outbox SET state='cancelled',last_error='RecipientRemoved' WHERE recipient NOT IN ({placeholders}) AND state IN ('pending','previewed') AND lease_until<=?", (*config.recipients, timestamp))
+        db.execute(f"UPDATE notification_outbox SET state='cancelled',last_error='RecipientRemoved' WHERE recipient NOT IN ({placeholders}) AND state IN ('pending','previewed')", config.recipients)
         db.execute("COMMIT")
         return queued
     except Exception:
@@ -280,7 +321,10 @@ def smtp_send(message, config, recipient):
             raise smtplib.SMTPRecipientsRefused(refused)
     finally:
         # Do not retry an accepted message solely because the QUIT exchange fails.
-        smtp.close()
+        try:
+            smtp.close()
+        except (OSError, smtplib.SMTPException):
+            pass  # Transport cleanup cannot retract successful SMTP acceptance.
 
 
 def write_preview(directory, row, message):
@@ -330,7 +374,7 @@ def run_once(db_path, config, preview_dir=None, stale_hours=24, now=None):
                 # Class names are safe diagnostics; SMTP replies may contain
                 # credentials, addresses, or other server-controlled text.
                 delay = min(3600, 30 * 2 ** min(row["attempts"], 7))
-                db.execute("UPDATE notification_outbox SET state='pending',next_attempt_at=?,lease_token=NULL,lease_until=0,last_error=? WHERE id=? AND lease_token=?", (clock + delay, type(error).__name__, row["id"], row["lease_token"]))
+                db.execute("UPDATE notification_outbox SET state='pending',next_attempt_at=?,lease_token=NULL,lease_until=0,last_error=? WHERE id=? AND lease_token=? AND state IN ('pending','previewed')", (clock + delay, type(error).__name__, row["id"], row["lease_token"]))
                 counts["failed"] += 1
         counts["pending"] = db.execute("SELECT COUNT(*) FROM notification_outbox WHERE state IN ('pending','previewed')").fetchone()[0]
         return counts

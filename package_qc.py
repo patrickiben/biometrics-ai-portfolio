@@ -53,7 +53,7 @@ RETIRED_FRAMING = re.compile(
     r'New biostatistician\? Start here|SVC-BIOSTAT|work laptop|\bper SOP\b|cross-validated SAS|'
     r'Cross.validated SAS|Tested concept: Base SAS|double-programmed SAS you can read|'
     r'no new approval gate|ship this now|layer AI on top when|streamlit\.app|htmlpreview\.github\.io|'
-    r'Cloud Claude|API \+ BAA|Max seat|account lead|\bClaude\b|\bBAA\b|Copilot|\bin-house\b|'
+    r'Cloud Claude|API \+ BAA|Max seat|account lead|\bClaude\b|\bBAA\b|Copilot|'
     r'hybrid[- ]AI (strategy|governance|policy|routing)|internal hybrid|AI[- ]governance (lead|owner|SOP)', re.I)
 # CDISC standard names that contain "subject" and must keep it (variables are already exempt
 # through USUBJID/SUBJID): the ADaMIG name and class of ADSL ("Subject-Level Analysis Dataset",

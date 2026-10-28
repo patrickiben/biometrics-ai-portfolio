@@ -2,6 +2,8 @@
 
 An MIT-licensed tracker for study deliverables, owners, deadlines, and operational exceptions. The offline workflow needs only **Python 3.10+ and its standard library**, with no account, API token, cloud service, or package installation. R and SAS jobs can produce the same plain CSV input. Optional shared mode adds individual logins, viewer/editor permissions, conflict detection, and automatic email alerts through your SMTP server.
 
+**Reusable evaluation tool:** for consultants and in-house teams adapting study operations. No specific client workspace, hosting account or mail service is preconfigured. The browser demo works immediately; shared access needs a running host, and live email needs your SMTP settings. Use the local email preview to evaluate notifications without sending.
+
 [Open the browser workspace](index.html) · [Shared accounts and email setup](SHARED.md) · [Synthetic CSV example](examples/status.csv) · [Source code](tracker.py) · [MIT license](../LICENSE)
 
 ## Try it
