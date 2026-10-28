@@ -138,20 +138,20 @@ class GuidedTLFTests(unittest.TestCase):
         driver = output["files"]["sas/00_run.sas"]
         self.assertNotIn("%put INJECTED", driver)
         self.assertNotIn("datalines", tlf._code(driver, "sas").lower())
-        self.assertIn("'" + payload.encode().hex() + "'x", driver)
+        self.assertIn("'" + payload.encode("utf-8").hex() + "'x", driver)
         self.assertIn("\n || '", driver, "Long character data are split into bounded hex tokens")
 
     def test_header_only_event_domain_is_allowed_but_empty_denominator_is_not(self):
         inputs = self.inputs({"adsl": [{"USUBJID": "001", "SAFFL": "Y", "TRT01A": "A"}]})
         path = self.folder / "adae.csv"
-        path.write_text("USUBJID,SAFFL,TRT01A,TRTEMFL,AESOC,AEDECOD\n")
+        path.write_text("USUBJID,SAFFL,TRT01A,TRTEMFL,AESOC,AEDECOD\n", encoding="utf-8")
         inputs["adae"] = {"absolute_path": path}
         values = self.base(outputs=["t_ae_by_soc_pt"])
         report = tlf.validate("r_tlf", values, inputs, ROOT)
         self.assertEqual(report["errors"], [])
         self.assertTrue(any("zero records" in item for item in report["warnings"]))
         tlf.build("r_tlf", report["normalized"], inputs, ROOT)
-        inputs["adsl"]["absolute_path"].write_text("USUBJID,SAFFL,TRT01A\n")
+        inputs["adsl"]["absolute_path"].write_text("USUBJID,SAFFL,TRT01A\n", encoding="utf-8")
         self.assertTrue(any(e["field"] == "inputs.adsl" for e in tlf.validate("r_tlf", values, inputs, ROOT)["errors"]))
 
     @unittest.skipUnless(shutil.which("Rscript"), "Rscript is not installed")
@@ -171,7 +171,7 @@ class GuidedTLFTests(unittest.TestCase):
         driver = self.folder / "r/00_run.R"
         run = subprocess.run(["Rscript", "-e", "source(" + json.dumps(str(driver)) + ")"], capture_output=True, text=True, timeout=60)
         self.assertEqual(run.returncode, 0, run.stderr)
-        with (self.folder / "r/draft_results/execution_status.csv").open() as file:
+        with (self.folder / "r/draft_results/execution_status.csv").open(encoding="utf-8", newline="") as file:
             status = next(csv.DictReader(file))
         self.assertEqual(status["execution"], "executed draft; not validated")
         self.assertEqual(status["error"], "")
@@ -179,10 +179,10 @@ class GuidedTLFTests(unittest.TestCase):
         verified = subprocess.run(["Rscript", "-e", verify], capture_output=True, text=True, timeout=60)
         self.assertEqual(verified.returncode, 0, verified.stderr)
         # Exercise the driver's honest failure status without changing library sources.
-        (driver.parent / "programs/t_pk_param_summary.R").write_text('stop("intentional test failure")\n')
+        (driver.parent / "programs/t_pk_param_summary.R").write_text('stop("intentional test failure")\n', encoding="utf-8")
         failed = subprocess.run(["Rscript", "-e", "source(" + json.dumps(str(driver)) + ")"], capture_output=True, text=True, timeout=60)
         self.assertEqual(failed.returncode, 0, failed.stderr)
-        with (self.folder / "r/draft_results/execution_status.csv").open() as file:
+        with (self.folder / "r/draft_results/execution_status.csv").open(encoding="utf-8", newline="") as file:
             status = next(csv.DictReader(file))
         self.assertEqual(status["execution"], "failed")
         self.assertEqual(status["error"], "intentional test failure")
@@ -227,11 +227,15 @@ class GuidedTLFTests(unittest.TestCase):
                         target.write_text(text, encoding="utf-8")
                         parse_paths.append(target)
                 for item in selected.values():
-                    self.assertEqual(item["text"], item["path"].read_text())
+                    self.assertEqual(item["text"], item["path"].read_text(encoding="utf-8"))
         if shutil.which("Rscript"):
             script = self.folder / "parse.R"
-            script.write_text("for (p in commandArgs(trailingOnly=TRUE)) parse(file=p)\n")
-            result = subprocess.run(["Rscript", str(script), *map(str, parse_paths)], capture_output=True, text=True, timeout=90)
+            script.write_text('args <- commandArgs(trailingOnly=TRUE)\nstopifnot(length(args) == 1L)\npaths <- readLines(args[[1]], encoding="UTF-8", warn=FALSE)\nfor (p in paths) parse(file=p, encoding="UTF-8")\n', encoding="utf-8")
+            # Keep the process command short enough for Windows even when every
+            # generated program and its parent folders have long absolute paths.
+            path_list = self.folder / "parse_paths.txt"
+            path_list.write_text("\n".join(path.as_posix() for path in parse_paths) + "\n", encoding="utf-8")
+            result = subprocess.run(["Rscript", str(script), str(path_list)], capture_output=True, text=True, timeout=90)
             self.assertEqual(result.returncode, 0, result.stderr)
 
 

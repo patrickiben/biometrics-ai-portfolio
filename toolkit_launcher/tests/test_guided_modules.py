@@ -174,7 +174,7 @@ class GuidedModulesTest(unittest.TestCase):
         self.assertNotIn("data.frame(category", package["files"]["interpret_tlf.qmd"])
         self.assertIn('data-theme="dark"', package["files"]["interpretation.html"])
         self.assertIn("bp-theme", package["files"]["interpretation.html"])
-        self.assertIn((ROOT / "assets/theme/tokens.css").read_text(), package["files"]["interpretation.html"])
+        self.assertIn((ROOT / "assets/theme/tokens.css").read_text(encoding="utf-8"), package["files"]["interpretation.html"])
         self.assertIn("light: flatly", package["files"]["interpret_tlf.qmd"])
 
     def test_ae_category_mapping_and_renamed_columns(self):
@@ -194,7 +194,7 @@ class GuidedModulesTest(unittest.TestCase):
         report = guided.validate("interpretation", dict(self.base, **settings), self.inputs, ROOT)
         self.assertTrue(any(e["field"] == "draft_text" for e in report["errors"]))
         settings["draft_text"] = ""
-        original = self.inputs["ae_summary"]["absolute_path"].read_text()
+        original = self.inputs["ae_summary"]["absolute_path"].read_text(encoding="utf-8")
         self.upload("ae_summary", original + "Any TEAE,10,50\n")
         self.assertTrue(guided.validate("interpretation", dict(self.base, **settings), self.inputs, ROOT)["errors"])
 
@@ -239,8 +239,14 @@ class GuidedModulesTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             guided.build("interpretation", report["normalized"], self.inputs, ROOT)
 
+    def require_jsonlite(self):
+        result = subprocess.run(["Rscript", "-e", "quit(status=if(requireNamespace('jsonlite', quietly=TRUE)) 0 else 1)"], capture_output=True, timeout=30)
+        if result.returncode:
+            self.skipTest("Optional R preview check needs jsonlite; no packages downloaded")
+
     @unittest.skipUnless(shutil.which("Rscript"), "R is not installed")
     def test_pk_preview_agrees_with_r_and_preserves_numeric_looking_labels(self):
+        self.require_jsonlite()
         self.upload("pk_summary", "trt,param,n,geomean,geocv,median\n001,NA,20,12345,23.45,0.0012345\n")
         _, package = self.valid("interpretation", summary_type="pk", treatment="001", parameter="NA", aggregate_confirmed=True)
         output = self.path / "pk_built"
@@ -248,10 +254,10 @@ class GuidedModulesTest(unittest.TestCase):
         for name, text in package["files"].items():
             p = output / name
             p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(text)
+            p.write_text(text, encoding="utf-8")
         run = subprocess.run(["Rscript", "verify_preview.R"], cwd=output, text=True, capture_output=True)
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
-        actual = json.loads((output / "r_verified_preview.json").read_text())
+        actual = json.loads((output / "r_verified_preview.json").read_text(encoding="utf-8"))
         expected = json.loads(package["files"]["facts.json"])
         self.assertEqual(actual["facts"], expected)
         self.assertEqual(actual["facts"]["treatment"], "001")
@@ -259,6 +265,7 @@ class GuidedModulesTest(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which("Rscript"), "R is not installed")
     def test_generated_r_parses_and_preview_matches_original_r_extractors(self):
+        self.require_jsonlite()
         settings = self.ae()
         _, package = self.valid("interpretation", **settings)
         output = self.path / "built"
@@ -266,10 +273,10 @@ class GuidedModulesTest(unittest.TestCase):
         for name, text in package["files"].items():
             p = output / name
             p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_text(text)
+            p.write_text(text, encoding="utf-8")
         run = subprocess.run(["Rscript", "verify_preview.R"], cwd=output, text=True, capture_output=True)
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
-        actual = json.loads((output / "r_verified_preview.json").read_text())
+        actual = json.loads((output / "r_verified_preview.json").read_text(encoding="utf-8"))
         expected = json.loads(package["files"]["audit.json"])
         self.assertEqual(actual["facts"], expected["facts"])
         self.assertEqual(actual["status"], expected["status"])
@@ -278,7 +285,7 @@ class GuidedModulesTest(unittest.TestCase):
         self.upload("findings", "finding_id,rule,findtext\nF1,R1,Finding\n")
         report = guided.validate("localmind", dict(self.base, model_name="example:latest"), self.inputs, ROOT)
         local = guided.build("localmind", report["normalized"], self.inputs, ROOT)
-        (output / "run_local_model.R").write_text(local["files"]["run_local_model.R"])
+        (output / "run_local_model.R").write_text(local["files"]["run_local_model.R"], encoding="utf-8")
         run = subprocess.run(["Rscript", "-e", "invisible(parse(file='run_local_model.R'))"], cwd=output, text=True, capture_output=True)
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
 
