@@ -29,7 +29,7 @@ class AnalysisJobsTests(unittest.TestCase):
         for name, value in self.files.items():
             path = self.bundle / name
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(value, encoding='utf-8')
+            path.write_bytes(value.encode('utf-8'))
         self.manifest = {'schema': 1, 'module_id': self.module, 'files': {name: hashlib.sha256(value.encode()).hexdigest() for name, value in self.files.items()}}
         self.set_inventory()
 
@@ -178,7 +178,7 @@ class AnalysisJobsTests(unittest.TestCase):
         for name, value in files.items():
             path = self.bundle / name
             path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(value, encoding='utf-8')
+            path.write_bytes(value.encode('utf-8'))
         self.manifest = {'schema': 1, 'module_id': self.module, 'files': {name: hashlib.sha256(value.encode()).hexdigest() for name, value in files.items()}}
         self.set_inventory()
         _, success, _ = self.plan()
