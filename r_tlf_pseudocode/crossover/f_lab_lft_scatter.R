@@ -4,7 +4,7 @@
 #             (multiples of ULN)
 # POPULATION: Safety Population (SAFFL == "Y"), on-treatment
 # INPUT     : ADLB (PARAMCD in ALT, AST, BILI; ratio-to-ULN R2ULN or AVAL/A1HI)
-# NOTE      : PSEUDOCODE. Per-participant peak (max) ALT/ULN (x) vs Total
+# NOTE      : ANALYSIS TEMPLATE. Per-participant peak (max) ALT/ULN (x) vs Total
 #             Bilirubin/ULN (y), both log scale. Crossover: within-participant, so a
 #             participant's peak is taken WITHIN each treatment period and the point
 #             is colored by ACTUAL treatment (dv$trtvar = TRTA); the same
@@ -17,7 +17,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # trtvar = TRTA ; byperiod = APERIOD/APERIODC
 
 ## ratio-to-ULN; prefer ADaM-provided R2ULN, else AVAL / A1HI (guard A1HI)
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", PARAMCD %in% c("ALT","AST","BILI")) %>%
   mutate(trt    = .data[[dv$trtvar]],
          period = .data[[dv$byperiod[2]]],

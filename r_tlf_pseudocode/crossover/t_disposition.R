@@ -3,7 +3,7 @@
 # TITLE     : Participant Disposition
 # POPULATION: All Enrolled / Randomized; columns = treatment SEQUENCE + Total
 # INPUT     : ADSL  (+ ADEX/ADDS for per-period completion if reported by period)
-# NOTE      : PSEUDOCODE. Crossover disposition is PARTICIPANT-LEVEL: a participant is
+# NOTE      : ANALYSIS TEMPLATE. Crossover disposition is PARTICIPANT-LEVEL: a participant is
 #             randomized to a SEQUENCE (TRTSEQP), not an arm, so columns are the
 #             fixed sequences (dv$seqvar) + Total -- NOT TRTA (which varies by
 #             period within participant). Counts = distinct participants; % denom =

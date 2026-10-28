@@ -3,7 +3,7 @@
 # TITLE     : Listing of Participant Disposition
 # POPULATION: All Randomized Participants (RANDFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. One row per participant. Treatment, key milestone dates,
+# NOTE      : ANALYSIS TEMPLATE. One row per participant. Treatment, key milestone dates,
 #             study/treatment completion status and discontinuation reason.
 #             Parallel-group: one treatment per participant (TRT01A), no period or
 #             sequence columns. Listing shows all randomized participants.

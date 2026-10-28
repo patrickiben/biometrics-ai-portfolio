@@ -3,7 +3,7 @@
 # TITLE     : Important Protocol Deviations by Category
 # POPULATION: All Randomized Participants (RANDFL == "Y")
 # INPUT     : ADDV  (one row per deviation; carries APERIOD for in-period events)
-# NOTE      : PSEUDOCODE. Counts = PARTICIPANTS with >=1 deviation (n_distinct
+# NOTE      : ANALYSIS TEMPLATE. Counts = PARTICIPANTS with >=1 deviation (n_distinct
 #             USUBJID), NOT deviation rows. Participant-level summary columns =
 #             treatment SEQUENCE (dv$seqvar = TRTSEQP) + Total; % denom =
 #             randomized N per sequence from bign(). Because deviations can occur
@@ -20,6 +20,7 @@ denom <- bign(adam$adsl, trtvar = dv$seqvar, popfl = "RANDFL")
 
 ## ADDV: important deviations only; carry the participant's sequence label
 pd <- adam$addv %>% filter(RANDFL == "Y", IMPDVFL == "Y") %>%   # important deviations
+  select(-any_of(dv$seqvar)) %>%
   left_join(adam$adsl %>% select(USUBJID, !!dv$seqvar), by = "USUBJID")
 
 ## --- "Any important deviation" overall row (distinct participants) --------------
@@ -39,6 +40,7 @@ bycat <- pd %>% group_by(trt = .data[[dv$seqvar]], DVCAT) %>%
 cat_ord <- bycat %>% filter(trt == "Total") %>% select(DVCAT, ord_n = nsubj)
 
 rep <- bind_rows(any_pd, bycat) %>%
+  complete_count_rows(denom) %>%
   left_join(denom, by = "trt") %>%
   mutate(value = n_pct(nsubj, N)) %>%
   left_join(cat_ord, by = "DVCAT") %>%
@@ -54,7 +56,7 @@ per_denom <- adam$adex %>% filter(SAFFL == "Y") %>%
 by_period <- pd %>% filter(!is.na(.data[[dv$byperiod[2]]])) %>%
   group_by(per = .data[[dv$byperiod[2]]]) %>%
   summarise(nsubj = n_distinct(USUBJID), .groups = "drop") %>%
-  left_join(per_denom, by = "per") %>%
+  right_join(per_denom, by = "per") %>% mutate(nsubj=replace_na(nsubj,0L)) %>%
   transmute(Period = per, `Participants with deviation` = n_pct(nsubj, N))
 
 ttl <- tfl_titles(num = "14.1.5", type = "Table",

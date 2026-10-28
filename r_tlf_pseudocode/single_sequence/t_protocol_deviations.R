@@ -3,7 +3,7 @@
 # TITLE     : Important Protocol Deviations by Category
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADDV (protocol deviation BDS) keyed back to ADSL fixed sequence
-# NOTE      : PSEUDOCODE. Counts = distinct PARTICIPANTS with >=1 deviation in a
+# NOTE      : ANALYSIS TEMPLATE. Counts = distinct PARTICIPANTS with >=1 deviation in a
 #             category (n_distinct USUBJID), NOT deviation rows. PARTICIPANT-LEVEL
 #             table -> columns = the ONE fixed sequence (dv$seqvar). Important
 #             deviations only (strict IMPDVFL == "Y" / DVCAT). Population = ALL
@@ -59,7 +59,5 @@ ttl <- tfl_titles(num = "14.1.5", type = "Table",
                 "on the number of participants enrolled per fixed sequence."))
 
 ## rtables/gt rendering; category indented under the overall "any" row
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  analyze("term", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, rep)   ## or gt::gt(rep)
+
 print(rep)

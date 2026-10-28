@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, AVAL, A1LO, A1HI, ANRIND, BASE, BNRIND,
 #             AVISIT, ADY, ONTRTFL)
-# NOTE      : PSEUDOCODE. One row per ABNORMAL post-baseline result (ANRIND in
+# NOTE      : ANALYSIS TEMPLATE. One row per ABNORMAL post-baseline result (ANRIND in
 #             LOW/HIGH), ordered by participant, parameter, study day. Shows value
 #             vs reference range, baseline value/category, and a marked flag.
 #             Limit-comparison-derived flags GUARDED with !is.na(A1HI/A1LO).
@@ -16,7 +16,7 @@ dv  <- design_vars("PARALLEL")
 mark_hi <- 1.5    # AVAL > mark_hi * A1HI -> markedly High
 mark_lo <- 0.5    # AVAL < mark_lo * A1LO -> markedly Low
 
-lab <- adam$adlb %>%
+lab <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y",
          toupper(ANRIND) %in% c("LOW","HIGH")) %>%       # abnormal post-baseline only
   mutate(

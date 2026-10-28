@@ -3,7 +3,7 @@
 # TITLE     : Listing of Adverse Events by Dose Level
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE
-# NOTE      : PSEUDOCODE. One row per AE record, ordered by dose level then
+# NOTE      : ANALYSIS TEMPLATE. One row per AE record, ordered by dose level then
 #             participant then onset. Flags SAE / TEAE / relationship / action /
 #             outcome. Listings show all events (not only treatment-emergent).
 #             SAD: treatment column = dose level (dv$trtvar = TRT01A, one single

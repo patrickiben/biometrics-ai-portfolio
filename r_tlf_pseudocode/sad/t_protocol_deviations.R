@@ -3,10 +3,10 @@
 # TITLE     : Important Protocol Deviations by Category and Dose Cohort
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADDV  (protocol deviation domain) + ADSL flags
-# NOTE      : PSEUDOCODE. Participants with >=1 deviation = distinct USUBJID
+# NOTE      : ANALYSIS TEMPLATE. Participants with >=1 deviation = distinct USUBJID
 #             (NOT deviation rows). % denominator = enrolled N per dose cohort
 #             from bign(). SAD = parallel dose cohorts; column = DOSE LEVEL
-#             (TRT01A), placebo pooled. Single dose -> one treatment per participant,
+#             (TRT01A), source treatment groups retained. Single dose -> one treatment per participant,
 #             NO period/sequence split. Important deviations per ADDV IMPDVFL
 #             (strict; no is.na fallback) -- matches the SAS twin. Three-level row
 #             hierarchy: Any important deviation -> DVCAT category -> indented
@@ -20,8 +20,7 @@ dv  <- design_vars("SAD")                       # -> trtvar = TRT01A (dose level
 ## ADSL drives the column denominators (enrolled N per dose cohort)
 adsl <- adam$adsl %>%
   filter(ENRLFL == "Y") %>%
-  mutate(dose_col = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                            "Placebo", .data[[dv$trtvar]]))
+  mutate(dose_col = .data[[dv$trtvar]])
 denom <- adsl %>%
   group_by(trt = dose_col) %>%
   summarise(N = n_distinct(USUBJID), .groups = "drop") %>%
@@ -30,8 +29,7 @@ denom <- adsl %>%
 ## protocol deviations; carry dose cohort + important-deviation flag from ADDV
 pd <- adam$addv %>%
   filter(toupper(IMPDVFL) == "Y") %>%                       # strict important deviations (IMPDVFL)
-  mutate(dose_col = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                            "Placebo", .data[[dv$trtvar]]))
+  mutate(dose_col = .data[[dv$trtvar]])
 
 ## --- helper: participants with >=1 deviation in a subset -> n (%) row ---------
 ## counts DISTINCT participants, % vs population N per cohort + Total
@@ -85,10 +83,7 @@ tab <- bind_rows(any_pd %>% mutate(ord = 0), by_cat) %>%
 ttl <- tfl_titles(num = "14.1.5", type = "Table",
    text = "Important Protocol Deviations by Category and Dose Cohort",
    pop  = "All Enrolled Participants",
-   foot = "SAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Participants counted once per category (distinct USUBJID). Percentages based on enrolled N per cohort. Important deviations per ADDV IMPDVFL.")
+   foot = "SAD: columns = ascending dose cohorts (TRT01A) with source treatment groups retained. Participants counted once per category (distinct USUBJID). Percentages based on enrolled N per cohort. Important deviations per ADDV IMPDVFL.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

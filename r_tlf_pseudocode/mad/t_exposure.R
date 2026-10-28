@@ -3,9 +3,9 @@
 # TITLE     : Extent of Study Drug Exposure by Dose Cohort
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEX  (one analysis record per participant; analysis vars AVAL/TRTDURD/NDOSES)
-# NOTE      : PSEUDOCODE. MAD = parallel dose cohorts, REPEATED daily dosing over
+# NOTE      : ANALYSIS TEMPLATE. MAD = parallel dose cohorts, REPEATED daily dosing over
 #             a multi-day regimen (e.g. Day 1 ... Day N). Column = DOSE LEVEL
-#             (TRT01A), placebo pooled + Total. Per-participant exposure summarized
+#             (TRT01A), source treatment groups retained + Total. Per-participant exposure summarized
 #             from ADaM-derived analysis vars (total cumulative dose = AVAL,
 #             treatment duration = TRTDURD, # doses = NDOSES); compliance n (%).
 #             Do NOT re-derive from raw EX (no sum(EXDOSE), no *DTC arithmetic).
@@ -39,10 +39,8 @@ dv  <- design_vars("MAD")                       # -> trtvar = TRT01A (dose level
 adex <- adam$adex %>%
   filter(SAFFL == "Y") %>%
   mutate(
-    dose_col = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                       "Placebo", .data[[dv$trtvar]]),
-    dose_ord = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                       0, .data[[dv$trtnvar]]),
+    dose_col = .data[[dv$trtvar]],
+    dose_ord = .data[[dv$trtnvar]],
     trt = dose_col)
 
 ## --- treated-participant denominators per cohort + Total (from ADEX) ----------
@@ -54,7 +52,7 @@ denom <- adex %>%
 
 ## --- continuous exposure block (ADaM analysis vars) -----------------------
 cont_block <- function(var, label, dp = 1L, ord) {
-  descstat(adex, var = var, by = "trt", dp = dp) %>%
+  descstat(with_total_column(adex,"trt"), var = var, by = "trt", dp = dp) %>%
     transmute(trt, characteristic = label, ord = ord,
               `n`         = as.character(n),
               `Mean (SD)` = paste(c_mean, c_sd),
@@ -102,15 +100,12 @@ tab <- bind_rows(cont, dose_cat, comp) %>%
 ttl <- tfl_titles(num = "14.1.4", type = "Table",
    text = "Extent of Study Drug Exposure by Dose Cohort",
    pop  = "Safety Population",
-   foot = paste("MAD: repeated daily dosing; columns = ascending dose cohorts (TRT01A) with placebo pooled.",
+   foot = paste("MAD: repeated daily dosing; columns = ascending dose cohorts (TRT01A) with source treatment groups retained.",
                 "Denominator = participants dosed per cohort (ADEX, SAFFL=='Y').",
                 "Exposure from ADaM-derived analysis vars: total cumulative dose = AVAL,",
                 "duration = TRTDURD (days), number of administrations = NDOSES. Compliance = administered / planned doses.",
                 "Accumulation (Rac), steady-state trough trend and steady-state dose-proportionality",
                 "are reported in t_accumulation.R / t_steady_state.R / t_dose_proportionality.R (ADPP/ADPC)."))
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

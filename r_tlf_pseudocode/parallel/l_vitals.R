@@ -3,7 +3,7 @@
 # TITLE     : Listing of Vital Signs
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADVS
-# NOTE      : PSEUDOCODE. One row per vital-sign assessment, ordered by participant,
+# NOTE      : ANALYSIS TEMPLATE. One row per vital-sign assessment, ordered by participant,
 #             parameter, then visit/timepoint. Shows observed value, baseline,
 #             change, and the analysis-range flag. Parallel: one treatment per
 #             participant; column = dv$trtvar (TRT01A).
@@ -12,7 +12,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")
 
-vs <- adam$advs %>% filter(SAFFL == "Y") %>%
+vs <- check_analysis_units(adam$advs) %>% filter(SAFFL == "Y") %>%
   transmute(
     Treatment   = .data[[dv$trtvar]],
     Participant     = str_extract(USUBJID, "[^-]+$"),    # short site-participant id

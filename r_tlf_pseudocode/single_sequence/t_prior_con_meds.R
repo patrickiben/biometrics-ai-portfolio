@@ -3,7 +3,7 @@
 # TITLE     : Prior and Concomitant Medications by Drug Class and Preferred Term
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADCM (WHODrug coded; PREFL / CONFL prior/concomitant flags)
-# NOTE      : PSEUDOCODE. Counts = distinct PARTICIPANTS taking a medication
+# NOTE      : ANALYSIS TEMPLATE. Counts = distinct PARTICIPANTS taking a medication
 #             (n_distinct USUBJID), NOT medication rows. PER-PERIOD table ->
 #             columns = Period 1 (Reference) | Period 2 (Test) | Total. BOTH a
 #             Prior block (PREFL == "Y") and a Concomitant block (CONFL == "Y")
@@ -85,8 +85,5 @@ ttl <- tfl_titles(num = "14.1.6", type = "Table",
                 "within period N (ADEX); Total within Safety N."))
 
 ## rtables/gt rendering; block header, ATC class bold, PT indented
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("block", page_by = FALSE) %>%
-  analyze("term", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, rep)   ## or gt::gt(rep)
+
 print(rep)

@@ -3,7 +3,7 @@
 # TITLE     : Distribution of Plasma PK Parameters by Dose Cohort (Box Plots)
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD = CMAX, AUCLST, AUCIFO, ...)
-# NOTE      : PSEUDOCODE. Box plots of exposure parameters across ascending dose
+# NOTE      : ANALYSIS TEMPLATE. Box plots of exposure parameters across ascending dose
 #             cohorts (TRT01A), with individual points overlaid (jitter).
 #             Exposure params (Cmax, AUC) on a log y-axis so the dose-ordered
 #             escalation is visible; Tmax handled on a linear axis (it is a time,
@@ -17,7 +17,7 @@ dv  <- design_vars("SAD")
 
 ## --- exposure parameters (log axis) ----------------------------------------
 expo_cd <- c("CMAX","AUCLST","AUCIFO")
-expo <- adam$adpp %>%
+expo <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% expo_cd, AVAL > 0) %>%
   mutate(trt = factor(.data[[dv$trtvar]],
                       levels = unique(.data[[dv$trtvar]][order(.data[[dv$trtnvar]])])),  # dose order
@@ -42,7 +42,7 @@ p_expo <- ggplot(expo, aes(trt, AVAL, fill = trt)) +
                      axis.text.x = element_text(angle = 30, hjust = 1))
 
 ## Tmax separately on a LINEAR axis (it is a time, summarized as Median (Min,Max))
-tmax <- adam$adpp %>% filter(PKFL == "Y", PARAMCD == "TMAX") %>%
+tmax <- check_analysis_units(adam$adpp) %>% filter(PKFL == "Y", PARAMCD == "TMAX") %>%
   mutate(trt = factor(.data[[dv$trtvar]],
                       levels = unique(.data[[dv$trtvar]][order(.data[[dv$trtnvar]])])))
 p_tmax <- ggplot(tmax, aes(trt, AVAL, fill = trt)) +

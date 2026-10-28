@@ -3,7 +3,7 @@
 # TITLE     : Listing of Pharmacodynamic / Biomarker Results
 # POPULATION: PD-Evaluable Population (PDFL == "Y")
 # INPUT     : ADPD
-# NOTE      : PSEUDOCODE. One row per PD record, ordered by dose level, participant,
+# NOTE      : ANALYSIS TEMPLATE. One row per PD record, ordered by dose level, participant,
 #             parameter, then nominal time. Shows observed value, baseline,
 #             change and % change. SAD = parallel cohorts, one dose per participant
 #             -> column = dv$trtvar (TRT01A = dose level; placebo pooled).
@@ -15,7 +15,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")                      # column = TRT01A (= dose level)
 
-pd <- adam$adpd %>% filter(PDFL == "Y") %>%
+pd <- check_analysis_units(adam$adpd) %>% filter(PDFL == "Y") %>%
   transmute(
     `Dose Level` = .data[[dv$trtvar]],
     DoseN       = .data[[dv$trtnvar]],               # numeric dose -> ascending sort key

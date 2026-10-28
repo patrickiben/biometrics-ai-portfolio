@@ -3,7 +3,7 @@
 # TITLE     : Important Protocol Deviations
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADDV (protocol deviation domain) / ADSL for flags
-# NOTE      : PSEUDOCODE. Participants with >=1 deviation = distinct USUBJID
+# NOTE      : ANALYSIS TEMPLATE. Participants with >=1 deviation = distinct USUBJID
 #             (NOT deviation rows). % denominator = enrolled N per arm from
 #             bign(). Columns = treatment arms (TRT01A) + Total. Category->Term
 #             hierarchy (DVCAT->DVDECOD) matches the SAS twin. Parallel-group:
@@ -69,8 +69,5 @@ ttl <- tfl_titles(num = "14.1.5", type = "Table",
    pop  = "All Enrolled Participants",
    foot = "A participant with multiple deviations is counted once at each level (distinct USUBJID). Percentages based on enrolled N per arm. Important deviations per ADDV IMPDVFL.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

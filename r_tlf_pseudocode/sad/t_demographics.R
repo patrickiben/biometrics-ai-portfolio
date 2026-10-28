@@ -3,7 +3,7 @@
 # TITLE     : Demographic and Baseline Characteristics by Dose Cohort
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. SAD = parallel dose cohorts; column variable = DOSE
+# NOTE      : ANALYSIS TEMPLATE. SAD = parallel dose cohorts; column variable = DOSE
 #             LEVEL (TRT01A), placebo typically pooled into one column. Single
 #             dose -> one treatment per participant, NO period/sequence structure.
 #             Continuous: n, Mean (SD), Median, Min-Max. Categorical: n (%).
@@ -24,10 +24,8 @@ adsl <- adam$adsl %>%
   ## pool placebo across cohorts (idempotent if ADaM already pooled into TRT01A);
   ## active arms keep their dose level (TRT01A)
   mutate(
-    dose_col = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       "Placebo", .data[[dv$trtvar]]),
-    dose_ord = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       0, .data[[dv$trtnvar]]))
+    dose_col = .data[[dv$trtvar]],
+    dose_ord = .data[[dv$trtnvar]])
 
 ## column denominators (N=) per dose cohort + Total
 denom <- adsl %>%
@@ -37,7 +35,7 @@ denom <- adsl %>%
 
 ## --- continuous block: AGE, WEIGHTBL, HEIGHTBL, BMIBL ----------------------
 cont_block <- function(var, label, dp = 1L, ord) {
-  descstat(adsl, var = var, by = "dose_col", dp = dp) %>%
+  descstat(with_total_column(adsl, "dose_col"), var = var, by = "dose_col", dp = dp) %>%
     transmute(trt = dose_col, characteristic = label, ord = ord,
               `n`              = as.character(n),
               `Mean (SD)`      = paste(c_mean, c_sd),
@@ -69,11 +67,8 @@ tab <- bind_rows(cont, catg) %>%
 ttl <- tfl_titles(num = "14.1.2", type = "Table",
                   text = "Demographic and Baseline Characteristics by Dose Cohort",
                   pop  = "Safety Population",
-                  foot = "SAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Percentages based on Safety Population N per cohort.")
+                  foot = "SAD: columns = ascending dose cohorts (TRT01A) with source treatment groups retained. Percentages based on Safety Population N per cohort.")
 
 ## rtables layout (regulatory): characteristic -> statistic rows x cohort columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab) for an HTML/Quarto rendering
+
 print(tab)

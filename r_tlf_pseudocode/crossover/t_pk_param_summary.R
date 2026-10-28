@@ -3,7 +3,7 @@
 # TITLE     : Summary of Plasma PK Parameters by Treatment
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD = CMAX, TMAX, AUCLST, AUCIFO, T12, CL, VZ, ...)
-# NOTE      : PSEUDOCODE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max.
+# NOTE      : ANALYSIS TEMPLATE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max.
 #             Geometric stats on the LOG scale. Tmax = Median (Min, Max) ONLY.
 #             Crossover: column = dv$trtvar (TRTA, actual treatment). Each TRTA
 #             column pools that treatment's parameters across whichever period it
@@ -15,12 +15,12 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # column = TRTA (actual treatment)
 
-pp <- adam$adpp %>% filter(PKFL == "Y") %>%
+pp <- check_analysis_units(adam$adpp) %>% filter(PKFL == "Y") %>%
   mutate(trt = .data[[dv$trtvar]])              # re-point column to crossover TRTA
 by <- c("trt", "PARAMCD", "PARAM")
 
 ## --- non-Tmax parameters: arithmetic + geometric (pkstats does log scale) --
-cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%
+cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%
   transmute(across(all_of(by)),
             n               = as.character(n),
             `Mean (SD)`     = sprintf("%.3g (%.3g)", mean, sd),
@@ -33,9 +33,9 @@ cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%
                names_to = "stat", values_to = "value")
 
 ## --- Tmax: Median (Min, Max) ONLY -----------------------------------------
-tmax <- pp %>% filter(PARAMCD == "TMAX") %>%
+tmax <- pp %>% filter(PARAMCD %in% c("TMAX","TMAXSS")) %>%
   group_by(across(all_of(by))) %>%
-  summarise(med = median(AVAL), min = min(AVAL), max = max(AVAL), .groups = "drop") %>%
+  summarise(med = safe_stat(AVAL[AVAL >= 0], median), min = safe_stat(AVAL[AVAL >= 0], min), max = safe_stat(AVAL[AVAL >= 0], max), .groups = "drop") %>%
   transmute(across(all_of(by)), stat = "Median (Min, Max)",
             value = sprintf("%.2f (%.2f, %.2f)", med, min, max))
 
@@ -53,3 +53,7 @@ ttl <- tfl_titles(num = "14.4.4.1", type = "Table",
 
 ## render: rtables split_rows_by PARAM, analyze stat; or gt grouped by PARAM
 print(tab)
+
+# Analysis sample accounting is exported alongside the descriptive table.
+print(pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), by=by) %>%
+  select(all_of(by), n_input, n, n_excluded, n_missing, n_nonpositive, n_blq_excluded))

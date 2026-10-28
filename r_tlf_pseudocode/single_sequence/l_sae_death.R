@@ -3,7 +3,7 @@
 # TITLE     : Listing of Serious Adverse Events and Deaths by Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (AESER == "Y" OR AESDTH == "Y"); DTHDT merged from ADSL
-# NOTE      : PSEUDOCODE. One row per serious / fatal AE record, ordered by
+# NOTE      : ANALYSIS TEMPLATE. One row per serious / fatal AE record, ordered by
 #             participant then onset. DDI: shows the PERIOD (APERIODC) of onset so
 #             a reviewer can attribute the event to victim-alone (Period 1) vs
 #             victim+perpetrator (Period 2). NO randomized sequence column

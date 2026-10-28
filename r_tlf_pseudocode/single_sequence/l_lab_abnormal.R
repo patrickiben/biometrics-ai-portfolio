@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, AVAL, A1LO, A1HI, ANRIND, ATOXGRN, BASE, CHG,
 #             AVISIT, ADY, ONTRTFL, APERIOD/APERIODC)
-# NOTE      : PSEUDOCODE. One row per on-treatment ABNORMAL laboratory record --
+# NOTE      : ANALYSIS TEMPLATE. One row per on-treatment ABNORMAL laboratory record --
 #             abnormal = ANRIND in (LOW,HIGH) OR CTCAE grade >=1 (ATOXGRN >= 1) --
 #             matching the SAS twin. On-treatment scope = ONTRTFL == "Y", same
 #             filter as SAS. Includes ALL participants (not only treatment-
@@ -19,7 +19,7 @@ dv  <- design_vars("SINGLESEQ")                 # byperiod = c("APERIOD","APERIO
 options(tfl.study = env$study)
 perC <- dv$byperiod[2]                           # character period label column
 
-lab <- adam$adlb %>%
+lab <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", !is.na(AVAL),
          toupper(ANRIND) %in% c("LOW", "HIGH") |
            (!is.na(ATOXGRN) & ATOXGRN >= 1)) %>%        # abnormal range OR CTCAE Gr >=1

@@ -26,6 +26,8 @@ SHINY = {
     "hours": ("Hours reconciliation", "budget_reconciliation/shiny", "budget_reconciliation/templates"),
 }
 
+ANALYSIS_PACKAGES = ("dplyr", "tidyr", "stringr", "purrr", "tibble", "rtables", "ggplot2", "ggrepel", "emmeans", "lme4", "lmerTest", "pbkrtest", "nlme", "broom", "broom.mixed", "jsonlite")
+
 TEETH_PACKAGES = ("testthat", "shiny", "bslib", "DT", "ggplot2", "htmltools")
 
 
@@ -207,6 +209,9 @@ def action_catalog() -> dict:
     add("cqtc.check", "Run hysteresis area tests", "cqtc")
     add("cqtc.run", "Run full hysteresis study", "cqtc", description="1,000 replicates per scenario; retains the complete outputs and generated page.")
     add("interpretation.check", "Test number-grounding validator", "interpretation", description="Runs the faithful and invented-number controls without a model.")
+    add("analysis.check", "Check analysis dependencies", "analysis", description="Check the R packages required by this generated study package.")
+    add("analysis.install", "Install analysis dependencies", "analysis", install=True, description="Download missing R packages into this private project's library.")
+    add("analysis.run", "Run configured analysis and QC", "analysis", description="Run the selected generated package in a new results folder. Completion does not grant scientific approval.")
     add("r_tlf.check", "Parse R template library", "r_tlf", description="Syntax check only; this does not run the templates on study data.")
     add("harness.run", "Run validation gates", "harness", ("r", "python"), description="Regenerate the evidence ledger; manual review and sign-off gates remain manual.")
     add("teeth.check", "Check defect-test dependencies", "teeth", ("r", "python"))
@@ -233,6 +238,8 @@ def build_plan(action_id: str, project_root: str | Path, options: dict | None = 
         allowed.add("port")
     if action_id == "carryover.run":
         allowed.add("cores")
+    if action_id.startswith("analysis."):
+        allowed.update({"module_id", "build_id"})
     if set(options) - allowed:
         raise JobError("Unexpected job option: " + ", ".join(sorted(set(options) - allowed)))
     if action["install"] and options.get("allow_install") is not True:
@@ -279,7 +286,37 @@ def build_plan(action_id: str, project_root: str | Path, options: dict | None = 
             raise JobError(f"The project is missing {relative}. Create a new complete project.")
         command([r, "--vanilla", str(path), *args], cwd=cwd, extra=extra)
 
-    if action_id.startswith("shiny."):
+    if action_id.startswith("analysis."):
+        from . import analysis_jobs
+        module_id, build_id = options.get("module_id"), options.get("build_id")
+        try:
+            analysis_jobs.resolve_build(root, module_id, build_id)
+        except ValueError as error:
+            raise JobError(str(error)) from None
+        packages = ANALYSIS_PACKAGES if module_id in {"r_tlf", "sas_tlf"} else ("jsonlite",)
+        if action_id == "analysis.install":
+            expr = ("p <- " + _r_vector(packages) + "; "
+                    "missing <- p[!vapply(p,requireNamespace,logical(1),quietly=TRUE)]; "
+                    "if(length(missing)) utils::install.packages(missing,lib=Sys.getenv('R_LIBS_USER'),repos='https://cloud.r-project.org'); " + _package_check(packages))
+            command([r, "--vanilla", "-e", expr], extra={"USE_BUNDLED_LIBUV": "1"})
+        elif action_id == "analysis.check":
+            command([r, "--vanilla", "-e", _package_check(packages)])
+        else:
+            runner = SOURCE_ROOT / "toolkit_launcher/analysis_runner.R"
+            if not runner.is_file():
+                raise JobError("The installed analysis engine is missing. Download the current toolkit.")
+            try:
+                run, relative = analysis_jobs.prepare_run(root, module_id, build_id)
+            except ValueError as error:
+                raise JobError(str(error)) from None
+            command([r, "--vanilla", "-e", _package_check(packages)])
+            command([sys.executable, str(SOURCE_ROOT / "toolkit_launcher/analysis_jobs.py"), str(Path(run["run_root"]) / "plan.json"), r])
+            names = ["analysis_report.html", "results.zip", "qc.json", "execution_status.csv", "output_manifest.json", "software_versions.csv", "execution_error.json"]
+            outputs.extend(relative + "/" + name for name in names)
+            plan["failure_outputs"] = list(outputs)
+            plan["output_labels"] = {relative + "/" + name: label for name, label in zip(names, ["Analysis report (HTML)", "Complete results (ZIP)", "Automated QC (JSON)", "Output status (CSV)", "Output manifest (JSON)", "Software versions (CSV)", "Execution error (JSON)"])}
+            plan["analysis"] = {"module_id": module_id, "build_id": build_id, "run_id": run["run_id"]}
+    elif action_id.startswith("shiny."):
         _, app, verb = action_id.split(".")
         args = ["--check", app]
         if verb == "install":

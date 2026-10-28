@@ -1,28 +1,26 @@
-# Early-Phase Clinical Pharmacology: R TLF Pseudocode Library
+# Early-Phase Clinical Pharmacology: Runnable R TLF Library
 
-Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to create a private project, choose design and outputs, map study CSV columns, preview requirements and generate a configured R package. Open its RStudio project and supplied driver through the editor. Reusable profiles retain study choices; setup reports identify unfinished source logic. Guided setup does not make the underlying pseudocode a validated analysis.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html). Create a private project, select a design and outputs, map study CSV columns and review the analysis settings. Preview and generate the package, then use **Check**, **Install** (if packages are missing) and **Run analysis** on its revision card. No command-line steps or study-code edits are needed for supported analyses.
 
-R twin of `../sas_tlf_pseudocode/`. ADaM-based R **pseudocode** for every Table, Listing, and
-Figure (TLF) in an early-phase clin-pharm study, with a **complete separate set per study design**.
-**Parse-checked only:** every script parses under R 4.6.0, and none has yet been run on data.
-Illustrative structure for specification and double programming, not validated production code;
-nothing here originates a reported number. In a study, reported numbers come from validated, double-programmed SAS/R TLF programs on ADaM; NCA from Phoenix WinNonlin (version per ADRG, currently 8.8) or PKNCA; CDISC conformance is checked with Pinnacle 21 (FDA engine 2304.3), which produces no reported numbers.
+The library contains **221 runnable R programs** across five designs. R is the default execution engine for both TLF setup routes; paired native SAS source is exported as an unexecuted reference. The historical folder names preserve existing links.
+
+Each attempt retains a separate report, every printed table/listing component as complete CSV and RDS, paginated HTML tables, PDF/PNG figures, software versions, recorded settings and execution QC. A failed selected output makes the run fail and exposes diagnostics. Computation does not approve a study result. QC uses synthetic data and known answers; study data, analysis populations, assumptions and suitability require review.
 
 ## Stack
 `dplyr`/`tidyr`/`purrr` (derivation) · `rtables` (regulatory table layout) · `ggplot2` (figures) ·
-`emmeans` + `lme4`/`nlme` (mixed models / BE) · `broom`/`broom.mixed` (tidy model output). It does
+`emmeans` + `lme4`/`lmerTest`/`nlme` (mixed models / BE) · `broom`/`broom.mixed` (tidy model output). It does
 not use the pharmaverse production packages (`admiral` 1.5.0 for ADaM; `tern` 0.9.13 with `rtables`
 0.6.17 for TLF layouts); it shows the underlying logic explicitly. Requires R >= 4.4.0
-(parse-checked on R 4.6.0).
+(execution QC on R 4.6.0).
 
 ## Designs (one folder each: full set per design)
 | Folder | Design | Key analysis differences |
 |---|---|---|
 | `parallel/` | Parallel-group | Between-group; treatment = `TRT01A`/`TRT01AN` |
-| `crossover/` | Crossover (2×2, Williams) | Within-participant; by `APERIOD`/`TRTSEQP`; **BE/ANOVA** = `lmer` + `emmeans`, GMR + 90% CI |
+| `crossover/` | Crossover (supported BE model: nonreplicate 2×2) | Within-participant; by `APERIOD`/`TRTSEQP`; **BE/ANOVA** = `lmerTest` + `emmeans`, explicit Satterthwaite degrees of freedom, configurable GMR CI |
 | `single_sequence/` | Single-/fixed-sequence (e.g. DDI) | By `APERIOD`; fixed order, **no** randomized sequence; ratio + 90% CI vs reference period |
 | `sad/` | Single Ascending Dose | Parallel cohorts (dose = treatment); **dose-proportionality** (power model, `lm`) |
-| `mad/` | Multiple Ascending Dose | Parallel cohorts, repeated dosing; **accumulation ratio** (Rac), steady-state assessment |
+| `mad/` | Multiple Ascending Dose | Parallel cohorts, repeated dosing; **accumulation ratio** (Rac), descriptive trough trend over a configured window |
 
 Design is wired via `design_vars("...")` in `00_setup_helpers.R` (returns `trtvar/trtnvar`,
 `seqvar/seqvarn`, `byperiod`). Programs differ only where the **statistics** genuinely differ
@@ -42,7 +40,7 @@ structurally identical, re-pointed to the design's variables.
 
 **Safety: Vitals / ECG** (ADVS, ADEG): `t_vitals_summary` · `f_vitals_change` · `l_vitals` ·
 `t_ecg_summary` · `t_ecg_qtc_categorical` · `f_qtc_change` · `l_ecg` · `t_cqtc_hysteresis` · `f_cqtc_hysteresis` (SAD, MAD;
-the prespecified C-QTc hysteresis check in [`cqtc_hysteresis/`](../cqtc_hysteresis/index.html))
+an exploratory C-QTc hysteresis diagnostic linked to the synthetic method study in [`cqtc_hysteresis/`](../cqtc_hysteresis/index.html))
 
 **PK** (ADPC, ADPP): `t_pk_conc_summary` · `l_pk_conc` · `f_pk_conc_mean` (linear+semilog) ·
 `f_pk_conc_individual` · `t_pk_param_summary` · `l_pk_param` · `f_pk_param_boxplot` ·
@@ -72,14 +70,17 @@ Treatment `TRT01A/TRT01AN` (parallel) · `TRTA/TRTAN`+`APERIOD/APERIODC`+`TRTSEQ
 populations `SAFFL/PKFL/ITTFL`; analysis `PARAMCD/AVAL/CHG/PCHG/BASE/AVISIT/ATPTN/ANRIND/BNRIND/A1HI/A1LO/R2ULN`;
 AE `TRTEMFL/AESOC/AEDECOD/AESEVN/AREL/AESER/AESDTH/AEACN`; PK `ADPC AVAL=conc`, `ADPP PARAMCD=Cmax/Tmax/AUClast/AUCinf/CL/Vz/Rac`.
 
-## Status
-Complete: **221 TLF scripts** across all five design folders + `00_setup_helpers.R`. Generated with AI
-assistance to mirror the SAS twin, then reviewed by an AI-agent panel (six reviewers by program family,
-then per-finding verification: 24 findings, **14 confirmed P0/P1 issues fixed**), then a deterministic
-sweep; human sign-off is pending. **All 222 scripts parse under `Rscript` (R 4.6.0); none has been run
-on data**, so these checks are static: `design_vars()` matches every folder, geometric PK stats compute on the
-log scale, AE/safety counts are distinct participants, single-sequence participant-level tables key on
-`dv$seqvar`, period tables denominate from a period-bearing source, exposure uses ADaM `AVAL`/`TRTDURD`/
-`NDOSES` (no `*DTC` arithmetic), and the library is free of `eDISH`/`Hy's Law` terminology. Pseudocode for
-specification and double programming; reported numbers come from validated systems. The four C-QTc hysteresis
-scripts (October 2026) postdate the panel review.
+## Analysis choices and limits
+
+- Enter actual numeric doses and their units for dose models; treatment order codes are never assumed to be doses.
+- Configure reference/test labels, PK/PD parameter codes, confidence levels, comparison bounds and MAD analysis days in the forms.
+- The crossover BE model supports complete nonreplicate 2×2 pairs. Fixed-sequence comparisons use a treatment mixed model on complete paired log observations with a participant random intercept and cannot separate treatment from period effects.
+- Accumulation uses unique paired occasions. AUC ratios require confirmation that the two AUC intervals are comparable. A trough slope confidence interval containing zero is not proof of steady state.
+- Log-scale PK summaries report excluded missing, nonpositive and BLQ values. Duplicate analysis records and incompatible units fail checks where applicable.
+- Baseline covariates and lab thresholds are configurable. Missing ADA classifications and lab grades remain unknown; no-data cells do not become negative findings.
+- C-QTc LINEAR/EMAX fits are exploratory diagnostics with explicit fit checks. They are not a qualified regulatory concentration-QTc workflow.
+- Monitoring and interpretation reports use the same execution engine. LOCALMIND remains dependent on a separately installed model service and human review.
+
+## QC
+
+The reproducible suites cover all 221 programs on synthetic fixtures, minimal required-column contracts, numerical known answers, boundary and metamorphic tests, and report/export failure handling. See [QC_REPORT.md](../QC_REPORT.md) for the release's executed checks. No licensed SAS execution or independent study-specific double programming is claimed.

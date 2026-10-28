@@ -3,7 +3,7 @@
 # TITLE     : Listing of Adverse Events
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE
-# NOTE      : PSEUDOCODE. One row per AE record, ordered by participant then onset.
+# NOTE      : ANALYSIS TEMPLATE. One row per AE record, ordered by participant then onset.
 #             DDI: shows the PERIOD (APERIODC) in which the AE started so reviewers
 #             can read events as victim-alone (Period 1) vs victim+perpetrator
 #             (Period 2). NO randomized sequence column (single-/fixed-sequence) --

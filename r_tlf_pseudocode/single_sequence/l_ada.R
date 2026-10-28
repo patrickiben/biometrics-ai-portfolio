@@ -3,7 +3,7 @@
 # TITLE     : Listing of Anti-Drug Antibody (ADA) Results
 # POPULATION: ADA-Evaluable Population (ADIS-evaluable)
 # INPUT     : ADIS
-# NOTE      : PSEUDOCODE. One row per immunogenicity sample, ordered by PERIOD,
+# NOTE      : ANALYSIS TEMPLATE. One row per immunogenicity sample, ordered by PERIOD,
 #             participant, then nominal time/visit. Shows ADA result, titer, NAb
 #             result and a derived ADA STATUS string built from the ADIS-specific
 #             flags (ADABLFL/TEADAFL/ADAPERFL/ADATRNFL/NABFL) -- same content as
@@ -41,7 +41,7 @@ adis <- adam$adis %>% filter(ADAFL == "Y") %>%
     Parameter   = PARAM,
     Visit       = AVISIT,
     `Time`      = ATPT,
-    `Baseline`      = if_else(ADABLFL == "Y", "Yes", "No"),  # baseline ADA-positive
+    `Baseline`      = flag_label(ADABLFL),  # baseline ADA-positive
     `ADA Result`    = AVALC,                          # Positive / Negative
     `Titer`         = ADATITER,
     `ADA Status`    = `ADA Status`,                   # derived status (same as SAS)

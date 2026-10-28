@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, AVAL, A1LO, A1HI, ANRIND, ATOXGRN, BASE, CHG,
 #             BNRIND, AVISIT, ADY, ADTC)
-# NOTE      : PSEUDOCODE. SAD = parallel dose cohorts; the leading sort/block
+# NOTE      : ANALYSIS TEMPLATE. SAD = parallel dose cohorts; the leading sort/block
 #             key is DOSE LEVEL (dv$trtvar = TRT01A), placebo pooled. One row per
 #             ABNORMAL laboratory record, where abnormal = ANRIND in LOW/HIGH OR
 #             a CTCAE grade >=1 (ATOXGRN >= 1) -- so a high-grade-but-in-range
@@ -18,7 +18,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")                      # leading block/sort = TRT01A (dose level)
 
-lab <- adam$adlb %>%
+lab <- check_analysis_units(adam$adlb) %>%
   ## abnormal = ANRIND in LOW/HIGH OR a CTCAE grade >=1; on-treatment, non-missing AVAL (matches SAS)
   filter(SAFFL == "Y", ONTRTFL == "Y", !is.na(AVAL),
          toupper(ANRIND) %in% c("LOW", "HIGH") | (!is.na(ATOXGRN) & ATOXGRN >= 1)) %>%

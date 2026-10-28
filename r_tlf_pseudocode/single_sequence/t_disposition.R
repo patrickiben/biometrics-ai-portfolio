@@ -3,7 +3,7 @@
 # TITLE     : Participant Disposition
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. Single-/fixed-sequence design: ONE fixed sequence
+# NOTE      : ANALYSIS TEMPLATE. Single-/fixed-sequence design: ONE fixed sequence
 #             column from ADSL (dv$seqvar = TRTSEQP; e.g. "Reference then
 #             Test+Perpetrator"). There is NO randomized sequence. PARTICIPANT-
 #             LEVEL table -> one row per participant, key on dv$seqvar. Population
@@ -86,7 +86,5 @@ ttl <- tfl_titles(num = "14.1.1", type = "Table", text = "Participant Dispositio
                 "before Period 2 contributes to reference-period dosing only."))
 
 ## rtables layout: category rows x fixed-sequence column(s) + Total
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  analyze("category", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, rep)   ## or gt::gt(rep)
+
 print(rep)

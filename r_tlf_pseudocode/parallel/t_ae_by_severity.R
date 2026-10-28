@@ -4,7 +4,7 @@
 #             Preferred Term, and Maximum Severity
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (TRTEMFL == "Y")
-# NOTE      : PSEUDOCODE. Counts = PARTICIPANTS (n_distinct USUBJID), NOT event rows.
+# NOTE      : ANALYSIS TEMPLATE. Counts = PARTICIPANTS (n_distinct USUBJID), NOT event rows.
 #             A participant is counted at their MAXIMUM severity within each SOC/PT
 #             (worst-case), so within a PT the severity columns are mutually
 #             exclusive per participant. n (%) per arm; % denominator = SAFFL N per
@@ -14,57 +14,10 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")                  # trtvar = TRT01A
 
-denom <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
-
-sev_lab <- c(`1` = "Mild", `2` = "Moderate", `3` = "Severe")
-
-adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y") %>%
-  mutate(trt = .data[[dv$trtvar]])
-
-## --- collapse to WORST severity per participant within SOC & PT -----------------
-## Within a PT a participant contributes once, at their max AESEVN (severity is an
-## intensity scale 1<2<3, so max() is the correct worst-case here -- unlike lab
-## ANRIND, which is NOT ordinal and must use the furthest-from-NORMAL rule).
-worst_pt <- adae %>%
-  group_by(trt, AESOC, AEDECOD, USUBJID) %>%
-  summarise(maxsev = max(AESEVN, na.rm = TRUE), .groups = "drop")
-
-worst_soc <- adae %>%
-  group_by(trt, AESOC, USUBJID) %>%
-  summarise(maxsev = max(AESEVN, na.rm = TRUE), .groups = "drop")
-
-worst_any <- adae %>%
-  group_by(trt, USUBJID) %>%
-  summarise(maxsev = max(AESEVN, na.rm = TRUE), .groups = "drop")
-
-## --- participant counts by severity at each level (distinct participants) ----------
-cnt <- function(df, byvars, level, termfun) {
-  df %>% group_by(across(all_of(c("trt", byvars))), sev = maxsev) %>%
-    summarise(nsubj = n_distinct(USUBJID), .groups = "drop") %>%
-    mutate(level = level, term = termfun(cur_data_all()))
-}
-any_rows <- cnt(worst_any, character(0), 0L, function(d) "Participants with any TEAE")
-soc_rows <- cnt(worst_soc, "AESOC",       1L, function(d) d$AESOC)
-pt_rows  <- cnt(worst_pt,  c("AESOC","AEDECOD"), 2L, function(d) paste0("   ", d$AEDECOD))
-
-## --- ordering: SOC by overall participant freq desc; PT within SOC desc ---------
-soc_ord <- worst_soc %>% group_by(AESOC) %>%
-  summarise(socn = n_distinct(USUBJID), .groups = "drop")
-pt_ord  <- worst_pt  %>% group_by(AESOC, AEDECOD) %>%
-  summarise(ptn = n_distinct(USUBJID), .groups = "drop")
-
-## --- assemble: long over (term x arm x severity) -> wide ((arm,sev)) -------
-rep <- bind_rows(any_rows, soc_rows, pt_rows) %>%
-  left_join(denom, by = "trt") %>%
-  mutate(value = n_pct(nsubj, N),
-         sevlab = factor(sev_lab[as.character(sev)],
-                         levels = c("Mild","Moderate","Severe"))) %>%
-  left_join(soc_ord, by = "AESOC") %>%
-  left_join(pt_ord,  by = c("AESOC","AEDECOD")) %>%
-  arrange(desc(socn), AESOC, level, desc(ptn), sevlab) %>%
-  select(term, level, trt, sevlab, value) %>%
-  pivot_wider(names_from = c(trt, sevlab), values_from = value,
-              names_sep = " / ")
+# Planned safety columns come from the population source, including zero-event arms.
+denom <- bign(adam$adsl, dv$trtvar, "SAFFL")
+adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y")
+rep <- ae_hierarchy(adae, dv$trtvar, denom, severity = TRUE)
 
 ttl <- tfl_titles(
   num  = "14.3.1.2",

@@ -5,7 +5,7 @@
 # POPULATION: PK Population (PKFL == "Y") with ADA result (ADA-evaluable)
 # INPUT     : ADPP (PARAMCD = CMAX, AUCLST, AUCIFO, TMAX; AVAL; APERIOD/APERIODC),
 #             ADIS (per-PERIOD ADA status via ADAEMFL, matched on USUBJID+APERIOD)
-# NOTE      : PSEUDOCODE. DESCRIPTIVE ONLY (matches the SAS twin -- no inferential
+# NOTE      : ANALYSIS TEMPLATE. DESCRIPTIVE ONLY (matches the SAS twin -- no inferential
 #             model). Column = fixed PERIOD (APERIODC; Period 1 = reference,
 #             subsequent period(s) = test); within each period, exposure PK
 #             parameters summarized by ADA status (positive vs negative). ADA
@@ -27,11 +27,11 @@ perN <- dv$byperiod[1]; perC <- dv$byperiod[2]  # numeric + character period
 ## not contaminate both period columns. Use ADaM flag ADAEMFL (same as SAS).
 ada_status <- adam$adis %>% filter(ADAFL == "Y") %>%
   group_by(USUBJID, APERIOD) %>%
-  summarise(ada_em = any(toupper(ADAEMFL) == "Y", na.rm = TRUE), .groups = "drop") %>%
-  mutate(ADA = if_else(ada_em, "ADA-positive", "ADA-negative"))
+  summarise(ada_em = flag_any(ADAEMFL), .groups = "drop") %>%
+  mutate(ADA = if_else(ada_em, "ADA-positive", "ADA-negative", missing = "Unknown"))
 
 ## --- exposure params; merge per-PERIOD ADA status onto each PK record -----------
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% c("CMAX","AUCLST","AUCIFO","TMAX")) %>%
   left_join(ada_status, by = c("USUBJID", "APERIOD")) %>%  # per-period match
   mutate(per    = .data[[perC]],                  # Period 1 ref / Period 2 test+perp

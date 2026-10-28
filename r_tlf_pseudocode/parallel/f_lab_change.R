@@ -4,7 +4,7 @@
 #             by Treatment
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, CHG, AVISIT/AVISITN, ANL01FL)
-# NOTE      : PSEUDOCODE. Mean change from baseline (CHG) by scheduled visit,
+# NOTE      : ANALYSIS TEMPLATE. Mean change from baseline (CHG) by scheduled visit,
 #             one panel per analyte, one line/colour per treatment arm (= dose
 #             level), error bars = +/- 1 SD. Parallel-group: arms overlaid on a
 #             common time axis (between-group, descriptive). n shown per point.
@@ -14,7 +14,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")                 # colour/line = TRT01A (= dose)
 
 ## post-baseline analysis records (one per participant/param/visit via ANL01FL)
-lb <- adam$adlb %>%
+lb <- visit_time_labels(check_analysis_units(adam$adlb)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", AVISITN > 0, !is.na(CHG),
          PARAMCD %in% c("ALT","AST","BILI","CREAT","K","HGB","WBC","PLAT")) %>%
   mutate(trt = .data[[dv$trtvar]])

@@ -3,7 +3,7 @@
 # TITLE     : Overview of Treatment-Emergent Adverse Events
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (TRTEMFL == "Y"); ADEX for per-period denominators
-# NOTE      : PSEUDOCODE. Counts = PARTICIPANTS with >=1 event (n_distinct USUBJID),
+# NOTE      : ANALYSIS TEMPLATE. Counts = PARTICIPANTS with >=1 event (n_distinct USUBJID),
 #             NOT event rows. n (%) per TREATMENT (TRTA); % denominator = SAFFL N
 #             per treatment from bign(). Because each participant is exposed to every
 #             treatment in a crossover, the per-treatment column N is the number
@@ -24,12 +24,12 @@ denom <- adam$adex %>%
   group_by(trt = .data[[dv$trtvar]]) %>%
   summarise(N = n_distinct(USUBJID), .groups = "drop") %>%
   bind_rows(tibble(trt = "Total",
-                   N = n_distinct(adam$adex$USUBJID[adam$adex$SAFFL == "Y"])))
+                   N = n_distinct(adam$adex$USUBJID[which(adam$adex$SAFFL == "Y")])))
 
 adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y")
 
 ## --- "related" set: consistent + case-safe -----------------------------------
-rel_set <- c("RELATED","POSSIBLE","PROBABLE","DEFINITE")
+rel_set <- toupper(tfl_setting_codes("related_values", "RELATED,POSSIBLE,PROBABLE,DEFINITE"))
 
 ## --- per-treatment participant counts, one explicit predicate per category -------
 ## (kept explicit per category for audit clarity; counts = distinct participants)
@@ -68,17 +68,17 @@ tot <- bind_rows(
   tibble(category = "Participants with any TEAE", ord = 1,
          nsubj = n_distinct(adae$USUBJID)),
   tibble(category = "Participants with any treatment-related TEAE", ord = 2,
-         nsubj = n_distinct(adae$USUBJID[toupper(adae$AREL) %in% rel_set])),
+         nsubj = n_distinct(adae$USUBJID[which(toupper(adae$AREL) %in% rel_set)])),
   tibble(category = "Participants with any severe TEAE", ord = 3,
-         nsubj = n_distinct(adae$USUBJID[adae$AESEVN == 3])),
+         nsubj = n_distinct(adae$USUBJID[which(adae$AESEVN == 3)])),
   tibble(category = "Participants with any serious TEAE (SAE)", ord = 4,
-         nsubj = n_distinct(adae$USUBJID[adae$AESER == "Y"])),
+         nsubj = n_distinct(adae$USUBJID[which(adae$AESER == "Y")])),
   tibble(category = "Participants with any related SAE", ord = 5,
-         nsubj = n_distinct(adae$USUBJID[adae$AESER == "Y" & toupper(adae$AREL) %in% rel_set])),
+         nsubj = n_distinct(adae$USUBJID[which(adae$AESER == "Y" & toupper(adae$AREL) %in% rel_set)])),
   tibble(category = "Participants withdrawn due to TEAE", ord = 6,
-         nsubj = n_distinct(adae$USUBJID[adae$AEACN == "DRUG WITHDRAWN"])),
+         nsubj = n_distinct(adae$USUBJID[which(adae$AEACN == "DRUG WITHDRAWN")])),
   tibble(category = "Participants with TEAE leading to death", ord = 7,
-         nsubj = n_distinct(adae$USUBJID[adae$AESDTH == "Y"]))
+         nsubj = n_distinct(adae$USUBJID[which(adae$AESDTH == "Y")]))
 ) %>% mutate(trt = "Total")
 
 ## --- n (%) with per-treatment denominator, wide by treatment -----------------
@@ -96,7 +96,5 @@ ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
                  "Related = AREL in {Related, Possible, Probable, Definite}. Severe = AESEVN=3. {meddra}."))
 
 ## rtables layout: category rows x treatment columns (+ Total)
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  analyze("category", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

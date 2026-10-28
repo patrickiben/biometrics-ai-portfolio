@@ -81,9 +81,10 @@ def schema(module_id, root):
                 _field("delta_red", "QTcF change red threshold, ms", "number", 60, min=0, max=500),
                 _field("delta_amber", "QTcF change amber threshold, ms", "number", 30, min=0, max=500),
                 _field("enrollment_ratio", "Enrollment amber ratio (actual / planned)", "number", .8, min=.01, max=1),
-                _field("query_days", "Query age amber threshold, days", "number", 30, min=0, max=3650)
+                _field("query_days", "Query age amber threshold, days", "number", 30, min=0, max=3650),
+                _field("analysis_date", "Reference date for visit checks", "date", dt.date.today().isoformat(), description="Used instead of the computer clock when checking overdue visits. Confirm the intended data cut.")
             ], "Defaults are starting assumptions. Confirm them against the study plan. Liver uses ALT/AST ≥ threshold and bilirubin > threshold; QTcF and query thresholds use >."), review]
-        return dict(title="Configure SAS monitoring", intro="Build a local SAS review package from mapped CSV feeds. Generation does not run SAS, schedule checks, send messages, or make clinical decisions.", steps=steps, inputs=[_input(s) for s in list(FEEDS)[:9]])
+        return dict(title="Configure monitoring checks", intro="Build a local R analysis package from mapped CSV feeds, with native SAS reference exports. Generate a revision, then check packages and run through its buttons. No scheduling, messages or clinical decisions are automated.", steps=steps, inputs=[_input(s) for s in list(FEEDS)[:9]])
     if module_id == "localmind":
         return dict(title="Configure LOCALMIND review", intro="Prepare an unapproved review worklist from your existing findings. Optional local-model execution happens only when you explicitly run the generated R driver.", steps=[study,
             _step("inputs", "Upload and map findings"),
@@ -287,6 +288,13 @@ def validate(module_id, values, inputs, root):
                     norm[field["id"]] = _number(norm[field["id"]], field["id"], errors, field["min"], field["max"], field["id"] == "query_days")
         if "qtcf" in checks and (norm["qtcf_amber"] >= norm["qtcf_red"] or norm["delta_amber"] >= norm["delta_red"]):
             _error(errors, "qtcf_red", "Red QTcF thresholds must be greater than their amber thresholds.")
+        if "visits" in checks:
+            try:
+                if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", norm["analysis_date"]):
+                    raise ValueError()
+                dt.date.fromisoformat(norm["analysis_date"])
+            except (ValueError, TypeError):
+                _error(errors, "analysis_date", "Choose a valid explicit reference date for visit checks.")
         for slot in [s for c in checks for s in CHECKS[c][2]]:
             rows = _rows(slot, norm, inputs, errors)
             if slot in ("liver", "qtcf", "clinical", "randomization"):
@@ -314,7 +322,7 @@ def validate(module_id, values, inputs, root):
             if slot == "visits":
                 _range(rows, "WINDOW_DAYS", slot, errors, 0)
             summary.append(f"{LABELS[slot]}: {len(rows)} mapped rows")
-        warnings += ["SAS execution and study-specific statistical validation remain required. The package includes no scheduler, automatic delivery, or automated clinical decisions.", "Feed freshness is not inferred from CSV upload time. Confirm extraction dates and data-cut completeness before each run."]
+        warnings += ["Run the mapped checks with R from the generated revision, then review the results and study-specific assumptions. Native SAS exports are unexecuted references. No scheduler, automatic delivery or automated clinical decisions are included.", "Feed freshness is not inferred from CSV upload time. Confirm extraction dates and data-cut completeness before each run."]
         if "liver" in checks:
             warnings.append("Liver input must contain one reviewed peak-value row per participant; timing and clinical causality need separate assessment.")
     elif module_id == "localmind":
@@ -507,7 +515,7 @@ def build(module_id, normalized, inputs, root):
         for check in n["checks"]:
             driver.append(calls[check] + f"\ntitle '{CHECKS[check][0]}: review required';\nproc print data=work.result_{check}; run;\nproc export data=work.result_{check} outfile=\"%sysfunc(pathname(work))/results_{check}.csv\" dbms=csv replace; run;\n")
         driver.append("ods html close;\ntitle;\n/* Empty output is not evidence that a data cut is complete or clinically acceptable. */\n")
-        files.update({"monitor_checks.sas": "\n\n".join(macros), "run_monitor.sas": "\n".join(driver), "START_HERE.txt": "Open run_monitor.sas in SAS Studio, Enterprise Guide or another licensed SAS interface and choose Run. The file embeds the selected macros and typed inputs; no working-folder change, file-path editing or other code edits are required. Results are staged in the SAS session WORK folder and shown through SAS output. Review the SAS log, data-cut completeness, results tables and monitor_results.html before use. Save reviewed files from WORK using the SAS interface before ending the session. Canonical CSVs and a separate macro file accompany the package for inspection. Generation has not run or validated SAS. No email or scheduled process is enabled.\n"})
+        files.update({"monitor_checks.sas": "\n\n".join(macros), "run_monitor.sas": "\n".join(driver), "START_HERE.txt": "Use Check, Install packages if needed, and Run analysis and QC on this generated revision in the local toolkit. R executes all selected checks and retains a separate report, QC record and results ZIP for each run. Native SAS reference alternative: open run_monitor.sas in a licensed SAS interface and choose Run; this reference has not been executed or reconciled against R. The file embeds the selected macros and typed inputs; no working-folder change, file-path editing or other code edits are required. Results are staged in the SAS session WORK folder and shown through SAS output. Review the SAS log, data-cut completeness, results tables and monitor_results.html before use. Save reviewed files from WORK using the SAS interface before ending the session. Canonical CSVs and a separate macro file accompany the package for inspection. Generation has not run or validated SAS. No email or scheduled process is enabled.\n"})
     elif module_id == "localmind":
         rows = _rows("findings", n, inputs, [])
         files["inputs/findings.csv"] = _csv(rows, [c[0] for c in FEEDS["findings"]])

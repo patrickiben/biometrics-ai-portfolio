@@ -5,7 +5,7 @@
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (AVAL = concentration; ATPTN nominal / ARRLT actual time;
 #             APERIOD; TRTA; TRTSEQP)
-# NOTE      : PSEUDOCODE. Spaghetti plot of individual concentration-time
+# NOTE      : ANALYSIS TEMPLATE. Spaghetti plot of individual concentration-time
 #             profiles, one line per participant, faceted by participant (or small
 #             multiples) with the two crossover periods distinguished by colour
 #             = actual treatment (TRTA). Within-participant design -> each participant's
@@ -17,7 +17,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", AVAL > 0, !is.na(ARRLT)) %>%   # >0 for log axis
   transmute(
     subj  = str_extract(USUBJID, "[^-]+$"),

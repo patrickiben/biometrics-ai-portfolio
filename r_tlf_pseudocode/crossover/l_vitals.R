@@ -3,7 +3,7 @@
 # TITLE     : Listing of Vital Signs
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADVS (all vital-sign parameters)
-# NOTE      : PSEUDOCODE. One row per vital-sign assessment, ordered within
+# NOTE      : ANALYSIS TEMPLATE. One row per vital-sign assessment, ordered within
 #             participant by treatment PERIOD then timepoint. Crossover: show
 #             treatment (dv$trtvar = TRTA), the period (dv$byperiod = APERIODC)
 #             and sequence (dv$seqvar = TRTSEQP) so the within-participant crossover
@@ -14,7 +14,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # trtvar=TRTA; seqvar=TRTSEQP; byperiod=APERIOD/APERIODC
 
-vs <- adam$advs %>% filter(SAFFL == "Y") %>%
+vs <- check_analysis_units(adam$advs) %>% filter(SAFFL == "Y") %>%
   transmute(
     Participant    = str_extract(USUBJID, "[^-]+$"),         # short site-participant id
     Sequence   = .data[[dv$seqvar]],                     # TRTSEQP (fixed per participant)

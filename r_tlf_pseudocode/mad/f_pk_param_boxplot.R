@@ -4,7 +4,7 @@
 #             (Box Plots)
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD = CMAX/CMAXSS, AUCLST/AUCTAU, CMINSS, CTROUGH, ...)
-# NOTE      : PSEUDOCODE. Box plots of exposure parameters across ascending dose
+# NOTE      : ANALYSIS TEMPLATE. Box plots of exposure parameters across ascending dose
 #             cohorts (TRT01A), individual points overlaid (jitter). Exposure
 #             params on a log y-axis so the dose-ordered escalation is visible;
 #             Tmax on a linear axis (a time, not an exposure). MAD: fill = dosing
@@ -21,7 +21,7 @@ dv  <- design_vars("MAD")
 ## --- exposure parameters (log axis), Day 1 single-dose vs Day N steady state -
 ## CMAX/AUCLST = Day 1; CMAXSS/AUCTAU = Day N. Map to common labels for paneling.
 expo_cd <- c("CMAX","AUCLST","CMAXSS","AUCTAU")
-expo <- adam$adpp %>%
+expo <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% expo_cd, AVAL > 0) %>%
   mutate(trt   = factor(.data[[dv$trtvar]],
                         levels = unique(.data[[dv$trtvar]][order(.data[[dv$trtnvar]])])),  # dose order
@@ -52,7 +52,7 @@ p_expo <- ggplot(expo, aes(trt, AVAL, fill = day)) +
                      axis.text.x = element_text(angle = 30, hjust = 1))
 
 ## Tmax separately on a LINEAR axis (a time; Median (Min,Max)) - both occasions
-tmax <- adam$adpp %>% filter(PKFL == "Y", PARAMCD == "TMAX") %>%
+tmax <- check_analysis_units(adam$adpp) %>% filter(PKFL == "Y", PARAMCD == "TMAX") %>%
   mutate(trt = factor(.data[[dv$trtvar]],
                       levels = unique(.data[[dv$trtvar]][order(.data[[dv$trtnvar]])])),
          day = factor(AVISIT))

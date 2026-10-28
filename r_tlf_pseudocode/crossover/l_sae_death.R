@@ -3,7 +3,7 @@
 # TITLE     : Listing of Serious Adverse Events and Deaths
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (AESER == "Y" OR AESDTH == "Y")
-# NOTE      : PSEUDOCODE. One row per SAE / death record, ordered by sequence,
+# NOTE      : ANALYSIS TEMPLATE. One row per SAE / death record, ordered by sequence,
 #             participant, period, then onset. Crossover requires SEQUENCE
 #             (dv$seqvar=TRTSEQP) and PERIOD (dv$byperiod=APERIOD/APERIODC) so
 #             each serious event is traceable to the treatment in effect at

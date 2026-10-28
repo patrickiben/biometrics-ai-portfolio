@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y"), on-treatment records (ONTRTFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, AVAL, BASE, CHG, ANRIND, A1LO, A1HI, ATOXGRN,
 #             AVISIT/AVISITN, ADT/ADY, TRTA/TRTAN, APERIOD/APERIODC, TRTSEQP, ONTRTFL)
-# NOTE      : PSEUDOCODE. One row per ABNORMAL on-treatment laboratory record,
+# NOTE      : ANALYSIS TEMPLATE. One row per ABNORMAL on-treatment laboratory record,
 #             where abnormal = ANRIND in (LOW,HIGH) OR a CTCAE toxicity grade
 #             >= 1 (ATOXGRN), on-treatment scope ONTRTFL == "Y", matching the SAS
 #             twin. Crossover: ordered by SEQUENCE (dv$seqvar = TRTSEQP, the
@@ -21,7 +21,7 @@ dv  <- design_vars("CROSSOVER")    # trtvar = TRTA ; seqvar = TRTSEQP ; byperiod
 
 ## abnormal on-treatment lab records (matches SAS: SAFFL='Y' AND ONTRTFL='Y' AND
 ## (ANRIND in LOW/HIGH OR ATOXGRN >= 1)); baseline context via BASE/CHG columns.
-lab_abn <- adam$adlb %>%
+lab_abn <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y",                  # on-treatment scope
          toupper(ANRIND) %in% c("LOW", "HIGH") |        # abnormal = Low/High OR
            (!is.na(ATOXGRN) & ATOXGRN >= 1)) %>%        #   CTCAE toxicity grade >= 1

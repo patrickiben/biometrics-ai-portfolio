@@ -3,7 +3,7 @@
 # TITLE     : Mean Change from Baseline in QTcF over Time by Treatment
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEG (PARAMCD = QTCF; CHG from period baseline)
-# NOTE      : PSEUDOCODE. Within-participant crossover view: mean (+/-90% CI) CHG in
+# NOTE      : ANALYSIS TEMPLATE. Within-participant crossover view: mean (+/-90% CI) CHG in
 #             QTcF from the PERIOD baseline over scheduled timepoint, one line
 #             per treatment (dv$trtvar = TRTA). 90% CI is the conventional
 #             central-tendency presentation. Reference lines at 0, 30 and 60 ms
@@ -15,7 +15,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # trtvar = TRTA
 
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", PARAMCD == "QTCF", !is.na(CHG)) %>%
   mutate(trt = .data[[dv$trtvar]])
 

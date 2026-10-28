@@ -4,7 +4,7 @@
 #             (Linear and Semi-Logarithmic)
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (PARAMCD = analyte concentration; ATPTN nominal time)
-# NOTE      : PSEUDOCODE. Per dose cohort x nominal time, two panels:
+# NOTE      : ANALYSIS TEMPLATE. Per dose cohort x nominal time, two panels:
 #             LINEAR panel = ARITHMETIC mean +/- 1 SD; SEMI-LOG panel =
 #             GEOMETRIC mean (exp(mean(log(AVAL))) over AVAL > 0), no SD whiskers
 #             -- matches the SAS twin and standard PK convention (geometric mean
@@ -16,7 +16,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", ANL01FL == "Y",
          !(AVAL <= 0 | toupper(coalesce(AVALC,"")) == "BLQ"))   # drop BLQ for mean profile
 

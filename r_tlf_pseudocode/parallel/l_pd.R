@@ -3,7 +3,7 @@
 # TITLE     : Listing of Pharmacodynamic / Biomarker Results
 # POPULATION: PD-Evaluable Population (PDFL == "Y")
 # INPUT     : ADPD
-# NOTE      : PSEUDOCODE. One row per PD record, ordered by treatment, participant,
+# NOTE      : ANALYSIS TEMPLATE. One row per PD record, ordered by treatment, participant,
 #             parameter, then nominal time. Shows observed value, baseline,
 #             change and % change. Parallel-group: one treatment per participant ->
 #             column = dv$trtvar (TRT01A, = dose for ascending-dose layouts).
@@ -14,7 +14,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")
 
-pd <- adam$adpd %>% filter(PDFL == "Y") %>%
+pd <- check_analysis_units(adam$adpd) %>% filter(PDFL == "Y") %>%
   transmute(
     Treatment   = .data[[dv$trtvar]],
     Participant     = str_extract(USUBJID, "[^-]+$"),    # short site-participant id

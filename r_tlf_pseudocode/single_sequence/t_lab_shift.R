@@ -5,7 +5,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, BNRIND baseline index, ANRIND post-baseline
 #             index, APERIOD/APERIODC, ABLFL, ONTRTFL, ANL01FL)
-# NOTE      : PSEUDOCODE. PERIOD table -> split by dv$byperiod (APERIOD/APERIODC):
+# NOTE      : ANALYSIS TEMPLATE. PERIOD table -> split by dv$byperiod (APERIOD/APERIODC):
 #             Period 1 = reference (victim alone), Period 2 = test (victim +
 #             perpetrator). Cross-tab the WITHIN-PERIOD baseline category (BNRIND
 #             carried on the period's records) x WORST post-baseline category per
@@ -26,7 +26,7 @@ perC <- dv$byperiod[2]                           # character period label column
 cat_levels <- c("LOW","NORMAL","HIGH")
 
 ## post-baseline records with a usable normal-range index, within period
-post <- adam$adlb %>%
+post <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("ALT","AST","BILI","ALP","CREAT","K","NA","HGB","WBC","PLAT"),
          !is.na(ANRIND)) %>%
@@ -78,10 +78,5 @@ ttl <- tfl_titles(num = "14.3.4.2", type = "Table",
                 "no normal range excluded."))
 
 ## render: per parameter, per PERIOD block -> baseline rows x worst-category cols
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM", page_by = TRUE) %>%
-  split_cols_by("per") %>%
-  split_rows_by("base", split_label = "Baseline Category") %>%
-  analyze(c("LOW","NORMAL","HIGH"))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

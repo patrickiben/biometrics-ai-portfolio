@@ -67,7 +67,8 @@ class GuidedModulesTest(unittest.TestCase):
         for prohibited in ("tm_email", "tm_digest", "tm_alert", "smtp", "CP-101", "approved=1"):
             self.assertNotIn(prohibited, driver)
         self.assertIn("%macro tm_chk_queries", package["files"]["monitor_checks.sas"])
-        self.assertIn("SAS execution", " ".join(package["limitations"]))
+        self.assertIn("Native SAS exports are unexecuted references", " ".join(package["limitations"]))
+        self.assertIn("Run the mapped checks with R", " ".join(package["limitations"]))
 
     def test_monitor_embeds_text_as_hex_and_dates_as_sas_days(self):
         self.upload("visits", 'USUBJID,VISIT,ACTDT,PLANDT,WINDOW_DAYS\n"P1; %put &secret;",Week 1,,2026-01-01,3\n')

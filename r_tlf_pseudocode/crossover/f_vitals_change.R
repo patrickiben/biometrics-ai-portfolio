@@ -3,7 +3,7 @@
 # TITLE     : Mean Change from Baseline in Vital Signs over Time by Treatment
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADVS (PARAMCD = SYSBP, DIABP, PULSE)
-# NOTE      : PSEUDOCODE. Within-participant crossover view: mean (+/-SE) CHG from
+# NOTE      : ANALYSIS TEMPLATE. Within-participant crossover view: mean (+/-SE) CHG from
 #             the PERIOD baseline plotted over scheduled visit, one line per
 #             treatment (dv$trtvar = TRTA). Each participant contributes a within-
 #             period change profile to the treatment given in that period.
@@ -13,7 +13,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # trtvar = TRTA; byperiod = APERIOD/APERIODC
 
-vs <- adam$advs %>%
+vs <- visit_time_labels(check_analysis_units(adam$advs)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("SYSBP","DIABP","PULSE"), !is.na(CHG)) %>%
   mutate(trt = .data[[dv$trtvar]])

@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, AVAL, BASE, CHG, AVISIT/AVISITN, APERIOD/
 #             APERIODC, ANL01FL)
-# NOTE      : PSEUDOCODE. PERIOD table -> split by dv$byperiod (APERIOD/APERIODC):
+# NOTE      : ANALYSIS TEMPLATE. PERIOD table -> split by dv$byperiod (APERIOD/APERIODC):
 #             Period 1 = reference (victim alone), Period 2 = test (victim +
 #             perpetrator). Per parameter x scheduled visit x PERIOD: n, Mean (SD),
 #             Median, Min-Max for the observed value (AVAL) AND change from
@@ -20,7 +20,7 @@ options(tfl.study = env$study)
 perC <- dv$byperiod[2]                           # character period label column
 
 ## one analysis record per participant/param/visit/period (ANL01FL keeps the reading)
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("ALT","AST","BILI","ALP","CREAT","BUN","GLUC",
                         "K","NA","HGB","WBC","PLAT","NEUT")) %>%
@@ -36,8 +36,8 @@ perdenom <- adam$adex %>%
 ## --- descriptive block: reuse descstat() for AVAL then CHG -----------------
 ## by = param, visit (ordered by AVISITN), PERIOD. Baseline visit CHG omitted.
 lab_block <- function(var, statset_label) {
-  descstat(lb, var = var, by = c("PARAMCD","PARAM","AVISITN","AVISIT", perC)) %>%
-    transmute(PARAMCD, PARAM, AVISITN, AVISIT, per = .data[[perC]],
+  descstat(lb, var = var, by = c("PARAMCD","PARAM","AVISITN","ATPTN","ATPT","AVISIT", perC)) %>%
+    transmute(PARAMCD, PARAM, AVISITN, AVISIT, ATPTN, ATPT, per = .data[[perC]],
               measure = statset_label,
               `n`         = as.character(n),
               `Mean (SD)` = paste(c_mean, c_sd),
@@ -54,7 +54,7 @@ chg  <- lab_block("CHG",  "Change from Baseline") %>%
 ## --- stack: parameter -> visit -> measure -> statistic rows x PERIOD cols ----
 tab <- bind_rows(aval, chg) %>%
   arrange(PARAM, AVISITN, factor(measure, c("Observed Value","Change from Baseline")), stat) %>%
-  select(PARAM, AVISIT, measure, stat, per, value) %>%
+  select(PARAM, AVISIT, ATPTN, ATPT, measure, stat, per, value) %>%
   pivot_wider(names_from = per, values_from = value)
 
 ttl <- tfl_titles(num = "14.3.4.1", type = "Table",
@@ -67,10 +67,5 @@ ttl <- tfl_titles(num = "14.3.4.1", type = "Table",
                 "value on/before first dose; change = post-baseline - baseline."))
 
 ## rtables layout: PARAM -> AVISIT -> measure split, statistic rows x PERIOD cols
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM",   page_by = TRUE) %>%
-  split_rows_by("AVISIT")  %>%
-  split_rows_by("measure") %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

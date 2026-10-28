@@ -22,6 +22,8 @@ class GuidedTLFTests(unittest.TestCase):
     def inputs(self, rows):
         inputs = {}
         for slot, records in rows.items():
+            if records and "AVAL" in records[0]:
+                records = [dict(record, AVALU=record.get("AVALU", "synthetic unit")) for record in records]
             path = self.folder / (slot + ".csv")
             columns = list(records[0])
             with path.open("w", newline="", encoding="utf-8") as out:
@@ -35,10 +37,10 @@ class GuidedTLFTests(unittest.TestCase):
         return {"study_id": "NEUTRAL-007", "design": "parallel", "outputs": ["t_pk_param_summary"], "reviewed": True, **kw}
 
     def pk_input(self):
-        return self.inputs({"adpp": [{"participant": "0007", "arm": "Treatment A", "included": "Included", "parameter": "CMAX", "parameter_label": "Maximum concentration", "value": "12.5"}]})
+        return self.inputs({"adpp": [{"participant": "0007", "arm": "Treatment A", "included": "Included", "parameter": "CMAX", "parameter_label": "Maximum concentration", "value": "12.5", "unit": "ng/mL"}]})
 
     def pk_values(self, **kw):
-        return self.base(pk_yes="Included", columns={"adpp": {"USUBJID": "participant", "TRT01A": "arm", "PKFL": "included", "PARAMCD": "parameter", "PARAM": "parameter_label", "AVAL": "value"}}, **kw)
+        return self.base(pk_yes="Included", columns={"adpp": {"USUBJID": "participant", "TRT01A": "arm", "PKFL": "included", "PARAMCD": "parameter", "PARAM": "parameter_label", "AVAL": "value", "AVALU": "unit"}}, **kw)
 
     def test_mapping_preserves_ids_and_supplies_loader_and_driver(self):
         inputs = self.pk_input()
@@ -53,7 +55,10 @@ class GuidedTLFTests(unittest.TestCase):
         self.assertIn('as.numeric(adam$adpp$AVAL)', output["files"]["r/00_setup.R"])
         self.assertNotIn('as.numeric(adam$adpp$USUBJID)', output["files"]["r/00_setup.R"])
         self.assertIn("execution_status.csv", output["files"]["r/00_run.R"])
-        self.assertIn("configured draft", output["files"]["template_inventory.json"])
+        self.assertIn("configured analysis", output["files"]["template_inventory.json"])
+        self.assertIn("unexecuted reference", output["files"]["template_inventory.json"])
+        self.assertIn("01_analysis_models.R", output["files"]["r/00_setup.R"])
+        self.assertIn("toolkit_launcher/analysis_runner.R", output["files"])
         self.assertIn('env <- guided_setup()', output["files"]["r/programs/t_pk_param_summary.R"])
         self.assertEqual(set(result["normalized"]) - {f["id"] for s in tlf.schema("r_tlf", ROOT)["steps"] for f in s["fields"]}, {"columns"})
 
@@ -101,8 +106,7 @@ class GuidedTLFTests(unittest.TestCase):
             self.assertNotIn(field, cqtc["adpc"])
         self.assertNotIn("PKFL", cqtc["adeg"])
         sas = tlf._inventory("sas_tlf", ROOT)["crossover"]["t_pk_param_by_period"]["requirements"]
-        self.assertIn("TRTA", sas["adsl"])
-        self.assertNotIn("TRTSEQP", sas["adsl"])
+        self.assertEqual(sas, period, "Both entry points use the supported R execution contract")
 
     def test_sas_driver_is_self_contained_and_metadata_cannot_inject_code(self):
         inputs = self.inputs({"adpp": [{"USUBJID": "0001", "TRT01A": "A", "TRT01AN": "1", "PKFL": "Y", "PARAMCD": "CMAX", "PARAM": "Cmax", "AVAL": "10"}], "adsl": [{"USUBJID": "0001", "TRT01A": "A", "TRT01AN": "1", "PKFL": "Y"}]})
@@ -123,12 +127,16 @@ class GuidedTLFTests(unittest.TestCase):
     def test_study_and_cross_domain_participant_mismatches_block_generation(self):
         rows = {"adpp": [{"STUDYID": "OTHER-STUDY", "USUBJID": "002", "TRT01A": "A", "TRT01AN": "1", "PKFL": "Y", "PARAMCD": "CMAX", "PARAM": "Cmax", "AVAL": "10"}], "adsl": [{"STUDYID": "NEUTRAL-007", "USUBJID": "001", "TRT01A": "A", "TRT01AN": "1", "PKFL": "Y"}]}
         inputs = self.inputs(rows)
-        result = tlf.validate("sas_tlf", self.base(), inputs, ROOT)
+        for row in rows["adsl"]:
+            row.update(SAFFL="Y", AGE="35", SEX="F", RACE="ASIAN", ETHNIC="NOT HISPANIC", HEIGHTBL="165", WEIGHTBL="60", BMIBL="22")
+        inputs = self.inputs(rows)
+        selected = self.base(outputs=["t_pk_param_summary", "t_demographics"])
+        result = tlf.validate("sas_tlf", selected, inputs, ROOT)
         fields = [e["field"] for e in result["errors"]]
         self.assertIn("columns.adpp.STUDYID", fields)
         self.assertIn("inputs.adpp", fields)
         rows["adpp"][0].update(STUDYID="NEUTRAL-007", USUBJID="001")
-        result = tlf.validate("sas_tlf", self.base(), self.inputs(rows), ROOT)
+        result = tlf.validate("sas_tlf", selected, self.inputs(rows), ROOT)
         self.assertEqual(result["errors"], [])
 
     def test_sas_character_payloads_cannot_become_source_or_raw_data_terminators(self):
@@ -160,33 +168,69 @@ class GuidedTLFTests(unittest.TestCase):
         if probe.returncode == 42:
             self.skipTest("TLF R packages are not installed; no packages downloaded")
         self.assertEqual(probe.returncode, 0, probe.stderr)
-        data = [{"participant": id, "arm": "Treatment A", "included": "Included", "parameter": param, "parameter_label": param, "value": value}
+        data = [{"participant": id, "arm": "Treatment A", "included": "Included", "parameter": param, "parameter_label": param, "value": value, "unit": "ng/mL"}
                 for id in ("0007", "0008") for param, value in (("CMAX", "12.5"), ("TMAX", "2"))]
         inputs = self.inputs({"adpp": data})
         output = tlf.build("r_tlf", self.pk_values(), inputs, ROOT)
         for name, content in output["files"].items():
-            target = self.folder / name
+            target = self.folder / "bundle" / name
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text(content, encoding="utf-8")
-        driver = self.folder / "r/00_run.R"
+        driver = self.folder / "bundle/r/00_run.R"
         run = subprocess.run(["Rscript", "-e", "source(" + json.dumps(str(driver)) + ")"], capture_output=True, text=True, timeout=60)
         self.assertEqual(run.returncode, 0, run.stderr)
-        with (self.folder / "r/draft_results/execution_status.csv").open(encoding="utf-8", newline="") as file:
+        results = self.folder / "bundle-analysis-results"
+        runs = list(results.iterdir())
+        self.assertEqual(len(runs), 1)
+        first = runs[0]
+        with (first / "execution_status.csv").open(encoding="utf-8", newline="") as file:
             status = next(csv.DictReader(file))
-        self.assertEqual(status["execution"], "executed draft; not validated")
+        self.assertEqual(status["status"], "completed")
         self.assertEqual(status["error"], "")
-        verify = 'bundle_root<-' + json.dumps(str(driver.parent)) + ';source(file.path(bundle_root,"00_setup.R"));stopifnot(identical(adam$adpp$USUBJID,c("0007","0007","0008","0008")),all(adam$adpp$PKFL=="Y"));x<-readRDS(file.path(bundle_root,"draft_results/t_pk_param_summary.rds"));stopifnot(is.data.frame(x$tab),any(grepl("12.5",as.character(x$tab[["Treatment A"]]))))'
+        self.assertTrue(json.loads((first / "qc.json").read_text())["passed"])
+        verify = 'bundle_root<-' + json.dumps(str(driver.parent)) + ';source(file.path(bundle_root,"00_setup.R"));stopifnot(identical(adam$adpp$USUBJID,c("0007","0007","0008","0008")),all(adam$adpp$PKFL=="Y"));x<-readRDS(' + json.dumps(str(first / "outputs/t_pk_param_summary/component-01.rds")) + ');stopifnot(is.data.frame(x),any(grepl("12.5",as.character(x[["Treatment A"]]))))'
         verified = subprocess.run(["Rscript", "-e", verify], capture_output=True, text=True, timeout=60)
         self.assertEqual(verified.returncode, 0, verified.stderr)
-        # Exercise the driver's honest failure status without changing library sources.
         (driver.parent / "programs/t_pk_param_summary.R").write_text('stop("intentional test failure")\n', encoding="utf-8")
         failed = subprocess.run(["Rscript", "-e", "source(" + json.dumps(str(driver)) + ")"], capture_output=True, text=True, timeout=60)
-        self.assertEqual(failed.returncode, 0, failed.stderr)
-        with (self.folder / "r/draft_results/execution_status.csv").open(encoding="utf-8", newline="") as file:
+        self.assertNotEqual(failed.returncode, 0, failed.stderr)
+        second = next(path for path in results.iterdir() if path != first)
+        with (second / "execution_status.csv").open(encoding="utf-8", newline="") as file:
             status = next(csv.DictReader(file))
-        self.assertEqual(status["execution"], "failed")
+        self.assertEqual(status["status"], "failed")
         self.assertEqual(status["error"], "intentional test failure")
-        self.assertFalse((self.folder / "r/draft_results/t_pk_param_summary.rds").exists(), "A failed rerun must not leave a stale successful analysis object")
+        self.assertFalse((second / "outputs/t_pk_param_summary/component-01.rds").exists())
+        self.assertTrue((first / "outputs/t_pk_param_summary/component-01.rds").is_file())
+
+    def test_custom_baseline_covariates_are_mapped_and_typed_without_disease_defaults(self):
+        inputs = self.inputs({"adsl": [{"USUBJID": "001", "TRT01A": "A", "SAFFL": "Y", "source_score": "3.25", "source_group": "Category A"}]})
+        values = self.base(outputs=["t_baseline_characteristics"], baseline_continuous="custom_score", baseline_categorical="CUSTOM_GROUP",
+                           columns={"adsl": {"CUSTOM_SCORE": "source_score", "CUSTOM_GROUP": "source_group"}})
+        result = tlf.validate("r_tlf", values, inputs, ROOT)
+        self.assertEqual(result["errors"], [])
+        self.assertIn("CUSTOM_SCORE", result["requirements"]["adsl"])
+        self.assertNotIn("SBPBL", result["requirements"]["adsl"])
+        output = tlf.build("r_tlf", result["normalized"], inputs, ROOT)
+        self.assertIn('adam$adsl[["CUSTOM_SCORE"]] <- as.numeric', output["files"]["r/00_setup.R"])
+        self.assertIn('length CUSTOM_SCORE 8;', output["files"]["sas/00_run.sas"])
+        values["baseline_categorical"] = "CUSTOM_SCORE"
+        self.assertIn("baseline_categorical", [item["field"] for item in tlf.validate("r_tlf", values, inputs, ROOT)["errors"]])
+
+    def test_unused_study_controls_do_not_block_an_unrelated_output(self):
+        values = self.pk_values(baseline_continuous="", baseline_categorical="", pk_parameters="", mad_pk_parameters="",
+            lab_high_limits="", lab_low_limits="", dose_map="not configured", be_confidence="", analysis_day="", pd_parameter="", pk_parameter="", profile_days="", steady_state_first_day="", cqtc_form="")
+        result = tlf.validate("r_tlf", values, self.pk_input(), ROOT)
+        self.assertEqual(result["errors"], [])
+        tlf.build("r_tlf", result["normalized"], self.pk_input(), ROOT)
+
+    def test_model_forms_reject_implicit_doses_nonfinite_confidence_and_reversed_days(self):
+        values = self.base(design="mad", outputs=["t_accumulation"], accumulation_first_day=14,
+            accumulation_last_day=1, accumulation_confidence=float("nan"), dose_map="Active=NaN")
+        result = tlf.validate("r_tlf", values, {}, ROOT)
+        errors = {item["field"] for item in result["errors"]}
+        self.assertTrue({"dose_map", "accumulation_last_day", "accumulation_confidence"} <= errors)
+        values.update(dose_map="Active=10\nActive=20", accumulation_confidence=.95)
+        self.assertIn("dose_map", {item["field"] for item in tlf.validate("r_tlf", values, {}, ROOT)["errors"]})
 
     def test_every_template_configures_without_mutating_sources_and_r_parses(self):
         parse_paths = []
@@ -211,7 +255,7 @@ class GuidedTLFTests(unittest.TestCase):
                                 row[col] = ["Reference", "Test"][n]
                         data[slot].append(row)
                 inputs = self.inputs(data)
-                v = self.base(design=design, outputs=list(selected))
+                v = self.base(design=design, outputs=list(selected), dose_map="Y=1\nPlacebo=0")
                 result = tlf.validate(module, v, inputs, ROOT)
                 self.assertEqual(result["errors"], [], (module, design, result["errors"]))
                 output = tlf.build(module, result["normalized"], inputs, ROOT)

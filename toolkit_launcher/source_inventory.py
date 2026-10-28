@@ -17,7 +17,7 @@ def inventory(root=ROOT):
     result = []
     for name in sorted(files):
         path = Path(name)
-        if any(p in {'.git', '.venv', 'node_modules', '__pycache__', '.biostat-toolkit', '.open-study-tracker', 'mail-preview', '_site', 'toolkit_configuration', 'input-backups', 'template_inputs', 'template_outputs'} for p in path.parts):
+        if any(p in {'.git', '.venv', 'node_modules', '__pycache__', '.biostat-toolkit', '.open-study-tracker', 'mail-preview', '_site', 'toolkit_configuration', 'input-backups', 'template_inputs', 'template_outputs', 'template_runs'} for p in path.parts):
             continue
         if path.name in {'config.json', 'project.json', 'launcher-settings.json', '.launcher-session.json', '.toolkit.lock', '.desktop-state.json', '.desktop.lock', 'launcher.log'} or re.search(r'\.(?:sqlite3?|db|eml)(?:-(?:wal|shm|journal))?$', name, re.I):
             continue

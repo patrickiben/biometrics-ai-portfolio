@@ -3,7 +3,7 @@
 # TITLE     : Prior and Concomitant Medications by Drug Class
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADCM  (one row per medication record; WHODrug ATC class + decode)
-# NOTE      : PSEUDOCODE. Counts = PARTICIPANTS taking >=1 medication (n_distinct
+# NOTE      : ANALYSIS TEMPLATE. Counts = PARTICIPANTS taking >=1 medication (n_distinct
 #             USUBJID), NOT medication rows. Summary columns = treatment SEQUENCE
 #             (dv$seqvar = TRTSEQP) + Total; % denom = SAFFL N per sequence from
 #             bign(). Prior = ended before first dose (PREFL=="Y"); Concomitant =
@@ -21,6 +21,7 @@ denom <- bign(adam$adsl, trtvar = dv$seqvar, popfl = "SAFFL")
 
 ## ADCM with the participant's randomized sequence label attached
 cm <- adam$adcm %>% filter(SAFFL == "Y") %>%
+  select(-any_of(dv$seqvar)) %>%
   left_join(adam$adsl %>% select(USUBJID, !!dv$seqvar), by = "USUBJID")
 
 ## generic participant-count builder for a med subset, by ATC class -> ingredient --
@@ -43,7 +44,8 @@ cm_block <- function(df, status_label, base_ord) {
   ## class ordering by overall participant count desc
   cls_ord <- byclass %>% filter(trt == "Total") %>% select(ATC, ord_n = nsubj)
   bind_rows(any_row, byclass, bypt) %>%
-    left_join(denom, by = "trt") %>%
+    complete_count_rows(denom) %>%
+  left_join(denom, by = "trt") %>%
     mutate(value = n_pct(nsubj, N), block = status_label, base_ord = base_ord) %>%
     left_join(cls_ord, by = "ATC") %>%
     arrange(base_ord, level, desc(ord_n), ATC)
@@ -63,7 +65,7 @@ per_denom <- adam$adex %>% filter(SAFFL == "Y") %>%
 conmed_by_period <- cm %>% filter(ONTRTFL == "Y", !is.na(.data[[dv$byperiod[2]]])) %>%
   group_by(per = .data[[dv$byperiod[2]]]) %>%
   summarise(nsubj = n_distinct(USUBJID), .groups = "drop") %>%
-  left_join(per_denom, by = "per") %>%
+  right_join(per_denom, by = "per") %>% mutate(nsubj=replace_na(nsubj,0L)) %>%
   transmute(Period = per, `Participants on concomitant meds` = n_pct(nsubj, N))
 
 ttl <- tfl_titles(num = "14.1.6", type = "Table",

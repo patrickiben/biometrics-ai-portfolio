@@ -4,7 +4,7 @@
 #             Study Drug Discontinuation by System Organ Class and Preferred Term
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (TRTEMFL == "Y")
-# NOTE      : PSEUDOCODE. Three stacked panels (SAEs / Deaths / Discontinuations).
+# NOTE      : ANALYSIS TEMPLATE. Three stacked panels (SAEs / Deaths / Discontinuations).
 #             Counts = PARTICIPANTS (n_distinct USUBJID), NOT event rows. n (%) per
 #             arm; % denominator = SAFFL N per arm. Parallel: column = TRT01A.
 #             Fatal = AESDTH=="Y"; discontinuation = AEACN=="DRUG WITHDRAWN".
@@ -13,57 +13,13 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")                  # trtvar = TRT01A
 
-denom <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
-
+# Planned safety columns come from the population source, including zero-event arms.
+denom <- bign(adam$adsl, dv$trtvar, "SAFFL")
 adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y")
-
-## --- generic panel builder: Any -> SOC -> indented PT (distinct participants) ---
-## Each panel is the same SOC/PT skeleton restricted by a category predicate.
-build_panel <- function(df, where, anylabel, panel) {
-  sub <- df %>% filter(!!where)
-
-  any_row <- sub %>% group_by(trt = .data[[dv$trtvar]]) %>%
-    summarise(nsubj = n_distinct(USUBJID), .groups = "drop") %>%
-    mutate(AESOC = NA_character_, AEDECOD = NA_character_, level = 0L, term = anylabel)
-
-  soc <- aecount(sub, trtvar = dv$trtvar, where = where, byvars = "AESOC") %>%
-    mutate(level = 1L, term = AESOC)
-
-  socpt <- aecount(sub, trtvar = dv$trtvar, where = where,
-                   byvars = c("AESOC","AEDECOD")) %>%
-    mutate(level = 2L, term = paste0("   ", AEDECOD))
-
-  soc_ord <- soc   %>% group_by(AESOC)          %>% summarise(socn = sum(nsubj), .groups = "drop")
-  pt_ord  <- socpt %>% group_by(AESOC, AEDECOD) %>% summarise(ptn  = sum(nsubj), .groups = "drop")
-
-  bind_rows(any_row, soc, socpt) %>%
-    left_join(soc_ord, by = "AESOC") %>%
-    left_join(pt_ord,  by = c("AESOC","AEDECOD")) %>%
-    arrange(desc(socn), AESOC, level, desc(ptn)) %>%
-    mutate(panel = panel, panel_ord = match(panel, c(
-      "Serious Adverse Events",
-      "Adverse Events with Fatal Outcome",
-      "Adverse Events Leading to Study Drug Discontinuation")))
-}
-
-## --- three panels ----------------------------------------------------------
-panels <- bind_rows(
-  build_panel(adae, quote(AESER == "Y"),
-              "Participants with any SAE", "Serious Adverse Events"),
-  build_panel(adae, quote(AESDTH == "Y"),
-              "Participants with any AE with fatal outcome", "Adverse Events with Fatal Outcome"),
-  build_panel(adae, quote(AEACN == "DRUG WITHDRAWN"),
-              "Participants with any AE leading to discontinuation",
-              "Adverse Events Leading to Study Drug Discontinuation")
-)
-
-## --- attach denominators -> n (%), to wide per arm -------------------------
-rep <- panels %>%
-  left_join(denom, by = "trt") %>%
-  mutate(value = n_pct(nsubj, N)) %>%
-  arrange(panel_ord, desc(socn), AESOC, level, desc(ptn)) %>%
-  select(panel, panel_ord, term, level, trt, value) %>%
-  pivot_wider(names_from = trt, values_from = value)
+rep <- bind_rows(
+  ae_hierarchy(filter(adae, AESER == "Y"), dv$trtvar, denom, "Participants with any SAE") %>% mutate(panel="Serious Adverse Events"),
+  ae_hierarchy(filter(adae, AESDTH == "Y" | toupper(AEOUT) == "FATAL"), dv$trtvar, denom, "Participants with fatal AE") %>% mutate(panel="Adverse Events with Fatal Outcome"),
+  ae_hierarchy(filter(adae, AEACN == "DRUG WITHDRAWN"), dv$trtvar, denom, "Participants with AE leading to discontinuation") %>% mutate(panel="Adverse Events Leading to Discontinuation"))
 
 ttl <- tfl_titles(
   num  = "14.3.1.4",

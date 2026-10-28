@@ -3,7 +3,7 @@
 # TITLE     : Mean (+/-95% CI) Change from Baseline in QTcF by Timepoint
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADEG (PARAMCD == "QTCF"; CHG, ATPT/ATPTN)
-# NOTE      : PSEUDOCODE. DESCRIPTIVE mean change-from-baseline (CHG) QTcF with
+# NOTE      : ANALYSIS TEMPLATE. DESCRIPTIVE mean change-from-baseline (CHG) QTcF with
 #             +/-95% CI error bars over NOMINAL POST-DOSE TIMEPOINTS (ATPTN)
 #             spanning the repeat-dosing period, one line per dose cohort.
 #             Horizontal reference lines at 0, 30 and 60 ms (ICH E14 categorical
@@ -18,14 +18,14 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")
 
 ## post-baseline QTcF analysis records (CHG defined)
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", PARAMCD == "QTCF", ATPTN > 0, !is.na(CHG)) %>%
   mutate(trt = .data[[dv$trtvar]],              # dose-level cohort (placebo pooled)
          tp  = factor(ATPT, levels = unique(ATPT[order(ATPTN)])))   # nominal post-dose timepoint
 
 ## DESCRIPTIVE mean +/- 95% CI of change by cohort x nominal timepoint
 sumdat <- eg %>%
-  group_by(trt, tp) %>%
+  group_by(ADY, trt, tp) %>%
   summarise(n    = sum(!is.na(CHG)),
             mean = mean(CHG, na.rm = TRUE),
             se   = sd(CHG, na.rm = TRUE) / sqrt(n),
@@ -45,6 +45,7 @@ ttl <- tfl_titles(num = "14.3.6.3", type = "Figure",
 
 pd <- position_dodge(width = 0.3)
 p <- ggplot(sumdat, aes(x = tp, y = mean, colour = trt, group = trt)) +
+  facet_wrap(~ ADY) +
   geom_hline(yintercept = 0,  linetype = "solid") +
   geom_hline(yintercept = 30, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >30 ms
   geom_hline(yintercept = 60, linetype = "dashed", colour = "grey40") +   # ICH E14 categorical: change >60 ms

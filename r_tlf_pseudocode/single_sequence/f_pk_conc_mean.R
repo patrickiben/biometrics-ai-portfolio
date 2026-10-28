@@ -4,7 +4,7 @@
 #             by Period (Reference vs Test) (Linear and Semi-Logarithmic)
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (AVAL = concentration; ATPTN nominal time; APERIOD)
-# NOTE      : PSEUDOCODE. LINEAR panel = arithmetic mean +/- SD; SEMI-LOG panel =
+# NOTE      : ANALYSIS TEMPLATE. LINEAR panel = arithmetic mean +/- SD; SEMI-LOG panel =
 #             GEOMETRIC mean (no SD whiskers) per PK convention. Per PERIOD x
 #             nominal time. Single-/fixed-sequence DDI: the two overlaid profiles
 #             are the SAME victim drug in Period 1 (alone, reference) vs Period 2
@@ -16,7 +16,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SINGLESEQ")                 # period via dv$byperiod (no sequence)
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", ANL01FL == "Y",
          !(AVAL <= 0 | toupper(coalesce(AVALC,"")) == "BLQ")) %>%   # drop BLQ for mean profile
   mutate(period = .data[[dv$byperiod[2]]])      # APERIODC label: Reference / Test

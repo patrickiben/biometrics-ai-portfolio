@@ -4,7 +4,7 @@
 #             Dose Level
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, CHG, AVISIT/AVISITN, ANL01FL)
-# NOTE      : PSEUDOCODE. MAD = parallel dose cohorts with REPEATED dosing; mean
+# NOTE      : ANALYSIS TEMPLATE. MAD = parallel dose cohorts with REPEATED dosing; mean
 #             change from baseline (CHG) is plotted across the scheduled on-
 #             treatment visits (x = AVISITN, ordered) so any across-visit trend /
 #             plateau over the repeated-dose period is visible. One panel per
@@ -20,7 +20,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")                      # colour/line = TRT01A (= dose level)
 
 ## post-baseline analysis records (one per participant/param/visit via ANL01FL)
-lb <- adam$adlb %>%
+lb <- visit_time_labels(check_analysis_units(adam$adlb)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", AVISITN > 0, !is.na(CHG),
          PARAMCD %in% c("ALT","AST","BILI","CREAT","ALP","GGT")) %>%
   mutate(trt = .data[[dv$trtvar]])

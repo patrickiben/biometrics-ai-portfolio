@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (AESER == "Y" OR AESDTH == "Y" OR AEOUT == "FATAL");
 #             ADSL (DTHDT merged in for the Death Date column)
-# NOTE      : PSEUDOCODE. One row per serious/fatal AE record, ordered by ascending
+# NOTE      : ANALYSIS TEMPLATE. One row per serious/fatal AE record, ordered by ascending
 #             dose (TRT01AN) then participant then onset. Restricts to SAEs and
 #             deaths (not all AEs). Shows onset day, duration, severity, serious/
 #             fatal flags, TEAE, relationship, action, outcome, seriousness criteria,

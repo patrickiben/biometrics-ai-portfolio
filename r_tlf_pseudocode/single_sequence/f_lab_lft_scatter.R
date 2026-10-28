@@ -4,7 +4,7 @@
 #             (multiples of ULN) by Period
 # POPULATION: Safety Population (SAFFL == "Y"), on-treatment
 # INPUT     : ADLB (PARAMCD in ALT, AST, BILI; ratio-to-ULN; APERIOD/APERIODC)
-# NOTE      : PSEUDOCODE. Per-participant peak (max) ALT/ULN (x) vs Total Bilirubin/ULN
+# NOTE      : ANALYSIS TEMPLATE. Per-participant peak (max) ALT/ULN (x) vs Total Bilirubin/ULN
 #             (y) WITHIN PERIOD, both log scale, faceted by period (Period 1 =
 #             reference / victim alone, Period 2 = test / victim + perpetrator) so
 #             a perpetrator-driven shift is visible. Reference lines at 3xULN (ALT)
@@ -18,7 +18,7 @@ options(tfl.study = env$study)
 perC <- dv$byperiod[2]                           # character period label column
 
 ## ratio-to-ULN; prefer ADaM-provided R2ULN, else AVAL / A1HI
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", PARAMCD %in% c("ALT","AST","BILI")) %>%
   mutate(per  = .data[[perC]],
          xuln = coalesce(R2ULN, AVAL / A1HI))

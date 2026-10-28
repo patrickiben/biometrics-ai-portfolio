@@ -4,7 +4,7 @@
 #             (Semi-Logarithmic)
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (AVAL = concentration; ATPTN nominal time; APERIOD)
-# NOTE      : PSEUDOCODE. ONE PANEL PER PARTICIPANT (the within-participant DDI
+# NOTE      : ANALYSIS TEMPLATE. ONE PANEL PER PARTICIPANT (the within-participant DDI
 #             "own-control" view, matching the SAS twin), with that participant's
 #             Reference (victim alone) and Test (victim + perpetrator) period
 #             profiles OVERLAID on the same axes, coloured by study PERIOD
@@ -17,7 +17,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SINGLESEQ")                 # period via dv$byperiod (no sequence)
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", ANL01FL == "Y",
          !(AVAL <= 0 | toupper(coalesce(AVALC,"")) == "BLQ")) %>%   # log plot: drop BLQ
   transmute(USUBJID, PARAM,

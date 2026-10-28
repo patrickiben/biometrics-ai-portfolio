@@ -4,7 +4,7 @@
 #             by Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, CHG, AVISIT/AVISITN, APERIOD/APERIODC, ANL01FL)
-# NOTE      : PSEUDOCODE. Mean change from baseline (CHG) by scheduled visit, one
+# NOTE      : ANALYSIS TEMPLATE. Mean change from baseline (CHG) by scheduled visit, one
 #             panel per analyte, one line/colour per PERIOD (Period 1 = reference /
 #             victim alone, Period 2 = test / victim + perpetrator), error bars =
 #             +/- 1 SE (standard error of the mean) -- one dispersion stat, same as
@@ -20,7 +20,7 @@ perC <- dv$byperiod[2]                           # character period label column
 
 ## post-baseline analysis records (one per participant/param/visit/period via ANL01FL)
 ## Same analyte panel as the SAS twin.
-lb <- adam$adlb %>%
+lb <- visit_time_labels(check_analysis_units(adam$adlb)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", AVISITN > 0, !is.na(CHG),
          PARAMCD %in% c("ALT","AST","CREAT","K")) %>%
   mutate(per = .data[[perC]])

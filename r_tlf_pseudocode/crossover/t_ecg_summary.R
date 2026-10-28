@@ -3,7 +3,7 @@
 # TITLE     : Summary of ECG Parameters and Change from Baseline by Treatment
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEG (PARAMCD = HR, PR, QRS, QT, QTCF, QTCB, RR)
-# NOTE      : PSEUDOCODE. Crossover ECG safety summary BY TREATMENT
+# NOTE      : ANALYSIS TEMPLATE. Crossover ECG safety summary BY TREATMENT
 #             (dv$trtvar = TRTA), with an OPTIONAL by-PERIOD view. When split by
 #             period, the column N comes from a PERIOD-BEARING source: ADEX
 #             participants dosed per APERIOD with SAFFL=='Y' -- NEVER one-row ADSL.
@@ -13,14 +13,14 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # trtvar = TRTA; byperiod = APERIOD/APERIODC
 
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("HR","PR","QRS","QT","QTCF","QTCB","RR")) %>%
   mutate(trt = .data[[dv$trtvar]])
 
 ## --- denominators -----------------------------------------------------------
 ## by-treatment column N (participant-level, Safety pop)
-denom_trt <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
+denom_trt <- bign(adam$adex, trtvar = dv$trtvar, popfl = "SAFFL")
 
 ## OPTIONAL by-PERIOD denominator: participants DOSED in each treatment-period,
 ## from ADEX (period-bearing). Use this if the table is split by APERIOD.
@@ -37,9 +37,9 @@ param_lvls <- c(HR="Heart Rate (bpm)", PR="PR Interval (ms)", QRS="QRS Duration 
 summ_block <- function(pcd, which = c("AVAL","CHG"), dp = 1L) {
   which <- match.arg(which)
   d  <- eg %>% filter(PARAMCD == pcd)
-  by <- c("trt", "AVISITN", "AVISIT")
+  by <- c("trt", "AVISITN","ATPTN","ATPT", "AVISIT")
   descstat(d, var = which, by = by, dp = dp) %>%
-    transmute(PARAM = param_lvls[[pcd]], AVISITN, AVISIT, trt,
+    transmute(PARAM = param_lvls[[pcd]], AVISITN, AVISIT, ATPTN, ATPT, trt,
               block = if_else(which == "AVAL", "Observed value", "Change from baseline"),
               `n`           = as.character(n),
               `Mean (SD)`   = paste(c_mean, c_sd),
@@ -60,10 +60,5 @@ ttl <- tfl_titles(num = "14.3.8.1", type = "Table",
    foot = "Baseline is the period-specific pre-dose value; change = post-dose - period baseline. QTcF/QTcB are machine/over-read corrected. If split by period, column N = participants dosed per period (ADEX).")
 
 ## rtables: PARAM -> block -> visit rows x treatment columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM", page_by = TRUE) %>%
-  split_rows_by("block") %>%
-  split_rows_by("AVISIT") %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)
+
 print(tab)

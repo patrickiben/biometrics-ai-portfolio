@@ -3,7 +3,7 @@
 # TITLE     : Listing of Electrocardiogram (ECG) Results
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEG
-# NOTE      : PSEUDOCODE. One row per ECG assessment, ordered by dose cohort,
+# NOTE      : ANALYSIS TEMPLATE. One row per ECG assessment, ordered by dose cohort,
 #             participant, parameter, then visit/timepoint. Shows observed value,
 #             baseline, change, range indicator, and the overall ECG
 #             interpretation. SAD: one treatment per participant; cohort column =
@@ -14,7 +14,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")
 
-eg <- adam$adeg %>% filter(SAFFL == "Y") %>%
+eg <- check_analysis_units(adam$adeg) %>% filter(SAFFL == "Y") %>%
   transmute(
     DoseN       = .data[[dv$trtnvar]],               # numeric dose for sort
     `Dose`      = .data[[dv$trtvar]],                # TRT01A = dose cohort label
@@ -30,7 +30,7 @@ eg <- adam$adeg %>% filter(SAFFL == "Y") %>%
     `Baseline`  = BASE,
     `Change`    = CHG,
     `Range Ind` = ANRIND,                            # LOW / NORMAL / HIGH
-    `Interpretation` = if ("EGINTP" %in% names(adam$adeg)) EGINTP else NA_character_,  # overall read
+    `Interpretation` = if ("EGINTP" %in% names(check_analysis_units(adam$adeg))) EGINTP else NA_character_,  # overall read
     `Anl Flag`  = ANL01FL,
     ADT) %>%
   arrange(DoseN, Participant, PARAMCD, AVISITN, ATPTN, ADT)   # ascending dose, then numeric keys/date

@@ -3,7 +3,7 @@
 # TITLE     : Summary of Plasma Concentrations by Treatment, Nominal Time
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (PARAMCD = analyte concentration; ATPTN nominal sampling time)
-# NOTE      : PSEUDOCODE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max
+# NOTE      : ANALYSIS TEMPLATE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max
 #             per treatment x nominal time. Geometric stats on the LOG scale
 #             (pkstats). BLQ handled per the study's SOPs (count + rule), excluded from geo
 #             stats (x > 0). Column = TRT01A = dose level (parallel = one trt /
@@ -14,7 +14,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")                 # column = TRT01A (= dose)
 
 ## --- analysis records: PK conc population, scheduled timepoints -------------
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", ANL01FL == "Y") %>%               # primary analysis records
   mutate(blq = (AVAL <= 0 | toupper(coalesce(AVALC, "")) == "BLQ"))
 by <- c(dv$trtvar, "PARAM", "ATPTN", "ATPT")            # treatment x analyte x nominal time
@@ -22,7 +22,7 @@ by <- c(dv$trtvar, "PARAM", "ATPTN", "ATPT")            # treatment x analyte x 
 ## --- BLQ accounting (reported separately; per the study's SOPs first/middle/last rule) ---
 blq_n <- pc %>% group_by(across(all_of(by))) %>%
   summarise(n_total = n_distinct(USUBJID),
-            n_blq   = sum(blq), .groups = "drop")
+            n_blq   = sum(blq, na.rm=TRUE), .groups = "drop")
 
 ## --- descriptive + geometric stats on quantifiable values (x > 0) ----------
 ## pkstats() filters AVAL > 0 internally and computes geo stats on the log scale
@@ -57,3 +57,5 @@ ttl <- tfl_titles(num = "14.4.1.2", type = "Table",
 
 ## rtables: split_rows_by(PARAM) -> split_rows_by(ATPT) -> analyze(stat rows)
 print(tab)
+
+print(pkstats(pc, by=by) %>% select(all_of(by), n_input, n, n_excluded, n_missing, n_nonpositive, n_blq_excluded))

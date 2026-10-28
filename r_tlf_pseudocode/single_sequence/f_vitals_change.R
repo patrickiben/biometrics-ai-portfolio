@@ -3,7 +3,7 @@
 # TITLE     : Mean (+/-SE) Change from Baseline in Vital Signs by Visit and Period
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADVS (PARAMCD in SYSBP, DIABP, PULSE, TEMP, RESP)
-# NOTE      : PSEUDOCODE. Mean change from baseline (CHG) with +/-1 SE error bars
+# NOTE      : ANALYSIS TEMPLATE. Mean change from baseline (CHG) with +/-1 SE error bars
 #             over scheduled post-baseline visits, one line per PERIOD
 #             (dv$byperiod = APERIODC: Period 1 = reference/victim alone,
 #             Period 2 = test/victim + perpetrator), faceted by parameter.
@@ -16,7 +16,7 @@ dv  <- design_vars("SINGLESEQ")                 # byperiod = c("APERIOD","APERIO
 perC <- dv$byperiod[2]
 
 ## post-baseline analysis records (CHG defined); scheduled timepoints only
-vs <- adam$advs %>%
+vs <- visit_time_labels(check_analysis_units(adam$advs)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", !is.na(CHG),
          PARAMCD %in% c("SYSBP","DIABP","PULSE","TEMP","RESP")) %>%
   mutate(per    = .data[[perC]],                      # one line per period

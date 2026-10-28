@@ -3,7 +3,7 @@
 # TITLE     : Listing of Vital Signs
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADVS
-# NOTE      : PSEUDOCODE. One row per vital-sign assessment, ordered by participant,
+# NOTE      : ANALYSIS TEMPLATE. One row per vital-sign assessment, ordered by participant,
 #             PERIOD, parameter, then visit/timepoint. Shows observed value,
 #             period baseline, change, and the analysis-range flag. Single-fixed-
 #             sequence DDI: a Period column (dv$byperiod = APERIODC) replaces the
@@ -16,7 +16,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SINGLESEQ")                 # byperiod = APERIOD/APERIODC; trtvar = TRTA
 perN <- dv$byperiod[1]; perC <- dv$byperiod[2]
 
-vs <- adam$advs %>% filter(SAFFL == "Y") %>%
+vs <- check_analysis_units(adam$advs) %>% filter(SAFFL == "Y") %>%
   transmute(
     Period      = .data[[perC]],                     # Period 1 ref / Period 2 test
     APERIODN    = .data[[perN]],

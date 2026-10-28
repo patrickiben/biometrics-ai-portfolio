@@ -5,7 +5,7 @@
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD/PARAM; AVAL; APERIOD/APERIODC) ;
 #             ADEX (per-period dosing -> denominators)
-# NOTE      : PSEUDOCODE. Descriptive PK parameter summary by study PERIOD --
+# NOTE      : ANALYSIS TEMPLATE. Descriptive PK parameter summary by study PERIOD --
 #             Period 1 = victim alone (reference), Period 2 = victim + perpetrator
 #             (test). In a single-/fixed-sequence DDI there is NO randomized
 #             sequence, so PERIOD is the only by-structure and it carries the
@@ -31,14 +31,14 @@ denom <- adam$adex %>%
   summarise(N = n_distinct(USUBJID), .groups = "drop")
 
 ## --- PK parameter records, summarised WITHIN period -----------------------
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y") %>%
   mutate(period  = .data[[dv$byperiod[1]]],
          periodc = .data[[dv$byperiod[2]]])
 by <- c("period", "periodc", "PARAMCD", "PARAM")
 
 ## non-Tmax: arithmetic + geometric (pkstats -> log scale, AVAL > 0)
-cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%
+cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%
   transmute(across(all_of(by)),
             n           = as.character(n),
             `Mean (SD)` = sprintf("%.3g (%.3g)", mean, sd),
@@ -51,9 +51,9 @@ cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%
                names_to = "stat", values_to = "value")
 
 ## Tmax: Median (Min, Max) ONLY
-tmax <- pp %>% filter(PARAMCD == "TMAX") %>%
+tmax <- pp %>% filter(PARAMCD %in% c("TMAX","TMAXSS")) %>%
   group_by(across(all_of(by))) %>%
-  summarise(med = median(AVAL), min = min(AVAL), max = max(AVAL), .groups = "drop") %>%
+  summarise(med = safe_stat(AVAL[AVAL >= 0], median), min = safe_stat(AVAL[AVAL >= 0], min), max = safe_stat(AVAL[AVAL >= 0], max), .groups = "drop") %>%
   transmute(across(all_of(by)), stat = "Median (Min, Max)",
             value = sprintf("%.2f (%.2f, %.2f)", med, min, max))
 
@@ -80,3 +80,7 @@ ttl <- tfl_titles(num = "14.4.4.3", type = "Table",
 
 ## render: rtables split_rows_by(PARAM) -> analyze(stat), columns = period
 print(tab)
+
+# Analysis sample accounting is exported alongside the descriptive table.
+print(pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), by=by) %>%
+  select(all_of(by), n_input, n, n_excluded, n_missing, n_nonpositive, n_blq_excluded))

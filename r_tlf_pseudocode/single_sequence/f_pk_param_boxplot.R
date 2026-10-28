@@ -4,7 +4,7 @@
 #             (Box Plot)
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD/PARAM; AVAL; APERIOD/APERIODC; USUBJID)
-# NOTE      : PSEUDOCODE. Box plots of key exposure parameters (Cmax, AUClast,
+# NOTE      : ANALYSIS TEMPLATE. Box plots of key exposure parameters (Cmax, AUClast,
 #             AUCinf) by study PERIOD. Single-/fixed-sequence DDI: x = study
 #             PERIOD (dv$byperiod) -- Period 1 = victim alone (reference),
 #             Period 2 = victim + perpetrator (test); overlay individual points
@@ -20,7 +20,7 @@ dv  <- design_vars("SINGLESEQ")                 # x = study PERIOD (no sequence)
 
 params <- c("CMAX","AUCLST","AUCIFO")
 
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% params, AVAL > 0) %>%   # >0 for log axis
   transmute(
     subj   = USUBJID,

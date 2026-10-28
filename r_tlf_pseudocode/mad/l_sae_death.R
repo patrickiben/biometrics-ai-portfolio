@@ -3,7 +3,7 @@
 # TITLE     : Listing of Serious Adverse Events and Deaths
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (AESER == "Y" OR AESDTH == "Y")
-# NOTE      : PSEUDOCODE. MAD = parallel ascending-dose cohorts, repeated dosing;
+# NOTE      : ANALYSIS TEMPLATE. MAD = parallel ascending-dose cohorts, repeated dosing;
 #             one treatment per participant, so the treatment column is the dose
 #             level (dv$trtvar = TRT01A). One row per serious/fatal AE record,
 #             ordered by dose then participant then onset. Restricts to SAEs and

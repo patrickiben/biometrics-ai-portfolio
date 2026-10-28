@@ -3,7 +3,7 @@
 # TITLE     : Vital Signs - Observed Value and Change from Baseline by Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADVS (PARAMCD in SYSBP, DIABP, PULSE, TEMP, RESP)
-# NOTE      : PSEUDOCODE. PERIOD table -> columns = dv$byperiod (APERIODC):
+# NOTE      : ANALYSIS TEMPLATE. PERIOD table -> columns = dv$byperiod (APERIODC):
 #             Period 1 = reference (victim alone), Period 2 = test (victim +
 #             perpetrator). Within each period, descriptive summary (n, Mean (SD),
 #             Median, Min-Max) of observed value AVAL and change-from-baseline CHG
@@ -25,7 +25,7 @@ perdenom <- adam$adex %>% filter(SAFFL == "Y") %>%
   summarise(N = n_distinct(USUBJID), .groups = "drop")
 
 ## analysis records: safety, analysis-flagged scheduled timepoints
-vs <- adam$advs %>%
+vs <- check_analysis_units(adam$advs) %>%
   filter(SAFFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("SYSBP","DIABP","PULSE","TEMP","RESP")) %>%
   mutate(per     = .data[[perC]],                     # period = analysis column
@@ -35,8 +35,8 @@ vs <- adam$advs %>%
 
 ## --- observed value AVAL: descriptive stats by period x param x visit --------
 val <- vs %>%
-  descstat(var = "AVAL", by = c("PARAMCD","PARAM","AVISIT","AVISITN","per"), dp = 1L) %>%
-  transmute(PARAMCD, PARAM, AVISIT, AVISITN, per, block = "Observed value",
+  descstat(var = "AVAL", by = c("PARAMCD","PARAM","AVISIT","AVISITN","ATPTN","ATPT","per"), dp = 1L) %>%
+  transmute(PARAMCD, PARAM, AVISIT, AVISITN, ATPTN, ATPT, per, block = "Observed value",
             `n`         = as.character(n),
             `Mean (SD)` = paste(c_mean, c_sd),
             `Median`    = c_median,
@@ -44,8 +44,8 @@ val <- vs %>%
 
 ## --- change from baseline CHG (period baseline; baseline visit NA on CHG) ----
 chg <- vs %>% filter(!is.na(CHG)) %>%
-  descstat(var = "CHG", by = c("PARAMCD","PARAM","AVISIT","AVISITN","per"), dp = 1L) %>%
-  transmute(PARAMCD, PARAM, AVISIT, AVISITN, per, block = "Change from baseline",
+  descstat(var = "CHG", by = c("PARAMCD","PARAM","AVISIT","AVISITN","ATPTN","ATPT","per"), dp = 1L) %>%
+  transmute(PARAMCD, PARAM, AVISIT, AVISITN, ATPTN, ATPT, per, block = "Change from baseline",
             `n`         = as.character(n),
             `Mean (SD)` = paste(c_mean, c_sd),
             `Median`    = c_median,
@@ -69,10 +69,5 @@ ttl <- tfl_titles(num = "14.3.7.1", type = "Table",
                 "Per-period N = participants dosed in each period (ADEX, SAFFL = Y)."))
 
 ## rtables layout: parameter > visit > value/change block -> stat rows x PERIOD columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM",  page_by = FALSE) %>%
-  split_rows_by("AVISIT", page_by = FALSE) %>%
-  split_rows_by("block",  page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab) for HTML/Quarto
+
 print(tab)

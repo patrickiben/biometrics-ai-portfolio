@@ -3,7 +3,7 @@
 # TITLE     : Vital Signs - Observed Value and Change from Baseline by Visit
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADVS (PARAMCD in SYSBP, DIABP, PULSE, TEMP, RESP)
-# NOTE      : PSEUDOCODE. Continuous summary (n, Mean (SD), Median, Min-Max) of
+# NOTE      : ANALYSIS TEMPLATE. Continuous summary (n, Mean (SD), Median, Min-Max) of
 #             observed value AVAL and change-from-baseline CHG, per scheduled
 #             post-baseline AVISIT, columns = treatment arms + Total. Parallel:
 #             one treatment per participant; column = dv$trtvar (TRT01A). No within-
@@ -17,7 +17,7 @@ dv  <- design_vars("PARALLEL")                 # -> trtvar = TRT01A, trtnvar = T
 denom <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
 
 ## analysis records: safety, analysis-flagged scheduled timepoints
-vs <- adam$advs %>%
+vs <- check_analysis_units(adam$advs) %>%
   filter(SAFFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("SYSBP","DIABP","PULSE","TEMP","RESP")) %>%
   mutate(trt    = .data[[dv$trtvar]],
@@ -30,8 +30,8 @@ with_total <- function(df) bind_rows(df, mutate(df, trt = "Total"))
 
 ## --- observed value AVAL: descriptive stats by arm x param x visit ----------
 val <- with_total(vs) %>%
-  descstat(var = "AVAL", by = c("PARAMCD","PARAM","AVISIT","AVISITN","trt"), dp = 1L) %>%
-  transmute(PARAMCD, PARAM, AVISIT, AVISITN, trt, block = "Observed value",
+  descstat(var = "AVAL", by = c("PARAMCD","PARAM","AVISIT","AVISITN","ATPTN","ATPT","trt"), dp = 1L) %>%
+  transmute(PARAMCD, PARAM, AVISIT, AVISITN, ATPTN, ATPT, trt, block = "Observed value",
             `n`         = as.character(n),
             `Mean (SD)` = paste(c_mean, c_sd),
             `Median`    = c_median,
@@ -39,8 +39,8 @@ val <- with_total(vs) %>%
 
 ## --- change from baseline CHG (baseline visit excluded by CHG NA) -----------
 chg <- with_total(vs) %>% filter(!is.na(CHG)) %>%
-  descstat(var = "CHG", by = c("PARAMCD","PARAM","AVISIT","AVISITN","trt"), dp = 1L) %>%
-  transmute(PARAMCD, PARAM, AVISIT, AVISITN, trt, block = "Change from baseline",
+  descstat(var = "CHG", by = c("PARAMCD","PARAM","AVISIT","AVISITN","ATPTN","ATPT","trt"), dp = 1L) %>%
+  transmute(PARAMCD, PARAM, AVISIT, AVISITN, ATPTN, ATPT, trt, block = "Change from baseline",
             `n`         = as.character(n),
             `Mean (SD)` = paste(c_mean, c_sd),
             `Median`    = c_median,
@@ -61,10 +61,5 @@ ttl <- tfl_titles(num = "14.3.7.1", type = "Table",
    foot = "Baseline = last non-missing assessment prior to first dose; change = post-baseline value - baseline. N = participants in the Safety Population per arm.")
 
 ## rtables layout: parameter > visit > value/change block -> statistic rows x arm columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM",  page_by = FALSE) %>%
-  split_rows_by("AVISIT", page_by = FALSE) %>%
-  split_rows_by("block",  page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab) for HTML/Quarto
+
 print(tab)

@@ -1,5 +1,6 @@
 /* Guided setup integration against the actual authenticated loopback server.
- * Synthetic CSVs only. No analysis runtimes, model services or email are invoked.
+ * Synthetic CSVs only. Set TOOLKIT_QA_RUN_ANALYSIS=1 for actual R execution.
+ * No model services, package downloads or email are invoked.
  * NODE_PATH=/path/to/node_modules CHROME_PATH=/path/to/chrome node toolkit_launcher/tests/guided_browser_qc.cjs
  */
 const {chromium}=require('playwright');
@@ -18,6 +19,30 @@ async function launch(){
   const port=await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('Server startup timeout: '+stderr)),30000);child.stdout.on('data',()=>{const match=stdout.match(/READY (\d+)/);if(match){clearTimeout(timer);resolve(match[1]);}});child.once('exit',code=>{clearTimeout(timer);reject(Error('Server exited '+code+': '+stderr));});});base='http://127.0.0.1:'+port;
 }
 async function api(route,body){const result=await fetch(base+route,{method:body===undefined?'GET':'POST',headers:{'X-Toolkit-Token':token,'Content-Type':'application/json'},...(body===undefined?{}:{body:JSON.stringify(body)})});const data=await result.json();assert.equal(result.status,200,JSON.stringify(data));return data;}
+async function runFromCard(verb, expected='succeeded') {
+  const label=verb==='check'?'Check analysis dependencies':'Run analysis and QC';
+  const response=page.waitForResponse(response=>response.url().endsWith('/api/actions')&&response.request().method()==='POST');
+  await page.locator('#guided-builds').getByRole('button',{name:label,exact:true}).first().click();
+  const started=await (await response).json();assert.ok(started.id,JSON.stringify(started));
+  await page.locator('#guided-dialog').waitFor({state:'hidden'});
+  const deadline=Date.now()+60000;let job;
+  while(Date.now()<deadline){job=(await api('/api/state')).jobs.find(job=>job.id===started.id);if(job&&['succeeded','failed','stopped'].includes(job.status))break;await new Promise(resolve=>setTimeout(resolve,250));}
+  assert.equal(job?.status,expected,JSON.stringify(job));
+  await page.locator('#refresh-status').click();
+  await page.waitForFunction(expected=>document.querySelector('.job')?.dataset.job===expected.id&&document.querySelector('.job .badge')?.textContent===expected.status,{id:job.id,status:expected==='succeeded'?'Finished':'Failed'});
+  return job;
+}
+async function downloadRun(job,name) {
+  const outputFile=job.outputs.find(file=>file.path.endsWith('/results.zip'));assert.ok(outputFile,'Missing results ZIP');
+  const pending=page.waitForEvent('download');await page.locator('.job').first().getByRole('button',{name:outputFile.label,exact:true}).click();
+  const downloaded=await pending,archivePath=path.join(output,name+'.zip');await downloaded.saveAs(archivePath);
+  const inspect="import sys,json,zipfile\nwith zipfile.ZipFile(sys.argv[1]) as z: print(json.dumps({'manifest':json.loads(z.read('output_manifest.json')),'qc':json.loads(z.read('qc.json'))}))";
+  const evidence=JSON.parse(cp.execFileSync(process.env.TOOLKIT_PYTHON||'python3',['-c',inspect,archivePath],{encoding:'utf8'}));assert.equal(evidence.manifest.run_id,job.analysis.run_id);assert.equal(evidence.manifest.build_id,job.analysis.build_id);assert.equal(evidence.manifest.status,job.status);assert.equal(evidence.qc.passed,job.status==='succeeded');assert.equal(evidence.qc.approved,false);
+  const reportFile=job.outputs.find(file=>file.path.endsWith('/analysis_report.html'));assert.ok(reportFile,'Missing report');
+  const opened=page.waitForResponse(response=>response.url().endsWith('/api/files/open'));
+  await page.locator('.job').first().getByRole('button',{name:'Open analysis report',exact:true}).click();assert.equal((await opened).status(),200);
+  report.analysis_programs_executed++;
+}
 async function screenshot(name){await page.screenshot({path:path.join(output,name)});report.screenshots.push(name);}
 async function open(moduleId){
   const snapshot=await api('/api/state'),module=snapshot.catalog.modules.find(module=>module.actions.some(action=>action.type==='guided'&&(action.module_id||action.id)===moduleId));assert.ok(module,'Missing guided catalog entry for '+moduleId);const action=module.actions.find(action=>action.type==='guided'&&(action.module_id||action.id)===moduleId);await page.locator(`[data-module="${module.id}"] button`).first().click();
@@ -45,12 +70,19 @@ async function generate(moduleId){
   await launch();browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{})});const context=await browser.newContext({viewport:{width:1440,height:1000},acceptDownloads:true});page=await context.newPage();page.setDefaultTimeout(15000);page.on('pageerror',error=>report.errors.push(error.message));page.on('console',message=>{if(message.type()==='error'&&/Content Security Policy|Refused to/.test(message.text()))report.errors.push(message.text());});
   await page.goto(base+'/#launch-token='+token);await page.locator('#local-shell').waitFor({state:'visible'});await page.locator('#new-project').click();await page.locator('#project-name').fill('Synthetic guided study');await page.locator('#create-project').click();await page.locator('#project-dialog').waitFor({state:'hidden',timeout:30000});project=(await api('/api/state')).projects[0].id;
   for(const moduleId of ['r_tlf','sas_tlf'])await scenario(moduleId+' guided output selection, CSV mappings, validation and ZIP generation',async()=>{
-    await open(moduleId);await field(moduleId,'study_id','STUDY-DEMO');await choices(moduleId,'outputs',['t_pk_param_summary']);await step(moduleId,'inputs');assert.equal(await page.locator('.guided-input').count(),moduleId==='r_tlf'?1:2);
-    const columns=['USUBJID','TRT01A','PKFL','PARAMCD','PARAM','AVAL'];const row=['001','Drug A','Y','CMAX','Maximum concentration',12.5];if(moduleId==='sas_tlf'){columns.push('TRT01AN');row.push(1);}await upload(moduleId,'adpp',columns,[row]);
-    if(moduleId==='sas_tlf')await upload(moduleId,'adsl',['USUBJID','TRT01A','TRT01AN','PKFL'],[['001','Drug A',1,'Y']],{rename:false});
+    await open(moduleId);await field(moduleId,'study_id','STUDY-DEMO');await choices(moduleId,'outputs',['t_pk_param_summary']);await step(moduleId,'inputs');assert.equal(await page.locator('.guided-input').count(),1);
+    const columns=['USUBJID','TRT01A','PKFL','PARAMCD','PARAM','AVAL','AVALU'];const row=['001','Drug A','Y','CMAX','Maximum concentration',12.5,'ng/mL'];if(moduleId==='sas_tlf'){columns.push('TRT01AN');row.push(1);}await upload(moduleId,'adpp',columns,[row]);
     await field(moduleId,'reviewed',true);await generate(moduleId);await screenshot(moduleId+'-generated.png');
     await field(moduleId,'study_id','STUDY-REVISED');await step(moduleId,'review');assert.equal(await page.locator('#guided-generate').isDisabled(),true);assert.equal(await page.locator('#guided-review-check').isChecked(),false);await close();
     await open(moduleId);assert.equal(await page.locator('#guided-field-study_id').inputValue(),'STUDY-DEMO');assert.equal(await page.locator('#guided-builds .guided-build').count(),1);await close();
+  });
+  await scenario('Study-specific baseline covariates appear as point-and-click mappings',async()=>{
+    const id='r_tlf';await open(id);await choices(id,'outputs',['t_baseline_characteristics']);await field(id,'baseline_continuous','CUSTOM_SCORE');await field(id,'baseline_categorical','CUSTOM_GROUP');
+    await upload(id,'adsl',['USUBJID','TRT01A','SAFFL','CUSTOM_SCORE','CUSTOM_GROUP'],[['001','Drug A','Y',3.25,'Category A']],{rename:true});
+    assert.equal(await page.locator('#guided-map-adsl-CUSTOM_SCORE').count(),1);await validate(id);assert.equal(await page.locator('#guided-report .report-errors').count(),0,await page.locator('#guided-report').innerText());
+    await field(id,'baseline_continuous','OTHER_SCORE');await step(id,'inputs');assert.equal(await page.locator('#guided-map-adsl-CUSTOM_SCORE').count(),0);assert.equal(await page.locator('#guided-map-adsl-OTHER_SCORE').count(),1);
+    // Reopening returns the prior generated PK package, which remains immutable.
+    await close();
   });
   await scenario('SAS monitoring validates mappings and blocks generation during input replacement',async()=>{
     const id='sas_monitor';await open(id);await field(id,'study_id','DEMO');await choices(id,'checks',['queries']);await upload(id,'queries',['OPEN_FL','QUERY_AGE_DAYS'],[['Y',35],['N',10]]);assert.equal(await page.locator('.guided-input').count(),1);await field(id,'query_days',28);await field(id,'review_confirmed',true);
@@ -67,6 +99,26 @@ async function generate(moduleId){
     await upload(id,'ae_summary',['category','n','pct'],[['Any TEAE',10,50],['Related TEAE',4,20],['Severe TEAE',2,10],['SAE',1,5],['TEAE leading to discontinuation',1,5],['Death',0,0]],{rename:false});assert.equal(await page.locator('.guided-input').count(),1);await field(id,'review_confirmed',true);await validate(id);assert.match(await page.locator('#guided-report').innerText(),/Active|TEAE/);
     await field(id,'draft_text','There were 999 participants with adverse events.');await validate(id);assert.ok(await page.locator('#guided-report .report-errors').count());await field(id,'draft_text','');await generate(id);await screenshot('interpretation-preview.png');await close();
   });
+  if(process.env.TOOLKIT_QA_RUN_ANALYSIS==='1') {
+    await scenario('Generated analyses execute through real R and downloadable reports',async()=>{
+      for(const id of (process.env.TOOLKIT_QA_RUN_TLF==='1'?['r_tlf','sas_tlf','sas_monitor','interpretation']:['sas_monitor','interpretation'])){
+        await open(id);const installer=page.locator('#guided-builds .guided-build').first().locator('details');await installer.locator('summary').click();assert.equal(await installer.getByRole('button',{name:'Install analysis dependencies',exact:true}).isDisabled(),true);await installer.locator('input[type=checkbox]').check();assert.equal(await installer.getByRole('button',{name:'Install analysis dependencies',exact:true}).isEnabled(),true);await installer.locator('input[type=checkbox]').uncheck();
+        await runFromCard('check');await open(id);const job=await runFromCard('run');assert.equal(job.analysis.module_id,id);await downloadRun(job,'analysis-'+id);await screenshot('analysis-'+id+'-success.png');
+      }
+    });
+    await scenario('A pre-pinned synthetic facts mismatch fails visibly with downloadable diagnostics',async()=>{
+      // Construct a signed negative fixture directly on disk, as a buggy generator
+      // might. This bypasses generation on purpose, never analysis integrity checks.
+      const directory=path.join(workspace,'projects',project,'workspace'),historyPath=path.join(directory,'toolkit_configuration/interpretation.builds.json');
+      const history=JSON.parse(fs.readFileSync(historyPath,'utf8')),good=history[0],badId='setup-'+crypto.randomBytes(12).toString('hex');
+      const oldPrefix='template_outputs/interpretation/'+good.build_id,newPrefix='template_outputs/interpretation/'+badId,bundle=path.join(directory,newPrefix);fs.cpSync(path.join(directory,oldPrefix),bundle,{recursive:true});
+      const factsPath=path.join(bundle,'facts.json'),facts=JSON.parse(fs.readFileSync(factsPath,'utf8'));facts.__synthetic_mismatch__=123;fs.writeFileSync(factsPath,JSON.stringify(facts));
+      const manifestPath=path.join(bundle,'analysis_bundle.json'),manifest=JSON.parse(fs.readFileSync(manifestPath,'utf8'));manifest.files['facts.json']=crypto.createHash('sha256').update(fs.readFileSync(factsPath)).digest('hex');fs.writeFileSync(manifestPath,JSON.stringify(manifest));
+      const negative=JSON.parse(JSON.stringify(good).replaceAll(oldPrefix,newPrefix));negative.build_id=badId;negative.bundle_sha256=crypto.createHash('sha256').update(fs.readFileSync(manifestPath)).digest('hex');fs.writeFileSync(historyPath,JSON.stringify([negative,...history]));
+      await open('interpretation');const failed=await runFromCard('run','failed');assert.equal(failed.analysis.build_id,badId);await downloadRun(failed,'analysis-failed');assert.ok(failed.outputs.some(file=>file.path.endsWith('/execution_error.json')));await screenshot('analysis-failure-diagnostics.png');
+      fs.writeFileSync(historyPath,JSON.stringify(history));await open('interpretation');const retry=await runFromCard('run');assert.equal(retry.analysis.build_id,good.build_id);assert.notEqual(retry.analysis.run_id,failed.analysis.run_id);await downloadRun(retry,'analysis-recovered');
+    });
+  }
   await scenario('Saved setup profile downloads and imports without carrying source CSVs',async()=>{
     await open('r_tlf');await page.locator('#guided-dialog details').filter({has:page.locator('#guided-profile-file')}).locator('summary').click();const file=page.waitForEvent('download');await page.locator('#guided-profile-download').click();const download=await file;const profile=JSON.parse(fs.readFileSync(await download.path(),'utf8'));assert.equal(profile.module_id,'r_tlf');assert.equal(profile.values.study_id,'STUDY-DEMO');await close();
     await page.locator('#new-project').click();await page.locator('#project-name').fill('Independent synthetic import');await page.locator('#create-project').click();await page.locator('#project-dialog').waitFor({state:'hidden',timeout:30000});project=await page.locator('#project-select').inputValue();await open('r_tlf');
@@ -81,13 +133,13 @@ async function generate(moduleId){
     await page.locator('#tool-actions').getByRole('button',{name:action.label,exact:true}).click();await page.keyboard.press('Escape');await received;await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));assert.equal(await page.locator('#guided-dialog').isVisible(),false);await page.unroute('**/api/template-setup?*',delay);
   });
   await scenario('Downloaded HTML reports support light and dark themes on desktop and mobile',async()=>{
-    const extract="import sys,json,pathlib,zipfile\np=pathlib.Path(sys.argv[1]);out=p/'reports';out.mkdir(exist_ok=True);files=[]\nfor z in sorted(p.glob('*.zip')):\n with zipfile.ZipFile(z) as package:\n  for i,name in enumerate(package.namelist()):\n   if name.endswith('.html'):\n    target=out/(z.stem+'-'+str(i)+'-'+pathlib.Path(name).name);target.write_bytes(package.read(name));files.append(str(target))\nprint(json.dumps(files))\n";
+    const extract="import sys,json,pathlib,zipfile\np=pathlib.Path(sys.argv[1]);out=p/'reports';out.mkdir(exist_ok=True);files=[]\nfor z in sorted(p.glob('*.zip')):\n with zipfile.ZipFile(z) as package:\n  for i,name in enumerate(package.namelist()):\n   if name.endswith('.html'):\n    target=out/z.stem/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(package.read(name));files.append(str(target))\nprint(json.dumps(files))\n";
     const files=JSON.parse(cp.execFileSync(process.env.TOOLKIT_PYTHON||'python3',['-c',extract,output],{encoding:'utf8'}));assert.ok(files.length>=5);
     for(const file of files)for(const theme of ['light','dark'])for(const width of [1440,390]){
       // A fresh viewport avoids stale compositor strips after headless Chrome resize.
       const preview=await browser.newPage({viewport:{width,height:width===390?844:1000},colorScheme:theme});preview.on('pageerror',error=>report.errors.push(error.message));await preview.goto(pathToFileURL(file).href);
       assert.equal(await preview.locator('.theme-toggle').count(),1);await preview.evaluate(theme=>localStorage.setItem('bp-theme',theme),theme);await preview.reload();assert.equal(await preview.locator('html').getAttribute('data-theme'),theme);await preview.locator('.theme-toggle').click();assert.notEqual(await preview.locator('html').getAttribute('data-theme'),theme);await preview.locator('.theme-toggle').click();assert.equal(await preview.locator('html').getAttribute('data-theme'),theme);
-      assert.equal(await preview.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,path.basename(file)+' horizontal overflow');const name='report-'+path.basename(file,'.html')+'-'+theme+'-'+width+'.png';await preview.screenshot({path:path.join(output,name)});report.screenshots.push(name);await preview.close();
+      assert.equal(await preview.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,path.basename(file)+' horizontal overflow');const name='report-'+path.relative(path.join(output,'reports'),file).replace(/\.html$/,'').replaceAll(path.sep,'-')+'-'+theme+'-'+width+'.png';await preview.screenshot({path:path.join(output,name)});report.screenshots.push(name);await preview.close();
     }
     report.html_reports_checked=files.length;
   });

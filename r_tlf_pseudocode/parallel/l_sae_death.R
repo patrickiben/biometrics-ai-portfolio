@@ -3,7 +3,7 @@
 # TITLE     : Listing of Serious Adverse Events and Deaths
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (AESER == "Y" OR AESDTH == "Y")
-# NOTE      : PSEUDOCODE. One row per serious/fatal AE record, ordered by
+# NOTE      : ANALYSIS TEMPLATE. One row per serious/fatal AE record, ordered by
 #             participant then onset. Restricts to SAEs and deaths (not all AEs).
 #             Listings show all qualifying events regardless of treatment-
 #             emergence; a TEAE flag is included for reviewer context.

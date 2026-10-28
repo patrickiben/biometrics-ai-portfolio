@@ -3,7 +3,7 @@
 # TITLE     : Summary of Plasma PK Parameters by Dose Cohort
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD = CMAX, TMAX, AUCLST, AUCIFO, T12, CLFO, VZFO, ...)
-# NOTE      : PSEUDOCODE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max.
+# NOTE      : ANALYSIS TEMPLATE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max.
 #             Geometric stats on the LOG scale (pkstats). Tmax = Median (Min,Max)
 #             ONLY. SAD = parallel cohorts: column = TRT01A = dose level, single
 #             dose (no accumulation, no steady state). Dose-normalized exposure
@@ -14,11 +14,11 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")                        # column = TRT01A (= dose cohort)
 
-pp <- adam$adpp %>% filter(PKFL == "Y")
+pp <- check_analysis_units(adam$adpp) %>% filter(PKFL == "Y")
 by <- c(dv$trtvar, "PARAMCD", "PARAM")
 
 ## --- non-Tmax parameters: arithmetic + geometric (pkstats does log scale) --
-cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%
+cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%
   transmute(across(all_of(by)),
             n               = as.character(n),
             `Mean (SD)`     = sprintf("%.3g (%.3g)", mean, sd),
@@ -31,14 +31,14 @@ cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%
                names_to = "stat", values_to = "value")
 
 ## --- Tmax: Median (Min, Max) ONLY -----------------------------------------
-tmax <- pp %>% filter(PARAMCD == "TMAX") %>%
+tmax <- pp %>% filter(PARAMCD %in% c("TMAX","TMAXSS")) %>%
   group_by(across(all_of(by))) %>%
-  summarise(med = median(AVAL), min = min(AVAL), max = max(AVAL), .groups = "drop") %>%
+  summarise(med = safe_stat(AVAL[AVAL >= 0], median), min = safe_stat(AVAL[AVAL >= 0], min), max = safe_stat(AVAL[AVAL >= 0], max), .groups = "drop") %>%
   transmute(across(all_of(by)), stat = "Median (Min, Max)",
             value = sprintf("%.2f (%.2f, %.2f)", med, min, max))
 
 ## --- stack params (rows) x dose-cohort (cols), dose-ordered -----------------
-ord <- adam$adpp %>% filter(PKFL == "Y") %>%
+ord <- check_analysis_units(adam$adpp) %>% filter(PKFL == "Y") %>%
   distinct(trt = .data[[dv$trtvar]], trtn = .data[[dv$trtnvar]]) %>%
   arrange(trtn) %>% pull(trt)
 
@@ -58,3 +58,7 @@ ttl <- tfl_titles(num = "14.4.1.1", type = "Table",
 
 ## rtables: split_rows_by(PARAM) -> analyze(stat rows); columns ordered by dose
 print(tab)
+
+# Analysis sample accounting is exported alongside the descriptive table.
+print(pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), by=by) %>%
+  select(all_of(by), n_input, n, n_excluded, n_missing, n_nonpositive, n_blq_excluded))

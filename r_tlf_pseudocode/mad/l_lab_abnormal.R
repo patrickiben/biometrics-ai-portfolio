@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, AVAL, A1LO, A1HI, ANRIND, ATOXGRN, BASE, CHG,
 #             AVISIT, ADY, ONTRTFL)
-# NOTE      : PSEUDOCODE. MAD = parallel dose cohorts with REPEATED dosing; one row
+# NOTE      : ANALYSIS TEMPLATE. MAD = parallel dose cohorts with REPEATED dosing; one row
 #             per ABNORMAL on-treatment result (ANRIND in LOW/HIGH OR CTCAE toxicity
 #             grade ATOXGRN >= 1) across ALL on-treatment dosing days, ordered by
 #             dose level, participant, parameter, study day -- so a participant's
@@ -16,7 +16,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")                      # column / lead sort = TRT01A (dose level)
 
-lab <- adam$adlb %>%
+lab <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y",                  # on-treatment scope
          toupper(ANRIND) %in% c("LOW","HIGH") |         # abnormal = Low/High OR
            (!is.na(ATOXGRN) & ATOXGRN >= 1)) %>%        #   CTCAE toxicity grade >= 1

@@ -3,7 +3,7 @@
 # TITLE     : Mean (+/-SE) Change from Baseline in Vital Signs by Visit
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADVS (PARAMCD in SYSBP, DIABP, PULSE -- same panel as the SAS twin)
-# NOTE      : PSEUDOCODE. Mean change from baseline (CHG) with +/-1 SE error
+# NOTE      : ANALYSIS TEMPLATE. Mean change from baseline (CHG) with +/-1 SE error
 #             bars over scheduled post-baseline visits, one line per DOSE COHORT,
 #             faceted by parameter. SAD: between-cohort comparison along ascending
 #             dose, colour = dv$trtvar (TRT01A = dose level), ordered low -> high
@@ -20,7 +20,7 @@ dose_order <- adam$adsl %>% filter(SAFFL == "Y") %>%
   arrange(trtn) %>% pull(trt)
 
 ## post-baseline analysis records (CHG defined); scheduled timepoints only
-vs <- adam$advs %>%
+vs <- visit_time_labels(check_analysis_units(adam$advs)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", AVISITN > 0, !is.na(CHG),
          PARAMCD %in% c("SYSBP","DIABP","PULSE")) %>%   # same panel as SAS twin
   mutate(trt    = factor(.data[[dv$trtvar]], levels = dose_order),  # ascending dose

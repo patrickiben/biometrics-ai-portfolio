@@ -3,7 +3,7 @@
 # TITLE     : Listing of Participant Disposition and Period Completion
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. One row per participant, ordered by sequence then participant.
+# NOTE      : ANALYSIS TEMPLATE. One row per participant, ordered by sequence then participant.
 #             Crossover-specific: shows the randomized SEQUENCE (TRTSEQP) and the
 #             per-period analysis treatment (TRT01A/TRT02A on ADSL), plus overall
 #             completion status and discontinuation reason. A disposition LISTING

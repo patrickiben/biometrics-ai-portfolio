@@ -3,7 +3,7 @@
 # TITLE     : Summary of Laboratory Values and Change from Baseline by Dose Level
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, AVAL, BASE, CHG, AVISIT/AVISITN, ADY, ANL01FL)
-# NOTE      : PSEUDOCODE. MAD = parallel dose cohorts with REPEATED dosing; the
+# NOTE      : ANALYSIS TEMPLATE. MAD = parallel dose cohorts with REPEATED dosing; the
 #             column variable is the actual treatment = DOSE LEVEL
 #             (dv$trtvar = TRT01A), with placebo commonly pooled across cohorts.
 #             Because dosing is repeated, scheduled visits span the full dosing
@@ -24,7 +24,7 @@ dv  <- design_vars("MAD")                      # column = TRT01A/TRT01AN (dose l
 
 ## one analysis record per participant/param/visit (ANL01FL keeps the chosen reading);
 ## MAD scheduled visits include multiple on-treatment dosing days -> trend visible
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("ALT","AST","BILI","ALP","CREAT","BUN","GLUC",
                         "K","NA","HGB","WBC","PLAT","NEUT")) %>%
@@ -40,8 +40,8 @@ denom <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
 ## by = param, visit (ordered by AVISITN across all dosing days), dose level.
 ## Baseline visit CHG omitted.
 lab_block <- function(var, statset_label) {
-  descstat(lb, var = var, by = c("PARAMCD","PARAM","AVISITN","AVISIT", dv$trtvar)) %>%
-    transmute(PARAMCD, PARAM, AVISITN, AVISIT, trt = .data[[dv$trtvar]],
+  descstat(with_total_column(lb,dv$trtvar), var = var, by = c("PARAMCD","PARAM","AVISITN","ATPTN","ATPT","AVISIT", dv$trtvar)) %>%
+    transmute(PARAMCD, PARAM, AVISITN, AVISIT, ATPTN, ATPT, trt = .data[[dv$trtvar]],
               measure = statset_label,
               `n`         = as.character(n),
               `Mean (SD)` = paste(c_mean, c_sd),
@@ -61,7 +61,7 @@ chg  <- lab_block("CHG",  "Change from Baseline") %>%
 ##     (repeated-dose) trend reads top to bottom.
 tab <- bind_rows(aval, chg) %>%
   arrange(PARAM, AVISITN, factor(measure, c("Observed Value","Change from Baseline")), stat) %>%
-  select(PARAM, AVISIT, measure, stat, trt, value) %>%
+  select(PARAM, AVISIT, ATPTN, ATPT, measure, stat, trt, value) %>%
   pivot_wider(names_from = trt, values_from = value)
 
 ttl <- tfl_titles(num = "14.3.4.1", type = "Table",
@@ -73,10 +73,5 @@ ttl <- tfl_titles(num = "14.3.4.1", type = "Table",
                 "Baseline = last value on/before first dose; change = post - baseline."))
 
 ## rtables layout: PARAM -> AVISIT -> measure split, statistic rows x dose columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM",   page_by = TRUE) %>%
-  split_rows_by("AVISIT")  %>%
-  split_rows_by("measure") %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

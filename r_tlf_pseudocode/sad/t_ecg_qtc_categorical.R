@@ -4,7 +4,7 @@
 #             Baseline)
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADEG (PARAMCD == "QTCF")
-# NOTE      : PSEUDOCODE. Participant-level outlier categories per ICH E14:
+# NOTE      : ANALYSIS TEMPLATE. Participant-level outlier categories per ICH E14:
 #             absolute QTcF (>450, >480, >500 ms) and change from baseline
 #             (>30, >60 ms). Each participant counted once per category if they ever
 #             cross the threshold post-baseline (worst on-treatment value).
@@ -26,7 +26,7 @@ dose_order <- adam$adsl %>% filter(SAFFL == "Y") %>%
   arrange(trtn) %>% pull(trt)
 
 ## post-baseline QTcF analysis records
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", PARAMCD == "QTCF", ONTRTFL == "Y") %>%
   mutate(trt = .data[[dv$trtvar]])
 
@@ -84,7 +84,5 @@ ttl <- tfl_titles(num = "14.3.5.2", type = "Table",
    pop  = "Safety Population",
    foot = "Columns are ascending SAD dose cohorts (placebo pooled first). QTcF = Fridericia-corrected QT. Categories per ICH E14; participant counted once per category on worst on-treatment value. Percentages based on cohort N in the Safety Population.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  analyze("cat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

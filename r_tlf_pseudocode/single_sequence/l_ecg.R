@@ -3,7 +3,7 @@
 # TITLE     : Listing of Electrocardiogram (ECG) Results
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEG
-# NOTE      : PSEUDOCODE. One row per ECG assessment, ordered by participant, PERIOD,
+# NOTE      : ANALYSIS TEMPLATE. One row per ECG assessment, ordered by participant, PERIOD,
 #             parameter, then visit/timepoint. Shows observed value, period
 #             baseline, change, range indicator, and the overall ECG
 #             interpretation. Single-fixed-sequence DDI: a Period column
@@ -17,7 +17,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SINGLESEQ")                 # byperiod = APERIOD/APERIODC; trtvar = TRTA
 perN <- dv$byperiod[1]; perC <- dv$byperiod[2]
 
-eg <- adam$adeg %>% filter(SAFFL == "Y") %>%
+eg <- check_analysis_units(adam$adeg) %>% filter(SAFFL == "Y") %>%
   transmute(
     Period      = .data[[perC]],                     # Period 1 ref / Period 2 test
     APERIODN    = .data[[perN]],
@@ -34,7 +34,7 @@ eg <- adam$adeg %>% filter(SAFFL == "Y") %>%
     `Baseline`  = BASE,                              # period-specific baseline
     `Change`    = CHG,
     `Range Ind` = ANRIND,                            # LOW / NORMAL / HIGH
-    `Interpretation` = if ("EGINTP" %in% names(adam$adeg)) EGINTP else NA_character_,  # overall read
+    `Interpretation` = if ("EGINTP" %in% names(check_analysis_units(adam$adeg))) EGINTP else NA_character_,  # overall read
     `Anl Flag`  = ANL01FL,
     ADT) %>%
   arrange(Participant, APERIODN, PARAMCD, AVISITN, ATPTN, ADT)   # sort on numeric keys/date

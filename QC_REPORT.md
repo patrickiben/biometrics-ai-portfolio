@@ -2,7 +2,19 @@
 
 Review date: 28 October 2026. Scope: the complete repository, its published-page source, local tools and downloadable artifacts, with additional adversarial review of Open Study Tracker. All exercised datasets and accounts were synthetic. This is software and example-method QC, not regulatory validation or approval for a particular client, study or deployment.
 
-## Guided template setup follow-up
+## Runnable analysis follow-up
+
+The TLF forms now use open-source R as the execution default, with native SAS reference exports. The same fixed runner executes mapped-CSV monitoring checks and independently recomputes aggregate interpretation facts. A generated revision pins input and source fingerprints; every attempt has a separate results folder. A nonzero exit, missing report, failed output or failed QC verdict makes the job fail. Reports retain warnings and software versions, and never mark scientific approval as granted.
+
+Executed numerical QC includes 127 model assertions and 27 core known-answer, edge and metamorphic checks. All 221 R source programs execute on synthetic fixtures, including all 197 nonmodel programs and 24 model/PD/C-QTc programs. A second pass removes every input column outside each output's declared contract, exercising all 221 outputs again. This caught missing hidden requirements before the upload forms were finalized. Monitoring has 53 boundary, invalid-input and export checks across all eight routines.
+
+Method corrections include actual numeric dose mappings, explicit Satterthwaite degrees of freedom for the supported nonreplicate 2×2 BE model, paired fixed-sequence comparisons, unique paired accumulation occasions, comparable AUC-interval confirmation, and descriptive trough trends without claiming steady state from a nonsignificant slope. PK exclusions are reported. AE summaries retain zero-event arms; missing lab/ADA classifications remain unknown. Quantitative contracts require units and reject incompatible mixtures. LINEAR/EMAX C-QTc fits remain exploratory diagnostics.
+
+Report QC checks every printed component, 1,001-row pagination, CSV/RDS completeness, rtables conversion, actual PNG/PDF rendering, UTF-8 and formula-like text, HTML escaping, warning retention and removal of partial numeric outputs after failure. Runtime tests cover immutable revisions, distinct runs, fixed command arguments, installation consent, package tampering, source fingerprints, exact output-set reconciliation and diagnostic ZIPs. All 442 generated selections (221 per TLF entry point, both powered by R) execute through the complete report engine; repeat runs preserve prior results and duplicate analysis rows fail without partial numeric exports. Private input, configuration and run folders are excluded from public source copies and Pages builds. Browser QC exercises 13 scenarios, six actual R runs (including both TLF routes), and 30 generated HTML reports in light/dark themes at desktop/mobile widths. The site-wide pass covers all 68 source pages and six existing interaction workflows.
+
+No native SAS, real language model, live email or client dataset was executed. These are software and example-method checks; they do not establish independent double programming, CDISC conformance, regulatory qualification or approval of a particular study. Earlier follow-up sections below describe the evidence at those earlier stages; this section supersedes their parse-only description of the R library.
+
+## Earlier guided template setup follow-up (superseded for R execution)
 
 Five guided setups now replace code-editing for supported study configuration: paired SAS/R TLF libraries, monitoring checks, LOCALMIND findings and aggregate AE/PK interpretation. Forms select outputs, accept CSVs, map columns, check assumptions and generate immutable, versioned packages. Profiles can be reused without transferring inputs. The public site remains a catalog; private study setup runs through the downloaded toolkit on the user's computer.
 
@@ -10,7 +22,7 @@ QC covers all 442 TLF template selections and parsing of every generated R progr
 
 No SAS program, real language model or external mail service was executed in this follow-up. Generated drivers consume the configured data, but existing pseudocode methods and unfinished report shells remain explicitly unvalidated. The forms do not turn a configured template into a completed study analysis. Empty event inputs are permitted only where the selected provider supports them; missing denominator data and monitoring feeds still fail validation. Evidence uses synthetic data and is retained outside the repository.
 
-## Point-and-click toolkit follow-up
+## Earlier point-and-click toolkit follow-up
 
 The [setup guide](TOOLKIT_SETUP.html) now provides a desktop entry point for all 22 catalog modules. The local control panel creates separate private project copies, checks runtimes, installs supported R dependencies on request, manages input replacement and backups, saves configuration, supervises fixed workflows, and downloads outputs. Its browser-only preview does not attempt local API access. SAS and model-dependent modules provide preparation and editor workflows; pseudocode still requires implementation and study-specific review.
 
@@ -82,7 +94,7 @@ For numerical reproduction, follow [study/README.md](study/README.md), and run e
 - No real client data, hosting account, production identity provider or live external SMTP service was configured. Shared tracker use requires a host; live email requires SMTP configuration. Local browser use and notification previews work without those services.
 - The shared tracker is an evaluation tool with individual accounts. It has no MFA/SSO, per-study access partitioning or external penetration-test certification. All accounts can read their service's entire tracker. Separate access boundaries require separate databases/services.
 - Browser persistence is not a backup. Download portable files; use documented export/import paths. UAT's app export covers test scripts, not a complete defect and traceability archive.
-- SAS programs were not executed because no licensed SAS runtime was available. The 221 SAS and 221 R TLF library files remain pseudocode; R parsing is not validation on study data. Local-model examples need a separately obtained runtime/model, and the TLF interpretation model step remains a stub.
+- SAS programs were not executed because no licensed SAS runtime was available. The 221 SAS files remain unexecuted reference templates. The R library now has synthetic execution QC as described above; this is not validation on a new study dataset. Local-model examples need a separately obtained runtime/model, and the TLF interpretation model step remains a stub.
 - C-QTc and carryover known-answer tests do not replace rerunning every Monte Carlo experiment for a new design. The carryover comparison against an old full-precision Git baseline was unavailable in the disposable copy and is reported as informational. The worked study's same-author alternative derivation is not independent double programming.
 - The Shinylive build reported host/WebAssembly version warnings for knitr, rmarkdown, tinytex and xfun. All three exported apps passed their runtime smoke tests; the build warnings remain recorded rather than presented as a version-exact analysis environment.
 - A clean package/browser check does not certify every scientific claim, regulatory reference, third-party destination or future dependency version. Reference standards and method assumptions still need review for the intended use.

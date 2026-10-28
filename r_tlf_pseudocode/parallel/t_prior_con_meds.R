@@ -3,7 +3,7 @@
 # TITLE     : Prior and Concomitant Medications by Drug Class
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADCM  (WHODrug-coded medications; ATC class + PREFTERM)
-# NOTE      : PSEUDOCODE. Two sections (Prior, Concomitant) via ADCM timing
+# NOTE      : ANALYSIS TEMPLATE. Two sections (Prior, Concomitant) via ADCM timing
 #             flags. Participants with >=1 medication = distinct USUBJID
 #             (NOT med rows). % denominator = Safety N per arm from bign().
 #             Columns = treatment arms (TRT01A) + Total.
@@ -85,9 +85,5 @@ ttl <- tfl_titles(num = "14.1.6", type = "Table",
    pop  = "Safety Population",
    foot = "Participants counted once per class / medication (distinct USUBJID). Percentages based on Safety Population N per arm. {whodrug} coding; ATC class = CMCLAS.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("section", page_by = TRUE) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

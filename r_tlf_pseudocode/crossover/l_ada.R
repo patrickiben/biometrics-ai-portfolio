@@ -6,7 +6,7 @@
 # INPUT     : ADIS (PARCAT1 = "ADA"; PARAM = ADA / NAb, AVALC = Positive/Negative,
 #             AVAL = titer; status flags ADABLFL/TEADAFL/ADAPERFL/ADATRNFL/NABFL;
 #             AVISIT/ADT, APERIOD/APERIODC, TRTA, TRTSEQP)
-# NOTE      : PSEUDOCODE. One row per participant x assay x period x sample. Crossover
+# NOTE      : ANALYSIS TEMPLATE. One row per participant x assay x period x sample. Crossover
 #             ordering: sequence (TRTSEQP) -> participant -> period (APERIOD) ->
 #             treatment (TRTA) -> visit/time, so a reviewer can trace ADA status
 #             across periods and washout. ADA status = participant-level

@@ -3,7 +3,7 @@
 # TITLE     : Listing of Participant Disposition
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. One row per participant. SAD: parallel ascending-dose
+# NOTE      : ANALYSIS TEMPLATE. One row per participant. SAD: parallel ascending-dose
 #             cohorts, ONE treatment per participant -> NO sequence/period columns.
 #             Shows the assigned dose level (TRT01A = cohort), enrolled/
 #             randomized/safety/PK population flags, single-dose date, study

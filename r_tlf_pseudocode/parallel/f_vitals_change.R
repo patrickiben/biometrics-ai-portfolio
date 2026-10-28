@@ -3,7 +3,7 @@
 # TITLE     : Mean (+/-SE) Change from Baseline in Vital Signs by Visit
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADVS (PARAMCD in SYSBP, DIABP, PULSE, TEMP, RESP)
-# NOTE      : PSEUDOCODE. Mean change from baseline (CHG) with +/-1 SE error
+# NOTE      : ANALYSIS TEMPLATE. Mean change from baseline (CHG) with +/-1 SE error
 #             bars over scheduled post-baseline visits, one line per treatment
 #             arm, faceted by parameter. Parallel: between-arm comparison,
 #             colour = dv$trtvar (TRT01A); no within-participant/period structure.
@@ -13,7 +13,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")
 
 ## post-baseline analysis records (CHG defined); scheduled timepoints only
-vs <- adam$advs %>%
+vs <- visit_time_labels(check_analysis_units(adam$advs)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", !is.na(CHG),
          PARAMCD %in% c("SYSBP","DIABP","PULSE","TEMP","RESP")) %>%
   mutate(trt    = .data[[dv$trtvar]],

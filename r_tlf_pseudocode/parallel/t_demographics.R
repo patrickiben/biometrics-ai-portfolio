@@ -3,7 +3,7 @@
 # TITLE     : Demographic and Baseline Characteristics
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. Continuous: n, Mean (SD), Median, Min-Max.
+# NOTE      : ANALYSIS TEMPLATE. Continuous: n, Mean (SD), Median, Min-Max.
 #             Categorical: n (%). Columns = treatment arms + Total.
 ################################################################################
 source("../00_setup_helpers.R")
@@ -17,7 +17,7 @@ denom <- bign(adsl, trtvar = dv$trtvar, popfl = "SAFFL")
 
 ## --- continuous block: AGE, WEIGHTBL, HEIGHTBL, BMIBL ----------------------
 cont_block <- function(var, label, dp = 1L, ord) {
-  descstat(adsl, var = var, by = dv$trtvar, dp = dp) %>%
+  descstat(with_total_column(adsl, dv$trtvar), var = var, by = dv$trtvar, dp = dp) %>%
     transmute(trt = .data[[dv$trtvar]], characteristic = label, ord = ord,
               `n`              = as.character(n),
               `Mean (SD)`      = paste(c_mean, c_sd),
@@ -52,8 +52,5 @@ ttl <- tfl_titles(num = "14.1.2", type = "Table",
                   foot = "Percentages based on the number of participants in the Safety Population per arm.")
 
 ## rtables layout (regulatory): characteristic -> statistic rows x arm columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab) for an HTML/Quarto rendering
+
 print(tab)
