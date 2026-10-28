@@ -1,0 +1,15 @@
+# Dockerfile-specific allowlist, with repository root as the build context.
+**
+!LICENSE
+!open_tracker/
+!open_tracker/tracker.py
+!open_tracker/server.py
+!open_tracker/notifications.py
+!open_tracker/manage.py
+!open_tracker/index.html
+!open_tracker/requirements-shared.txt
+!open_tracker/examples/
+!open_tracker/examples/status.csv
+!open_tracker/deploy/
+!open_tracker/deploy/healthcheck.py
+!open_tracker/deploy/Dockerfile

@@ -1,0 +1,5 @@
+{$TRACKER_PUBLIC_URL} {
+	encode zstd gzip
+	# Caddy preserves the original Host; the app does not trust forwarded headers.
+	reverse_proxy tracker:8080
+}

@@ -20,7 +20,10 @@ class PagesBuildTests(unittest.TestCase):
                  "config/shared.env.local", "config/shared.env.example", ".env.example",
                  "demo/shiny/app.R", "demo/shiny/local.env", "demo/shiny/STATE.SQLITE3-WAL",
                  "demo/shiny/state.db-shm", "demo/shiny/state.sqlite-journal",
-                 "demo/shiny/preview.eml", "demo/shiny/data/demo.csv"]
+                 "demo/shiny/preview.eml", "demo/shiny/data/demo.csv",
+                 "config.json", "demo/shiny/config.json", "demo/shiny/CONFIG.JSON",
+                 ".open-study-tracker/anything.txt", "demo/shiny/.open-study-tracker/secrets.txt",
+                 "mail-preview/index.html", "demo/shiny/mail-preview/notice.txt"]
         code = "files <- c(" + ",".join(map(json.dumps, files)) + ")\n" + "\n".join(statements)
         # Reuse the app staging selection from the build, with the filtered list.
         selection = next(line.strip() for line in source.splitlines() if line.strip().startswith("src <- files[startsWith"))

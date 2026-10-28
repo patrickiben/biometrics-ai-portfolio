@@ -19,6 +19,9 @@ __pycache__/
 *.env.*
 !*.env.example
 .venv/
+config.json
+.open-study-tracker/
+mail-preview/
 
 # Quarto build cache / render artifacts
 **/.quarto/

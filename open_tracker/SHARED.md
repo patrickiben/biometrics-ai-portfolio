@@ -1,111 +1,221 @@
 # Shared accounts and email alerts
 
-Open Study Tracker has an optional self-hosted server for people who need a shared tracker. Everyone signs in with an individual account and reads the same local SQLite database. An independent email worker observes recorded changes and delivers queued notifications through your SMTP service. The server and worker are open source under the repository's MIT license.
+Start a shared Open Study Tracker with one guided command. The launcher creates private storage, helps you create the first account, and runs the web server and automatic email worker together. Use the same open-source setup for your own team or adapt a separate workspace for each engagement. It has no client-specific settings or required hosting or email provider.
 
-**Scope:** these are reusable setup instructions for consultants and employees, not a service configured for a specific client. Shared access needs hosting; live email needs SMTP configuration. Both are optional. Local sign-in and email previews let you evaluate the features before choosing any deployment.
+| Start here | What you need | What you get |
+| --- | --- | --- |
+| [Local evaluation](#one-command-local-start) | Python 3.10+ and a complete repository checkout | Individual sign-in, a shared database on your computer and local email previews. |
+| [Team access](#team-hosting-with-docker-compose) | A host you control, Docker Compose and a hostname | The same tracker behind HTTPS, persistent storage and automatic restart. |
+| [Live email](#email-preview-first-connect-your-service-when-ready) | SMTP settings from your chosen mail service | Automatic operational alerts to the recipients you configure. |
 
-The GitHub Pages demo remains an offline workspace. GitHub Pages cannot host the Python server, user accounts, or email worker. Run these on a machine you control; keep the database and environment file outside the published repository.
+The public GitHub Pages demo is an offline browser workspace. Shared access runs on your chosen host. Nothing in this setup creates a client deployment or signs up for a service on your behalf.
 
-## Start a local shared workspace
+## One-command local start
 
-Use Python 3.10+ and run from the repository root:
-
-```sh
-python3 -m venv open_tracker/.venv
-open_tracker/.venv/bin/python -m pip install -r open_tracker/requirements-shared.txt
-mkdir -p open_tracker/out
-open_tracker/.venv/bin/python open_tracker/server.py --db open_tracker/out/shared.sqlite add-user --username patrick --role admin
-```
-
-The account command prompts for the password twice. Passwords are stored as salted scrypt hashes. There are no default accounts or passwords. Windows users can use `open_tracker\.venv\Scripts\python.exe` in place of the Unix virtual-environment executable.
-
-Set a random session-signing key and enable HTTP only for this loopback preview:
+Run this from the repository root:
 
 ```sh
-export TRACKER_SECRET_KEY="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
-export TRACKER_INSECURE_LOCAL=1
-open_tracker/.venv/bin/python open_tracker/server.py --db open_tracker/out/shared.sqlite serve --host 127.0.0.1 --port 8080
+python3 open_tracker/manage.py
 ```
 
-Open `http://127.0.0.1:8080` and sign in. Start with an empty shared workspace or import the fictional example with the standard CLI:
+On Windows, use `py -3 open_tracker/manage.py` and `py -3` in place of `python3` below. The launcher checks the pinned dependencies and creates a private virtual environment if needed. The first run needs internet access to install those packages. You do not need to activate the environment or set environment variables.
+
+Follow the prompts to create your first administrator account and choose whether to load the fictional example. The default workspace is empty. Open **http://127.0.0.1:8080** and sign in. There are no default accounts or passwords.
+
+The server and email-preview worker run together. Leave that terminal open while using the workspace. Press **Ctrl+C** to stop both; run the same command to resume. Your account, session-signing key and data survive restarts. `start` is an explicit alias for the no-argument command:
 
 ```sh
-python3 open_tracker/tracker.py --db open_tracker/out/shared.sqlite upsert --csv open_tracker/examples/status.csv --actor synthetic-demo
+python3 open_tracker/manage.py start
 ```
 
-Use **Refresh** in the shared workspace after a scheduled import or another user's edit. Shared mode saves directly to SQLite, does not store task data in localStorage (only the light/dark preference may be stored there), and records the authenticated username. Stale saves return a conflict instead of overwriting newer work; preserve your edits, refresh, and compare the current row before trying again. A manual edit does not refresh the scheduled-import heartbeat.
+Local mode listens only on your own computer. Use the team-hosting instructions below to give other people access over HTTPS.
+
+### Where your files go
+
+The default workspace is `~/.open-study-tracker`, where `~` means your user home directory:
+
+| File or directory | Contents |
+| --- | --- |
+| `tracker.sqlite` | Deliverables, history, accounts, sessions and notification outbox. |
+| `config.json` | Host settings, a generated signing secret and any SMTP credentials. Keep this file private. |
+| `mail-preview/` | Preview messages as `.eml` files. |
+| `backups/` | Database backups created by the backup command. |
+| `.venv/` | The managed Python environment when one is needed. |
+
+These files live outside the source checkout. To create a separate workspace, put `--workspace` before the command:
+
+```sh
+python3 open_tracker/manage.py --workspace /absolute/path/to/team-workspace
+```
+
+Use that same option for every later command concerning that workspace. Each workspace has its own accounts, database and mail settings. If running several local workspaces at once, give each a different port with `start --port 8081`.
 
 ## Accounts and permissions
+
+Run these commands on the host that owns the workspace:
+
+```sh
+python3 open_tracker/manage.py add-user --username reviewer --role viewer
+python3 open_tracker/manage.py add-user --username analyst --role editor
+python3 open_tracker/manage.py list-users
+python3 open_tracker/manage.py set-password --username reviewer
+python3 open_tracker/manage.py set-role --username reviewer --role editor
+python3 open_tracker/manage.py disable-user --username reviewer
+python3 open_tracker/manage.py enable-user --username reviewer
+```
+
+Password commands prompt privately. Passwords must contain 12–256 characters; usernames use 3–64 lowercase letters, digits, dots, underscores or hyphens and start with a letter. Passwords are stored as salted scrypt hashes. Password resets, role changes and account disabling revoke that account's existing sessions.
 
 | Role | Access |
 | --- | --- |
 | `viewer` | Read, filter and download snapshots. |
 | `editor` | Viewer access plus add/edit deliverables. |
-| `admin` | Current web permissions match editor. Account administration remains a server-local command. |
+| `admin` | The same web permissions as editor. Account administration is a host command. |
 
-Account commands run on the host with database access:
+Everyone with an account can read the entire workspace, including its history and exports. Use separate workspaces and services for separate access boundaries. Public signup, password-recovery email, SSO, MFA and per-study permissions are outside this tool's scope.
 
-```sh
-open_tracker/.venv/bin/python open_tracker/server.py --db open_tracker/out/shared.sqlite add-user --username reviewer --role viewer
-open_tracker/.venv/bin/python open_tracker/server.py --db open_tracker/out/shared.sqlite set-password --username reviewer
-open_tracker/.venv/bin/python open_tracker/server.py --db open_tracker/out/shared.sqlite disable-user --username reviewer
-open_tracker/.venv/bin/python open_tracker/server.py --db open_tracker/out/shared.sqlite list-users
-```
+Use **Refresh tracker** after another person's edit or a scheduled import. Shared edits save directly to SQLite and record the signed-in account. A stale save returns a conflict instead of overwriting a newer change: keep your draft, refresh, and compare the latest row. Shared mode does not persist task data in browser storage; the light/dark preference may be stored there.
 
-Passwords must contain 12–256 characters. Usernames use 3–64 lowercase letters, digits, dots, underscores or hyphens and start with a letter. Password reset, account disabling, and role changes revoke existing sessions. Use `set-role --username reviewer --role editor` to change access or `enable-user --username reviewer` to restore a disabled account. Logout revokes its session server-side. Login attempts are rate-limited. There is no public signup, password-recovery email, SSO, per-study access partitioning, or MFA. Everyone granted an account can read the entire tracker, including its operational history and exports. Use separate databases/services when teams need separate access boundaries.
-
-## Preview notifications without sending
-
-The worker is disabled until `TRACKER_ALERT_TO` is configured. A preview writes `.eml` files locally; it never connects to SMTP and does not mark mail as delivered.
+## Email: preview first, connect your service when ready
 
 ```sh
-TRACKER_ALERT_TO=reviewer@example.test python3 open_tracker/notifications.py --db open_tracker/out/shared.sqlite --once --preview-dir open_tracker/out/mail-preview
+python3 open_tracker/manage.py email
 ```
 
-The example address is reserved for demonstration. Open the generated `.eml` files to review their contents. Notification messages contain operational IDs/status and an optional tracker link, not task notes or the full change history.
+Choose a mode in the guided prompts:
 
-## Enable automatic delivery
-
-Configure your SMTP server and intended recipients in the worker's environment. Use your service manager or a private environment file with restricted permissions. See [the example configuration](deploy/shared.env.example). Credentials are never command-line arguments.
-
-| Variable | Purpose |
+| Mode | Behavior |
 | --- | --- |
-| `TRACKER_ALERT_TO` | Comma-separated recipient email addresses; unset disables the worker. |
-| `TRACKER_SMTP_HOST` | Your SMTP hostname. |
-| `TRACKER_SMTP_PORT` | Usually `587` for STARTTLS or `465` for implicit TLS. |
-| `TRACKER_SMTP_SECURITY` | `starttls` (default) or `ssl`; `plain` is restricted to loopback testing. |
-| `TRACKER_SMTP_FROM` | Sender address authorized by your SMTP provider. |
-| `TRACKER_SMTP_USERNAME` / `TRACKER_SMTP_PASSWORD` | SMTP authentication if required. |
-| `TRACKER_PUBLIC_URL` | Optional HTTP(S) link included in notifications. |
+| `preview` | The initial mode. Writes `.eml` files in `mail-preview/`, using a reserved example recipient. It never connects to SMTP. |
+| `off` | Disables automatic notification processing. |
+| `smtp` | Delivers through your configured SMTP service after you explicitly type `ENABLE`. |
 
-Start the worker with the same database as the web server or scheduled import:
+After changing email settings, stop the running launcher with **Ctrl+C** and start it again. Starting in SMTP mode can send queued alerts to the configured recipients.
+
+To check the email preview immediately, including in an empty workspace:
 
 ```sh
-python3 open_tracker/notifications.py --db /absolute/path/to/shared.sqlite --interval 60
+python3 open_tracker/manage.py email-test
 ```
 
-The loop checks for changes every 60 seconds. Alternatively, schedule `--once` with cron or Task Scheduler. Run only one worker per database in normal operation; database leases protect against overlapping workers.
+Open the `.eml` file whose path is printed. This sample does not contact SMTP or change the notification queue. To try automatic operational alerts, sign in and create or change a synthetic task to **Blocked** or **At risk**. Wait up to 60 seconds for the worker's next poll, then open the `.eml` file in `mail-preview/`. Previewed operational messages remain eligible for later live delivery.
 
-Alerts are queued when a task enters **At risk** or **Blocked**. Re-running an unchanged import or editing a note while the status stays the same does not enqueue another status alert. If several transitions happen between worker polls, only the latest still-current status is considered. Resolved/superseded pending alerts are canceled. A send already in flight cannot be recalled. If an identical digest was already sent that UTC day, disappearance and recurrence of that same exception set does not send it again that day. Daily digests cover unfinished overdue tasks and stale scheduled imports; a changed exception set can trigger an updated digest within the same UTC day. Use `--stale-hours 0` to disable stale-import alerts for a workspace maintained entirely by people; overdue alerts remain enabled. The default stale threshold is 24 hours. An empty workspace does not produce a stale-data email.
+For SMTP, have these details ready:
 
-The outbox records a separate delivery for each recipient. Failures remain queued with exponential retry delays. Delivery is **at least once**: a crash after SMTP accepts a message but before the database marks it sent can result in a duplicate on retry. A stable Message-ID helps mail clients recognize it. Successful SMTP acceptance does not prove inbox receipt. Previewed messages remain eligible for later real delivery when sending is enabled. Removed recipients' pending messages are canceled; adding a recipient affects subsequent transitions and current digests, without replaying already-consumed status transitions. Restart a running worker after changing its environment.
+- SMTP hostname and port from your chosen service.
+- Encryption mode: STARTTLS, commonly on port 587, or implicit TLS on port 465.
+- A sender address authorized by that service.
+- Username and password if the service requires authentication.
+- The intended recipient addresses.
 
-## Host for a team
+SMTP credentials are entered through prompts, with the password hidden, and kept in the private workspace configuration. The wizard does not require a particular provider. Your provider may require an app password, an approved sending domain or administrator permission; use the SMTP values it supplies. Merely saving configuration does not verify that a provider will accept mail.
 
-Run the web service with Waitress behind an HTTPS reverse proxy. Leave it bound to `127.0.0.1`; expose only the proxy. Unset `TRACKER_INSECURE_LOCAL` for team access so cookies require HTTPS. Store a stable, random `TRACKER_SECRET_KEY` of at least 32 characters in the service environment. Restarting with a different signing key logs users out. Set `TRACKER_ALLOWED_HOSTS` to your public hostname (for example `tracker.example.org`); the default allows only `localhost`, `127.0.0.1` and `[::1]`. The application rejects other Host headers, does not trust forwarded headers, and does not add permissive cross-origin access. A reverse proxy must preserve the intended Host header. Rate limiting sees the proxy address, so proxied users share its IP limit; configure edge limits for the expected team size. Local HTTP mode additionally requires a loopback peer and host.
-
-The server uses CSRF tokens for mutations, HttpOnly/SameSite cookies, expiring server-side sessions, and role checks on each request. The web routes expose neither SQLite files nor account records. Downloads contain task data and history; an authorized viewer can share them outside the server.
-
-Example systemd units are provided for [the web server](deploy/open-tracker.service) and [the email worker](deploy/open-tracker-alerts.service). Adjust paths and create the service account and data directory first. These are deployment templates, not an installed service. Use your platform's HTTPS proxy and process supervision. Keep the database on local disk, back it up, and restrict host access: file-level access can bypass application permissions.
-
-The server is a small operational collaboration tool. It has no claim of regulatory validation, tamper-evident history, or enterprise identity management. Its security controls have automated tests, but it has not undergone an external penetration test.
-
-## Validate
+For an optional live connection test, keep the launcher stopped, configure SMTP mode, and replace `you@example.org` below with a real address you control:
 
 ```sh
-open_tracker/.venv/bin/python -m unittest discover -s open_tracker/tests -v
+python3 open_tracker/manage.py email-test --send --to you@example.org
 ```
 
-Tests cover accounts, permissions, sessions, CSRF, conflicting edits, notification rules, deduplication, retries, TLS configuration, and the offline import/export workflow. Tests use local fixtures and simulated SMTP; they do not email real recipients.
+This explicitly sends one generic test message to that address. It does not flush queued operational alerts. Check your inbox and provider logs; SMTP acceptance alone does not prove inbox delivery. Start the launcher when you want automatic delivery to begin.
 
-The server configuration follows the official [Flask security guidance](https://flask.palletsprojects.com/en/stable/web-security/) and [Waitress deployment guidance](https://flask.palletsprojects.com/en/stable/deploying/waitress/). The worker uses Python's [SMTP client](https://docs.python.org/3/library/smtplib.html).
+Notifications contain operational IDs/status and an optional tracker link, not task notes or full history. A shared account does not automatically subscribe someone to email; recipients are configured separately.
+
+### Which notifications are sent
+
+Alerts are queued when a task enters **At risk** or **Blocked**. An unchanged import or a note edit with the same status does not enqueue another status alert. If several transitions occur between polls, only the latest still-current status is considered. Resolved or superseded pending alerts are canceled; a send already in progress cannot be recalled.
+
+Daily digests cover unfinished overdue tasks and, when configured, stale scheduled imports. A changed exception set can produce an updated digest within the same UTC day. A manual edit does not refresh the scheduled-import heartbeat. The guided setup disables stale-import alerts initially. In the email wizard, enable the 24-hour check if your workspace uses scheduled imports; overdue alerts remain enabled in preview or SMTP mode.
+
+Each recipient has an independent delivery record. Failures remain queued with retry delays. Delivery is **at least once**: a crash after SMTP acceptance but before recording success can cause a duplicate on retry. Successful SMTP acceptance does not prove inbox delivery. Adding a recipient affects subsequent transitions and current digests; it does not replay all historical transitions. Removed recipients' pending messages are canceled.
+
+## Check setup and back up
+
+```sh
+python3 open_tracker/manage.py doctor
+python3 open_tracker/manage.py backup
+```
+
+`doctor` checks the local configuration, dependencies and database, showing actionable results without revealing credentials or sending mail. It does not test public DNS, firewall rules or inbox delivery. `backup` uses SQLite's backup facility and writes a new timestamped database in the workspace's `backups/` directory. To choose a destination:
+
+```sh
+python3 open_tracker/manage.py backup --output /absolute/path/to/backup.sqlite
+```
+
+A backup contains the workspace's accounts, history and notification records. Keep it private. Keep a protected copy of `config.json` separately if you need to restore the signing key and SMTP settings. Do not commit either file to the public repository.
+
+| Symptom | Next step |
+| --- | --- |
+| Python is not found | Install Python 3.10+; use `py -3` on Windows or `python3` on macOS/Linux. |
+| Initial dependency installation fails | Check network access and Python's virtual-environment support, then rerun the launcher. |
+| Port 8080 is already in use | Stop the other process or use `start --port 8081` and open that port. |
+| Another computer cannot open local mode | Local mode is loopback-only. Set up the HTTPS team host below. |
+| No preview files appear | Run `email-test` for an immediate sample. For automatic alerts, confirm preview mode, restart after configuration changes and create a synthetic at-risk or blocked task. |
+| Live alerts do not arrive | Run `doctor`, confirm SMTP mode and recipients, restart the launcher, then review the worker's counts and your provider's delivery logs. |
+| Edits conflict | Preserve your draft, refresh the tracker and compare the latest row before saving. |
+| Data appears missing after restart | Check the `--workspace` path. Every workspace is independent. |
+
+## Team hosting with Docker Compose
+
+Use the supplied recipe on a Linux host with Docker Engine and the Compose plugin. You choose the host and hostname. Point that hostname's DNS records to the host, and make ports **80 and 443** available to Caddy. Those are the prerequisites for its [automatic certificate issuance and renewal](https://caddyserver.com/docs/automatic-https). A private-network deployment with its own certificate authority needs its own TLS configuration.
+
+From a complete checkout on that host, copy the [team settings template](deploy/team.env.example) to a private location outside the repository:
+
+```sh
+cp open_tracker/deploy/team.env.example /private/path/team.env
+```
+
+Replace `/private/path/team.env` with a file in an existing directory you control. Edit its one setting, `TRACKER_PUBLIC_URL`, to the full HTTPS URL for your hostname. Use the same absolute file path in each command below. This file selects the host; account passwords and mail credentials are entered through the setup prompts.
+
+```sh
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml run --rm --build tracker setup
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml up -d --build
+```
+
+The first command builds the tracker and prompts for the first account. The second starts the tracker, automatic preview worker and HTTPS proxy. Open your configured URL and sign in. Caddy manages certificates and redirects HTTP to HTTPS; the tracker port is not published directly. The private configuration and database use a persistent Docker volume. Services restart automatically after failure or host restart when Docker starts.
+
+Use the same manager inside the running tracker container:
+
+```sh
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml exec tracker python /app/open_tracker/manage.py --workspace /data add-user --username reviewer --role viewer
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml exec tracker python /app/open_tracker/manage.py --workspace /data email
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml exec tracker python /app/open_tracker/manage.py --workspace /data doctor
+```
+
+After changing email settings, restart the tracker to apply them:
+
+```sh
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml restart tracker
+```
+
+For status and logs, use `ps` or `logs --tail 100` after the same Compose options. For a database backup, replace the manager command above with `backup`; the result is in `/data/backups` in the persistent volume. Use [Compose copy](https://docs.docker.com/reference/cli/docker/compose/cp/) to save previews or backups to a private local directory when you need them:
+
+```sh
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml cp tracker:/data/mail-preview /private/path/mail-preview
+docker compose --env-file /private/path/team.env -f open_tracker/deploy/compose.yaml cp tracker:/data/backups /private/path/backups
+```
+
+Run the preview worker or backup command first so the source directory exists. Keep backup copies in a separate protected location for recovery. `docker compose down` stops the services while keeping their volumes; `down -v` deletes the volumes and their data.
+
+Keep one deployment's hostname, environment-file path and Compose project name consistent across commands. Separate services and volumes are needed for separate team access boundaries. If using more than one deployment on a machine, set distinct project names with `--project-name`; plan separate host port/proxy routing as well, because each supplied stack uses ports 80 and 443.
+
+If the URL does not open, check DNS and inbound ports, then `logs --tail 100 proxy`. The manager's `doctor` checks the tracker locally; it cannot verify whether the internet can reach your host. The recipe uses standard [Docker Compose environment-file support](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/) and [Caddy](https://caddyserver.com/docs/automatic-https), so it can move between suitable hosts without a provider-specific account or SDK.
+
+## Existing deployments and integrations
+
+The lower-level commands remain available: [server.py](server.py) runs accounts and the web service; [notifications.py](notifications.py) runs the email worker; [tracker.py](tracker.py) imports and exports the same database. Scheduled R/SAS jobs can continue using the [data contract and bridge examples](README.md).
+
+The guided launcher reads its private JSON configuration. The lower-level server and worker continue to read environment variables; see [shared.env.example](deploy/shared.env.example). The [web systemd unit](deploy/open-tracker.service) and [email systemd unit](deploy/open-tracker-alerts.service) remain templates for operators who already use that deployment style. Adjust their paths and create the service account and data directory before use. Run one managed launcher or one server/worker pair per database, rather than starting both styles together.
+
+Shared hosting requires HTTPS for secure session cookies. The server checks allowed hosts, CSRF tokens and account roles, and uses expiring server-side sessions. It does not trust forwarded headers; proxy users share the proxy peer's IP login limit. A host operator with file access can bypass application permissions. This is an operational collaboration tool with tested controls, not regulatory validation or an external security certification.
+
+## Development checks
+
+```sh
+python3 -m venv /path/to/test-environment
+/path/to/test-environment/bin/python -m pip install -r open_tracker/requirements-shared.txt
+/path/to/test-environment/bin/python -m unittest discover -s open_tracker/tests -v
+```
+
+Use `Scripts/python.exe` in place of `bin/python` for a Windows virtual environment. Tests cover setup, accounts, permissions, sessions, CSRF, conflicting edits, notification rules, retries and the offline import/export workflow. Email tests use local fixtures and simulated SMTP.
+
+Reference documentation: [Flask security](https://flask.palletsprojects.com/en/stable/web-security/), [Waitress deployment](https://flask.palletsprojects.com/en/stable/deploying/waitress/) and [Python SMTP client](https://docs.python.org/3/library/smtplib.html).

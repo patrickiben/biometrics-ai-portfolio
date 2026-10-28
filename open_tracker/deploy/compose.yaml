@@ -1,0 +1,48 @@
+name: open-study-tracker
+services:
+  tracker:
+    build:
+      context: ../..
+      dockerfile: open_tracker/deploy/Dockerfile
+    init: true
+    restart: unless-stopped
+    environment:
+      TRACKER_SETUP_PUBLIC_URL: ${TRACKER_PUBLIC_URL:?Set TRACKER_PUBLIC_URL in your private team.env file}
+      TRACKER_EXPECTED_PUBLIC_URL: ${TRACKER_PUBLIC_URL:?Set TRACKER_PUBLIC_URL in your private team.env file}
+    volumes:
+      - tracker_data:/data
+    # Only the HTTPS proxy has a published port.
+    read_only: true
+    tmpfs:
+      - /tmp:mode=1777,size=32m
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 20s
+    logging:
+      options:
+        max-size: 10m
+        max-file: '3'
+  proxy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      TRACKER_PUBLIC_URL: ${TRACKER_PUBLIC_URL:?Set TRACKER_PUBLIC_URL in your private team.env file}
+    ports:
+      - '80:80'
+      - '443:443'
+      - '443:443/udp'
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      tracker:
+        condition: service_healthy
+    logging:
+      options:
+        max-size: 10m
+        max-file: '3'
+volumes:
+  tracker_data:
+  caddy_data:
+  caddy_config:
