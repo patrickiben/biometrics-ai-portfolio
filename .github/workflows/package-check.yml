@@ -28,9 +28,13 @@ jobs:
           cache: npm
           cache-dependency-path: tools/browser-qc/package-lock.json
       - name: Install browser checks
-        run: |
-          npm ci --prefix tools/browser-qc
-          tools/browser-qc/node_modules/.bin/playwright install --with-deps chromium
+        run: npm ci --prefix tools/browser-qc
+      - name: Install Chromium with Linux system dependencies
+        if: runner.os == 'Linux'
+        run: tools/browser-qc/node_modules/.bin/playwright install --with-deps chromium
+      - name: Install Chromium on Windows
+        if: runner.os == 'Windows'
+        run: tools/browser-qc/node_modules/.bin/playwright install chromium
       - name: Exercise toolkit browser forms
         env:
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
