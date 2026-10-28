@@ -46,7 +46,7 @@
   function link(label,url,className='') { const a=node('a',label,className);a.href=url;a.target='_blank';a.rel='noopener noreferrer';return a; }
   function button(label,fn,{primary=false,disabled=false}={}) {const b=node('button',label,'btn'+(primary?' primary':''));b.type='button';b.disabled=disabled;b.addEventListener('click',fn);return b;}
   async function busy(container,fn) {
-    const controls=container.matches?.('button')?[container]:Array.from(container.querySelectorAll('button,input,select'));
+    const controls=container.matches?.('button')?[container]:Array.from(container.querySelectorAll('button,input,select,textarea'));
     const disabled=controls.map(control=>control.disabled);controls.forEach(control=>control.disabled=true);container.setAttribute('aria-busy','true');
     try{return await fn();}finally{controls.forEach((control,i)=>{if(control.isConnected)control.disabled=disabled[i];});container.removeAttribute('aria-busy');}
   }
@@ -216,6 +216,240 @@
       }area.append(list);
     }
   }
+  let guided=null, guidedSequence=0;
+  const guidedFields=()=>guided?.schema.steps.flatMap(step=>step.fields||[])||[];
+  const guidedSteps=()=>guided?.steps||[];
+  const guidedCurrent=()=>guidedSteps()[guided?.step||0];
+  function guidedDefaults(schema,values) {
+    const result={};
+    for(const step of schema.steps||[])for(const field of step.fields||[])result[field.id]=field.default??(['multiselect','template-select'].includes(field.type)?[]:field.type==='checkbox'?false:'');
+    return {...result,...values,columns:{...(values?.columns||{})}};
+  }
+  function guidedSignature(){return JSON.stringify(guided.values);}
+  function guidedChanged() {
+    if(!guided)return;guided.validated='';guided.reviewed=false;$('guided-review-check').checked=false;$('guided-generate').disabled=true;
+    if(guided.report)$('guided-status').textContent='Setup changed. Preview and validate again before generating.';
+  }
+  function captureGuided() {
+    if(!guided)return;
+    for(const wrapper of $('guided-fields').querySelectorAll('[data-guide-field]')){
+      const field=wrapper.dataset.guideField,kind=wrapper.dataset.kind;
+      if(['multiselect','template-select'].includes(kind))guided.values[field]=Array.from(wrapper.querySelectorAll('input[data-choice]:checked')).map(input=>input.value);
+      else {const input=wrapper.querySelector('[data-guide-control]');if(input)guided.values[field]=input.type==='checkbox'?input.checked:input.type==='number'&&input.value!==''?Number(input.value):input.value;}
+    }
+    for(const input of $('guided-inputs').querySelectorAll('select[data-slot]')){
+      guided.values.columns[input.dataset.slot]||={};guided.values.columns[input.dataset.slot][input.dataset.column]=input.value;
+    }
+  }
+  function guideOptions(field) {
+    const entries=field.options_by_design?field.options_by_design[guided.values[field.depends_on||'design']]||[]:field.options||field.choices||[];
+    return entries.map(option=>typeof option==='string'?{value:option,label:option}:option);
+  }
+  function renderGuidedFields(fields) {
+    const area=$('guided-fields');area.replaceChildren();
+    for(const field of fields||[]){
+      const kind=field.type||'text',multiple=['multiselect','template-select'].includes(kind);
+      const wrapper=node(multiple?'fieldset':'div',undefined,multiple?'guided-choices wide':'field'+(kind==='textarea'?' wide':''));
+      wrapper.dataset.guideField=field.id;wrapper.dataset.kind=kind;
+      const id='guided-field-'+field.id;
+      if(multiple){
+        wrapper.append(node('legend',(field.label||field.id)+(field.required?' *':'')));
+        if(field.description)wrapper.append(node('p',field.description,'help'));
+        const options=guideOptions(field),list=node('div',undefined,'guided-choice-list'),selectedValues=new Set(guided.values[field.id]||[]);
+        const search=node('input');search.type='search';search.placeholder='Find an output';search.setAttribute('aria-label','Find '+(field.label||'outputs').toLowerCase());
+        if(options.length>10)wrapper.append(search);
+        for(const option of options){
+          const label=node('label',undefined,'guided-choice'),input=node('input');input.type='checkbox';input.value=String(option.value);input.dataset.choice='true';input.checked=selectedValues.has(option.value);
+          label.append(input,node('span',option.label||option.value));label.dataset.search=[option.label,option.value].join(' ').toLowerCase();list.append(label);
+          input.addEventListener('change',()=>{captureGuided();guidedChanged();});
+        }
+        if(!options.length)wrapper.append(node('p','Choose the study design first to see its available outputs.','help'));
+        const tools=node('div',undefined,'guided-choice-tools');
+        if(options.length){tools.append(button('Select shown',()=>{for(const label of list.children)if(!label.hidden)label.querySelector('input').checked=true;captureGuided();guidedChanged();}),button('Clear selection',()=>{for(const input of list.querySelectorAll('input'))input.checked=false;captureGuided();guidedChanged();}));wrapper.append(tools);}
+        search.addEventListener('input',()=>{const query=search.value.toLowerCase();for(const label of list.children)label.hidden=!label.dataset.search.includes(query);});
+        wrapper.append(list);
+      }else{
+        const label=node('label',(field.label||field.id)+(field.required?' *':''));label.htmlFor=id;
+        let input;
+        if(kind==='select'){input=node('select');for(const option of guideOptions(field))input.append(new Option(option.label||option.value,String(option.value)));}
+        else {input=node(kind==='textarea'?'textarea':'input');if(kind!=='textarea')input.type=['number','checkbox','password'].includes(kind)?kind:'text';}
+        input.id=id;input.name=field.id;input.dataset.guideControl='true';input.required=!!field.required;
+        if(input.type==='checkbox')input.checked=!!guided.values[field.id];else input.value=guided.values[field.id]??'';
+        for(const key of ['min','max','step','placeholder','maxlength'])if(field[key]!==undefined)input.setAttribute(key,field[key]);
+        if(input.type==='number'&&field.step===undefined)input.step='any';
+        if(kind==='checkbox')wrapper.className+=' check';
+        wrapper.append(label,input);if(field.description){const help=node('p',field.description,'help');help.id=id+'-help';input.setAttribute('aria-describedby',help.id);wrapper.append(help);}
+        input.addEventListener('input',()=>{captureGuided();guidedChanged();});
+        input.addEventListener('change',()=>{
+          captureGuided();guidedChanged();
+          let dependent=false;for(const candidate of guidedFields())if(candidate.depends_on===field.id){guided.values[candidate.id]=[];dependent=true;}
+          if(dependent){renderGuidedStep();$('guided-status').textContent='Study selection changed. Choose the outputs for this design.';}
+        });
+      }
+      area.append(wrapper);
+    }
+  }
+  function guidedPreviewTable(meta) {
+    if(!Array.isArray(meta.preview)||!meta.preview.length)return null;
+    const box=node('details'),summary=node('summary','Preview first rows');box.append(summary);
+    const wrap=node('div',undefined,'guided-table-wrap');wrap.tabIndex=0;wrap.setAttribute('role','region');wrap.setAttribute('aria-label','CSV preview');
+    const table=node('table',undefined,'guided-table'),columns=(meta.columns||[]).slice(0,12),head=node('tr');
+    table.append(node('caption','First '+Math.min(5,meta.preview.length)+' rows'+(meta.columns.length>12?' · first 12 columns':'')));
+    for(const column of columns){const th=node('th',column);th.scope='col';head.append(th);}const thead=node('thead');thead.append(head);table.append(thead);
+    const tbody=node('tbody');
+    for(const row of meta.preview.slice(0,5)){const tr=node('tr');for(const [index,column] of columns.entries())tr.append(node('td',String(Array.isArray(row)?row[index]??'':row[column]??'')));tbody.append(tr);}
+    table.append(tbody);wrap.append(table);box.append(wrap);return box;
+  }
+  function suggestMappings(slot,columns) {
+    guided.values.columns[slot.id]||={};const mapping=guided.values.columns[slot.id];
+    for(const raw of slot.columns||[]){
+      const column=typeof raw==='string'?{id:raw}:raw;
+      if(Object.hasOwn(mapping,column.id)&&(mapping[column.id]===''||columns.includes(mapping[column.id])))continue;
+      const exact=columns.includes(column.id)?column.id:null,folded=columns.filter(name=>name.toLowerCase()===column.id.toLowerCase());
+      mapping[column.id]=exact||(folded.length===1?folded[0]:'');
+    }
+  }
+  async function uploadGuided(slot,file) {
+    if(!file)throw Error('Choose a CSV file first.');
+    if(file.size>16*1024*1024)throw Error('Choose a CSV file smaller than 16 MB.');
+    if(!/\.csv$/i.test(file.name))throw Error('Choose a UTF-8 CSV file.');
+    captureGuided();const own=guided,sequence=guidedSequence;
+    own.pendingUploads=(own.pendingUploads||0)+1;guidedChanged();updateGuidedGenerate();
+    try {
+      const content=await new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=()=>reject(Error('The selected file could not be read.'));reader.readAsDataURL(file);});
+      const data=await api('/api/template-input',{project_id:own.projectId,module_id:own.moduleId,slot:slot.id,filename:file.name,content_base64:content});
+      if(sequence!==guidedSequence||guided!==own)return;
+      guided.inputs=data.inputs||{...guided.inputs,[slot.id]:data.input};suggestMappings(slot,guided.inputs[slot.id]?.columns||[]);
+      guidedChanged();renderGuidedStep();$('guided-status').textContent='Added '+file.name+'. Header matches were suggested; review the column mappings before generating.';
+    } finally {
+      own.pendingUploads--;if(guided===own)updateGuidedGenerate();
+    }
+  }
+  function selectedGuidedInputs() {
+    const selectionFields=guidedFields().filter(field=>['select','multiselect','template-select'].includes(field.type));
+    const slots=new Set();let hasMetadata=false;
+    for(const field of selectionFields){
+      const value=guided.values[field.id],selected=new Set(Array.isArray(value)?value:[value]);
+      for(const option of guideOptions(field))if(Array.isArray(option.inputs)){hasMetadata=true;if(selected.has(option.value))for(const slot of option.inputs)slots.add(slot);}
+    }
+    return hasMetadata?(guided.schema.inputs||[]).filter(slot=>slots.has(slot.id)):guided.schema.inputs||[];
+  }
+  function renderGuidedInputs() {
+    const area=$('guided-inputs');area.replaceChildren();if(guidedCurrent().id!=='inputs')return;
+    area.append(node('p','Choose the CSV files for this study. Map each template column to its source column; header matches are suggestions for your review.','help'));
+    const slots=selectedGuidedInputs();if(!slots.length)area.append(node('p','Choose checks or outputs first to see their required input files.','note'));
+    for(const [index,slot] of slots.entries()){
+      const meta=guided.inputs[slot.id],details=node('details',undefined,'guided-input');details.dataset.slot=slot.id;details.open=!!meta||index===0;
+      const summary=node('summary',slot.label||slot.id);summary.append(node('span',meta?(meta.filename||slot.id+'.csv')+' · '+meta.rows+' rows · '+meta.columns.length+' columns':'No input added'));details.append(summary);
+      const body=node('div',undefined,'guided-input-body');if(slot.description)body.append(node('p',slot.description,'help'));
+      const picker=node('input');picker.type='file';picker.accept='.csv,text/csv';picker.setAttribute('aria-label','Choose CSV for '+(slot.label||slot.id));
+      const replace=button(meta?'Replace CSV':'Add CSV',event=>busy($('guided-dialog'),()=>act(()=>uploadGuided(slot,picker.files[0]),'guided-error')).finally(updateGuidedGenerate),{disabled:true});
+      picker.addEventListener('change',()=>replace.disabled=!picker.files.length);
+      const controls=node('div',undefined,'actions');controls.append(picker,replace);
+      if(meta?.path)controls.append(button('Download input',event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:guided.projectId,path:meta.path}),meta.filename||slot.id+'.csv'),'guided-error'))));
+      body.append(controls);
+      if(meta){
+        const mappings=node('div',undefined,'guided-mapping');suggestMappings(slot,meta.columns||[]);
+        for(const raw of slot.columns||[]){
+          const column=typeof raw==='string'?{id:raw}:raw,field=node('div',undefined,'field'),id='guided-map-'+slot.id+'-'+column.id,label=node('label',(column.label||column.id)+(column.required?' *':''));
+          label.htmlFor=id;const select=node('select');select.id=id;select.dataset.slot=slot.id;select.dataset.column=column.id;select.append(new Option('Choose source column',''),...meta.columns.map(name=>new Option(name,name)));select.value=guided.values.columns[slot.id][column.id]||'';
+          select.addEventListener('change',()=>{captureGuided();guidedChanged();});field.append(label,select);if(column.description)field.append(node('p',column.description,'help'));mappings.append(field);
+        }
+        body.append(mappings);const preview=guidedPreviewTable(meta);if(preview)body.append(preview);
+        if(meta.sha256)body.append(node('p','Input fingerprint: '+meta.sha256,'path'));
+      }
+      details.append(body);area.append(details);
+    }
+  }
+  function renderGuidedSummary() {
+    const summary=$('guided-summary');summary.replaceChildren();
+    for(const field of guidedFields()){
+      const value=guided.values[field.id];if(value===undefined||value===''||Array.isArray(value)&&!value.length)continue;
+      let shown=Array.isArray(value)?value.length+' selected':typeof value==='boolean'?(value?'Yes':'No'):String(value);
+      if(field.type==='select')shown=guideOptions(field).find(option=>String(option.value)===String(value))?.label||shown;
+      if(shown.length>300)shown=shown.slice(0,300)+'…';
+      summary.append(node('dt',field.label||field.id),node('dd',shown));
+    }
+    for(const slot of selectedGuidedInputs()){const input=guided.inputs[slot.id];if(input)summary.append(node('dt',slot.label||slot.id),node('dd',(input.filename||slot.id)+': '+input.rows+' rows; '+Object.values(guided.values.columns[slot.id]||{}).filter(Boolean).length+' columns mapped'));}
+  }
+  function renderGuidedReport(report) {
+    const area=$('guided-report');area.replaceChildren();area.hidden=!report;if(!report)return;
+    for(const [key,label,className] of [['errors','Resolve before generating','report-errors'],['warnings','Review these limits','report-warnings'],['summary','Setup checks','']]){
+      if(!report[key]?.length)continue;const block=node('div',undefined,className);block.append(node('h4',label));const list=node('ul');
+      for(const item of report[key]){
+        const entry=node('li',typeof item==='string'?item:((item.field?item.field+': ':'')+(item.message||'')));
+        if(key==='errors'&&item.field){const destination=guided.steps.findIndex(step=>(step.fields||[]).some(field=>field.id===item.field)||(step.id==='inputs'&&/^(inputs|columns)\./.test(item.field)));if(destination>=0){const edit=button('Edit',()=>{captureGuided();guided.step=destination;renderGuidedStep(true);});edit.classList.add('quiet');edit.setAttribute('aria-label','Edit '+item.field);entry.append(document.createTextNode(' '),edit);}}
+        list.append(entry);
+      }block.append(list);area.append(block);
+    }
+    if(report.preview){
+      const preview=node('section');preview.append(node('h4',report.preview.title||'Content preview'));
+      if(report.preview.text)preview.append(node('pre',report.preview.text,'log'));
+      if(report.preview.facts){const details=node('details');details.append(node('summary','Structured facts'),node('pre',typeof report.preview.facts==='string'?report.preview.facts:JSON.stringify(report.preview.facts,null,2),'log'));preview.append(details);}
+      area.append(preview);
+    }
+    if(!report.errors?.length)area.prepend(node('p','Setup checks passed. Review the summary and limits before generating.','small'));
+  }
+  function renderGuidedBuilds() {
+    const area=$('guided-builds');area.replaceChildren();const project=guided.projectId;
+    for(const build of (guided.builds||[]).slice(0,5)){
+      const card=node('section',undefined,'guided-build');card.append(node('h4','Configured package'),node('p',(build.created_at?new Date(build.created_at).toLocaleString()+' · ':'')+(build.status||'Configuration generated'),'small'));
+      const actions=node('div',undefined,'actions');
+      for(const [path,label] of [[build.zip_path,'Download complete package'],[build.report_path,'Download setup report']])if(path)actions.append(button(label,event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:project,path}),path.split('/').pop()),'guided-error')),{primary:path===build.zip_path}));
+      if(build.report_path)actions.append(button('Open setup report',event=>busy(event.currentTarget,()=>act(()=>api('/api/files/open',{project_id:project,path:build.report_path}),'guided-error'))));
+      card.append(actions);area.append(card);
+    }
+  }
+  function updateGuidedGenerate() {const pending=!!guided?.pendingUploads;$('guided-preview').disabled=pending;$('guided-generate').disabled=!(guided&&!pending&&guided.validated===guidedSignature()&&!guided.report?.errors?.length&&$('guided-review-check').checked);}
+  function renderGuidedStep(focus=false) {
+    if(!guided)return;const steps=guidedSteps(),current=guidedCurrent();$('guided-nav').replaceChildren();
+    steps.forEach((step,index)=>{const control=button((index+1)+'. '+step.title,()=>{captureGuided();guided.step=index;renderGuidedStep(true);});if(index===guided.step)control.setAttribute('aria-current','step');$('guided-nav').append(control);});
+    $('guided-progress').textContent='Step '+(guided.step+1)+' of '+steps.length;$('guided-step-title').textContent=current.title;$('guided-step-description').textContent=current.description||'';
+    renderGuidedFields(current.fields);renderGuidedInputs();
+    const review=current.id==='review';$('guided-review-panel').hidden=!review;if(review){renderGuidedSummary();renderGuidedReport(guided.report);$('guided-review-check').checked=guided.reviewed;}
+    $('guided-back').disabled=guided.step===0;$('guided-next').hidden=guided.step===steps.length-1;$('guided-next').textContent=guided.step<steps.length-1?'Next: '+steps[guided.step+1].title:'Next';
+    updateGuidedGenerate();if(focus)$('guided-step-title').focus();
+  }
+  async function openGuided(moduleId) {
+    const project=projectId(),origin=selectedTool?.id,sequence=++guidedSequence,data=await api('/api/template-setup?'+new URLSearchParams({project_id:project,module_id:moduleId}));
+    if(sequence!==guidedSequence||project!==selected||stopped||!$('tool-dialog').open||selectedTool?.id!==origin)return;
+    if(!data.schema?.steps?.length)throw Error('This guided setup is unavailable. Refresh the toolkit and try again.');
+    const steps=[...data.schema.steps];if(!steps.some(step=>step.id==='review'))steps.push({id:'review',title:'Review & generate',description:'Check your selections and mappings, then generate a configured package.',fields:[]});
+    guided={moduleId,projectId:project,originToolId:selectedTool?.id,schema:data.schema,steps,values:guidedDefaults(data.schema,data.values||{}),inputs:data.inputs||{},builds:data.builds||[],profilePath:data.profile_path,step:0,validated:'',reviewed:false,report:null};
+    $('guided-title').textContent=data.schema.title||'Guided template setup';$('guided-intro').textContent=data.schema.intro||'Prepare this template for your study using forms and mapped inputs.';
+    $('guided-project').textContent='Private project: '+selectedProject().name;$('guided-error').textContent='';$('guided-status').textContent='';$('guided-profile-file').value='';$('guided-profile-import').disabled=true;$('guided-profile-download').disabled=!guided.profilePath;renderGuidedStep();renderGuidedBuilds();$('tool-dialog').close();$('guided-dialog').showModal();
+  }
+  async function guidedAction(action) {
+    captureGuided();const own=guided,sequence=guidedSequence;
+    if(!own||own.projectId!==selected)throw Error('Reopen guided setup for the selected project.');
+    if(['validate','generate'].includes(action)&&own.pendingUploads)throw Error('Wait for the input upload to finish, then preview the updated setup.');
+    if(action==='generate'&&!(own.validated===guidedSignature()&&$('guided-review-check').checked))throw Error('Preview the current setup and review its limits before generating.');
+    $('guided-status').textContent=action==='generate'?'Generating the configured package…':action==='validate'?'Checking the setup and input mappings…':'Saving your setup…';
+    const data=await api('/api/template-setup',{project_id:own.projectId,module_id:own.moduleId,action,values:own.values});
+    if(sequence!==guidedSequence||own!==guided)return;
+    if(data.values)own.values=data.values;
+    if(data.profile_path){own.profilePath=data.profile_path;$('guided-profile-download').disabled=false;}
+    if(action==='save'){renderGuidedStep();$('guided-status').textContent='Setup saved in this private project.';return;}
+    own.report=data.report||{errors:[],warnings:[],summary:[]};own.step=own.steps.findIndex(step=>step.id==='review');
+    if(own.report.errors?.length){own.validated='';own.reviewed=false;$('guided-status').textContent='Resolve the listed setup issues, then preview again.';}
+    else {own.validated=guidedSignature();$('guided-status').textContent=action==='generate'?'Configured package generated. Review its setup report before use.':'Preview complete. Review the setup summary and listed limits.';}
+    if(data.build){own.builds=[data.build,...own.builds];renderGuidedBuilds();}
+    renderGuidedStep(true);
+  }
+
+  async function importGuidedProfile() {
+    const own=guided,sequence=guidedSequence;if(!own||own.projectId!==selected)throw Error('Reopen guided setup for the selected project.');
+    const file=$('guided-profile-file').files[0];if(!file)throw Error('Choose a saved setup profile first.');
+    if(file.size>1024*1024)throw Error('Choose a setup profile smaller than 1 MB.');
+    let profile;try{profile=JSON.parse(await file.text());}catch{throw Error('Choose a valid JSON setup profile.');}
+    if(sequence!==guidedSequence||own!==guided)return;
+    const data=await api('/api/template-profile',{project_id:own.projectId,module_id:own.moduleId,profile});
+    if(sequence!==guidedSequence||own!==guided)return;
+    own.values=guidedDefaults(own.schema,data.values||{});own.profilePath=data.profile_path||own.profilePath;own.report=null;own.step=0;guidedChanged();renderGuidedStep(true);
+    $('guided-profile-file').value='';$('guided-profile-import').disabled=true;$('guided-profile-download').disabled=!own.profilePath;
+    $('guided-status').textContent='Imported setup choices. Add or review this project’s CSV inputs and mappings, then preview again.';
+  }
+
   function openTool(id) {
     const module=modules().find(module=>module.id===id);if(!module)return;selectedTool=module;selectedAction=null;
     $('tool-title').textContent=module.title;$('tool-summary').textContent=module.summary;$('tool-error').textContent='';$('run-error').textContent='';$('configure-error').textContent='';toolNotice('');$('tool-details').replaceChildren();$('tool-actions').replaceChildren();$('run-form').hidden=true;$('configure-form').hidden=true;
@@ -227,6 +461,7 @@
     for(const raw of module.actions||[]){const action=actionDetails(raw);
       if(action.type==='open'){const path=action.path;if(/^https?:/.test(path||'')){const url=safeURL(path);if(url)$('tool-actions').append(link(action.label+' ↗',url,'btn'));}else if(state&&path)$('tool-actions').append(button(action.label,event=>busy(event.currentTarget,()=>act(()=>fileAction(path),'tool-error')),{disabled:!selectedProject()}));}
       else if(!state)continue;
+      else if(action.type==='guided'){$('tool-actions').append(button(action.label,event=>busy(event.currentTarget,()=>act(()=>openGuided(action.module_id||action.id),'tool-error')),{primary:true,disabled:!selectedProject()}));}
       else if(action.type==='configure'){$('tool-actions').append(button(action.label,event=>busy(event.currentTarget,()=>act(async()=>{
         selectedConfig=action.module_id||action.id;const schema=state.configuration?.[selectedConfig]||module.configuration||{};
         const fields=action.fields||module.config_fields||schema.fields||[];
@@ -257,6 +492,15 @@
   $('settings-form').addEventListener('submit',event=>{event.preventDefault();busy($('settings-form'),()=>act(async()=>{await api('/api/settings',{r_path:$('r-path').value.trim(),quarto_path:$('quarto-path').value.trim()});await refresh();message('Runtime locations saved.');},'settings-error'));});
   $('run-form').addEventListener('submit',event=>{event.preventDefault();if(!selectedAction)return;busy($('run-form'),()=>act(()=>startAction(selectedAction,fieldValues($('run-fields'))),'run-error'));});
   $('configure-form').addEventListener('submit',event=>{event.preventDefault();busy($('configure-form'),()=>act(async()=>{await api('/api/configure',{project_id:projectId(),module_id:selectedConfig,values:fieldValues($('configure-fields'))});toolNotice('Configuration saved in your private project.');},'configure-error'));});
+  $('guided-profile-file').addEventListener('change',()=>{$('guided-profile-import').disabled=!$('guided-profile-file').files.length;});
+  $('guided-profile-import').addEventListener('click',()=>busy($('guided-dialog'),()=>act(importGuidedProfile,'guided-error')).finally(()=>{if(guided){$('guided-profile-import').disabled=!$('guided-profile-file').files.length;$('guided-profile-download').disabled=!guided.profilePath;updateGuidedGenerate();}}));
+  $('guided-profile-download').addEventListener('click',event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:guided.projectId,path:guided.profilePath}),guided.moduleId+'-setup.json'),'guided-error')));
+  $('guided-form').addEventListener('submit',event=>event.preventDefault());
+  $('guided-back').addEventListener('click',()=>{captureGuided();guided.step=Math.max(0,guided.step-1);renderGuidedStep(true);});
+  $('guided-next').addEventListener('click',()=>{captureGuided();const invalid=Array.from($('guided-fields').querySelectorAll('input,select,textarea')).find(input=>!input.checkValidity());if(invalid){invalid.reportValidity();return;}guided.step=Math.min(guided.steps.length-1,guided.step+1);renderGuidedStep(true);});
+  $('guided-review-check').addEventListener('change',()=>{if(guided)guided.reviewed=$('guided-review-check').checked;updateGuidedGenerate();});
+  for(const [id,action] of [['guided-save','save'],['guided-preview','validate'],['guided-generate','generate']])$(id).addEventListener('click',()=>busy($('guided-dialog'),()=>act(()=>guidedAction(action),'guided-error')).finally(()=>{updateGuidedGenerate();if(guided)$('guided-profile-download').disabled=!guided.profilePath;}));
+  $('guided-dialog').addEventListener('close',()=>{const origin=guided?.originToolId;guidedSequence++;guided=null;if(!stopped&&state&&origin)openTool(origin);});
   $('stop-launcher').addEventListener('click',event=>busy(event.currentTarget,()=>act(async()=>{await api('/api/stop',{});disconnected('The local launcher is closed. Your project files are saved. Reopen Start Toolkit when you want to continue.');$('message').classList.remove('error');})));
   async function boot() {
     renderCategories();renderCatalog();

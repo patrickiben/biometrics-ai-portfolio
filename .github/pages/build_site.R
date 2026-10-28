@@ -85,7 +85,7 @@ files <- system2("git", c("-c", "core.quotepath=off", "ls-files", "--cached", "-
 files <- files[(!grepl("^(\\.git|apps/|_site/)", files) | files %in% PUBLISHED_SHARED) &
                file.exists(files) & !dir.exists(files)]
 # Runtime state must never become a public download, even if accidentally tracked.
-private_runtime <- grepl("(^|/)[^/]*\\.env($|\\.)|\\.(sqlite3?|db)(-(wal|shm|journal))?$|\\.eml$|(^|/)(config\\.json|\\.open-study-tracker|\\.desktop-state\\.json|\\.desktop\\.lock|launcher\\.log|project\\.json|launcher-settings\\.json|\\.launcher-session\\.json|\\.toolkit\\.lock|\\.biostat-toolkit|toolkit_configuration|input-backups)(/|$)|(^|/)mail-preview/", files, ignore.case = TRUE)
+private_runtime <- grepl("(^|/)[^/]*\\.env($|\\.)|\\.(sqlite3?|db)(-(wal|shm|journal))?$|\\.eml$|(^|/)(config\\.json|\\.open-study-tracker|\\.desktop-state\\.json|\\.desktop\\.lock|launcher\\.log|project\\.json|launcher-settings\\.json|\\.launcher-session\\.json|\\.toolkit\\.lock|\\.biostat-toolkit|toolkit_configuration|input-backups|template_inputs|template_outputs)(/|$)|(^|/)mail-preview/", files, ignore.case = TRUE)
 private_runtime <- private_runtime & !grepl("\\.env\\.example$", files, ignore.case = TRUE)
 files <- files[!private_runtime]
 for (d in unique(dirname(files))) dir.create(file.path(out, d), recursive = TRUE, showWarnings = FALSE)

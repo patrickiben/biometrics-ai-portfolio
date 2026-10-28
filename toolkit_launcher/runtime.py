@@ -95,7 +95,7 @@ def source_files(root=ROOT):
     for name in data['files']:
         path = safe_path(root, name)
         # A manifest cannot opt private runtime state into project copies.
-        if any(p in {'.git', '.venv', 'node_modules', '__pycache__', '.biostat-toolkit', '.open-study-tracker', 'mail-preview', 'toolkit_configuration', 'input-backups'} for p in Path(name).parts):
+        if any(p in {'.git', '.venv', 'node_modules', '__pycache__', '.biostat-toolkit', '.open-study-tracker', 'mail-preview', 'toolkit_configuration', 'input-backups', 'template_inputs', 'template_outputs'} for p in Path(name).parts):
             raise InputError('The toolkit source inventory contains runtime state.')
         if path.name in {'config.json', 'project.json', 'launcher-settings.json', '.launcher-session.json', '.desktop-state.json', '.desktop.lock', '.toolkit.lock', 'launcher.log'} or re.search(r'\.(?:sqlite3?|db|eml)(?:-(?:wal|shm|journal))?$', name, re.I):
             raise InputError('The toolkit source inventory contains private state.')

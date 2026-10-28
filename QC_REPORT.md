@@ -2,6 +2,14 @@
 
 Review date: 28 October 2026. Scope: the complete repository, its published-page source, local tools and downloadable artifacts, with additional adversarial review of Open Study Tracker. All exercised datasets and accounts were synthetic. This is software and example-method QC, not regulatory validation or approval for a particular client, study or deployment.
 
+## Guided template setup follow-up
+
+Five guided setups now replace code-editing for supported study configuration: paired SAS/R TLF libraries, monitoring checks, LOCALMIND findings and aggregate AE/PK interpretation. Forms select outputs, accept CSVs, map columns, check assumptions and generate immutable, versioned packages. Profiles can be reused without transferring inputs. The public site remains a catalog; private study setup runs through the downloaded toolkit on the user's computer.
+
+QC covers all 442 TLF template selections and parsing of every generated R program, a generated R PK-summary execution with mapped synthetic data, AE and PK fact recomputation against the original R extractors, all eight monitoring checks, and unapproved LOCALMIND worklists. Browser tests exercise all five wizards, downloads, missing mappings, unsupported draft numbers, stale previews, profile isolation, desktop/mobile layouts and both themes. Generated HTML reports use the same toolkit theme tokens and saved preference. API/storage tests cover authentication, malformed input, linked-file boundaries, preview freshness, input backups, safe package paths and source/publication exclusions.
+
+No SAS program, real language model or external mail service was executed in this follow-up. Generated drivers consume the configured data, but existing pseudocode methods and unfinished report shells remain explicitly unvalidated. The forms do not turn a configured template into a completed study analysis. Empty event inputs are permitted only where the selected provider supports them; missing denominator data and monitoring feeds still fail validation. Evidence uses synthetic data and is retained outside the repository.
+
 ## Point-and-click toolkit follow-up
 
 The [setup guide](TOOLKIT_SETUP.html) now provides a desktop entry point for all 22 catalog modules. The local control panel creates separate private project copies, checks runtimes, installs supported R dependencies on request, manages input replacement and backups, saves configuration, supervises fixed workflows, and downloads outputs. Its browser-only preview does not attempt local API access. SAS and model-dependent modules provide preparation and editor workflows; pseudocode still requires implementation and study-specific review.

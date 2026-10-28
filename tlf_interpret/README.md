@@ -1,6 +1,6 @@
 # Automated TLF Interpretation: Quarto + local SLM
 
-Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to run the number-validator self-test in a private project, prepare model settings and open the source in your editor. Configuration does not install or validate a model; the runnable self-test needs no model.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to select an AE-overview or PK-summary input, map aggregate result columns and preview deterministic facts. Review or edit draft text in the form, then generate a report, facts and audit package. No model or command-line setup is needed for this guided preview; drafts still require human review.
 
 A pipeline that **drafts the narrative interpretation** that accompanies each Table/Listing/Figure
 (e.g. the AE-overview paragraph, the PK-parameter summary text), using an **on-prem small language

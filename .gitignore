@@ -44,3 +44,7 @@ launcher-settings.json
 project.json
 toolkit_configuration/
 input-backups/
+
+# Private guided-study inputs and generated packages
+template_inputs/
+template_outputs/

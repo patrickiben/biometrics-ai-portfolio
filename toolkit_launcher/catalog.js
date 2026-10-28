@@ -889,7 +889,7 @@ window.TOOLKIT_CATALOG = {
     {
       "id": "tlf-libraries",
       "title": "Paired SAS and R TLF libraries",
-      "summary": "Browse 221 SAS and 221 matching R pseudocode programs across parallel, crossover, single-sequence, SAD and MAD designs.",
+      "summary": "Choose from 221 paired SAS/R pseudocode templates, map study CSVs and generate a configured package through guided forms.",
       "category": "Templates and references",
       "kind": "templates",
       "runtime": "Browser to browse; licensed SAS or R 4.4+ and an editor to implement",
@@ -940,19 +940,19 @@ window.TOOLKIT_CATALOG = {
         },
         {
           "id": "sas_tlf",
-          "label": "Prepare SAS library settings",
-          "type": "configure"
+          "label": "Set up SAS study outputs",
+          "type": "guided"
         },
         {
           "id": "r_tlf",
-          "label": "Prepare R library settings",
-          "type": "configure"
+          "label": "Set up R study outputs",
+          "type": "guided"
         }
       ],
       "outputs": [],
-      "persistence": "The complete paired libraries are included in each private project. Save edited source files in that project and export it.",
-      "customization": "Choose a design in each library, open the setup helper in your editor, and implement paths, ADaM mappings, analysis populations, methods, shells and dictionary versions. Keep corresponding SAS/R stems together.",
-      "limits": "SAS has not been executed. R templates have been parse-checked only, not run on data. Preparing a project does not make these ready-to-run study analyses.",
+      "persistence": "Uploaded inputs, saved profiles and versioned packages stay in the private project. Download an individual setup ZIP or export the whole project.",
+      "customization": "Choose study design, outputs, population values and reference labels; upload CSVs and map columns. Preview requirements and generate a versioned package with loaders, drivers and a readiness report. Save or import the setup profile for reuse.",
+      "limits": "Existing analysis methods and unfinished shells remain drafts. R syntax checks do not establish execution or validity; SAS has not been executed. Readiness reports identify source limitations before study review.",
       "runner_id": "r_tlf"
     },
     {
@@ -1067,10 +1067,10 @@ window.TOOLKIT_CATALOG = {
     {
       "id": "interpretation",
       "title": "TLF text number validator",
-      "summary": "Run known-answer checks for the deterministic validator and inspect the draft-report skeleton.",
+      "summary": "Map AE-overview or PK-summary results, preview deterministic facts and review a draft without configuring a model.",
       "category": "QC and reporting",
       "kind": "job",
-      "runtime": "Base R for self-test; separate model/Python/Quarto setup for adaptation",
+      "runtime": "Browser and local toolkit for guided previews; R/Quarto for optional report regeneration",
       "docs": [
         {
           "label": "Validator and skeleton",
@@ -1097,20 +1097,20 @@ window.TOOLKIT_CATALOG = {
         },
         {
           "id": "interpretation",
-          "label": "Prepare model settings",
-          "type": "configure"
+          "label": "Set up TLF draft report",
+          "type": "guided"
         }
       ],
       "outputs": [],
-      "persistence": "Self-test evidence is in the job log. Source changes and any later reviewed draft outputs belong in the private project.",
-      "customization": "Use Open folder to map aggregate TLF result datasets to fact extractors. Model configuration is preparatory; installing a model and evaluating its drafts are separate work.",
-      "limits": "Only the model-free/stub path has been exercised. The validator checks that digits exist in supplied facts, not whether a valid number is attached to the right claim.",
+      "persistence": "Inputs, profiles, draft reports and audit evidence stay in the private project; export the package to retain a reviewed version.",
+      "customization": "Choose AE overview or PK summary, upload aggregate results and map columns. Preview the extracted facts, edit draft text, inspect number/claim checks and generate a report package.",
+      "limits": "Supports the documented AE-overview and PK-summary contracts. Number checks do not establish that a number supports the right clinical claim. Generated drafts remain unapproved and require human review.",
       "runner_id": "interpretation"
     },
     {
       "id": "sas_monitor",
       "title": "SAS/R monitoring automation",
-      "summary": "Prepare a study configuration for deterministic checks, evidence packets, heartbeats and notifications.",
+      "summary": "Select monitoring checks, map study feeds and set thresholds through a guided form.",
       "category": "Templates and references",
       "kind": "templates",
       "runtime": "Licensed SAS, or a reviewed R environment; scheduler and SMTP configured separately",
@@ -1135,8 +1135,8 @@ window.TOOLKIT_CATALOG = {
       "actions": [
         {
           "id": "sas_monitor",
-          "label": "Prepare monitoring configuration",
-          "type": "configure"
+          "label": "Set up monitoring checks",
+          "type": "guided"
         },
         {
           "id": "sas_monitor.guide",
@@ -1146,9 +1146,9 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Prepared settings and template source stay in the private project. A deployed service needs its own persistent state, logs and backups.",
-      "customization": "Fill study identifier, paths, feed mappings and routing in the configuration form, then open the template project in SAS or R. Review thresholds and scheduler/service-account arrangements before unattended use.",
-      "limits": "SAS templates have not been executed. The toolkit does not schedule monitoring, connect clinical feeds or send monitoring emails; configuration/export does not validate a service."
+      "persistence": "Inputs, reusable profiles and versioned setup packages stay in the private project.",
+      "customization": "Select checks, upload the relevant CSV feeds, map their columns and review thresholds. Generate a self-contained SAS driver and local evidence report without editing paths or variable names.",
+      "limits": "SAS templates have not been executed. Generated checks are for reviewed local execution; scheduling, live feed connections and monitoring emails remain separate deployment work."
     },
     {
       "id": "monitoring-wiki",
@@ -1217,7 +1217,7 @@ window.TOOLKIT_CATALOG = {
     {
       "id": "localmind",
       "title": "LOCALMIND SAS/R helpers",
-      "summary": "Prepare a local language-model helper project for constrained classification, extraction and drafting.",
+      "summary": "Map findings and prepare controlled language-review inputs with explicit human approval.",
       "category": "Templates and references",
       "kind": "templates",
       "runtime": "Licensed SAS or R with httr2/jsonlite; separately installed local model service",
@@ -1234,8 +1234,8 @@ window.TOOLKIT_CATALOG = {
       "actions": [
         {
           "id": "localmind",
-          "label": "Prepare local-model configuration",
-          "type": "configure"
+          "label": "Set up language review",
+          "type": "guided"
         },
         {
           "id": "localmind.guide",
@@ -1245,9 +1245,9 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Prepared settings and copied SAS/R source stay in the private project. Save model identity, digest and reviewed outputs alongside any later evaluation.",
-      "customization": "Provide the loopback endpoint, pinned model identity, seed and controlled labels. Open the source in SAS or an R editor to map the intended language-only task.",
-      "limits": "Configuration does not install a model, accept its license, start a model service or demonstrate draft quality. No production model run is promised; numerical work stays in SAS/R."
+      "persistence": "Inputs, saved profiles and generated review packages stay in the private project. Keep model identity and reviewed outputs with any later evaluation.",
+      "customization": "Upload findings, map identifiers/rules/text, choose allowed labels and enter local-model settings. Generate an unapproved review queue plus configured SAS/R helpers. Generation never contacts a model.",
+      "limits": "All generated findings start unapproved. Installing a model service and evaluating its outputs remain separate. A configured helper is not evidence of model quality."
     },
     {
       "id": "pipeline",

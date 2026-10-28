@@ -157,6 +157,11 @@ def handler_for(workspace, token):
                         with workspace.lock:
                             workspace.runtime_cache = None
                     self.send(workspace.state())
+                elif path == '/api/template-setup':
+                    from . import guided_setup
+                    query = self.query(('project_id', 'module_id'))
+                    with workspace.lock:
+                        self.send(guided_setup.state(workspace.project(query['project_id']), query['module_id']))
                 elif path == '/api/configure':
                     query = self.query(('project_id', 'module_id'))
                     self.send(workspace.adapter().read_configuration(query['module_id'], workspace.project(query['project_id'])))
@@ -187,10 +192,29 @@ def handler_for(workspace, token):
                 elif path == '/api/files/open':
                     data = self.body(('project_id', 'path'))
                     file = safe_path(workspace.project(data['project_id']), data['path'])
-                    if file.suffix.lower() not in {'.html', '.pdf', '.csv', '.xlsx', '.docx', '.pptx', '.md', '.txt', '.json', '.r', '.sas', '.qmd', '.png', '.svg', '.rtf'}:
+                    if file.suffix.lower() not in {'.html', '.pdf', '.csv', '.xlsx', '.docx', '.pptx', '.md', '.txt', '.json', '.r', '.sas', '.qmd', '.png', '.svg', '.rtf', '.rproj'}:
                         raise InputError('Download this file to choose how to open it.')
                     open_native(file)
                     self.send({'opened': True})
+                elif path in ('/api/template-setup', '/api/template-input', '/api/template-profile'):
+                    from . import guided_setup
+                    fields = {'/api/template-setup': ('project_id', 'module_id', 'action', 'values'),
+                              '/api/template-input': ('project_id', 'module_id', 'slot', 'filename', 'content_base64'),
+                              '/api/template-profile': ('project_id', 'module_id', 'profile')}
+                    data = self.body(fields[path])
+                    with workspace.lock:
+                        if workspace.closed:
+                            raise InputError('This launcher is closing. Reopen Start Toolkit.')
+                        root = workspace.project(data['project_id'])
+                        if any(j['project_id'] == data['project_id'] and j['status'] == 'running' for j in workspace.jobs.values()):
+                            raise InputError('Stop the project’s active task before changing its study setup.')
+                        if path == '/api/template-setup':
+                            result = guided_setup.act(root, data['module_id'], data['action'], data['values'])
+                        elif path == '/api/template-input':
+                            result = guided_setup.upload(root, data['module_id'], data['slot'], data['filename'], data['content_base64'])
+                        else:
+                            result = guided_setup.import_profile(root, data['module_id'], data['profile'])
+                        self.send(result)
                 elif path == '/api/configure':
                     data = self.body(('project_id', 'module_id', 'values'))
                     with workspace.lock:
