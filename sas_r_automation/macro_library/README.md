@@ -1,6 +1,6 @@
 # TRIALMON: SAS/R macro library for unattended trial-monitoring
 
-Use the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html) to prepare a private monitoring configuration and open these templates in your SAS or R editor. This prepares files; it does not connect feeds, schedule jobs, send messages or validate the unexecuted SAS code.
+Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to prepare a private monitoring configuration and open these templates in your SAS or R editor. This prepares files; it does not connect feeds, schedule jobs, send messages or validate the unexecuted SAS code.
 
 A deterministic, **no-AI** macro library that turns your already-validated monitoring programs into a scheduled, self-escalating loop: **ingest → freshness gate → checks → roll-up → digest**, plus a **tier-2 urgent alert** on any de-duplicated RED finding, always closed by a **heartbeat**. Built for the "covering while on leave" use case, but it's the standing monitoring backbone for any study.
 
