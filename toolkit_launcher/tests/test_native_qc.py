@@ -54,9 +54,9 @@ class PortableQCTest(unittest.TestCase):
                       total=1, gates=[dict(gate="G5 Manual", guards="review", status="manual", evidence="pending", sign_off="pending")])
         with contextlib.redirect_stdout(io.StringIO()):
             harness.write_ledger(self.root, ledger)
-        self.assertEqual(json.loads((self.root / "validation_harness/ledger.json").read_text()), ledger)
-        self.assertIn('"status": "manual"', (self.root / "validation_harness/index.html").read_text())
-        self.assertIn("☐ pending", (self.root / "validation_harness/EVIDENCE_LEDGER.md").read_text())
+        self.assertEqual(json.loads((self.root / "validation_harness/ledger.json").read_text(encoding="utf-8")), ledger)
+        self.assertIn('"status": "manual"', (self.root / "validation_harness/index.html").read_text(encoding="utf-8"))
+        self.assertIn("☐ pending", (self.root / "validation_harness/EVIDENCE_LEDGER.md").read_text(encoding="utf-8"))
 
     def registry(self):
         registry = self.put("validation_harness/teeth/defects.csv")
@@ -102,13 +102,13 @@ class PortableQCTest(unittest.TestCase):
         output.mkdir()
         with contextlib.redirect_stdout(io.StringIO()):
             teeth.classify(self.root, logs, output, "D00", harness.sha(registry), ["D00"], "test R")
-        summary = json.loads((output / "summary.json").read_text())
+        summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
         self.assertEqual(summary["rows"][0]["class"], "EQUIVALENT")
         self.assertEqual(summary["rows"][0]["status"], "as predicted")
         self.put("logs/D00.facts", "driver 0\ngenerator 0\ngate G1 red\ntest example PASS\n")
         with contextlib.redirect_stdout(io.StringIO()):
             teeth.classify(self.root, logs, output, "D00", harness.sha(registry), ["D00"], "test R")
-        summary = json.loads((output / "summary.json").read_text())
+        summary = json.loads((output / "summary.json").read_text(encoding="utf-8"))
         self.assertEqual(summary["rows"][0]["class"], "CAUGHT")
         self.assertEqual(summary["rows"][0]["layers"], "G1")
         self.assertEqual(summary["rows"][0]["status"], "differs from prediction")
