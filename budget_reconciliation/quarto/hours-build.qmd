@@ -61,9 +61,10 @@ test it in a plain console.
 ```
 
 Read `find_hours()`: it sources the ask in a fixed order. `from_slack <- min(need, m$net_slack)`
-takes what it can from under-run slack, `from_cont <- min(need - from_slack, contingency)`
-takes the rest from the reserve, and `shortfall <- need - from_slack - from_cont` is
-whatever is left. The ask is absorbable exactly when `shortfall <= 0`. Change that sourcing
+takes what it can from net under-run slack, then `from_cont` uses only reserve remaining
+after existing forecast overruns. `request_shortfall` is the unfunded portion of the new ask;
+`shortfall` adds any existing forecast deficit. The ask is absorbable exactly when the
+total `shortfall <= 0`. Change that sourcing
 order and you have changed what "find the hours you already have" means, everywhere, at once.
 
 ## The complete app: shiny/app.R

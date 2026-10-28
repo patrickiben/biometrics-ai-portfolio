@@ -12,12 +12,31 @@ monitor and the committee; it does not adjudicate DLTs or Hy's Law cases and it 
 dose-escalation decision. In a real study the numbers a committee relies on come from validated
 programs on ADaM; this app is not one of them.
 
-## Run it
+## Run it locally for evaluation
 
-```r
-install.packages(c("shiny", "bslib", "DT"))   # once
-shiny::runApp("sasr_monitoring_wiki/trialmon_shiny")
+Install R 4.1 or later and keep the complete repository checkout. In a terminal at
+the repository root, run:
+
+```sh
+Rscript launch_app.R trialmon --install   # first run: install missing packages in a user library
+Rscript launch_app.R trialmon             # later runs: no package downloads
 ```
+
+The launcher opens your browser and binds Shiny to `127.0.0.1`. Stop it with
+Ctrl+C. `Rscript launch_app.R --check trialmon` checks packages without starting a
+server. Packages go into an R-version-specific user cache; set
+`BIOMETRICS_R_LIB` to choose a separate user library. System/site libraries are
+never installation targets. This evaluation environment reports package versions;
+it is not a frozen study environment.
+
+From another working directory, pass the quoted absolute path to the launcher,
+for example `Rscript "/path/to/biometrics-ai-portfolio/launch_app.R" trialmon`.
+In an R console that is already inside this app folder, use `shiny::runApp()`
+after checking dependencies with the launcher.
+
+Interactive changes are local to the running app session. Keep separate input
+copies for each client/study and save the supported downloads before closing;
+this example does not provide a shared, persistent study database.
 
 The app is ready for Shinylive (webR): all data sit in `data/`, it uses only shiny, bslib and DT (the
 three plots are base graphics), and the CSV download is built in the browser (a Blob sent through

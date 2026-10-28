@@ -14,7 +14,7 @@
 %let CFG_BACKUP= biostat.backup@example.com;  /* fail-loud target                                */
 
 /* The controlled vocabularies (pipe-delimited). The model's output is rejected if it is
-   not on these lists - the in-code trust boundary, analogous to SHEETLINK's allowlist.   */
+   not on these lists - the in-code trust boundary, analogous to the tracker schema.   */
 %let CFG_OWNERS   = DM|PROGRAMMING|PK|MEDICAL CODING|SITE|BIOSTAT;
 %let CFG_SEVERITY = CRITICAL|MAJOR|MINOR;
 %let CFG_NOVELTY  = NEW|KNOWN;

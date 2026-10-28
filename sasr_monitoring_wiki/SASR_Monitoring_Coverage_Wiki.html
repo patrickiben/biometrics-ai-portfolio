@@ -60,7 +60,266 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
 figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid var(--line);border-radius:10px}figure.diagram figcaption{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.5}figure.diagram figcaption b{color:var(--ink)}
 @media (prefers-reduced-motion:reduce){section.show{animation:none}}
 @media print{#side,#search,.skip,label[for=search]{display:none!important}#main{max-width:none;padding:18px}section{display:block!important;page-break-before:always}section:first-of-type{page-break-before:avoid}h1,h2{page-break-after:avoid}.footer{display:none}}
-</style><style>/* === Mission Control override (appended) === */:root{--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panelhi:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--amber:#e6b24c;--terra:#ff6a6a;--red:#ff6a6a;--emer:#46d08a;--green:#46d08a;--cloud:#5b8cff;--blue:#5b8cff;--indigo:#34e3d4;--slate:#34e3d4;--steel:#34e3d4;--navy:#0c1018;--sas:#34e3d4;--cloud2:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;--r:6px}html{scroll-behavior:smooth}body{font-family:var(--sans)!important;color:var(--ink);background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.top b::before{content:"\25E2\00a0";color:var(--accent)}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}#wrap{max-width:1320px;margin:0 auto}#side{background:linear-gradient(180deg,#0a0f18,#080b12)!important;top:44px!important;height:calc(100vh - 44px)!important;border-right:1px solid var(--line2)!important;color:var(--ink)}#side .brand{border-bottom:1px solid var(--line2)!important}#side .brand b{font-family:var(--mono)!important;font-size:12px!important;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}#side .brand b::before{content:"\25E2\00a0";color:var(--accent)}#side .brand span{font-family:var(--mono);color:var(--dim)!important;font-size:10px!important;letter-spacing:.05em;text-transform:uppercase}#search{border:1px solid var(--line2)!important;background:#0d1320!important;color:var(--ink)!important;border-radius:5px!important;font-family:var(--mono);font-size:12.5px}#side a{color:var(--muted)!important;font-family:var(--mono)!important;font-size:11.5px!important;letter-spacing:.05em;text-transform:uppercase}#side a:hover{background:#0e141f!important;color:var(--ink)!important}#side a.active{color:var(--accent)!important;border-left-color:var(--accent)!important;background:rgba(52,227,212,.06)!important}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;font-size:11.5px!important;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-bottom:0!important;padding-bottom:0!important;margin:30px 0 12px}h2::before{content:"\25B8 ";color:var(--accent)}h3{font-family:var(--mono)!important;color:var(--ink);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}.lede{color:var(--muted)!important}a{color:var(--accent)}a:hover{color:#7af0e5}code{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)!important;font-family:var(--mono)}pre,pre.prompt,pre.code{background:#070b12!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:#dce6fb!important;border-radius:var(--r)}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.06em;text-transform:uppercase}tr:nth-child(even) td{background:rgba(255,255,255,.015)}.callout{background:linear-gradient(160deg,#0a1422,#0a0f18)!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:var(--muted);border-radius:var(--r)}.callout b{color:#cfeeea}.callout.warn{border-left-color:var(--gold)!important}.callout.tip{border-left-color:var(--accent)!important}.node{position:relative;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:var(--r)}.node b{color:var(--ink)}.arrow{color:var(--accent)!important;font-family:var(--mono)}.footer{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono);font-size:11px;letter-spacing:.02em}.skip{background:#0d1320!important;color:var(--ink)!important}figure.diagram svg,figure svg{background:#0a0f18;border-color:var(--line2)!important}@media(max-width:860px){#wrap{flex-direction:column}#side{width:100%!important;flex:none!important;height:auto!important;position:static!important}}@media print{.top{display:none!important}}</style></head>
+</style><style>/* === Mission Control override (appended) === */:root{--ink:#e7eef9;--muted:#7e8ca6;--dim:#566179;--line:#1b2535;--line2:#27344a;--panel:#0c1018;--panelhi:#131a26;--bg:#06090f;--accent:#34e3d4;--teal:#34e3d4;--gold:#e6b24c;--amber:#e6b24c;--terra:#ff6a6a;--red:#ff6a6a;--emer:#46d08a;--green:#46d08a;--cloud:#5b8cff;--blue:#5b8cff;--indigo:#34e3d4;--slate:#34e3d4;--steel:#34e3d4;--navy:#0c1018;--sas:#34e3d4;--cloud2:#5b8cff;--mono:ui-monospace,"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;--sans:"Segoe UI",Inter,system-ui,Arial,sans-serif;--r:6px}html{scroll-behavior:smooth}body{font-family:var(--sans)!important;color:var(--ink);background:linear-gradient(rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,linear-gradient(90deg,rgba(52,227,212,.025) 1px,transparent 1px) 0 0/44px 44px,radial-gradient(1200px 600px at 50% -10%,rgba(91,140,255,.08),transparent 60%),linear-gradient(180deg,#06090f,#04060b 80%)!important;background-attachment:fixed}.top{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:18px;padding:9px 22px;background:linear-gradient(180deg,#080c14ee,#070a11dd);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);box-shadow:0 1px 0 rgba(52,227,212,.12),0 8px 24px rgba(0,0,0,.4)}.top b{font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--ink)}.top b::before{content:"\25E2\00a0";color:var(--accent)}.top .nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap;align-items:center}.top .nav a{font-family:var(--mono);color:var(--muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;border:1px solid transparent;border-radius:5px;text-decoration:none}.top .nav a:hover{color:var(--ink);border-color:var(--line2);background:#0e141f}#wrap{max-width:1320px;margin:0 auto}#side{background:linear-gradient(180deg,#0a0f18,#080b12)!important;top:44px!important;height:calc(100vh - 44px)!important;border-right:1px solid var(--line2)!important;color:var(--ink)}#side .brand{border-bottom:1px solid var(--line2)!important}#side .brand b{font-family:var(--mono)!important;font-size:12px!important;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink)}#side .brand b::before{content:"\25E2\00a0";color:var(--accent)}#side .brand span{font-family:var(--mono);color:var(--dim)!important;font-size:10px!important;letter-spacing:.05em;text-transform:uppercase}#search{border:1px solid var(--line2)!important;background:#0d1320!important;color:var(--ink)!important;border-radius:5px!important;font-family:var(--mono);font-size:12.5px}#side a{color:var(--muted)!important;font-family:var(--mono)!important;font-size:11.5px!important;letter-spacing:.05em;text-transform:uppercase}#side a:hover{background:#0e141f!important;color:var(--ink)!important}#side a.active{color:var(--accent)!important;border-left-color:var(--accent)!important;background:rgba(52,227,212,.06)!important}h1{font-family:var(--sans)!important;color:var(--ink)!important;font-weight:680;letter-spacing:-.01em}h2{font-family:var(--mono)!important;color:var(--gold)!important;font-size:11.5px!important;font-weight:700;letter-spacing:.2em;text-transform:uppercase;border-bottom:0!important;padding-bottom:0!important;margin:30px 0 12px}h2::before{content:"\25B8 ";color:var(--accent)}h3{font-family:var(--mono)!important;color:var(--ink);font-size:12.5px;letter-spacing:.08em;text-transform:uppercase}.lede{color:var(--muted)!important}a{color:var(--accent)}a:hover{color:#7af0e5}code{background:#0d1320!important;color:#8ef0e6!important;border:1px solid var(--line)!important;font-family:var(--mono)}pre,pre.prompt,pre.code{background:#070b12!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:#dce6fb!important;border-radius:var(--r)}th{background:#0d1320!important;color:var(--muted)!important;font-family:var(--mono)!important;font-size:10px!important;letter-spacing:.06em;text-transform:uppercase}tr:nth-child(even) td{background:rgba(255,255,255,.015)}.callout{background:linear-gradient(160deg,#0a1422,#0a0f18)!important;border:1px solid var(--line2)!important;border-left:3px solid var(--accent)!important;color:var(--muted);border-radius:var(--r)}.callout b{color:#cfeeea}.callout.warn{border-left-color:var(--gold)!important}.callout.tip{border-left-color:var(--accent)!important}.node{position:relative;background:var(--panel)!important;border:1px solid var(--line)!important;border-radius:var(--r)}.node b{color:var(--ink)}.arrow{color:var(--accent)!important;font-family:var(--mono)}.footer{border-top:1px solid var(--line)!important;color:var(--dim)!important;font-family:var(--mono);font-size:11px;letter-spacing:.02em}.skip{background:#0d1320!important;color:var(--ink)!important}figure.diagram svg,figure svg{background:#0a0f18;border-color:var(--line2)!important}@media(max-width:860px){#wrap{flex-direction:column}#side{width:100%!important;flex:none!important;height:auto!important;position:static!important}}@media print{.top{display:none!important}}</style>
+<!-- toolkit-theme:start -->
+<style id="toolkit-legacy-theme">
+/* assets/theme/tokens.css: the portfolio's design tokens, the single source of every color.
+   build_pages.py copies these blocks into site.css, the Quarto token files, the inline copies
+   in the self-contained tool pages and assets/theme/theme.R. Edit here, then run
+   `python3 build_pages.py`; `python3 build_pages.py --check` fails when a copy has drifted.
+   Dark is the default. Light applies when the system asks for it and no choice is saved, or when
+   the toggle sets <html data-theme="light">. Print always uses light.
+   Every text color passes WCAG 2.2 AA (4.5:1) on every surface in its theme; --control passes 3:1. */
+
+/* dark:begin */
+:root {
+  color-scheme: dark;
+  --bg: #0b0f15; --bg-2: #080b10; --surface: #111721; --surface-2: #161e2a; --surface-3: #1c2533;
+  --line: #222c3b; --line-2: #2e3a4d; --control: #62718a;
+  --ink: #e8eef6; --text: #c9d3e1; --muted: #98a5b8; --faint: #8593a8;
+  --accent: #3ad7c8; --accent-ink: #8ff0e6; --accent-soft: rgba(58,215,200,.12); --accent-ring: rgba(58,215,200,.35); --on-accent: #06231f;
+  --blue: #7aa4ff; --green: #4fd394; --amber: #f0b450; --red: #ff7a7a; --violet: #c4a7f5;
+  --blue-soft: rgba(122,164,255,.14); --green-soft: rgba(79,211,148,.14); --amber-soft: rgba(240,180,80,.14); --red-soft: rgba(255,122,122,.14);
+  --led-fg: #93dbae; --led-bg: #17301f; --led-line: #2f6b45;
+  --sup-fg: #a9ccff; --sup-bg: #1a2b40; --sup-line: #36557d;
+  --tools-fg: #d3bcf7; --tools-bg: #2a2140; --tools-line: #57457f;
+  --gap-fg: #f5b48a; --gap-bg: #3a2416; --gap-line: #7a4b2c;
+  --note-bg: #2a2119; --note-line: #e0935f;
+  --grid: rgba(58,215,200,.022); --glow: rgba(122,164,255,.10); --bar-bg: rgba(11,15,21,.82);
+  --shadow-1: inset 0 1px 0 rgba(255,255,255,.035), 0 1px 2px rgba(0,0,0,.45);
+  --shadow-2: 0 0 0 1px var(--accent-ring), 0 12px 28px rgba(0,0,0,.45);
+}
+/* dark:end */
+
+/* static:begin (type, space, radius and motion: the same in both themes) */
+:root {
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI Variable Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --fs-label: 12px; --fs-small: 13px; --fs-card: 14px; --fs-body: 16px; --fs-lede: 18px;
+  --fs-h3: 17px; --fs-h2: 22px; --fs-h1: clamp(28px, 1.1rem + 2vw, 36px); --fs-display: clamp(36px, 1.4rem + 3.2vw, 52px); --fs-kpi: 26px;
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px; --s-7: 48px; --s-8: 64px; --s-9: 96px;
+  --r-lg: 12px; --r-md: 8px; --r-sm: 6px; --r-pill: 999px;
+  --ease: cubic-bezier(.2,.7,.2,1); --dur: 140ms;
+  --bar-h: 56px; --measure: 70ch; --wrap: 1200px;
+}
+/* static:end */
+
+/* light:begin (the source of the light theme; the two copies below are generated from it) */
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #f4f6f9; --bg-2: #eef1f5; --surface: #ffffff; --surface-2: #eef2f6; --surface-3: #e4e9ef;
+    --line: #d7dee7; --line-2: #c3ccd8; --control: #7d8a9b;
+    --ink: #121a24; --text: #1f2a37; --muted: #4d5a69; --faint: #5b6878;
+    --accent: #0b7268; --accent-ink: #075b53; --accent-soft: rgba(11,114,104,.08); --accent-ring: rgba(11,114,104,.30); --on-accent: #ffffff;
+    --blue: #0757bf; --green: #1d6b3c; --amber: #8a5300; --red: #b42318; --violet: #6b48a8;
+    --blue-soft: rgba(7,87,191,.10); --green-soft: rgba(29,107,60,.10); --amber-soft: rgba(138,83,0,.10); --red-soft: rgba(180,35,24,.10);
+    --led-fg: #1d5e35; --led-bg: #e3f2e8; --led-line: #9ccbad;
+    --sup-fg: #0b4f9c; --sup-bg: #e5eefa; --sup-line: #a7c3e8;
+    --tools-fg: #5b3a8e; --tools-bg: #efe9f8; --tools-line: #c6b5e3;
+    --gap-fg: #8a3a10; --gap-bg: #fbebdf; --gap-line: #e3b796;
+    --note-bg: #fbf3e9; --note-line: #b5561f;
+    --grid: rgba(18,26,36,.035); --glow: rgba(11,114,104,.06); --bar-bg: rgba(244,246,249,.85);
+    --shadow-1: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+    --shadow-2: 0 0 0 1px var(--accent-ring), 0 10px 24px rgba(16,24,40,.12);
+  }
+}
+/* light:end */
+
+/* light-copy:begin (generated by build_pages.py from the light block above; do not edit) */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6f9; --bg-2: #eef1f5; --surface: #ffffff; --surface-2: #eef2f6; --surface-3: #e4e9ef;
+  --line: #d7dee7; --line-2: #c3ccd8; --control: #7d8a9b;
+  --ink: #121a24; --text: #1f2a37; --muted: #4d5a69; --faint: #5b6878;
+  --accent: #0b7268; --accent-ink: #075b53; --accent-soft: rgba(11,114,104,.08); --accent-ring: rgba(11,114,104,.30); --on-accent: #ffffff;
+  --blue: #0757bf; --green: #1d6b3c; --amber: #8a5300; --red: #b42318; --violet: #6b48a8;
+  --blue-soft: rgba(7,87,191,.10); --green-soft: rgba(29,107,60,.10); --amber-soft: rgba(138,83,0,.10); --red-soft: rgba(180,35,24,.10);
+  --led-fg: #1d5e35; --led-bg: #e3f2e8; --led-line: #9ccbad;
+  --sup-fg: #0b4f9c; --sup-bg: #e5eefa; --sup-line: #a7c3e8;
+  --tools-fg: #5b3a8e; --tools-bg: #efe9f8; --tools-line: #c6b5e3;
+  --gap-fg: #8a3a10; --gap-bg: #fbebdf; --gap-line: #e3b796;
+  --note-bg: #fbf3e9; --note-line: #b5561f;
+  --grid: rgba(18,26,36,.035); --glow: rgba(11,114,104,.06); --bar-bg: rgba(244,246,249,.85);
+  --shadow-1: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+  --shadow-2: 0 0 0 1px var(--accent-ring), 0 10px 24px rgba(16,24,40,.12);
+}
+@media print {
+  :root, :root[data-theme] {
+    color-scheme: light;
+    --bg: #f4f6f9; --bg-2: #eef1f5; --surface: #ffffff; --surface-2: #eef2f6; --surface-3: #e4e9ef;
+    --line: #d7dee7; --line-2: #c3ccd8; --control: #7d8a9b;
+    --ink: #121a24; --text: #1f2a37; --muted: #4d5a69; --faint: #5b6878;
+    --accent: #0b7268; --accent-ink: #075b53; --accent-soft: rgba(11,114,104,.08); --accent-ring: rgba(11,114,104,.30); --on-accent: #ffffff;
+    --blue: #0757bf; --green: #1d6b3c; --amber: #8a5300; --red: #b42318; --violet: #6b48a8;
+    --blue-soft: rgba(7,87,191,.10); --green-soft: rgba(29,107,60,.10); --amber-soft: rgba(138,83,0,.10); --red-soft: rgba(180,35,24,.10);
+    --led-fg: #1d5e35; --led-bg: #e3f2e8; --led-line: #9ccbad;
+    --sup-fg: #0b4f9c; --sup-bg: #e5eefa; --sup-line: #a7c3e8;
+    --tools-fg: #5b3a8e; --tools-bg: #efe9f8; --tools-line: #c6b5e3;
+    --gap-fg: #8a3a10; --gap-bg: #fbebdf; --gap-line: #e3b796;
+    --note-bg: #fbf3e9; --note-line: #b5561f;
+    --grid: rgba(18,26,36,.035); --glow: rgba(11,114,104,.06); --bar-bg: rgba(244,246,249,.85);
+    --shadow-1: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+    --shadow-2: 0 0 0 1px var(--accent-ring), 0 10px 24px rgba(16,24,40,.12);
+  }
+}
+/* light-copy:end */
+
+/* Compatibility layer for older standalone pages. Colors come from tokens.css.
+   Scientific images/SVGs retain their original colors; never invert a figure. */
+:root[data-theme] {
+  --bg2:var(--bg-2); --panel:var(--surface); --panel2:var(--surface-2); --panelhi:var(--surface-3);
+  --line2:var(--line-2); --mut:var(--muted); --dim:var(--faint); --accent2:var(--blue); --gold:var(--amber); --teal:var(--accent);
+  --steel:var(--accent); --steel2:var(--blue); --cloud:var(--blue); --cloud2:var(--blue); --terra:var(--red); --emer:var(--green);
+  --sh:var(--shadow-1); --r-background-color:var(--bg); --r-main-color:var(--text); --r-heading-color:var(--ink); --r-link-color:var(--accent);
+  --bs-body-bg:var(--bg); --bs-body-color:var(--text); --bs-secondary-color:var(--muted); --bs-heading-color:var(--ink);
+  --bs-link-color:var(--accent); --bs-link-hover-color:var(--accent-ink); --bs-border-color:var(--line-2);
+}
+html[data-theme]{background:var(--bg)}
+html[data-theme] body {
+  color:var(--text); background:var(--bg)!important;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px)!important;
+  background-size:44px 44px!important; font-family:var(--sans);
+}
+html[data-theme] :is(h1,h2,h3,h4,h5,h6){color:var(--ink)}
+/* Earlier Quarto exports compiled a dark palette with !important declarations. */
+html[data-theme] :is(h1,h2,h3,h4,h5,h6),
+html[data-theme] .quarto-title-block .quarto-title .title{color:var(--ink)!important}
+html[data-theme] a{color:var(--accent)}
+html[data-theme] a:hover{color:var(--accent-ink)}
+html[data-theme] :is(strong,b){color:inherit}
+html[data-theme] :is(.top,.navbar){background:var(--bar-bg);color:var(--ink);border-color:var(--line-2)}
+html[data-theme] body>header:not(.top){background:var(--bar-bg);color:var(--ink)}
+html[data-theme] :is(header .k,.lede,.hero .big p,.card p){color:var(--muted)}
+html[data-theme] :is(.top .nav a,.muted,.sub,.small,figcaption,.figure-caption,footer){color:var(--muted)}
+html[data-theme] :is(.card,.panel,.kpi,.pkg,.sec,.qp,.firstbox,.box,.callout,.well){background:var(--surface);border-color:var(--line-2)}
+html[data-theme] :is(.qp .qt,.firstbox b,.card h3,.sec h3){color:var(--ink)}
+html[data-theme] :is(.links a,.tabs button,.btn,button,input,select,textarea){background:var(--surface-2);color:var(--text);border-color:var(--control)}
+html[data-theme] :is(a.btn,.links a:hover,.tabs button[aria-selected="true"],button.primary){background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+html[data-theme] :is(.banner,.note,.warning,.warn){background:var(--note-bg);color:var(--text);border-color:var(--note-line)}
+html[data-theme] :is(.flow,.checklist li){background:var(--surface);color:var(--text);border-color:var(--line-2)}
+html[data-theme] :is(.checklist li:hover,.files a:hover,.ways a:hover){background:var(--surface-2);color:var(--text)}
+html[data-theme] .checklist li::before{background:var(--surface-2);border-color:var(--control)}
+html[data-theme] .checklist li.done::before{background:var(--green);border-color:var(--green)}
+html[data-theme="light"] .checklist li.done::after{color:#fff}
+html[data-theme] .scen label.opt{background:var(--surface);color:var(--text);border-color:var(--line-2)}
+html[data-theme] .scen input:checked + label.opt{background:var(--accent-soft);border-color:var(--accent)}
+html[data-theme] :is(.badge,.pill,.chip){white-space:nowrap;background:var(--surface-2);color:var(--text);border-color:var(--control)}
+html[data-theme] :is(.badge,.pill){display:inline-block}
+html[data-theme] :is(.badge.demo,.pill.dsgn){color:var(--amber);background:var(--amber-soft)}
+html[data-theme] :is(.pill.run,.good,.ok){color:var(--green)}
+html[data-theme] :is(.bad,.error){color:var(--red)}
+html[data-theme] :is(pre,code,kbd,samp){background:var(--surface-2);color:var(--text);border-color:var(--line-2)}
+html[data-theme] pre{max-width:100%;overflow:auto;white-space:pre;}
+html[data-theme] code{overflow-wrap:anywhere}
+html[data-theme] :is(pre code,div.sourceCode){background:var(--surface-2);color:var(--text)}
+html[data-theme="dark"] pre code span{color:var(--text)}
+html[data-theme="light"] pre code span{color:var(--text)}
+html[data-theme] :is(table,th,td){color:var(--text);border-color:var(--line-2);background-color:transparent}
+html[data-theme] th{background:var(--surface-2);color:var(--ink)}
+html[data-theme] :is(tbody tr:hover,tbody tr:nth-child(even)){background:var(--surface-2)}
+html[data-theme] :is(.bar,.meter,.tabs .n){background:var(--surface-3)}
+html[data-theme] :is(.reveal,.reveal-viewport,.slide-background){background:var(--bg);color:var(--text)}
+html[data-theme] .reveal :is(p,li,td,th){color:var(--text)}
+html[data-theme] :is(blockquote,.quarto-title-meta,.quarto-title .subtitle,#TOC a,.sidebar nav[role=doc-toc]>ul li a){color:var(--muted)}
+html[data-theme] :is(.callout-header,.callout-body,.nav-tabs .nav-link){background:var(--surface);color:var(--text)}
+html[data-theme] .callout{background:var(--surface)!important;color:var(--text);border-color:var(--line-2)!important}
+html[data-theme] .callout :is(.callout-title,.callout-header,.callout-body){background:transparent!important;color:var(--text)}
+html[data-theme] .callout.rule :is(strong,b){color:var(--red)}
+html[data-theme] .callout.honest :is(strong,b){color:var(--amber)}
+html[data-theme] .rule{background:var(--red-soft);color:var(--text)}
+html[data-theme] .win{background:var(--green-soft);color:var(--text)}
+html[data-theme] .callout-note{border-left-color:var(--accent)!important}
+html[data-theme] .callout-tip{border-left-color:var(--green)!important}
+html[data-theme] :is(.callout-important,.callout-warning,.callout-caution){border-left-color:var(--amber)!important}
+html[data-theme] .mc-top{background:var(--bar-bg);color:var(--ink);border-color:var(--line-2);flex-wrap:wrap}
+html[data-theme] .mc-top b{color:var(--ink)}
+html[data-theme] .mc-top b::before{color:var(--accent)}
+html[data-theme] .mc-top a{color:var(--muted)}
+html[data-theme] .mc-top a:hover{color:var(--ink);background:var(--surface-2)}
+html[data-theme] #TOC :is(a.active,a:hover){color:var(--accent)!important;border-color:var(--accent)!important}
+html[data-theme="light"] #heat .cell{color:#fff}
+html[data-theme] #trend .legend span:nth-child(1){color:var(--amber)!important}
+html[data-theme] #trend .legend span:nth-child(2){color:var(--blue)!important}
+html[data-theme] #trend polyline:nth-child(1){stroke:var(--amber)}
+html[data-theme] #trend polyline:nth-child(2){stroke:var(--blue)}
+html[data-theme] #side{background:var(--surface);color:var(--ink);border-color:var(--line-2)}
+html[data-theme] #side .brand :is(b,span){color:var(--muted)}
+html[data-theme] #side a{color:var(--muted)}
+html[data-theme] #side :is(a:hover,a.active){background:var(--surface-2);color:var(--accent)}
+html[data-theme] :focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+html[data-theme] .toolkit-theme-toggle {
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:0 0 auto;
+  min-height:36px;min-width:82px;margin:2px;padding:6px 10px;border:1px solid var(--control);
+  border-radius:6px;background:var(--surface);color:var(--ink);font:600 12px var(--sans);cursor:pointer;
+}
+html[data-theme] .toolkit-theme-floating{position:fixed;right:16px;bottom:16px;z-index:1000;box-shadow:var(--shadow-1)}
+/* Contain long source and wide tables without clipping the document or shrinking type. */
+html[data-theme] :is(img,video,canvas){max-width:100%;height:auto}
+html[data-theme] :is(.card,.panel,.grid>*,.grid3>*,.sections>*,.wrap,main){min-width:0}
+html[data-theme] :is(.top,.top .nav){flex-wrap:wrap}
+html[data-theme] .top b{white-space:normal}
+@media(max-width:700px){
+  html[data-theme] .top{gap:8px;padding:9px 12px}
+  html[data-theme] .top .nav{margin-left:0;gap:3px}
+  html[data-theme] .mc-top{gap:6px;padding:9px 12px}
+  html[data-theme] .mc-top .nav{margin-left:0}
+  html[data-theme] h1>.badge{display:block;width:max-content;max-width:100%;margin:8px 0}
+  html[data-theme] #heat .hd{font-size:10px;overflow-wrap:normal}
+  html[data-theme] :is(.wrap,.container){max-width:100%;padding-left:14px;padding-right:14px}
+  html[data-theme] :is(.grid,.grid3,.sections,.pkgs,.qprow){grid-template-columns:minmax(0,1fr)}
+  html[data-theme] .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  html[data-theme] table{display:block;max-width:100%;overflow-x:auto}
+  html[data-theme] :is(.card,.panel,.firstbox,li,p){overflow-wrap:anywhere}
+  html[data-theme] .mc-status{display:none}
+}
+@media print{
+  html[data-theme] body{background:#fff!important;color:#121a24}
+  .toolkit-theme-toggle{display:none!important}
+  html[data-theme] pre{white-space:pre-wrap}
+  html[data-theme] table{display:table;overflow:visible}
+}
+
+</style>
+<script>
+/* Same bp-theme preference as assets/ui.js; inline for portable/offline pages. */
+(function () {
+  'use strict';
+  var root = document.documentElement, key = 'bp-theme';
+  var media = window.matchMedia('(prefers-color-scheme: light)');
+  function saved() { try { var t = localStorage.getItem(key); return /^(light|dark)$/.test(t) ? t : null; } catch (_) { return null; } }
+  function apply(t) {
+    t = t || (media.matches ? 'light' : 'dark');
+    root.dataset.theme = t;
+    document.querySelectorAll('.toolkit-theme-toggle').forEach(function (b) {
+      b.setAttribute('aria-pressed', String(t === 'dark'));
+      b.title = 'Switch to ' + (t === 'dark' ? 'light' : 'dark') + ' theme';
+      b.setAttribute('aria-label', b.title);
+      b.textContent = t === 'dark' ? '☀ Light' : '☾ Dark';
+    });
+    document.querySelectorAll('meta[name="theme-color"]').forEach(function (m) { m.content = t === 'dark' ? '#0b0f15' : '#f4f6f9'; });
+  }
+  apply(saved());
+  document.addEventListener('DOMContentLoaded', function () {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'theme-toggle toolkit-theme-toggle';
+    var nav = document.querySelector('.top .nav') || document.querySelector('.top');
+    if (nav) nav.appendChild(b);
+    else { b.classList.add('toolkit-theme-floating'); document.body.appendChild(b); }
+    b.addEventListener('click', function () {
+      var t = root.dataset.theme === 'dark' ? 'light' : 'dark';
+      try { localStorage.setItem(key, t); } catch (_) {}
+      apply(t);
+    });
+    apply(saved());
+  });
+  window.addEventListener('storage', function (e) { if (e.key === key || e.key === null) apply(saved()); });
+  if (media.addEventListener) media.addEventListener('change', function () { if (!saved()) apply(null); });
+})();
+
+</script>
+<!-- toolkit-theme:end -->
+</head>
 <body><a href="#main" class="skip">Skip to content</a><div class="top"><b>Trial biostatistics toolkit</b><div class="nav"><a href="../Operations.html">Operations</a><a href="../Biostatistics.html">Biostatistics</a><a href="../START_HERE.html">Full library</a></div></div>
 <div id="wrap">
 <nav id="side" aria-label="Wiki sections"><div class="brand"><b>SAS/R Monitoring<br>&amp; On-Leave Coverage</b><span>Deterministic scheduled SAS/R that watches the trial &amp; keeps the tracker current &mdash; so nothing slips while you&rsquo;re out</span><span class="tag">FOR BIOSTATISTICIANS</span></div>
@@ -83,7 +342,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <p class="lede">Turn your already-validated monitoring programs into a <strong>scheduled, self-escalating loop</strong> so the trial keeps being watched, the tracker keeps being current, and nothing falls through the cracks &mdash; <strong>especially while you&rsquo;re out on leave</strong>. The monitoring itself is <strong>deterministic SAS/R, no AI required</strong> &mdash; the lowest-risk pipeline in this toolkit.</p>
     <figure class="diagram" role="img" aria-labelledby="d-arch-title">
       <svg viewBox="0 0 860 320" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
-        <title id="d-arch-title">Three components share one scheduled SAS/R job: TRIALMON the deterministic backbone, SHEETLINK the tracker, and the optional LOCALMIND language layer; all output routes to humans who decide.</title>
+        <title id="d-arch-title">Three components share one scheduled workflow: TRIALMON for monitoring, Open Study Tracker for deliverables, and the optional LOCALMIND language layer; humans decide.</title>
         <defs>
           <marker id="ah-steel" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--steel)"/></marker>
         </defs>
@@ -94,26 +353,26 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
         <text x="74" y="186" text-anchor="middle" font-size="11" fill="var(--muted)">dated exports</text>
         <!-- scheduled job container -->
         <rect x="170" y="22" width="430" height="276" rx="10" fill="none" stroke="var(--steel)" stroke-dasharray="5 4"/>
-        <text x="385" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="var(--steel)">ONE SCHEDULED JOB &middot; service account svc-stats &middot; deterministic SAS/R</text>
+        <text x="385" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="var(--steel)">SCHEDULED WORKFLOW &middot; SAS/R + Python &middot; service account</text>
         <!-- TRIALMON -->
         <rect x="190" y="58" width="390" height="86" rx="9" fill="var(--panel)" stroke="var(--steel)" stroke-width="2"/>
         <text x="206" y="80" font-size="14" font-weight="700" fill="var(--steel)">TRIALMON &middot; the backbone</text>
         <text x="206" y="98" font-size="11" fill="var(--muted)">%tm_*: freshness gate &rarr; checks &rarr; roll-up &rarr; digest &rarr; tier-2 alert</text>
         <text x="206" y="114" font-size="11" fill="var(--muted)">&rarr; heartbeat   (watched by an independent dead-man's switch)</text>
         <text x="206" y="132" font-size="11" font-weight="700" fill="var(--green)">no AI in the loop</text>
-        <!-- SHEETLINK -->
+        <!-- Open Study Tracker -->
         <rect x="190" y="156" width="188" height="74" rx="9" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/>
-        <text x="206" y="178" font-size="13" font-weight="700" fill="var(--green)">SHEETLINK</text>
-        <text x="206" y="196" font-size="11" fill="var(--muted)">%ss_*: idempotent</text>
-        <text x="206" y="211" font-size="11" fill="var(--muted)">upsert into Smartsheet</text>
-        <text x="206" y="225" font-size="11" fill="var(--muted)">ops-only allowlist</text>
+        <text x="206" y="178" font-size="13" font-weight="700" fill="var(--green)">Open Tracker</text>
+        <text x="206" y="196" font-size="11" fill="var(--muted)">upsert by task ID</text>
+        <text x="206" y="211" font-size="11" fill="var(--muted)">CSV to local SQLite</text>
+        <text x="206" y="225" font-size="11" fill="var(--muted)">operational-field schema</text>
         <!-- LOCALMIND -->
         <rect x="392" y="156" width="188" height="74" rx="9" fill="var(--panel)" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 3"/>
         <text x="408" y="178" font-size="13" font-weight="700" fill="var(--amber)">LOCALMIND</text>
         <text x="408" y="196" font-size="11" fill="var(--muted)">%slm_*: optional</text>
         <text x="408" y="211" font-size="11" fill="var(--muted)">on-device drafting only</text>
         <text x="408" y="225" font-size="11" fill="var(--muted)">never a number / decision</text>
-        <text x="385" y="252" text-anchor="middle" font-size="11" fill="var(--muted)">SHEETLINK + LOCALMIND branch off the same job;</text>
+        <text x="385" y="252" text-anchor="middle" font-size="11" fill="var(--muted)">Tracker + LOCALMIND branch off the same job;</text>
         <text x="385" y="268" text-anchor="middle" font-size="11" fill="var(--muted)">LOCALMIND is a convenience, not a dependency</text>
         <!-- humans -->
         <rect x="636" y="100" width="208" height="120" rx="9" fill="var(--panel)" stroke="var(--line)"/>
@@ -126,13 +385,13 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
         <line x1="134" y1="160" x2="186" y2="101" stroke="var(--line)" stroke-width="1.5" marker-end="url(#ah-steel)"/>
         <line x1="600" y1="120" x2="632" y2="150" stroke="var(--steel)" stroke-width="1.5" marker-end="url(#ah-steel)"/>
       </svg>
-      <figcaption><b>Three components, one scheduled job.</b> The deterministic <b>TRIALMON</b> backbone does the watching; <b>SHEETLINK</b> keeps the tracker current and <b>LOCALMIND</b> is an optional language convenience &mdash; every path routes to humans, who decide.</figcaption>
+      <figcaption><b>Three components, one scheduled job.</b> The deterministic <b>TRIALMON</b> backbone does the watching; <b>Open Study Tracker</b> keeps the tracker current and <b>LOCALMIND</b> is an optional language convenience &mdash; every path routes to humans, who decide.</figcaption>
     </figure>
     <div class="callout rule"><strong>The one rule.</strong> These macros <strong>detect, package, and email pre-specified deterministic flags</strong>. They <strong>do not triage, interpret, or adjudicate</strong>, and they <strong>never auto-act on safety</strong>. A flag is a <em>prompt for a human</em> &mdash; the medical monitor and the covering biostatistician make every call. Validate the threshold logic + scheduling wrapper as study programs (GxP); keep anything <em>reported</em> independently double-programmed; reported numbers come from validated tools, never from a flag and never from the optional language model.</div>
     <h2>Three components, one scheduled job</h2>
     <div class="grid3">
       <div class="comp tm"><b>TRIALMON <span>&middot; the backbone</span></b><p>Deterministic SAS/R that ingests the latest data, gates on <em>freshness</em>, runs the pre-specified safety + operational <em>checks</em>, rolls up severity, emails a <em>digest</em>, fires a <em>tier-2 urgent alert</em> on any RED, and closes with a <em>heartbeat</em> &mdash; watched by an independent <em>dead-man&rsquo;s switch</em>. The <code>%tm_*</code> library.</p></div>
-      <div class="comp ss"><b>SHEETLINK <span>&middot; the tracker</span></b><p>The same scheduled job keeps your Smartsheet program tracker <em>current</em> &mdash; idempotent upsert-by-key behind an ops-only allowlist guard &mdash; so the PM dashboard is live while you&rsquo;re away. The <code>%ss_*</code> library. No AI.</p></div>
+      <div class="comp ss"><b>Open Study Tracker <span>&middot; deliverables</span></b><p>The same scheduled workflow imports operational status by task ID into local SQLite and exports an offline browser snapshot. R/SAS produces CSV; the Python CLI validates and records changes. The browser copy updates when a new snapshot is loaded.</p></div>
       <div class="comp slm"><b>LOCALMIND <span>&middot; optional language</span></b><p>An <em>optional</em> on-device SLM drafts the digest prose or triages free-text the deterministic code can&rsquo;t &mdash; ops-only, behind the loopback + validator + human-gate guardrails. The monitoring needs <strong>none</strong> of this; it is a convenience, not a dependency. The <code>%slm_*</code> library.</p></div>
     </div>
     <div class="callout win"><strong>Why this is the lowest-risk piece.</strong> The detection is pre-specified, deterministic SAS/R &mdash; the same logic you already validate, just scheduled and self-escalating. No cloud, no AI in the loop, no model to qualify. It <em>detects, packages, and pages</em>; humans decide. That is exactly the property a regulated shop wants from unattended automation.</div>
@@ -210,7 +469,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <div class="callout key"><strong>The independent dead-man&rsquo;s switch.</strong> <code>tm_watchdog.sh</code> runs on a <em>different host and account</em>, reads the heartbeat, and screams if the job didn&rsquo;t run, ran late, or ran on stale data. The thing most likely to fail silently is the scheduler itself &mdash; so the watchdog is the control that makes &ldquo;no news&rdquo; trustworthy. <strong>No email is itself a signal.</strong></div>
     <h2>The two branches off the same job</h2>
     <ul>
-      <li><b>Tracker (SHEETLINK):</b> after the checks, <code>%ss_*</code> upserts the run status + open flags into the Smartsheet tracker &mdash; idempotent by key, ops-only columns allowlisted &mdash; so the PM view is live. See <a href="#tracker">Keeping the tracker current</a>.</li>
+      <li><b>Open Study Tracker:</b> after the checks, export operational status to CSV and run the Python CLI to upsert it by task ID, record changes and export a fresh browser snapshot. See <a href="#tracker">Keeping the tracker current</a>.</li>
       <li><b>Language (LOCALMIND, optional):</b> if enabled, an on-device SLM drafts the digest prose from the already-structured rows &mdash; never deciding what to include. See <a href="#language">The optional language layer</a>.</li>
     </ul>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
@@ -353,15 +612,16 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Coverage_Runbook.pdf">&#10515;&nbsp; The Coverage Runbook (PDF) &mdash; hand this to your cover</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="tracker" aria-label="Keeping the tracker current">
-    <h1>Keeping the Smartsheet tracker current &mdash; SHEETLINK</h1>
-    <p class="lede">So the PM&rsquo;s program dashboard is live while you&rsquo;re away, the same scheduled job upserts status into Smartsheet &mdash; deterministically, no AI.</p>
+    <h1>Keeping the deliverables tracker current</h1>
+    <p class="lede">Open Study Tracker keeps operational status in a local SQLite file. Scheduled R/SAS jobs produce CSV, the Python CLI imports it, and a browser snapshot makes the result easy to review.</p>
     <ul>
-      <li><b>Idempotent upsert-by-key:</b> <code>%ss_*</code> matches each row by a stable key and updates-or-inserts, so re-runs never duplicate and a re-processed day is a no-op.</li>
-      <li><b>Ops-only allowlist guard:</b> only an allowlisted set of operational columns can be written &mdash; the automation can never touch a column it shouldn&rsquo;t, by construction.</li>
-      <li><b>Token from a secret, never logged:</b> the Smartsheet token comes from an environment variable / secret store, never hard-coded and never written to a log.</li>
+      <li><b>Upsert by task ID:</b> stable text IDs update existing tasks or create new ones. Repeated identical imports do not add duplicate rows or change-history entries.</li>
+      <li><b>Validate before writing:</b> use a dry run first. Unknown fields, invalid values and duplicate IDs fail before an import is committed.</li>
+      <li><b>Local files, no credentials:</b> the Python standard library and SQLite provide storage and change history. The browser edits its own copy; export JSON and import it with the CLI to update SQLite.</li>
+      <li><b>Exceptions stay visible:</b> status, overdue dates and import freshness can be checked locally. The CLI returns an attention exit status; the optional <a href="../open_tracker/SHARED.md">shared server and email worker</a> add individual accounts and queued SMTP alerts.</li>
     </ul>
-    <div class="callout win">Independently SAS-reviewed (three defects found and fixed). The tracker shows <em>operational</em> status only &mdash; never a reported number, never patient-level data.</div>
-    <div class="dl"><a class="btn ghost" href="../smartsheet_sasr/Smartsheet_SASR.html">Open the SHEETLINK wiki</a><a class="btn ghost" href="../smartsheet_sasr/macro_library/README.pdf">Macro README (PDF)</a></div>
+    <div class="callout honest">Operational status only. A field allowlist validates structure, not the sensitivity of text: do not enter PHI, participant-level data, unblinded assignments or reported clinical numbers. This toolkit is not a validated system of record. The SAS export example has not been executed.</div>
+    <div class="dl"><a class="btn ghost" href="../open_tracker/index.html">Open Study Tracker</a><a class="btn ghost" href="../open_tracker/README.md">Setup and file workflow</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="language" aria-label="Optional language layer">
     <h1>The optional on-device language layer &mdash; LOCALMIND</h1>
@@ -371,14 +631,14 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="macros" aria-label="The macro libraries">
     <h1>The macro libraries</h1>
-    <p class="lede">Three deterministic SAS libraries (each with an R companion), copy-paste ready, each with a per-study config so a second study or a rotating monitor is one file, not a code edit. Base SAS 9.4; no third-party packages.</p>
+    <p class="lede">The monitoring and optional language libraries use SAS with R companions. Open Study Tracker uses Python and SQLite, with R/SAS file bridges. Configure paths, owners and schedules for each study; review the setup instructions and execution limits before use.</p>
     <table class="cat"><thead><tr><th>Library</th><th>Driver + key files</th><th>What it does</th></tr></thead><tbody>
       <tr><td><b>TRIALMON</b> <code>%tm_*</code></td><td><code>tm_macros.sas</code> &middot; <code>monitor_driver.sas</code> &middot; <code>tm_config.sas</code> &middot; <code>tm_watchdog.sh</code> &middot; <code>tm_companion.R</code></td><td>The monitoring loop: init, latest, freshness, guard, the safety checks, status, digest, alert, evidence, heartbeat &mdash; plus the independent watchdog.</td></tr>
-      <tr><td><b>SHEETLINK</b> <code>%ss_*</code></td><td><code>ss_macros.sas</code> &middot; <code>tracker_update.sas</code> &middot; <code>ss_config.sas</code> &middot; <code>ss_companion.R</code></td><td>Idempotent upsert-by-key into Smartsheet behind an ops-only allowlist guard; token from a secret.</td></tr>
+      <tr><td><b>Open Study Tracker</b></td><td><code>tracker.py</code> &middot; <code>update_tracker.R</code> &middot; <code>export_tracker.sas</code></td><td>Validated CSV/JSON upserts into local SQLite, dry runs, change history, browser snapshots and exception checks.</td></tr>
       <tr><td><b>LOCALMIND</b> <code>%slm_*</code></td><td><code>slm_macros.sas</code> &middot; <code>triage_driver.sas</code> &middot; <code>slm_config.sas</code> &middot; <code>slm_companion.R</code></td><td>(Optional) the on-device language layer: loopback guard, schema-constrained call, allowlist validator, classify.</td></tr>
     </tbody></table>
     <div class="callout key"><b>Config, not code.</b> <code>tm_config.sas</code> holds the per-study constants &mdash; paths, recipients, the medical monitor, feeds, thresholds &mdash; <code>%include</code>d before the driver. A new study, a rotating medical monitor, or a leave-coverage backup is a one-line change, change-controlled like any study program.</div>
-    <div class="dl"><a class="btn ghost" href="../sas_r_automation/macro_library/TRIALMON_Macro_Library_README.pdf">TRIALMON README</a><a class="btn ghost" href="../smartsheet_sasr/macro_library/README.pdf">SHEETLINK README</a><a class="btn ghost" href="../slm_wiki/macro_library/README.pdf">LOCALMIND README</a></div>
+    <div class="dl"><a class="btn ghost" href="../sas_r_automation/macro_library/TRIALMON_Macro_Library_README.pdf">TRIALMON README</a><a class="btn ghost" href="../open_tracker/README.md">Tracker README</a><a class="btn ghost" href="../slm_wiki/macro_library/README.md">LOCALMIND README</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="gov" aria-label="Safeguards  governance">
     <h1>Safeguards &amp; governance</h1>
@@ -408,7 +668,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
           <text x="30" y="108" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="108" fill="var(--ink)">Batch schedule + a 2nd host for the watchdog</text>
           <text x="30" y="132" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="132" fill="var(--ink)">Internal SMTP relay (no external mail)</text>
           <text x="30" y="156" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="156" fill="var(--ink)">Read access to exports + a state directory</text>
-          <text x="30" y="180" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="180" fill="var(--ink)">Smartsheet token in a secret store (tracker)</text>
+          <text x="30" y="180" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="180" fill="var(--ink)">Python + writable local SQLite file (tracker)</text>
         </g>
         <text x="30" y="206" font-size="11" font-weight="700" fill="var(--green)">no licenses beyond what you have</text>
         <!-- optional column -->
@@ -432,7 +692,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
         <li><b>Batch scheduling</b> (Windows Task Scheduler / cron) for the daily job, and a <b>second host/account</b> for the watchdog dead-man&rsquo;s switch.</li>
         <li>An <b>internal SMTP relay</b> for the digest + alerts (no external mail).</li>
         <li>Read access to the data exports + a state directory for de-duplication and heartbeats.</li>
-        <li>For the tracker: a <b>Smartsheet API token in a secret store</b> (never hard-coded).</li>
+        <li>For the tracker: <b>Python 3 and a writable local SQLite file</b>, plus a location for operational CSV/JSON exports and browser snapshots.</li>
       </ul>
     </div>
     <div class="callout honest"><b>Only if you enable the optional language layer</b> do the heavier asks apply &mdash; an on-prem workstation/VM, a signed runtime + a frozen open-weight model, a license review, and the GAMP-5 qualification of a non-deterministic component (see the <a href="../slm_wiki/macro_library/README.md">macro library README</a>). The monitoring core needs none of it; keep the two requests separate so the low-risk piece isn&rsquo;t held up by the AI one.</div>

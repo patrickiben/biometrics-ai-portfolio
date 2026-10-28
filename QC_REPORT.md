@@ -1,0 +1,74 @@
+# Toolkit QC report
+
+Review date: 28 October 2026. Scope: the complete repository, its published-page source, local tools and downloadable artifacts, with additional adversarial review of Open Study Tracker. All exercised datasets and accounts were synthetic. This is software and example-method QC, not regulatory validation or approval for a particular client, study or deployment.
+
+## Changes resulting from the review
+
+- Replaced the proprietary tracker module with the MIT-licensed Open Study Tracker: standalone browser workspace, Python/SQLite import/export, optional individual accounts, and a queued SMTP notification worker. SMTP previews do not send mail.
+- Added a task-based [start guide](GET_STARTED.html) and a portable R launcher for TRIALMON, lifecycle, UAT, risk and hours. Setup docs now distinguish browser demos, local tools, configuration templates and pseudocode, including what each export actually preserves.
+- Standardized light/dark behavior around the existing toolkit tokens and `bp-theme` preference. Older self-contained pages embed the adapter to retain portability; scientific images retain their original colors. The tracker uses the same palette and typography. Generated-copy checks prevent theme drift.
+- Hardened tracker input limits, Unicode/date parsing, monotonic row versions, atomic authorization checks, host validation, local-only HTTP enforcement, and export destination protection. Local draft identity, cross-tab conflicts, canceled saves and sign-out races have browser regressions.
+- Corrected notification cancellation/revival and overlapping-worker races; preserved at-least-once delivery semantics. Successful SMTP acceptance is not proof of inbox receipt, and an in-flight message cannot be recalled.
+- Corrected risk-weight and lifecycle-count validation, hours estimates/reserve handling, fractional shortfalls, a risk-table column mismatch, and UAT traceability/input checks. Existing hours overruns now consume contingency before a new request is called absorbable, and edited contingency survives CSV export. Explicitly supplied missing input paths now fail instead of silently substituting demonstration data.
+- Linux CI exposed a missing libuv development dependency in the current `fs` source package. The launcher and CI now request its bundled libuv build; CI fails immediately if required packages did not install.
+- Excluded local databases, recovery files, environment files and email previews from repository publication, including a second filter in the Pages build.
+- Corrected stale pipeline-document framing/navigation and reviewed downloadable workbook gates and PDF layout. The detailed artifact results are below.
+
+## Executed checks
+
+| Area | Evidence and result |
+| --- | --- |
+| Tracker storage, accounts and notifications | 104 Python tests passed, including invalid/oversized imports, transaction rollback, parallel writes, permissions, session revocation, CSRF, stale saves, host/origin checks, notification concurrency, retries and crash recovery. |
+| Tracker browser workflows | 21 Chromium scenarios passed: standalone/offline edits and export, validation, persistence, cross-tab conflicts, shared sign-in/out and roles, stale edits, cancellation races, and theme switching/persistence. No external email sent. |
+| R app startup | All five apps launched from an unrelated working directory, connected a Shiny websocket, and rendered their first output without JavaScript or Shiny output errors. All five apps also passed theme switching, surface changes and saved preference on reload; risk/hours had additional mobile and KPI contrast checks. Three launcher subprocess tests passed. |
+| R logic and server checks | TRIALMON: 653 expectations in 69 tests; lifecycle, UAT, risk and hours logic/server suites passed, including added invalid-input regressions. |
+| Method-specific examples | C-QTc known-answer suite: 38/38; carryover suite: 21 PASS, two informational cases and zero failures (PKNCA relative error 3.11e-15); TLF drafter self-test passed. These test the examples' stated scope. |
+| Worked bioequivalence study | R 4.6.0 and all 151 package versions matched `study/renv.lock`. Two baseline isolated runs regenerated all 104 tracked study files byte-identically. After the report-theme source fix, the report was regenerated; all numerical outputs remained unchanged. Numerical QC: 40/40 checks, 5,100 values compared; CSR consistency: 10/10, DRAFT_OK. |
+| Validation harness | Isolated baseline produced seven automated green gates, a manual G5, unsigned G7 and stale G10. All 18 seeded cases behaved as predicted: 15 caught, one equivalent mutation, two not applicable, zero survived. G10 remained stale because the package checker changed during the final run; no fresh hash-coverage claim is made. Committed evidence/ledger files were not overwritten to manufacture green results. |
+| Published and freshly built R apps | Read-only checks of all three deployed Shinylive apps passed. A fresh 151 MB site build also passed all three app smoke tests against the new source: launch, output values, theme propagation into R, interactive controls, mobile views and reload. First readiness was 8.4–9.3 seconds, reload 7.8–8.5 seconds on the local QC machine. |
+| Download structure | Seven PDFs parsed cleanly with Poppler; four workbook packages, three Word packages and one presentation package passed structural checks. Structure alone does not establish content correctness or visual quality. |
+| Workbook calculations | 19 synthetic hours/UAT scenarios passed in both artifact-tool and native LibreOffice, with no formula errors. Original sheet order, merges, dropdown validation, widths and formula locations were preserved and renders reviewed. The hours gate rejects invalid estimates and accounts for existing overruns; UAT now labels its limited automated checks and mandatory manual review. |
+| Documents | Re-rendered and inspected the pipeline Word/PDF after correcting stale framing and navigation. Updated the register workbook introduction while preserving its three filters, frozen panes, widths and other cell values. Repaired the UAT one-page PDF's two-page overflow and aligned its gate description with the R implementation. |
+| Package and generator regressions | Eight theme-injection/launcher/publication tests and 11 G2 geometric-statistics tests passed. Package QC reported zero issues; legacy document punctuation warnings remain stylistic. |
+
+The final source-site browser sweep passed **64/64 HTML pages and all six interaction groups**, with both theme directions and saved-preference persistence, sampled text contrast in both palettes, zero desktop/mobile document overflow, no JavaScript runtime errors, no broken local links or missing anchors, and no external runtime requests. Visual review covered 52 light/dark desktop/mobile screenshots across 13 representative pages, with targeted checks after corrections. The launch template is counted separately by the package scanner (65 HTML files including that template).
+
+## Reproduce the checks
+
+Run from a complete checkout. Python tracker tests use only synthetic temporary state; install the optional server dependencies first to exercise shared mode.
+
+```sh
+python3 -m pip install -r open_tracker/requirements-shared.txt
+python3 -m unittest discover -s open_tracker/tests -v
+python3 -m unittest discover -s tools/tests -v
+python3 package_qc.py
+python3 build_pages.py --check
+python3 validation_harness/checks/tests/test_g2_geo.py -v
+```
+
+Browser checks have development-only dependencies; they do not add a runtime download to portable toolkit pages:
+
+```sh
+npm ci --prefix tools/browser-qc
+tools/browser-qc/node_modules/.bin/playwright install chromium
+NODE_PATH="$PWD/tools/browser-qc/node_modules" node .github/pages/smoke/site_qc.cjs
+NODE_PATH="$PWD/tools/browser-qc/node_modules" node open_tracker/tests/browser_qc.cjs
+```
+
+Use `TRACKER_PYTHON` to select a Python environment with Flask installed, and `CHROME_PATH` if using an existing Chromium executable. `QA_OUTPUT_DIR` retains JSON reports and screenshots at a chosen location. Both browser scripts use ephemeral local servers and clean up their test processes. The [package workflow](.github/workflows/package-check.yml) repeats Python, browser and R regression checks; the [study workflow](.github/workflows/study.yml) rebuilds the worked example independently.
+
+For numerical reproduction, follow [study/README.md](study/README.md), and run each module's documented test command. Restore the worked-study environment before running `Rscript study/run_all.R`; the launcher does not substitute for that pinned analysis environment. Harness runs should use disposable copies so synthetic tests do not replace retained study evidence. Inspect the generated ledger statuses: `run_harness.sh` returns a process-success code even when a reported gate is red, manual or unsigned. Its exit status alone is not a validation verdict.
+
+## Practical limits
+
+- No real client data, hosting account, production identity provider or live external SMTP service was configured. Shared tracker use requires a host; live email requires SMTP configuration. Local browser use and notification previews work without those services.
+- The shared tracker is an evaluation tool with individual accounts. It has no MFA/SSO, per-study access partitioning or external penetration-test certification. All accounts can read their service's entire tracker. Separate access boundaries require separate databases/services.
+- Browser persistence is not a backup. Download portable files; use documented export/import paths. UAT's app export covers test scripts, not a complete defect and traceability archive.
+- SAS programs were not executed because no licensed SAS runtime was available. The 221 SAS and 221 R TLF library files remain pseudocode; R parsing is not validation on study data. Local-model examples need a separately obtained runtime/model, and the TLF interpretation model step remains a stub.
+- C-QTc and carryover known-answer tests do not replace rerunning every Monte Carlo experiment for a new design. The carryover comparison against an old full-precision Git baseline was unavailable in the disposable copy and is reported as informational. The worked study's same-author alternative derivation is not independent double programming.
+- The Shinylive build reported host/WebAssembly version warnings for knitr, rmarkdown, tinytex and xfun. All three exported apps passed their runtime smoke tests; the build warnings remain recorded rather than presented as a version-exact analysis environment.
+- A clean package/browser check does not certify every scientific claim, regulatory reference, third-party destination or future dependency version. Reference standards and method assumptions still need review for the intended use.
+- The optional external-link scan encountered HTTP 403 responses at three DOI destinations and two official Flask documentation pages. Those destinations could not be confirmed by that scanner; a 403 is not evidence that a reference is broken. Local navigation is checked independently.
+- The unchanged ADaM specification workbook could not be rendered through artifact-tool; its review was limited to XML/package structure, not full visual verification. The repaired UAT workbook still requires manual retest evidence, failed-test links and signatures.
+
+Retained evidence for this review was produced outside the repository; generated screenshots, test accounts, databases and mail previews are not published as toolkit data.

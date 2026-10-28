@@ -175,3 +175,20 @@ stopifnot("the snapshot ranks the studies as the app does" =
             identical(shown$id, st$id) && identical(shown$overall, as.numeric(st$overall)) && identical(shown$rag, st$rag))
 
 cat("Lifecycle logic: all tests passed\n")
+
+# A wrong explicit client input path must never fall back to the example.
+stopifnot(inherits(try(lifecycle_load(file.path(tempdir(), "missing-explicit-input-20261028")), silent = TRUE), "try-error"))
+
+# Invalid replacement inputs must not be clamped into a reassuring low score.
+for (case in c("zero-plan", "negative-queries", "infinite", "invalid-proportion", "unknown-phase")) {
+  x <- d$studies[1, ]
+  if (case == "zero-plan") x$tlf_planned <- 0
+  if (case == "negative-queries") x$open_queries <- -1
+  if (case == "infinite") x$discrep <- Inf
+  if (case == "invalid-proportion") x$clean_pct <- 70
+  if (case == "unknown-phase") x$phase <- "Unknown"
+  stopifnot(inherits(try(score_study(x, 0), silent = TRUE), "try-error"))
+}
+x <- d; x$deliverables$total[x$deliverables$study_id == d$studies$id[1]] <- 0
+stopifnot(inherits(try(deliverables_pct(x, d$studies$id[1]), silent = TRUE), "try-error"))
+cat("Lifecycle invalid-input guards: passed\n")

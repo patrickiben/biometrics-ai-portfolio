@@ -49,16 +49,33 @@ and dark: green Pass/Closed, red Fail/Critical, amber Blocked/Open/Major, blue I
 Not Run/Minor. Each change shows a short confirmation that says what it means for the test's
 defects and where the gate now stands; on phones it spans the screen.
 
-## Run it
+## Run it locally for evaluation
 
-From the package root (needs R and a few packages):
+Install R 4.1 or later and keep the complete repository checkout. In a terminal at
+the repository root, run:
 
-```r
-install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
-shiny::runApp("uat_irt/shiny")
+```sh
+Rscript launch_app.R uat --install   # first run: install missing packages in a user library
+Rscript launch_app.R uat             # later runs: no package downloads
 ```
 
-Or from inside this folder: `setwd("uat_irt/shiny"); shiny::runApp()`.
+The launcher opens your browser and binds Shiny to `127.0.0.1`. Stop it with
+Ctrl+C. `Rscript launch_app.R --check uat` checks packages without starting a
+server. Packages go into an R-version-specific user cache; set
+`BIOMETRICS_R_LIB` to choose a separate user library. System/site libraries are
+never installation targets. This evaluation environment reports package versions;
+it is not a frozen study environment.
+
+From another working directory, pass the quoted absolute path to the launcher,
+for example `Rscript "/path/to/biometrics-ai-portfolio/launch_app.R" uat`.
+In an R console that is already inside this app folder, use `shiny::runApp()`
+after checking dependencies with the launcher.
+
+Interactive changes are local to the running app session. Keep separate input
+copies for each client/study and save the supported downloads before closing;
+this example does not provide a shared, persistent study database. Its CSV
+download contains test results; it does not save the complete defect and
+traceability state for a later session.
 
 It also runs in the browser with Shinylive (webR): the site's Pages workflow exports this folder to
 `apps/uat_irt/`. Shinylive exports only the app folder, so the folder carries a copy of the three
@@ -117,8 +134,9 @@ Two details matter only in the browser:
    has no test called RAND-04, change `DEFAULT_TEST` in `app.R` to the test you want selected on
    first load, and update `smoke.expect` in [`apps/uat_irt/launch.json`](../../apps/uat_irt/launch.json),
    which pins the first-load numbers the deploy smoke test checks.
-3. Download your results to CSV from the header and drop them into the Excel
-   workbook and the eTMF.
+3. Download test results to CSV from the header for local review. Preserve any
+   defect/traceability changes separately; this prototype does not create a
+   complete, validated UAT record.
 
 The logic is deliberately separated from the UI so you can change *what the gate
 means* (in `R/logic.R`) without touching the app, or change *how it looks* (in
@@ -127,7 +145,7 @@ build the app from scratch.
 
 ## How it maps to the other formats
 
-- **Excel workbook** (`../UAT_IRT_RTSM_Workbook.xlsx`) - the fillable record you sign and file.
+- **Excel workbook** (`../UAT_IRT_RTSM_Workbook.xlsx`) - an example workbook for reviewing proposed UAT records.
 - **Quarto guide / dashboard / slides** (`../quarto/`) - the read/share/present views, built from the same `R/logic.R`.
 
 *The gate packages the evidence; a named human signs UAT off. Nothing here connects to a live IRT system.*

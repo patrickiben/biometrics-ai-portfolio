@@ -1,0 +1,6 @@
+
+# Published artifacts contain binary streams, even when an initial PDF header is text.
+*.pdf binary
+*.docx binary
+*.xlsx binary
+*.pptx binary

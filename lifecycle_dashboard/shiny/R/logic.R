@@ -6,7 +6,9 @@
 # ---------------------------------------------------------------------------
 
 lifecycle_load <- function(dir = NULL) {
-  cand <- c(dir, "data", "../data", "shiny/data", "lifecycle_dashboard/shiny/data")
+  if (!is.null(dir) && (!is.character(dir) || length(dir) != 1 || is.na(dir) || !nzchar(dir)))
+    stop("Supply one explicit input path, or omit it to use the bundled example.")
+  cand <- if (!is.null(dir)) dir else c( "data", "../data", "shiny/data", "lifecycle_dashboard/shiny/data")
   cand <- Filter(Negate(is.null), cand)
   base <- Find(function(d) file.exists(file.path(d, "studies.csv")), cand)
   if (is.null(base)) stop("Cannot find studies.csv (run R/gen_data.R first)")
@@ -52,6 +54,20 @@ tlf_progress <- function(s, locked)
 # Score one study. `overdue` = number of milestones past due (status == "risk"); `locked` = its
 # database lock is done; `days_to_report` = days to its next report due (TLFs or CSR), NA if none.
 score_study <- function(s, overdue, locked = s$days_to_dbl <= 0, days_to_report = NA) {
+  numeric_fields <- c("days_to_dbl", "open_queries", "clean_pct", "sdv_pct", "tlf_planned", "tlf_programmed",
+                      "tlf_qcd", "tlf_finalized", "dbl_prog_pct", "discrep")
+  if (!is.data.frame(s) || nrow(s) != 1 || !all(c("phase", numeric_fields) %in% names(s)) ||
+      any(!vapply(s[numeric_fields], function(x) is.numeric(x) && length(x) == 1 && is.finite(x), logical(1))))
+    stop("Each study needs one row with the documented, finite numeric inputs.")
+  if (!s$phase %in% c("Startup", "Conduct", "DB Lock", "Reporting")) stop("Unknown study lifecycle phase.")
+  if (s$tlf_planned <= 0 || any(unlist(s[c("open_queries", "discrep", "tlf_programmed", "tlf_qcd", "tlf_finalized")]) < 0) ||
+      any(unlist(s[c("tlf_programmed", "tlf_qcd", "tlf_finalized")]) > s$tlf_planned))
+    stop("TLF planned count must be positive; progress counts must lie between zero and plan.")
+  if (any(unlist(s[c("clean_pct", "sdv_pct")]) < 0 | unlist(s[c("clean_pct", "sdv_pct")]) > 1) ||
+      s$dbl_prog_pct < 0 || s$dbl_prog_pct > 100)
+    stop("Cleaning/verification proportions must be 0–1 and double-programming percentage 0–100.")
+  if (!is.numeric(overdue) || length(overdue) != 1 || !is.finite(overdue) || overdue < 0)
+    stop("Overdue milestone count must be finite and nonnegative.")
   dblp <- dbl_pressure(s$phase, s$days_to_dbl); repp <- rep_pressure(s$phase)
   timeline <- clamp(overdue * 22 + timeline_pressure(s, locked, days_to_report) * 45)
   data <- clamp((min(1, s$open_queries / 120) * 45 + (1 - s$clean_pct) * 30 +
@@ -103,6 +119,9 @@ score_portfolio <- function(d) {
 deliverables_pct <- function(d, study_id) {
   x <- d$deliverables[d$deliverables$study_id == study_id, ]
   if (!nrow(x)) return(0)
+  if (!is.numeric(x$done) || !is.numeric(x$total) || any(!is.finite(x$done)) || any(!is.finite(x$total)) ||
+      any(x$done < 0 | x$total < 0 | x$done > x$total) || sum(x$total) <= 0 || !is.finite(sum(x$total)))
+    stop("Deliverables require finite counts, done between zero and total, and a positive total.")
   round(100 * sum(x$done) / sum(x$total))
 }
 

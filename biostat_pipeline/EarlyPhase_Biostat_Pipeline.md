@@ -2,9 +2,9 @@
 
 **Protocol review → CSR draft · every document, dataset, and statistical output, with its owner, standard, and QC**
 
-> **Reference map, not a track record.** This register maps the deliverables of a Phase 1 clinical pharmacology study and how each would be produced and checked. It is not a list of deliverables the author produced (the [home page](../index.html#lifecycle) labels what he led or supported). A short appendix sets out where AI tools could assist under controls; it is a proposal, not an adopted policy.
+> **Reference map, not a track record.** This register maps the deliverables of a Phase 1 clinical pharmacology study and how each would be produced and checked. It is a reusable planning reference for consultants and employees, not a list of completed client deliverables. The [toolkit home page](../index.html) links to runnable examples. A short appendix sets out where AI tools could assist under controls; it is a proposal, not an adopted policy.
 
-> **Scope & how to read this.** 132 deliverables across five stages of a Phase 1 clinical-pharmacology study (e.g., First-in-Human SAD/MAD with PK/PD, NCA + popPK, safety), each with its owner, inputs, outputs, governing standard, and QC method. The at-a-glance tables are below; the **full register with every field is the companion `.xlsx`**, and the **one-page visual is the `.pdf` map**. Standards as of October 2026: CDISC SDTMIG v3.4, ADaMIG v1.3, and Define-XML v2.1 (all FDA-required); ICH E3, E6(R3), E9(R1), and M11; systems designed to meet 21 CFR Part 11; ISPE GAMP 5.
+> **Scope & how to read this.** 132 deliverables across five stages of a Phase 1 clinical-pharmacology study (e.g., First-in-Human SAD/MAD with PK/PD, NCA + popPK, safety), each with its owner, inputs, outputs, governing standard, and QC method. The at-a-glance tables are below; the **full register with every field is the companion `.xlsx`**, and the **one-page visual is the `.pdf` map**. Reference versions used here: CDISC SDTMIG v3.4, ADaMIG v1.3, and Define-XML v2.1; ICH E3, E6(R3), E9(R1), and M11; 21 CFR Part 11; ISPE GAMP 5. Confirm applicable requirements, supported versions and effective dates for the intended study and submission.
 
 ## How the pipeline flows
 

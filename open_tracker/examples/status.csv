@@ -1,0 +1,5 @@
+task_id,title,status,owner,due,progress,notes
+DEMO-ADAM,ADaM specification review,In progress,Programming,2026-11-06,70,Synthetic example: review comments being resolved.
+DEMO-TLF,TLF shell approval,Blocked,Biostatistics,2026-11-09,40,Synthetic example: waiting for review of table shells.
+DEMO-QC,Independent QC plan,Done,QC lead,2026-10-27,100,Synthetic example: plan reviewed and accepted.
+007,Transfer readiness check,At risk,Data management,2026-11-02,25,Synthetic example: next transfer date needs confirmation.

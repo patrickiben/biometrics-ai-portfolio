@@ -51,7 +51,7 @@ When a new out-of-scope ask lands, you do not immediately ask for more. First yo
 
 **Net findable** = (&sum; Planned + Contingency) &minus; &sum; EAC
 
-Under-run slack is the part of your planned effort you are forecast **not** to spend (planned minus estimate-at-completion, floored at zero). Contingency is the management reserve. Add them and you have the effort you can redirect before touching the contract.
+Under-run slack is the positive difference between total planned effort and total estimate-at-completion (EAC). Existing forecast overruns consume contingency first. Net headroom is signed: a negative value is an existing deficit, not available capacity. For example, 850 h planned + 40 h reserve − 900 h EAC = −10 h; a new 45 h ask then leaves a total 55 h gap (10 h existing plus 45 h new).
 
 ## What to do with a new ask, the decision tree
 
@@ -71,7 +71,7 @@ flowchart LR
   RESEQ --> ABS
 ```
 
-The tool automates the first two branches: it sources hours from under-run slack first, then contingency, and reports whatever is left as the change-order residual. Deferring / re-sequencing is a human decision you make before you accept a residual.
+The tool sources a new ask from net under-run slack, then the reserve remaining after existing forecast overruns. It reports the unfunded new ask and any existing deficit separately. Deferring, re-sequencing, and contractual treatment require a human decision; an overrun does not itself establish added scope.
 
 ## Where every number comes from, the source map
 
@@ -147,7 +147,7 @@ kable(lg[, c("deliverable","planned","actual","pct","eac","slack")],
       row.names = FALSE, align = "lrrrrr")
 ```
 
-Under-run slack is per-task `max(0, planned − EAC)`. It sums to the portfolio net slack of `r m$net_slack` h.
+The table shows each task's positive under-run. Available slack uses the **net** portfolio variance, `max(0, sum(planned) − sum(EAC))`, so overruns on other tasks offset apparent savings. In this example that is `r m$net_slack` h.
 
 :::
 

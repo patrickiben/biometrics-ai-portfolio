@@ -4,7 +4,7 @@
 language model** (Ollama / llama.cpp on `127.0.0.1`, fully offline) for the **language layer
 only** — classify, extract, route, draft — and nothing else. **SAS/R owns every number and
 check; the model never produces a count, and a human approves anything consequential.** It is
-the on-device-SLM analogue of the SHEETLINK and TRIALMON companions.
+the on-device-SLM companion to the deterministic TRIALMON monitoring library.
 
 ```
   SAS/R deterministic work (data, checks, counts, reconciliation)   <-- the truth
@@ -29,7 +29,7 @@ the on-device-SLM analogue of the SHEETLINK and TRIALMON companions.
 1. **Offline — nothing leaves the box.** `%slm_init` / `slm_init()` **refuse any non-loopback
    endpoint** (`127.0.0.1` / `localhost` / `[::1]` only) and probe the local server's
    liveness — the in-code "no egress" boundary (the network-destination analogue of
-   SHEETLINK's ops-only allowlist). Run the box with the model service bound to loopback and
+   the tracker's operational-field schema). Run the box with the model service bound to loopback and
    the cable out, and egress is physically impossible.
 2. **Schema-constrained output.** Every call sends a **full JSON Schema** as the grammar
    constraint (Ollama `format`, llama.cpp `json_schema`/GBNF), so the model can only emit

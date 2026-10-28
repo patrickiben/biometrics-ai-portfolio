@@ -5,6 +5,7 @@ format:
   revealjs:
     theme: dark
     embed-resources: true
+    html-math-method: plain
     slide-number: true
     smaller: true
     transition: fade
@@ -36,9 +37,9 @@ When a new out-of-scope ask lands, **find the hours you already have** before as
 **Net findable** = (&sum; Planned + Contingency) &minus; &sum; EAC
 
 - **Under-run slack**: planned effort you are forecast not to spend (planned − EAC, floored at 0)
-- **Contingency**: the management reserve
+- **Contingency**: the reserve remaining after existing forecast overruns
 
-Only the residual becomes a change order.
+Negative net headroom is an existing deficit. The total gap includes that deficit plus any unfunded new ask; review the two separately before a change order.
 
 *Hours / effort only. Synthetic data.*
 

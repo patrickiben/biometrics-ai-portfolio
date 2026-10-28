@@ -16,6 +16,13 @@ A deterministic, **no-AI** macro library that turns your already-validated monit
 
 ## Quick start (SAS)
 
+This is a configuration template, not a one-command runnable demo. SAS requires
+its own licensed runtime; the SAS code has not been executed in this repository.
+The `/opt/` paths, ADaM library, SMTP host, recipients and macro variables below
+are placeholders. Define them in a study-specific configuration before evaluating
+the driver. The Shiny launcher does not configure or run unattended monitoring
+or send mail. Keep synthetic evaluation inputs separate from client inputs.
+
 ```sas
 %include "/opt/trialmon/tm_macros.sas";
 %tm_init(study=CP101, root=/opt/trialmon/cp101, smtp=smtp.internal.example.com,

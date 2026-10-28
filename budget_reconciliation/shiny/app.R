@@ -15,6 +15,7 @@ library(shiny)
 library(bslib)
 library(DT)
 library(ggplot2)
+source(if (file.exists("portfolio_app.R")) "portfolio_app.R" else "../../apps/_shared/portfolio_app.R")
 source("R/logic.R")
 
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || is.na(a)) b else a
@@ -22,8 +23,13 @@ source("R/logic.R")
 seed <- hours_load()
 
 ui <- page_sidebar(
-  title = "Find Hours: Hours Budget Reconciliation",
-  theme = bs_theme(version = 5, bootswatch = "darkly", primary = "#5b8cff"),
+  title = div(class = "d-flex flex-wrap align-items-center gap-3", "Find Hours: Hours Budget Reconciliation", bp_theme_toggle()),
+  theme = bp_theme(),
+  bp_theme_head(),
+  tags$style(HTML(".bslib-page-sidebar>.navbar{background:var(--surface);border-bottom:1px solid var(--line-2)}
+    .bslib-sidebar-layout{--_sidebar-bg:var(--surface);--bslib-sidebar-bg:var(--surface)}
+    html .bslib-value-box{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line-2)}
+    .value-box-title{color:var(--muted)}.value-box-value{color:var(--accent)}")),
   sidebar = sidebar(
     width = 300,
     div(class = "text-warning small fw-bold", "HOURS / EFFORT ONLY, no $, no headcount"),
@@ -49,8 +55,8 @@ ui <- page_sidebar(
     value_box("Planned", textOutput("v_planned"), theme = "secondary"),
     value_box("Spent",   textOutput("v_actual"),  theme = "secondary"),
     value_box("Forecast (EAC)", textOutput("v_eac"), theme = "info"),
-    value_box("Contingency", textOutput("v_cont"), theme = "secondary"),
-    value_box("Net findable", textOutput("v_find"), theme = "success")
+    value_box("Reserve remaining", textOutput("v_cont"), theme = "secondary"),
+    value_box("Net headroom", textOutput("v_find"), theme = "info")
   ),
   layout_columns(
     col_widths = c(7, 5),
@@ -68,7 +74,7 @@ ui <- page_sidebar(
            tags$li(tags$b("Reallocate under-run slack."),
                    " Move hours from tasks forecasting under plan (EAC < planned): already yours."),
            tags$li(tags$b("Draw the contingency buffer."),
-                   " The management reserve exists for this; a decision to record, not a silent move."),
+                   " Existing forecast overruns consume reserve first. Record any further use for the new ask."),
            tags$li(tags$b("Defer / re-sequence lower-priority in-scope work,"),
                    " with the PM's agreement on new dates."),
            tags$li(tags$b("Escalate a change order"),
@@ -88,14 +94,16 @@ server <- function(input, output, session) {
   observeEvent(input$q150, updateNumericInput(session, "need", value = 150))
   observeEvent(input$reset, rv$ledger <- withVar(seed$ledger))
 
-  metrics <- reactive(hours_metrics(rv$ledger, input$contingency %||% seed$contingency))
-  fh <- reactive(find_hours(input$need %||% 0, rv$ledger, input$contingency %||% seed$contingency))
+  metrics <- reactive(tryCatch(hours_metrics(rv$ledger, input$contingency %||% seed$contingency),
+    error = function(e) validate(need(FALSE, conditionMessage(e)))))
+  fh <- reactive(tryCatch(find_hours(input$need %||% 0, rv$ledger, input$contingency %||% seed$contingency),
+    error = function(e) validate(need(FALSE, conditionMessage(e)))))
 
-  output$v_planned <- renderText(sprintf("%d h", metrics()$planned))
-  output$v_actual  <- renderText(sprintf("%d h", metrics()$actual))
-  output$v_eac     <- renderText(sprintf("%d h", metrics()$eac))
-  output$v_cont    <- renderText(sprintf("%d h", metrics()$contingency))
-  output$v_find    <- renderText(sprintf("%d h", metrics()$findable))
+  output$v_planned <- renderText(hours_sprintf("%d h", metrics()$planned))
+  output$v_actual  <- renderText(hours_sprintf("%d h", metrics()$actual))
+  output$v_eac     <- renderText(hours_sprintf("%d h", metrics()$eac))
+  output$v_cont    <- renderText(hours_sprintf("%d h", metrics()$remaining_contingency))
+  output$v_find    <- renderText(hours_sprintf("%d h", metrics()$findable))
 
   output$ledger <- renderDT({
     isolate({
@@ -106,51 +114,63 @@ server <- function(input, output, session) {
                 options = list(dom = "t", paging = FALSE, ordering = FALSE,
                                scrollY = "300px", scrollCollapse = TRUE)) |>
         formatStyle("Variance", color = styleInterval(c(-0.5, 0.5),
-                    c("#e8657a", "#94a1c0", "#43c47d")))
+                    c("var(--red)", "var(--muted)", "var(--green)")))
     })
   }, server = TRUE)
 
   proxy <- dataTableProxy("ledger")
   observeEvent(input$ledger_cell_edit, {
     info <- input$ledger_cell_edit
+    # Treat browser messages as untrusted, including editable table indices.
+    if (!is.list(info) || !is.numeric(info$col) || length(info$col) != 1 ||
+        !is.finite(info$col) || !info$col %in% 1:4 || !is.numeric(info$row) ||
+        length(info$row) != 1 || !is.finite(info$row) || info$row != as.integer(info$row) ||
+        info$row < 1 || info$row > nrow(rv$ledger) || length(info$value) != 1) return()
     j <- info$col + 1L                      # rownames=FALSE -> 0-based data cols
     num <- suppressWarnings(as.numeric(info$value))
-    if (j %in% 2:5 && !is.na(num)) {
-      rv$ledger[info$row, j] <- num
-      rv$ledger$variance <- rv$ledger$planned - rv$ledger$eac
-      d <- rv$ledger; names(d) <- c("Deliverable","Planned","Actual","% done","EAC","Variance")
-      replaceData(proxy, d, resetPaging = FALSE, rownames = FALSE)
-    }
+    candidate <- rv$ledger
+    candidate[info$row, j] <- num
+    error <- tryCatch({ hours_validate(candidate, seed$contingency); NULL }, error = conditionMessage)
+    if (is.null(error)) {
+      rv$ledger <- withVar(candidate)
+    } else showNotification(error, type = "error", duration = 8)
+    d <- rv$ledger; names(d) <- c("Deliverable","Planned","Actual","% done","EAC","Variance")
+    replaceData(proxy, d, resetPaging = FALSE, rownames = FALSE)
   })
 
   output$verdict <- renderUI({
     f <- fh(); m <- f$metrics
     src <- tags$div(class = "mb-2",
       tags$div(class = "d-flex justify-content-between border-bottom pb-1",
-               tags$b(sprintf("Need: %d h", f$need))),
+               tags$b(hours_sprintf("Need: %d h", f$need))),
       tags$div(class = "d-flex justify-content-between",
-               tags$span("1 · Under-run slack"), tags$span(class = "text-success", sprintf("−%d h", f$from_slack))),
+               tags$span("1 · Under-run slack"), tags$span(class = "text-success", hours_sprintf("−%d h", f$from_slack))),
       tags$div(class = "d-flex justify-content-between",
-               tags$span("2 · Contingency"), tags$span(class = "text-success", sprintf("−%d h", f$from_cont))),
+               tags$span("2 · Contingency"), tags$span(class = "text-success", hours_sprintf("−%d h", f$from_cont))),
       tags$div(class = "d-flex justify-content-between",
-               tags$span("3 · Shortfall"),
+               tags$span("3 · Added scope unfunded"), tags$span(hours_sprintf("%d h", f$request_shortfall))),
+      tags$div(class = "d-flex justify-content-between",
+               tags$span("Existing forecast deficit"), tags$span(hours_sprintf("%d h", f$baseline_deficit))),
+      tags$div(class = "d-flex justify-content-between",
+               tags$span("Total gap"),
                tags$span(class = if (f$shortfall > 0) "text-danger" else "text-success",
-                         sprintf("%d h", f$shortfall))))
+                         hours_sprintf("%d h", f$shortfall))))
     if (f$absorbable) {
       box <- tags$div(class = "alert alert-success",
         tags$div(class = "h5", "Absorbable internally"),
-        sprintf("Sourced %d h from under-run slack and %d h from contingency (%d h contingency left). Record the reallocation; no change order needed.",
+        hours_sprintf("Sourced %d h from under-run slack and %d h from contingency (%d h contingency left). Record the reallocation; no change order needed.",
                 f$from_slack, f$from_cont, f$contingency_left))
     } else {
       box <- tags$div(class = "alert alert-danger",
-        tags$div(class = "h5", sprintf("Change order needed: %d h", f$shortfall)),
-        sprintf("Net headroom (%d h) covers %d h; the remaining %d h is genuine added scope. Defer lower-priority work or raise a change order: do not absorb it as a silent over-run.",
-                m$findable, f$need - f$shortfall, f$shortfall))
+        tags$div(class = "h5", f$verdict),
+        hours_sprintf("Net headroom is %d h. The new ask uses %d h internally and leaves %d h unfunded; the existing forecast deficit is %d h. Review reallocation, re-sequencing, or a change order. Existing overruns need a separate decision and do not establish added scope.",
+                m$findable, f$from_slack + f$from_cont, f$request_shortfall, f$baseline_deficit))
     }
     tagList(src, box)
   })
 
   output$plot <- renderPlot({
+    k <- bp_palette(input$bp_theme)
     d <- rv$ledger
     dd <- rbind(
       data.frame(deliverable = d$deliverable, hours = d$planned, kind = "Planned"),
@@ -158,23 +178,17 @@ server <- function(input, output, session) {
     dd$deliverable <- factor(dd$deliverable, levels = rev(d$deliverable))
     ggplot(dd, aes(hours, deliverable, fill = kind)) +
       geom_col(position = "dodge", width = 0.7) +
-      scale_fill_manual(values = c("Planned" = "#5b8cff", "Forecast (EAC)" = "#3fd0c9")) +
+      scale_fill_manual(values = c("Planned" = k$blue, "Forecast (EAC)" = k$accent)) +
       labs(x = "Hours", y = NULL, fill = NULL) +
-      theme_minimal(base_size = 12) +
+      bp_ggplot_theme(k$mode, base_size = 12) +
       theme(legend.position = "top",
-            panel.grid.major.y = element_blank(),
-            plot.background = element_rect(fill = "#222630", colour = NA),
-            panel.background = element_rect(fill = "#222630", colour = NA),
-            text = element_text(colour = "#e9edf7"),
-            axis.text = element_text(colour = "#c5cee4"),
-            panel.grid.major.x = element_line(colour = "#3a4157"))
+            panel.grid.major.y = element_blank())
   })
 
   output$dl_ledger <- downloadHandler(
     filename = function() "effort_ledger.csv",
     content = function(file) {
-      d <- rv$ledger
-      names(d) <- c("Deliverable","PlannedHours","ActualToDate","PctComplete","EAC","Variance")
+      d <- hours_export(rv$ledger, input$contingency %||% seed$contingency)
       utils::write.csv(d, file, row.names = FALSE)
     })
   output$dl_co <- downloadHandler(

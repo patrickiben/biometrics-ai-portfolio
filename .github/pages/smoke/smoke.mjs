@@ -33,6 +33,7 @@
 // Options: --apps a,b   only these apps          --shots DIR    screenshots (launch page and app)
 //          --report F   JSON report              --max-fcp MS   default 3000
 //          --no-reload  skip the reload check    --port N       default: a free port
+//          --base-url URL  test an existing published site (synthetic browser interactions only)
 //          --fault 'REGEX=MODE'   answer matching requests with 404, drop the connection (drop) or
 //                                 never answer (hang); for checking the error states locally
 //          --expect-problem KIND  pass only if the launch page reports this problem instead
@@ -60,6 +61,8 @@ const FAULT = opt("--fault", "");
 const EXPECT_PROBLEM = opt("--expect-problem", "");
 const SPECS = opt("--specs", "apps");
 const LOG_REQUESTS = opt("--log-requests", "");
+const REMOTE_BASE = opt("--base-url", "").replace(/\/$/, "");
+if (REMOTE_BASE && !/^https:\/\//.test(REMOTE_BASE)) throw new Error("--base-url must use HTTPS");
 const requestLog = [];
 const TAB_TIMEOUT_S = 60;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -114,7 +117,7 @@ const server = http.createServer((req, res) => {
   });
 });
 await new Promise((r) => server.listen(Number(opt("--port", "0")), "127.0.0.1", r));
-const BASE = `http://127.0.0.1:${server.address().port}${PREFIX}`;
+const BASE = REMOTE_BASE || `http://127.0.0.1:${server.address().port}${PREFIX}`;
 say(`serving ${SITE} at ${BASE}/`);
 if (SHOTS) fs.mkdirSync(SHOTS, { recursive: true });
 
@@ -373,9 +376,11 @@ async function checkApp(spec) {
            ...(process.env.CI ? ["--no-sandbox"] : [])],
   });
   const consoleErrors = [];
+  const remoteMissing = [];
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1440, height: 900 });
+    page.on("response", (response) => { if (REMOTE_BASE && response.status() === 404 && response.url().startsWith(BASE + "/")) remoteMissing.push(response.url()); });
     page.on("pageerror", (e) => consoleErrors.push(`pageerror: ${String(e && e.message || e).slice(0, 300)}`));
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text().slice(0, 300)); });
     const url = `${BASE}/apps/${spec.name}/`;
@@ -386,8 +391,11 @@ async function checkApp(spec) {
     say(`${spec.name}: open ${url}`);
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
 
-    // the launch page, before any R
-    await sleep(400);
+    // Wait for a paint entry, rather than assuming Chrome has recorded one within 400 ms.
+    await page.bringToFront();
+    await page.waitForFunction(() => performance.getEntriesByName("first-contentful-paint").length > 0, { timeout: MAX_FCP }).catch(() => {});
+    // the launch page, before waiting for R
+    await sleep(100);
     const intro = await page.evaluate(() => ({
       title: (document.getElementById("launch-title") || {}).textContent || "",
       tries: document.querySelectorAll(".launch-try li").length,
@@ -408,7 +416,7 @@ async function checkApp(spec) {
     const st = await waitReady(page, smoke.timeout_s || 150, spec.name);
     res.timings.ready_s = st && st.times && st.times.ready;
     res.stage = st && st.stage; res.problem = st && st.problem;
-    res.served_mb = +(served.bytes / 1e6).toFixed(1);
+    res.served_mb = REMOTE_BASE ? null : +(served.bytes / 1e6).toFixed(1);
     if (EXPECT_PROBLEM) {
       if (st && st.problem === EXPECT_PROBLEM) say(`${spec.name}: reported "${EXPECT_PROBLEM}" as expected`);
       else fail(`expected the launch page to report "${EXPECT_PROBLEM}", got ${JSON.stringify(st && { stage: st.stage, problem: st.problem })}`);
@@ -545,7 +553,7 @@ async function checkApp(spec) {
         }
       }
     }
-    const missing = [...new Set(served.notFound.slice(notFound0))];
+    const missing = [...new Set([...served.notFound.slice(notFound0), ...remoteMissing])];
     if (missing.length && !EXPECT_PROBLEM) fail(`the site answered 404 for ${missing.slice(0, 8).join(", ")}${missing.length > 8 ? ` and ${missing.length - 8} more` : ""}`);
     // an uncaught error on the page, or a console error about one of the site's own files
     const own = consoleErrors.filter((m) => m.startsWith("pageerror:") || m.includes(PREFIX + "/"));

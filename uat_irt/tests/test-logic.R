@@ -29,6 +29,9 @@ stopifnot(
 t2  <- d$tests;   t2$Status <- "Pass"
 df2 <- d$defects; df2$Status[df2$Severity %in% c("Critical", "Major")] <- "Closed"
 tr2 <- d$trace;   tr2$Covered <- "Y"
+# This fixture assumes the lead explicitly added the missing requirement to
+# an existing test's scope; a bare Y without a test must no longer pass.
+tr2$CoveringTests[!nzchar(tr2$CoveringTests) | is.na(tr2$CoveringTests)] <- "SUP-01"
 g2  <- uat_gate(t2, df2, tr2)
 stopifnot("fixing all criteria -> READY" = g2$go,
           "the open minor defect is named for the signer" = identical(g2$minor_open, "DEF-04"))
@@ -140,3 +143,21 @@ stopifnot(
 )
 
 cat("UAT logic: all tests passed\n")
+
+# A wrong explicit client input path must never fall back to the example.
+stopifnot(inherits(try(uat_load(file.path(tempdir(), "missing-explicit-input-20261028")), silent = TRUE), "try-error"))
+
+# Adversarial replacement registers: do not report readiness from flags alone.
+bad_trace <- tr2; bad_trace$CoveringTests <- "MISSING-TEST"
+bad_gate <- uat_gate(t2, df2, bad_trace)
+stopifnot(!bad_gate$go, bad_gate$trace_gap == nrow(bad_trace), uat_summary(t2, df2, bad_trace)$cov == 0)
+bad_trace$CoveringTests <- ""
+stopifnot(!uat_gate(t2, df2, bad_trace)$go)
+repair <- uat_cover_gap(t2, bad_trace, bad_trace$RequirementID[1])
+stopifnot(!is.na(repair$test_id), repair$tests$Status[repair$tests$TestID == repair$test_id] == "Not Run")
+stopifnot(inherits(try(uat_gate(t2[FALSE, ], df2[FALSE, ], tr2[FALSE, ]), silent = TRUE), "try-error"))
+bad_tests <- t2; bad_tests$TestID[2] <- bad_tests$TestID[1]
+stopifnot(inherits(try(uat_gate(bad_tests, df2, tr2), silent = TRUE), "try-error"))
+bad_defects <- df2; bad_defects$Status[1] <- "Resolved-ish"
+stopifnot(inherits(try(uat_gate(t2, bad_defects, tr2), silent = TRUE), "try-error"))
+cat("UAT replacement-register integrity: missing coverage, empty data and invalid keys rejected\n")

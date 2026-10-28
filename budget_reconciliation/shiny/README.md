@@ -5,16 +5,31 @@ ledger, type an out-of-scope ask, and watch net-findable and the
 absorbable-vs-change-order verdict recompute live. **Hours / effort only**, no
 dollars, rates, ROI, or headcount. Synthetic data.
 
-## Run it
+## Run it locally for evaluation
 
-From the package root:
+Install R 4.1 or later and keep the complete repository checkout. In a terminal at
+the repository root, run:
 
-```r
-install.packages(c("shiny", "bslib", "DT", "ggplot2"))   # once
-shiny::runApp("budget_reconciliation/shiny")
+```sh
+Rscript launch_app.R hours --install   # first run: install missing packages in a user library
+Rscript launch_app.R hours             # later runs: no package downloads
 ```
 
-Or from inside this folder: `setwd("budget_reconciliation/shiny"); shiny::runApp()`.
+The launcher opens your browser and binds Shiny to `127.0.0.1`. Stop it with
+Ctrl+C. `Rscript launch_app.R --check hours` checks packages without starting a
+server. Packages go into an R-version-specific user cache; set
+`BIOMETRICS_R_LIB` to choose a separate user library. System/site libraries are
+never installation targets. This evaluation environment reports package versions;
+it is not a frozen study environment.
+
+From another working directory, pass the quoted absolute path to the launcher,
+for example `Rscript "/path/to/biometrics-ai-portfolio/launch_app.R" hours`.
+In an R console that is already inside this app folder, use `shiny::runApp()`
+after checking dependencies with the launcher.
+
+Interactive changes are local to the running app session. Keep separate input
+copies for each client/study and save the supported downloads before closing;
+this example does not provide a shared, persistent study database.
 
 ## What's here
 

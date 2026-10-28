@@ -1,11 +1,20 @@
 # Trial biostatistics toolkit
 
-Runnable SAS and R templates, dashboards and checks for the work a **biostatistics consultant** does for a
-client across an **early-phase clinical-pharmacology trial**, from the protocol's statistical sections to
-CSR text. Everything runs from static files or in local R, and the three R apps also run in the browser,
-so a client's data never has to leave your machine. Open [`index.html`](index.html) (or
-[`START_HERE.html`](START_HERE.html) for the full one-page index). The example studies (CP-101 to CP-108)
-are **synthetic**; there is no PHI and no participant-level clinical data.
+Open-source tools, templates and worked examples for **biostatistics consultants and employees** across study planning, programming, operations and reporting. The worked examples focus on **early-phase clinical pharmacology**; each tool can be adapted where its methods and input contract fit the study.
+
+**[Choose your task and get started](GET_STARTED.html)** · [Home](index.html) · [Full library](START_HERE.html)
+
+Try the browser demos with no installation. A shared R launcher starts the five local Shiny apps; the tracker also has a standalone browser workspace and a Python CLI. Shared tracker accounts and email are optional self-hosted additions. **This is a general-purpose toolkit, not a deployment for a specific client.** Examples (CP-101 to CP-108) are synthetic. Study use still needs input mapping, method/threshold review and your organization's verification process.
+
+```sh
+# From a downloaded or cloned checkout; R is required for the Shiny apps.
+Rscript launch_app.R --list
+Rscript launch_app.R --check
+Rscript launch_app.R trialmon --install
+# Also: lifecycle, uat, risk, hours. --install explicitly permits missing-package downloads.
+```
+
+The launcher finds the checkout even from another working directory, installs only with `--install`, and uses a user-specific library. See [the setup guide](GET_STARTED.html) for module inputs, persistence and testing. See [QC_REPORT.md](QC_REPORT.md) for the scope and limits of the October 2026 QC pass.
 
 **Site:** <https://patrickiben.github.io/biometrics-ai-portfolio/>
 
@@ -45,8 +54,9 @@ are **synthetic**; there is no PHI and no participant-level clinical data.
   [anomaly](https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html) · [source](https://github.com/patrickiben/ecrf-pipeline-apps)
 
 **Operational tooling (no AI required)**
-- **Deterministic SAS/R monitoring + coverage for leave and handoffs:** scheduled, reproducible checks that
-  detect, package and page people; zero PHI egress.
+- **Deterministic SAS/R monitoring + coverage for leave and handoffs:** configuration templates for scheduled
+  checks, evidence packets and notifications. Paths, schedules and recipients require local configuration;
+  the templates do not detect sensitive content or enforce an organization's data-sharing policy.
   → [`sas_r_automation/`](sas_r_automation/SAS_R_Trial_Monitoring_Automation.html) · [`sasr_monitoring_wiki/`](sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html)
 - **Coverage and continuity toolkit:** the leave playbook generalized to five scenarios (planned leave,
   unplanned absence, role handoff or departure, a new owner taking over, bus-factor review), plus an interactive
@@ -55,11 +65,16 @@ are **synthetic**; there is no PHI and no participant-level clinical data.
   checklist per job, and a printable or downloadable handoff packet. Data stays in the browser (localStorage +
   JSON/CSV export); no network requests; ships with a clearly fictional example.
   → [`sasr_onleave_wiki/`](sasr_onleave_wiki/Continuity_Toolkit.html) · [playbook](sasr_onleave_wiki/On_Leave_Coverage_Playbook.html) · [CSV template](sasr_onleave_wiki/continuity_jobs_template.csv)
-- **Self-updating Smartsheet trackers:** Smartsheet kept current from scheduled SAS/R; code owns the data and
-  Smartsheet owns the alerts. → [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html)
+- **Open Study Tracker:** an MIT-licensed deliverables tracker with local SQLite storage, keyed CSV/JSON
+  imports, dry runs and change history. Use the offline browser workspace to review and edit status, then
+  exchange files with scheduled R/SAS jobs. The offline version needs no account or API key. Optional
+  self-hosted shared mode adds individual logins, viewer/editor permissions, conflicting-edit protection,
+  and queued SMTP alerts with retries and daily exception digests.
+  → [`open_tracker/`](open_tracker/index.html) · [file workflow](open_tracker/README.md) · [shared accounts and email](open_tracker/SHARED.md)
 - **IRT / RTSM user acceptance testing:** UAT of the randomization and supply system from the biostatistics
-  lens: a test-script library, traceability matrix, defect log, and an execution tracker with a live go-live
-  sign-off gate. → **[fillable Excel workbook](uat_irt/UAT_IRT_RTSM_Workbook.xlsx)** · [`uat_irt/`](uat_irt/quarto/uat-guide.html)
+  lens: a test-script library, traceability matrix, defect log, and execution checks for human review.
+  The workbook and Shiny app have separate checks; neither authorizes go-live.
+  → **[fillable Excel workbook](uat_irt/UAT_IRT_RTSM_Workbook.xlsx)** · [`uat_irt/`](uat_irt/quarto/uat-guide.html)
 - **Hours "find-hours" reconciliation:** where the hours come from when out-of-scope work lands: a
   planned-vs-actual-vs-EAC effort reconciliation + decision tree (slack → contingency → defer → change order),
   with an interactive worksheet. Hours and effort only, no dollars.
@@ -105,8 +120,8 @@ are **synthetic**; there is no PHI and no participant-level clinical data.
 
 ## Design
 
-The original pages (home, Operations, Biostatistics, the full library and the module pages) keep their own
-look: `site.css`, `site.js`, `_mc-topbar.html` and `_quarto-mc.scss`. The newer pages (the worked study, the
+The original pages (home, Operations, Biostatistics, the full library and the module pages) keep their
+layouts and use a shared light/dark adapter with `site.css`, `site.js`, `_mc-topbar.html` and `_quarto-mc.scss`. The newer pages (the worked study, the
 method studies, the harness page and the app launch pages) are built by `build_pages.py` from
 `assets/theme/tokens.css` into [`assets/`](assets/theme/tokens.css) (`toolkit.css`, `ui.js`) and `_partials/`;
 `python3 build_pages.py --check` confirms they are current.
@@ -120,6 +135,8 @@ published unless every app passes.
 Run `python3 package_qc.py` from a complete checkout to check navigation, local links, retired content,
 terminology and documented counts. GitHub Actions runs it, `python3 build_pages.py --check` and the worked
 study (`study/run_all.R`) on pushes and pull requests. These check the package, not the statistics.
+
+Reusable launcher checks live in `tools/tests/`. Theme sources are `assets/theme/tokens.css` and `assets/legacy-theme.css/js`; run `python3 build_pages.py` after changing them or re-rendering a legacy page. The build inlines the theme into portable pages, and `--check` detects drift.
 
 ## License
 
