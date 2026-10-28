@@ -212,7 +212,9 @@ jobs:
         env:
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
           QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-shiny-qc
-        run: node toolkit_launcher/tests/shiny_browser_qc.cjs
+        # CI installed these packages in its user library above. Copy that one
+        # library into the test project; production runtime isolation stays intact.
+        run: TOOLKIT_QC_R_LIBRARY="$R_LIBS_USER" node toolkit_launcher/tests/shiny_browser_qc.cjs
       - uses: actions/upload-artifact@v7
         if: always()
         with:
