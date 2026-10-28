@@ -273,12 +273,15 @@ jobs:
             any::broom
             any::broom.mixed
           dependencies: '"hard"'
-      - name: Check independent methods, edge cases and all source programs
-        run: |
-          Rscript toolkit_launcher/tests/test_analysis_core.R
-          Rscript tests/test_analysis_models.R
-          Rscript tests/test_analysis_monitor.R
-          Rscript tests/test_analysis_renderer.R
+      # Single-command steps preserve each exit code under Windows PowerShell.
+      - name: Check all core source programs and edge cases
+        run: Rscript toolkit_launcher/tests/test_analysis_core.R
+      - name: Check independent model methods and adversarial cases
+        run: Rscript tests/test_analysis_models.R
+      - name: Check monitoring boundaries and malformed inputs
+        run: Rscript tests/test_analysis_monitor.R
+      - name: Check complete rendering and failure handling
+        run: Rscript tests/test_analysis_renderer.R
       - name: Check every input contract and all generated R-backed analyses
         env:
           ANALYSIS_CONTRACT_REPORT: ${{ runner.temp }}/analysis-contracts.json

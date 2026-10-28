@@ -77,8 +77,10 @@ def token(output: str, key: str, fallback="?") -> str:
 
 
 def twin_checks(root: Path):
-    sas = [p for p in (root / "sas_tlf_pseudocode").rglob("*.sas") if not p.name.startswith("00_setup")]
-    r = [p for p in (root / "r_tlf_pseudocode").rglob("*.R") if not p.name.startswith("00_setup")]
+    # Only design-folder programs have a language twin; shared root helpers
+    # (including the model implementation) are checked by parse/method gates.
+    sas = list((root / "sas_tlf_pseudocode").glob("*/*.sas"))
+    r = list((root / "r_tlf_pseudocode").glob("*/*.R"))
     def number(path):
         m = re.search(r'num\s*=\s*"?([0-9]+(?:\.[0-9]+)+)', read(path))
         return m.group(1) if m else None
