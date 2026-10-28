@@ -170,7 +170,9 @@ LINK_BOX = re.compile(r'<(div|ul|p|nav)\b[^>]*class="[^"]*\b(links|go|dl|actions
 for f in page_files:
     t = strip_blocks(read(f))
     for m in LINK_BOX.finditer(t):
-        if '<a ' not in m.group(3) and '<a\n' not in m.group(3):
+        # Interactive settings use action buttons as well as navigation links.
+        action_button = m.group(2).lower() == 'actions' and re.search(r'<button\b', m.group(3), re.I)
+        if '<a ' not in m.group(3) and '<a\n' not in m.group(3) and not action_button:
             add('Empty link container', f'{rel(f)}: <{m.group(1)} class="{m.group(2)}"> holds no link')
     for m in re.finditer(r'<a\b([^>]*)>(.*?)</a>', t, re.S | re.I):
         attrs, inner = m.group(1), m.group(2)

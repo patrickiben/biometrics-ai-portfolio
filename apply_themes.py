@@ -54,7 +54,7 @@ def theme_updates(root, generated=None):
         if not path.is_file():
             continue
         original = read(name)
-        if name == 'open_tracker/index.html':
+        if '<style id="tracker-theme-tokens">' in original:
             result = re.sub(r'(<style id="tracker-theme-tokens">).*?(</style>)', lambda m: m[1] + '\n' + tokens + '\n' + m[2], original, flags=re.S)
         else:
             page = MARKER.sub('', original)

@@ -9,7 +9,7 @@ RUN python -m pip install --no-cache-dir -r /app/open_tracker/requirements-share
 
 # Explicit source list: private workspaces and local files cannot enter the image.
 COPY LICENSE /app/LICENSE
-COPY open_tracker/tracker.py open_tracker/server.py open_tracker/notifications.py open_tracker/manage.py open_tracker/index.html /app/open_tracker/
+COPY open_tracker/tracker.py open_tracker/server.py open_tracker/notifications.py open_tracker/manage.py open_tracker/web_setup.py open_tracker/admin.py open_tracker/admin.html open_tracker/index.html /app/open_tracker/
 COPY open_tracker/examples/status.csv /app/open_tracker/examples/status.csv
 COPY open_tracker/deploy/healthcheck.py /app/open_tracker/deploy/healthcheck.py
 USER 10001:10001
@@ -17,4 +17,4 @@ EXPOSE 8080
 HEALTHCHECK --interval=15s --timeout=5s --start-period=20s --retries=3 \
     CMD ["python", "/app/open_tracker/deploy/healthcheck.py"]
 ENTRYPOINT ["python", "/app/open_tracker/manage.py", "--workspace", "/data"]
-CMD ["start", "--host", "0.0.0.0"]
+CMD ["web", "--host", "0.0.0.0"]

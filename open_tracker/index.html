@@ -136,7 +136,7 @@ th{background:var(--surface-2);border-color:var(--line)}td{border-color:var(--li
 <section id="login-panel" class="login-panel" aria-labelledby="login-title" hidden><h2 id="login-title">Sign in to your team tracker</h2><p>Use the account created by your tracker administrator.</p><form id="login-form"><div class="field"><label for="login-username">Username</label><input id="login-username" name="username" required autocomplete="username" maxlength="80"></div><div class="field"><label for="login-password">Password</label><input id="login-password" name="password" type="password" required autocomplete="current-password"></div><p id="login-error" class="error-text" role="alert"></p><button class="btn primary" id="login-submit" type="submit">Sign in</button></form></section>
 <div id="workspace-shell">
 <div class="boundary" id="workspace-note"><strong>This is a browser workspace.</strong> Edits are saved on this browser only. Export JSON and import it with the Python CLI to update SQLite. This page does not connect to a server or send notifications.</div>
-<div class="session-controls" id="session-controls" hidden><span id="session-user" class="shared-note"></span><button class="btn" id="refresh-shared">Refresh tracker</button><button class="btn quiet" id="logout">Sign out</button></div>
+<div class="session-controls" id="session-controls" hidden><span id="session-user" class="shared-note"></span><button class="btn" id="refresh-shared">Refresh tracker</button><a class="btn" id="admin-link" href="SETUP.html" hidden>Workspace settings</a><button class="btn quiet" id="logout">Sign out</button></div>
 <div class="sync"><span id="save-state" role="status">Loading workspace…</span><span id="snapshot-state"></span></div>
 <div class="stats" aria-label="Deliverable filters">
 <button class="stat" id="stat-all" data-view="all" aria-pressed="true"><span class="label">All deliverables</span><span class="value" id="count-all">0</span><span class="hint">in this workspace</span></button>
@@ -153,7 +153,7 @@ th{background:var(--surface-2);border-color:var(--line)}td{border-color:var(--li
 </section>
 <div class="lower">
 <section class="panel" aria-labelledby="history-title"><h2 id="history-title">Recent changes</h2><p>Snapshot history and edits in this browser. SQLite records its own changes when you import.</p><ol id="history" class="audit-list"></ol></section>
-<section class="panel" aria-labelledby="flow-title"><h2 id="flow-title">Your pipeline. Your files.</h2><p>Run scheduled imports with the Python standard library. SQLite stores the tracker and change history; this portable page is the review workspace.</p><div class="flow" aria-label="SAS or R to CSV to SQLite to browser"><span>SAS / R</span>→<span>CSV / JSON</span>→<span>SQLite</span>→<span>This page</span></div><p><a href="README.md">Read the quick start and scheduling guide →</a><br><a href="SHARED.md">Guided setup for shared accounts and email →</a></p><p class="mini-note">The packaged example is synthetic. Use operational data only; field checks do not detect sensitive content. This is an operations prototype, not a validated clinical system.</p><button id="reset" class="btn quiet">Restore embedded snapshot</button></section>
+<section class="panel" aria-labelledby="flow-title"><h2 id="flow-title">Your pipeline. Your files.</h2><p>Run scheduled imports with the Python standard library. SQLite stores the tracker and change history; this portable page is the review workspace.</p><div class="flow" aria-label="SAS or R to CSV to SQLite to browser"><span>SAS / R</span>→<span>CSV / JSON</span>→<span>SQLite</span>→<span>This page</span></div><p><a href="README.md">Read the quick start and scheduling guide →</a><br><a href="SETUP.html">Point-and-click setup for accounts and email →</a></p><p class="mini-note">The packaged example is synthetic. Use operational data only; field checks do not detect sensitive content. This is an operations prototype, not a validated clinical system.</p><button id="reset" class="btn quiet">Restore embedded snapshot</button></section>
 </div>
 <footer><span>Open Study Tracker · MIT licensed · No account or service required</span><span>Export a copy before clearing browser data.</span></footer>
 </div>
@@ -298,13 +298,13 @@ th{background:var(--surface-2);border-color:var(--line)}td{border-color:var(--li
   function clearShared(){
     sharedEpoch++;
     snapshot=null;user=null;csrfToken='';editing=null;editingVersion=null;lastFetch=null;
-    $('workspace-shell').hidden=true;$('login-panel').hidden=false;$('session-controls').hidden=true;$('message').hidden=true;
+    $('workspace-shell').hidden=true;$('login-panel').hidden=false;$('session-controls').hidden=true;$('admin-link').hidden=true;$('message').hidden=true;
     $('rows').replaceChildren();$('history').replaceChildren();for(const name of ['all','attention','overdue','done'])$('count-'+name).textContent='0';
     $('save-state').textContent='Sign in to load your tracker';$('snapshot-state').textContent='';$('session-user').textContent='';$('row-count').textContent='';
     $('search').value='';$('status-filter').value='';view='all';$('edit-form').reset();$('edit-error').textContent='';if($('editor').open)$('editor').close();
   }
   function showSharedStatus(message){
-    $('session-user').textContent=`${user.username} · ${user.role}`;$('session-controls').hidden=false;
+    $('session-user').textContent=`${user.username} · ${user.role}`;$('session-controls').hidden=false;$('admin-link').hidden=!(user.role==='admin'&&user.admin_ui===true);if(!$('admin-link').hidden)$('admin-link').href='/admin';
     $('save-state').textContent=`${message} · Refreshed ${new Date(lastFetch).toLocaleTimeString()}`;
   }
   async function loadShared(){

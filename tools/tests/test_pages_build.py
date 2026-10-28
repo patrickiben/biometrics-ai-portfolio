@@ -23,7 +23,9 @@ class PagesBuildTests(unittest.TestCase):
                  "demo/shiny/preview.eml", "demo/shiny/data/demo.csv",
                  "config.json", "demo/shiny/config.json", "demo/shiny/CONFIG.JSON",
                  ".open-study-tracker/anything.txt", "demo/shiny/.open-study-tracker/secrets.txt",
-                 "mail-preview/index.html", "demo/shiny/mail-preview/notice.txt"]
+                 "mail-preview/index.html", "demo/shiny/mail-preview/notice.txt",
+                 "demo/shiny/.desktop-state.json", ".desktop.lock", "launcher.log",
+                 "demo/shiny/LAUNCHER.LOG"]
         code = "files <- c(" + ",".join(map(json.dumps, files)) + ")\n" + "\n".join(statements)
         # Reuse the app staging selection from the build, with the filtered list.
         selection = next(line.strip() for line in source.splitlines() if line.strip().startswith("src <- files[startsWith"))

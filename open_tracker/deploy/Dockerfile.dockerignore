@@ -6,6 +6,9 @@
 !open_tracker/server.py
 !open_tracker/notifications.py
 !open_tracker/manage.py
+!open_tracker/web_setup.py
+!open_tracker/admin.py
+!open_tracker/admin.html
 !open_tracker/index.html
 !open_tracker/requirements-shared.txt
 !open_tracker/examples/
