@@ -2,6 +2,16 @@
 
 Review date: 28 October 2026. Scope: the complete repository, its published-page source, local tools and downloadable artifacts, with additional adversarial review of Open Study Tracker. All exercised datasets and accounts were synthetic. This is software and example-method QC, not regulatory validation or approval for a particular client, study or deployment.
 
+## Point-and-click toolkit follow-up
+
+The [setup guide](TOOLKIT_SETUP.html) now provides a desktop entry point for all 22 catalog modules. The local control panel creates separate private project copies, checks runtimes, installs supported R dependencies on request, manages input replacement and backups, saves configuration, supervises fixed workflows, and downloads outputs. Its browser-only preview does not attempt local API access. SAS and model-dependent modules provide preparation and editor workflows; pseudocode still requires implementation and study-specific review.
+
+Verification includes the local API and process lifecycle, invalid inputs and path boundaries, source-copy/publication exclusions, persisted job history, both light/dark themes, desktop/mobile layout, 13 browser contract scenarios, 10 real-server browser scenarios with actual R execution, and startup of all five Shiny apps from private projects. The worked-study adapter verifies the exact R version and all 151 package versions in its lockfile. CI repeats the desktop and browser checks on Windows and Linux and exercises the private-library study restore and rebuild.
+
+The portable QC runners use Python and R directly, so their launch buttons do not require Bash or rsync. Gate states remain explicit: a completed process is not an all-green QC verdict, and manual review/sign-off gates remain manual. Synthetic QC does not validate an untested study or client deployment. Shared tracker data/settings have their own backup workflow and are not included in the toolkit project ZIP.
+
+The portable QC adapters passed six focused regression tests and a complete 18-case seeded-defect run on macOS with R 4.6.0: **15 caught, zero survived, one equivalent and two not applicable; 18 of 18 as predicted**. Every defect class and catcher set matched the committed Bash-run reference. A fresh harness run then reported **8 of 8 automated gates green**, with G5 still manual and G7 still unsigned; G10 became green only after the native runner and deterministic-profile hashes were recorded. The JSON ledger matched its embedded HTML copy. The job adapter installed the missing test dependencies in a private library and ran the real workflows. Evidence was retained outside the repository; no committed example evidence was overwritten. These native-run results are from macOS, not an executed Windows run.
+
 ## Changes resulting from the review
 
 - Replaced the proprietary tracker module with the MIT-licensed Open Study Tracker: standalone browser workspace, Python/SQLite import/export, optional individual accounts, and a queued SMTP notification worker. SMTP previews do not send mail.

@@ -7,7 +7,7 @@ name: Flagship worked example
 # required check would never report on a PR that does not touch these paths.
 on:
   push:
-    paths: ['study/**', 'sim_lifecycle/**', 'tlf_interpret/R/**', '.github/workflows/study.yml']
+    paths: ['study/**', 'sim_lifecycle/**', 'tlf_interpret/R/**', 'toolkit_launcher/**', '.github/workflows/study.yml']
   pull_request:
   workflow_dispatch:
 permissions:
@@ -45,6 +45,23 @@ jobs:
         run: |
           Rscript sim_lifecycle/run_lifecycle.R > /dev/null
           git diff --exit-code -- sim_lifecycle/out
+      - name: Rebuild the worked study through the private GUI job supervisor
+        timeout-minutes: 28
+        # Reuse baseline cache contents by copying them into the new private
+        # project. The actual install action still runs renv::restore and checks
+        # every pinned version before the actual study.run action executes.
+        run: >-
+          python3 toolkit_launcher/tests/study_smoke.py
+          --allow-install
+          --timeout-seconds 1500
+          --evidence "$RUNNER_TEMP/toolkit-study-evidence"
+      - name: Upload private GUI study evidence
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: toolkit-private-study-smoke
+          if-no-files-found: warn
+          path: ${{ runner.temp }}/toolkit-study-evidence
       - uses: actions/upload-artifact@v7
         if: always()
         with:

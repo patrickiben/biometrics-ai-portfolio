@@ -1,5 +1,7 @@
 # TRIALMON safety review console (Shiny app)
 
+For a graphical start, follow the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html), create a private project, then choose the TRIALMON card to check packages, upload the listed inputs and start the app. Save supported app downloads before closing; the terminal instructions below are an optional interface.
+
 A Safety Review Committee style console for a synthetic dose-escalation study: a ranked worklist,
 the eDISH plot (click a point to open that participant), QTcF categories, CTCAE lab shifts, adverse
 events by SOC and PT, the DLT tally against an illustrative 3+3 rule, a study tier of operational

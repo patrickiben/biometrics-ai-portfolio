@@ -1,5 +1,7 @@
 # Find Hours - Hours Budget Reconciliation Shiny app
 
+For a graphical start, follow the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html), create a private project, then choose the Hours card to check packages, upload the listed inputs and start the app. Save supported app downloads before closing; the terminal instructions below are an optional interface.
+
 A runnable, editable version of the find-hours worksheet. Edit the effort
 ledger, type an out-of-scope ask, and watch net-findable and the
 absorbable-vs-change-order verdict recompute live. **Hours / effort only**, no

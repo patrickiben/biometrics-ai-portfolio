@@ -1,5 +1,7 @@
 # Trial-Termination Early-Warning - Shiny app
 
+For a graphical start, follow the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html), create a private project, then choose the Risk card to check packages, upload the listed inputs and start the app. Save supported app downloads before closing; the terminal instructions below are an optional interface.
+
 A runnable two-tier early-termination-risk console. Participant and study
 signals roll up to a tier RAG and an overall termination-risk index. Select a
 signal and change its level to watch the tier and overall risk move - the roll-up
