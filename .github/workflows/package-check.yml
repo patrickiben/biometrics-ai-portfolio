@@ -241,8 +241,6 @@ jobs:
     timeout-minutes: 35
     env:
       USE_BUNDLED_LIBUV: '1'
-      ANALYSIS_CONTRACT_REPORT: ${{ runner.temp }}/analysis-contracts.json
-      ANALYSIS_GENERATED_REPORT: ${{ runner.temp }}/analysis-generated.json
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
@@ -279,6 +277,9 @@ jobs:
           Rscript tests/test_analysis_monitor.R
           Rscript tests/test_analysis_renderer.R
       - name: Check every input contract and all generated R-backed analyses
+        env:
+          ANALYSIS_CONTRACT_REPORT: ${{ runner.temp }}/analysis-contracts.json
+          ANALYSIS_GENERATED_REPORT: ${{ runner.temp }}/analysis-generated.json
         run: python -m unittest discover -s tests -p "test_analysis_*.py" -v
       - name: Check guided provider and immutable analysis lifecycle
         run: python -m unittest toolkit_launcher.tests.test_guided_tlf toolkit_launcher.tests.test_analysis_jobs -v
