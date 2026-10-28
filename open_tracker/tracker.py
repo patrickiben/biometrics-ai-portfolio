@@ -269,7 +269,8 @@ def atomic_write(path, content, database):
     database_path = Path(database).resolve()
     protected = {database_path, *(Path(str(database_path) + suffix) for suffix in ("-wal", "-shm", "-journal")),
                  TEMPLATE.resolve(), Path(__file__).resolve(),
-                 Path(__file__).with_name("server.py").resolve(), Path(__file__).with_name("notifications.py").resolve()}
+                 Path(__file__).with_name("server.py").resolve(), Path(__file__).with_name("notifications.py").resolve(),
+                 Path(__file__).with_name("manage.py").resolve()}
     if path in protected:
         raise TrackerError("Export destination must not overwrite the database or program files.")
     fd, temporary = tempfile.mkstemp(prefix=".tracker-", dir=path.parent)

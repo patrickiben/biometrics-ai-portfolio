@@ -2,7 +2,7 @@
 
 An MIT-licensed tracker for study deliverables, owners, deadlines, and operational exceptions. The offline workflow needs only **Python 3.10+ and its standard library**, with no account, API token, cloud service, or package installation. R and SAS jobs can produce the same plain CSV input. Optional shared mode adds individual logins, viewer/editor permissions, conflict detection, and automatic email alerts through your SMTP server.
 
-**Reusable evaluation tool:** for consultants and in-house teams adapting study operations. No specific client workspace, hosting account or mail service is preconfigured. The browser demo works immediately; shared access needs a running host, and live email needs your SMTP settings. Use the local email preview to evaluate notifications without sending.
+**Reusable evaluation tool:** for consultants and in-house teams adapting study operations. The browser demo works immediately. A guided launcher sets up individual accounts, private storage and automatic local email previews; the same setup can run on your chosen host with your chosen SMTP service. No client workspace or provider account is preconfigured.
 
 [Open the browser workspace](index.html) · [Shared accounts and email setup](SHARED.md) · [Synthetic CSV example](examples/status.csv) · [Source code](tracker.py) · [MIT license](../LICENSE)
 
@@ -22,6 +22,26 @@ python3 open_tracker/tracker.py --db open_tracker/out/tracker.sqlite check --sta
 ```
 
 Open `open_tracker/out/tracker.html` to review the database snapshot offline. The demo intentionally has blocked and at-risk tasks, so the final command returns **2**, meaning attention is needed. Due-date checks use UTC.
+
+## Start shared access with one command
+
+From a complete checkout, with Python 3.10+ installed:
+
+```sh
+python3 open_tracker/manage.py
+```
+
+On Windows, use `py -3 open_tracker/manage.py`. The launcher checks dependencies, creates an isolated environment if needed, asks you to create the first account, and starts the shared server and email-preview worker together. Open `http://127.0.0.1:8080` and sign in. The first setup needs internet access to install packages; subsequent starts reuse the installed environment.
+
+Your database and configuration are kept in `~/.open-study-tracker`, outside the checkout. The workspace starts empty unless you choose the synthetic example. No default password is supplied. Press **Ctrl+C** to stop both services; run the same command to resume.
+
+```sh
+python3 open_tracker/manage.py email
+python3 open_tracker/manage.py email-test
+python3 open_tracker/manage.py doctor
+```
+
+`email` guides you through disabled, local-preview or live-SMTP mode. `email-test` creates a local sample message, even for an empty tracker. `doctor` checks local setup and reports actionable problems without sending email. See the [shared setup guide](SHARED.md) for team hosting with automatic HTTPS, account commands, backups and separate workspaces.
 
 ## How the pieces fit
 

@@ -47,8 +47,8 @@ class AdversarialStorageTests(unittest.TestCase):
                     tracker.atomic_write(target, "overwrite", self.db)
                 self.assertFalse(target.exists())
 
-    def test_export_cannot_overwrite_shared_server_or_worker(self):
-        for filename in ("server.py", "notifications.py"):
+    def test_export_cannot_overwrite_shared_server_worker_or_manager(self):
+        for filename in ("server.py", "notifications.py", "manage.py"):
             target = Path(tracker.__file__).with_name(filename)
             before = target.read_bytes()
             with self.assertRaises(tracker.TrackerError):
