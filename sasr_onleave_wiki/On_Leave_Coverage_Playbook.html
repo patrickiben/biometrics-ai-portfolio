@@ -362,7 +362,7 @@ schtasks /create /tn "CP101_monitor" /tr "run_monitor.bat" /sc DAILY /st 06:00 /
 # Linux cron
 0 6 * * 1-5  /opt/jobs/run_monitor.sh    # sas -sysin monitor_driver.sas -batch</pre>
     <p class="muted">The macros cover the safety checks (Hy&rsquo;s-Law/eDISH, QTcF, AE/SAE, DLT-vs-3+3, labs), operational checks (enrollment KRI, query aging, visits, IXRS reconciliation), the two-tier digest/alert, and the four safeguards (heartbeat, freshness gate, de-dup, primary+backup). See the README in the macro library for the full catalog.</p>
-  <!-- SHEETLINK-FULL-PROGRAM -->
+  <!-- TRACKER-FULL-PROGRAM -->
     <p style="margin-top:22px">Below is the <b>complete, actual program</b>, every line: the config you edit, the library it calls, the driver you schedule, and the R twin. These are the real shipped files, also available as downloads.</p>
     <div class="dl"><a class="btn ghost" href="tm_macros.sas">&#10515;&nbsp; tm_macros.sas</a><a class="btn ghost" href="tm_companion.R">&#10515;&nbsp; tm_companion.R</a><a class="btn ghost" href="monitor_driver.sas">&#10515;&nbsp; monitor_driver.sas</a><a class="btn ghost" href="tm_config.sas">&#10515;&nbsp; tm_config.sas</a></div>
     <h2>The one file you edit per study: tm_config.sas</h2>

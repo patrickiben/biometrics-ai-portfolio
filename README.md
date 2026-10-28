@@ -2,7 +2,7 @@
 
 Runnable SAS and R templates, dashboards and checks for the work a **biostatistics consultant** does for a
 client across an **early-phase clinical-pharmacology trial**, from the protocol's statistical sections to
-CSR text. Everything runs from static files or in local R, and the three R apps also run in the browser,
+CSR text. The tools run from static files or in local R/Python, and the three R apps also run in the browser,
 so a client's data never has to leave your machine. Open [`index.html`](index.html) (or
 [`START_HERE.html`](START_HERE.html) for the full one-page index). The example studies (CP-101 to CP-108)
 are **synthetic**; there is no PHI and no participant-level clinical data.
@@ -55,8 +55,12 @@ are **synthetic**; there is no PHI and no participant-level clinical data.
   checklist per job, and a printable or downloadable handoff packet. Data stays in the browser (localStorage +
   JSON/CSV export); no network requests; ships with a clearly fictional example.
   → [`sasr_onleave_wiki/`](sasr_onleave_wiki/Continuity_Toolkit.html) · [playbook](sasr_onleave_wiki/On_Leave_Coverage_Playbook.html) · [CSV template](sasr_onleave_wiki/continuity_jobs_template.csv)
-- **Self-updating Smartsheet trackers:** Smartsheet kept current from scheduled SAS/R; code owns the data and
-  Smartsheet owns the alerts. → [`smartsheet_sasr/`](smartsheet_sasr/Smartsheet_SASR.html)
+- **Open Study Tracker:** an MIT-licensed deliverables tracker with local SQLite storage, keyed CSV/JSON
+  imports, dry runs and change history. Use the offline browser workspace to review and edit status, then
+  exchange files with scheduled R/SAS jobs. The offline version needs no account or API key. Optional
+  self-hosted shared mode adds individual logins, viewer/editor permissions, conflicting-edit protection,
+  and queued SMTP alerts with retries and daily exception digests.
+  → [`open_tracker/`](open_tracker/index.html) · [file workflow](open_tracker/README.md) · [shared accounts and email](open_tracker/SHARED.md)
 - **IRT / RTSM user acceptance testing:** UAT of the randomization and supply system from the biostatistics
   lens: a test-script library, traceability matrix, defect log, and an execution tracker with a live go-live
   sign-off gate. → **[fillable Excel workbook](uat_irt/UAT_IRT_RTSM_Workbook.xlsx)** · [`uat_irt/`](uat_irt/quarto/uat-guide.html)

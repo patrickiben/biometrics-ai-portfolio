@@ -1,0 +1,23 @@
+[Unit]
+Description=Open Study Tracker email worker
+After=network-online.target open-tracker.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=tracker
+Group=tracker
+WorkingDirectory=/opt/biometrics-ai-portfolio
+EnvironmentFile=/etc/open-study-tracker.env
+ExecStart=/opt/biometrics-ai-portfolio/open_tracker/.venv/bin/python open_tracker/notifications.py --db /var/lib/open-study-tracker/shared.sqlite --interval 60
+Restart=on-failure
+RestartSec=10
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/open-study-tracker
+
+[Install]
+WantedBy=multi-user.target

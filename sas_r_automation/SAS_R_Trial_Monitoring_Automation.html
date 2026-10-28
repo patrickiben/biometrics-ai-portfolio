@@ -99,7 +99,7 @@ a:focus-visible,button:focus-visible,#side a:focus-visible,#search:focus-visible
     <div class="callout warn"><b>The single most common silent-failure cause:</b> running under the lead&rsquo;s personal login. Use a <b>dedicated service / functional account</b>, and confirm <em>before departure</em> that it has the SAS licence, network-share access, and SMTP relay rights. A personal account&rsquo;s credentials/VPN go idle on leave &mdash; and the job dies the moment they do.</div>
     <h2>Scheduled data ingestion</h2>
     <p>The job&rsquo;s first step reads the latest validated extract deterministically: SDTM/ADaM <code>.sas7bdat</code>/<code>.xpt</code> (<code>libname xport</code>, <code>haven::read_xpt()</code>), EDC CSV exports, a read-only DB view to the safety/IXRS database (SAS/ACCESS, <code>DBI</code>+<code>odbc</code>). A small macro resolves the newest dated file so &ldquo;latest export&rdquo; is unambiguous. <b>It is only as fresh as the upstream cadence</b> &mdash; document each source&rsquo;s refresh frequency in the report header (see the <a href="#safeguards">freshness gate</a>).</p>
-  <!-- SHEETLINK-FULL-PROGRAM -->
+  <!-- TRACKER-FULL-PROGRAM -->
     <p style="margin-top:26px">Everything above is the design. Here is the <b>actual program</b> that runs it: the one file you edit per study, then the nightly job you schedule. Plain, SAS you can read (not executed here: no SAS license) top to bottom.</p>
     <h2>The one file you edit per study: tm_config.sas</h2>
     <p class="muted" style="margin-bottom:6px">SAS &middot; 39 lines &middot; the real shipped file, in full &mdash; nothing elided.</p>
@@ -262,7 +262,7 @@ endsas;</code></pre>
       <tr><td><b>Visit compliance</b></td><td>Missed / overdue / out-of-window visits vs the schedule &mdash; critical for DLT-window safety visits &amp; PK timepoints.</td><td>Run-date dependent (uses &ldquo;today&rdquo;), so a daily job keeps &ldquo;overdue&rdquo; current.</td></tr>
       <tr><td><b>Randomization / IXRS reconciliation</b></td><td>Every randomized participant in both systems; kit/dose matches cohort; drug accountability.</td><td>Discrepancies escalate to a human (DM / unblinded pharmacist); never auto-resolved; blinding preserved.</td></tr>
     </table>
-  <!-- SHEETLINK-FULL-PROGRAM -->
+  <!-- TRACKER-FULL-PROGRAM -->
     <p style="margin-top:22px">The catalog above says <b>what</b> is checked. Here is the <b>library that implements it</b>, in full, plus the R twin. These are the actual shipped files, also available as downloads.</p>
     <div class="dl"><a class="btn ghost" href="macro_library/tm_macros.sas">&#10515;&nbsp; tm_macros.sas</a><a class="btn ghost" href="macro_library/tm_companion.R">&#10515;&nbsp; tm_companion.R</a><a class="btn ghost" href="macro_library/monitor_driver.sas">&#10515;&nbsp; monitor_driver.sas</a><a class="btn ghost" href="macro_library/tm_config.sas">&#10515;&nbsp; tm_config.sas</a><a class="btn ghost" href="macro_library/README.md">&#10515;&nbsp; README.md</a></div>
     <h2>The complete SAS monitoring library: tm_macros.sas</h2>

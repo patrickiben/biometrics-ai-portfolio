@@ -161,7 +161,7 @@
    "id": "operations",
    "n": 9,
    "name": "Operations and delivery",
-   "on_site_html": "A <a href=\"sasr_onleave_wiki/Continuity_Toolkit.html\">continuity and handoff toolkit</a> that runs in the browser. A <a href=\"lifecycle_dashboard/quarto/lifecycle-guide.html\">study lifecycle monitor</a> and a <a href=\"smartsheet_sasr/Smartsheet_SASR.html\">tracker sync example</a> (synthetic).",
+   "on_site_html": "A <a href=\"sasr_onleave_wiki/Continuity_Toolkit.html\">continuity and handoff toolkit</a> that runs in the browser. A <a href=\"lifecycle_dashboard/quarto/lifecycle-guide.html\">study lifecycle monitor</a> and a <a href=\"open_tracker/index.html\">open-source deliverables tracker</a> (synthetic).",
    "strongest": {
     "text": "Continuity and handoff toolkit",
     "href": "sasr_onleave_wiki/Continuity_Toolkit.html"
@@ -170,7 +170,7 @@
     "toolkit",
     "playbook",
     "lifecycle-monitor",
-    "smartsheet",
+    "open-tracker",
     "hours"
    ]
   },
@@ -254,7 +254,7 @@
      "r-tlf",
      "monitoring-macros",
      "monitoring-wiki",
-     "smartsheet"
+     "open-tracker"
     ]
    },
    {
@@ -1077,9 +1077,9 @@
    "published": true
   },
   {
-   "id": "smartsheet",
-   "title": "Smartsheet tracker updates from SAS/R",
-   "href": "smartsheet_sasr/Smartsheet_SASR.html",
+   "id": "open-tracker",
+   "title": "Open Study Tracker",
+   "href": "open_tracker/index.html",
    "section": "methods",
    "stages": [
     "operations"
@@ -1087,29 +1087,34 @@
    "eyebrow": "Operations and delivery",
    "status": [
     {
-     "k": "runs",
-     "text": "R companion run against a local mock API"
+     "k": "synthetic",
+     "text": "Synthetic starter data; no account required"
     },
     {
      "k": "notrun",
-     "text": "SAS not executed"
+     "text": "SAS example not executed"
     }
    ],
-   "summary": "Code owns the data and Smartsheet owns the alerts: scheduled SAS/R writes operational status to the tracker by a stable key, and the tracker's own automations notify people.",
-   "fact": "Operations only: no PHI, participant-level data or reported clinical numbers.",
+   "summary": "An MIT-licensed deliverables tracker with SQLite storage, keyed CSV/JSON imports, change history and an offline workspace. Optional self-hosting adds individual accounts, viewer/editor permissions and protection against conflicting edits.",
+   "fact": "Use offline without an account, or run the shared server and queued SMTP worker for status alerts and daily overdue/stale digests. Scheduled R/SAS jobs use the same file interface.",
    "links": [
     {
      "t": "open",
-     "href": "smartsheet_sasr/Smartsheet_SASR.html",
-     "text": "Open the wiki"
+     "href": "open_tracker/index.html",
+     "text": "Open the tracker"
     },
     {
-     "t": "run",
-     "href": "smartsheet_sasr/CP101_Tracker_Demo.html",
-     "text": "Interactive demo"
+     "t": "guide",
+     "href": "open_tracker/README.md",
+     "text": "Setup and file workflow"
+    },
+    {
+     "t": "guide",
+     "href": "open_tracker/SHARED.md",
+     "text": "Shared accounts and email"
     }
    ],
-   "source": "smartsheet_sasr/Smartsheet_SASR.html, CP101_Tracker_Demo.html and README.md",
+   "source": "open_tracker/index.html, open_tracker/README.md and README.md",
    "published": true
   },
   {

@@ -83,7 +83,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <p class="lede">Turn your already-validated monitoring programs into a <strong>scheduled, self-escalating loop</strong> so the trial keeps being watched, the tracker keeps being current, and nothing falls through the cracks &mdash; <strong>especially while you&rsquo;re out on leave</strong>. The monitoring itself is <strong>deterministic SAS/R, no AI required</strong> &mdash; the lowest-risk pipeline in this toolkit.</p>
     <figure class="diagram" role="img" aria-labelledby="d-arch-title">
       <svg viewBox="0 0 860 320" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif">
-        <title id="d-arch-title">Three components share one scheduled SAS/R job: TRIALMON the deterministic backbone, SHEETLINK the tracker, and the optional LOCALMIND language layer; all output routes to humans who decide.</title>
+        <title id="d-arch-title">Three components share one scheduled workflow: TRIALMON for monitoring, Open Study Tracker for deliverables, and the optional LOCALMIND language layer; humans decide.</title>
         <defs>
           <marker id="ah-steel" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--steel)"/></marker>
         </defs>
@@ -94,26 +94,26 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
         <text x="74" y="186" text-anchor="middle" font-size="11" fill="var(--muted)">dated exports</text>
         <!-- scheduled job container -->
         <rect x="170" y="22" width="430" height="276" rx="10" fill="none" stroke="var(--steel)" stroke-dasharray="5 4"/>
-        <text x="385" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="var(--steel)">ONE SCHEDULED JOB &middot; service account svc-stats &middot; deterministic SAS/R</text>
+        <text x="385" y="42" text-anchor="middle" font-size="12" font-weight="700" fill="var(--steel)">SCHEDULED WORKFLOW &middot; SAS/R + Python &middot; service account</text>
         <!-- TRIALMON -->
         <rect x="190" y="58" width="390" height="86" rx="9" fill="var(--panel)" stroke="var(--steel)" stroke-width="2"/>
         <text x="206" y="80" font-size="14" font-weight="700" fill="var(--steel)">TRIALMON &middot; the backbone</text>
         <text x="206" y="98" font-size="11" fill="var(--muted)">%tm_*: freshness gate &rarr; checks &rarr; roll-up &rarr; digest &rarr; tier-2 alert</text>
         <text x="206" y="114" font-size="11" fill="var(--muted)">&rarr; heartbeat   (watched by an independent dead-man's switch)</text>
         <text x="206" y="132" font-size="11" font-weight="700" fill="var(--green)">no AI in the loop</text>
-        <!-- SHEETLINK -->
+        <!-- Open Study Tracker -->
         <rect x="190" y="156" width="188" height="74" rx="9" fill="var(--panel)" stroke="var(--green)" stroke-width="2"/>
-        <text x="206" y="178" font-size="13" font-weight="700" fill="var(--green)">SHEETLINK</text>
-        <text x="206" y="196" font-size="11" fill="var(--muted)">%ss_*: idempotent</text>
-        <text x="206" y="211" font-size="11" fill="var(--muted)">upsert into Smartsheet</text>
-        <text x="206" y="225" font-size="11" fill="var(--muted)">ops-only allowlist</text>
+        <text x="206" y="178" font-size="13" font-weight="700" fill="var(--green)">Open Tracker</text>
+        <text x="206" y="196" font-size="11" fill="var(--muted)">upsert by task ID</text>
+        <text x="206" y="211" font-size="11" fill="var(--muted)">CSV to local SQLite</text>
+        <text x="206" y="225" font-size="11" fill="var(--muted)">operational-field schema</text>
         <!-- LOCALMIND -->
         <rect x="392" y="156" width="188" height="74" rx="9" fill="var(--panel)" stroke="var(--amber)" stroke-width="2" stroke-dasharray="4 3"/>
         <text x="408" y="178" font-size="13" font-weight="700" fill="var(--amber)">LOCALMIND</text>
         <text x="408" y="196" font-size="11" fill="var(--muted)">%slm_*: optional</text>
         <text x="408" y="211" font-size="11" fill="var(--muted)">on-device drafting only</text>
         <text x="408" y="225" font-size="11" fill="var(--muted)">never a number / decision</text>
-        <text x="385" y="252" text-anchor="middle" font-size="11" fill="var(--muted)">SHEETLINK + LOCALMIND branch off the same job;</text>
+        <text x="385" y="252" text-anchor="middle" font-size="11" fill="var(--muted)">Tracker + LOCALMIND branch off the same job;</text>
         <text x="385" y="268" text-anchor="middle" font-size="11" fill="var(--muted)">LOCALMIND is a convenience, not a dependency</text>
         <!-- humans -->
         <rect x="636" y="100" width="208" height="120" rx="9" fill="var(--panel)" stroke="var(--line)"/>
@@ -126,13 +126,13 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
         <line x1="134" y1="160" x2="186" y2="101" stroke="var(--line)" stroke-width="1.5" marker-end="url(#ah-steel)"/>
         <line x1="600" y1="120" x2="632" y2="150" stroke="var(--steel)" stroke-width="1.5" marker-end="url(#ah-steel)"/>
       </svg>
-      <figcaption><b>Three components, one scheduled job.</b> The deterministic <b>TRIALMON</b> backbone does the watching; <b>SHEETLINK</b> keeps the tracker current and <b>LOCALMIND</b> is an optional language convenience &mdash; every path routes to humans, who decide.</figcaption>
+      <figcaption><b>Three components, one scheduled job.</b> The deterministic <b>TRIALMON</b> backbone does the watching; <b>Open Study Tracker</b> keeps the tracker current and <b>LOCALMIND</b> is an optional language convenience &mdash; every path routes to humans, who decide.</figcaption>
     </figure>
     <div class="callout rule"><strong>The one rule.</strong> These macros <strong>detect, package, and email pre-specified deterministic flags</strong>. They <strong>do not triage, interpret, or adjudicate</strong>, and they <strong>never auto-act on safety</strong>. A flag is a <em>prompt for a human</em> &mdash; the medical monitor and the covering biostatistician make every call. Validate the threshold logic + scheduling wrapper as study programs (GxP); keep anything <em>reported</em> independently double-programmed; reported numbers come from validated tools, never from a flag and never from the optional language model.</div>
     <h2>Three components, one scheduled job</h2>
     <div class="grid3">
       <div class="comp tm"><b>TRIALMON <span>&middot; the backbone</span></b><p>Deterministic SAS/R that ingests the latest data, gates on <em>freshness</em>, runs the pre-specified safety + operational <em>checks</em>, rolls up severity, emails a <em>digest</em>, fires a <em>tier-2 urgent alert</em> on any RED, and closes with a <em>heartbeat</em> &mdash; watched by an independent <em>dead-man&rsquo;s switch</em>. The <code>%tm_*</code> library.</p></div>
-      <div class="comp ss"><b>SHEETLINK <span>&middot; the tracker</span></b><p>The same scheduled job keeps your Smartsheet program tracker <em>current</em> &mdash; idempotent upsert-by-key behind an ops-only allowlist guard &mdash; so the PM dashboard is live while you&rsquo;re away. The <code>%ss_*</code> library. No AI.</p></div>
+      <div class="comp ss"><b>Open Study Tracker <span>&middot; deliverables</span></b><p>The same scheduled workflow imports operational status by task ID into local SQLite and exports an offline browser snapshot. R/SAS produces CSV; the Python CLI validates and records changes. The browser copy updates when a new snapshot is loaded.</p></div>
       <div class="comp slm"><b>LOCALMIND <span>&middot; optional language</span></b><p>An <em>optional</em> on-device SLM drafts the digest prose or triages free-text the deterministic code can&rsquo;t &mdash; ops-only, behind the loopback + validator + human-gate guardrails. The monitoring needs <strong>none</strong> of this; it is a convenience, not a dependency. The <code>%slm_*</code> library.</p></div>
     </div>
     <div class="callout win"><strong>Why this is the lowest-risk piece.</strong> The detection is pre-specified, deterministic SAS/R &mdash; the same logic you already validate, just scheduled and self-escalating. No cloud, no AI in the loop, no model to qualify. It <em>detects, packages, and pages</em>; humans decide. That is exactly the property a regulated shop wants from unattended automation.</div>
@@ -210,7 +210,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <div class="callout key"><strong>The independent dead-man&rsquo;s switch.</strong> <code>tm_watchdog.sh</code> runs on a <em>different host and account</em>, reads the heartbeat, and screams if the job didn&rsquo;t run, ran late, or ran on stale data. The thing most likely to fail silently is the scheduler itself &mdash; so the watchdog is the control that makes &ldquo;no news&rdquo; trustworthy. <strong>No email is itself a signal.</strong></div>
     <h2>The two branches off the same job</h2>
     <ul>
-      <li><b>Tracker (SHEETLINK):</b> after the checks, <code>%ss_*</code> upserts the run status + open flags into the Smartsheet tracker &mdash; idempotent by key, ops-only columns allowlisted &mdash; so the PM view is live. See <a href="#tracker">Keeping the tracker current</a>.</li>
+      <li><b>Open Study Tracker:</b> after the checks, export operational status to CSV and run the Python CLI to upsert it by task ID, record changes and export a fresh browser snapshot. See <a href="#tracker">Keeping the tracker current</a>.</li>
       <li><b>Language (LOCALMIND, optional):</b> if enabled, an on-device SLM drafts the digest prose from the already-structured rows &mdash; never deciding what to include. See <a href="#language">The optional language layer</a>.</li>
     </ul>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
@@ -353,15 +353,16 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
     <div class="dl"><a class="btn" href="../sas_r_automation/SAS_R_Coverage_Runbook.pdf">&#10515;&nbsp; The Coverage Runbook (PDF) &mdash; hand this to your cover</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="tracker" aria-label="Keeping the tracker current">
-    <h1>Keeping the Smartsheet tracker current &mdash; SHEETLINK</h1>
-    <p class="lede">So the PM&rsquo;s program dashboard is live while you&rsquo;re away, the same scheduled job upserts status into Smartsheet &mdash; deterministically, no AI.</p>
+    <h1>Keeping the deliverables tracker current</h1>
+    <p class="lede">Open Study Tracker keeps operational status in a local SQLite file. Scheduled R/SAS jobs produce CSV, the Python CLI imports it, and a browser snapshot makes the result easy to review.</p>
     <ul>
-      <li><b>Idempotent upsert-by-key:</b> <code>%ss_*</code> matches each row by a stable key and updates-or-inserts, so re-runs never duplicate and a re-processed day is a no-op.</li>
-      <li><b>Ops-only allowlist guard:</b> only an allowlisted set of operational columns can be written &mdash; the automation can never touch a column it shouldn&rsquo;t, by construction.</li>
-      <li><b>Token from a secret, never logged:</b> the Smartsheet token comes from an environment variable / secret store, never hard-coded and never written to a log.</li>
+      <li><b>Upsert by task ID:</b> stable text IDs update existing tasks or create new ones. Repeated identical imports do not add duplicate rows or change-history entries.</li>
+      <li><b>Validate before writing:</b> use a dry run first. Unknown fields, invalid values and duplicate IDs fail before an import is committed.</li>
+      <li><b>Local files, no credentials:</b> the Python standard library and SQLite provide storage and change history. The browser edits its own copy; export JSON and import it with the CLI to update SQLite.</li>
+      <li><b>Exceptions stay visible:</b> status, overdue dates and import freshness can be checked locally. The CLI returns an attention exit status; the optional <a href="../open_tracker/SHARED.md">shared server and email worker</a> add individual accounts and queued SMTP alerts.</li>
     </ul>
-    <div class="callout win">Independently SAS-reviewed (three defects found and fixed). The tracker shows <em>operational</em> status only &mdash; never a reported number, never patient-level data.</div>
-    <div class="dl"><a class="btn ghost" href="../smartsheet_sasr/Smartsheet_SASR.html">Open the SHEETLINK wiki</a><a class="btn ghost" href="../smartsheet_sasr/macro_library/README.pdf">Macro README (PDF)</a></div>
+    <div class="callout honest">Operational status only. A field allowlist validates structure, not the sensitivity of text: do not enter PHI, participant-level data, unblinded assignments or reported clinical numbers. This toolkit is not a validated system of record. The SAS export example has not been executed.</div>
+    <div class="dl"><a class="btn ghost" href="../open_tracker/index.html">Open Study Tracker</a><a class="btn ghost" href="../open_tracker/README.md">Setup and file workflow</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="language" aria-label="Optional language layer">
     <h1>The optional on-device language layer &mdash; LOCALMIND</h1>
@@ -371,14 +372,14 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="macros" aria-label="The macro libraries">
     <h1>The macro libraries</h1>
-    <p class="lede">Three deterministic SAS libraries (each with an R companion), copy-paste ready, each with a per-study config so a second study or a rotating monitor is one file, not a code edit. Base SAS 9.4; no third-party packages.</p>
+    <p class="lede">The monitoring and optional language libraries use SAS with R companions. Open Study Tracker uses Python and SQLite, with R/SAS file bridges. Configure paths, owners and schedules for each study; review the setup instructions and execution limits before use.</p>
     <table class="cat"><thead><tr><th>Library</th><th>Driver + key files</th><th>What it does</th></tr></thead><tbody>
       <tr><td><b>TRIALMON</b> <code>%tm_*</code></td><td><code>tm_macros.sas</code> &middot; <code>monitor_driver.sas</code> &middot; <code>tm_config.sas</code> &middot; <code>tm_watchdog.sh</code> &middot; <code>tm_companion.R</code></td><td>The monitoring loop: init, latest, freshness, guard, the safety checks, status, digest, alert, evidence, heartbeat &mdash; plus the independent watchdog.</td></tr>
-      <tr><td><b>SHEETLINK</b> <code>%ss_*</code></td><td><code>ss_macros.sas</code> &middot; <code>tracker_update.sas</code> &middot; <code>ss_config.sas</code> &middot; <code>ss_companion.R</code></td><td>Idempotent upsert-by-key into Smartsheet behind an ops-only allowlist guard; token from a secret.</td></tr>
+      <tr><td><b>Open Study Tracker</b></td><td><code>tracker.py</code> &middot; <code>update_tracker.R</code> &middot; <code>export_tracker.sas</code></td><td>Validated CSV/JSON upserts into local SQLite, dry runs, change history, browser snapshots and exception checks.</td></tr>
       <tr><td><b>LOCALMIND</b> <code>%slm_*</code></td><td><code>slm_macros.sas</code> &middot; <code>triage_driver.sas</code> &middot; <code>slm_config.sas</code> &middot; <code>slm_companion.R</code></td><td>(Optional) the on-device language layer: loopback guard, schema-constrained call, allowlist validator, classify.</td></tr>
     </tbody></table>
     <div class="callout key"><b>Config, not code.</b> <code>tm_config.sas</code> holds the per-study constants &mdash; paths, recipients, the medical monitor, feeds, thresholds &mdash; <code>%include</code>d before the driver. A new study, a rotating medical monitor, or a leave-coverage backup is a one-line change, change-controlled like any study program.</div>
-    <div class="dl"><a class="btn ghost" href="../sas_r_automation/macro_library/TRIALMON_Macro_Library_README.pdf">TRIALMON README</a><a class="btn ghost" href="../smartsheet_sasr/macro_library/README.pdf">SHEETLINK README</a><a class="btn ghost" href="../slm_wiki/macro_library/README.pdf">LOCALMIND README</a></div>
+    <div class="dl"><a class="btn ghost" href="../sas_r_automation/macro_library/TRIALMON_Macro_Library_README.pdf">TRIALMON README</a><a class="btn ghost" href="../open_tracker/README.md">Tracker README</a><a class="btn ghost" href="../slm_wiki/macro_library/README.md">LOCALMIND README</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="gov" aria-label="Safeguards  governance">
     <h1>Safeguards &amp; governance</h1>
@@ -408,7 +409,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
           <text x="30" y="108" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="108" fill="var(--ink)">Batch schedule + a 2nd host for the watchdog</text>
           <text x="30" y="132" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="132" fill="var(--ink)">Internal SMTP relay (no external mail)</text>
           <text x="30" y="156" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="156" fill="var(--ink)">Read access to exports + a state directory</text>
-          <text x="30" y="180" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="180" fill="var(--ink)">Smartsheet token in a secret store (tracker)</text>
+          <text x="30" y="180" fill="var(--green)" font-weight="700">&#10003;</text><text x="50" y="180" fill="var(--ink)">Python + writable local SQLite file (tracker)</text>
         </g>
         <text x="30" y="206" font-size="11" font-weight="700" fill="var(--green)">no licenses beyond what you have</text>
         <!-- optional column -->
@@ -432,7 +433,7 @@ figure.diagram{margin:20px 0}figure.diagram svg{display:block;border:1px solid v
         <li><b>Batch scheduling</b> (Windows Task Scheduler / cron) for the daily job, and a <b>second host/account</b> for the watchdog dead-man&rsquo;s switch.</li>
         <li>An <b>internal SMTP relay</b> for the digest + alerts (no external mail).</li>
         <li>Read access to the data exports + a state directory for de-duplication and heartbeats.</li>
-        <li>For the tracker: a <b>Smartsheet API token in a secret store</b> (never hard-coded).</li>
+        <li>For the tracker: <b>Python 3 and a writable local SQLite file</b>, plus a location for operational CSV/JSON exports and browser snapshots.</li>
       </ul>
     </div>
     <div class="callout honest"><b>Only if you enable the optional language layer</b> do the heavier asks apply &mdash; an on-prem workstation/VM, a signed runtime + a frozen open-weight model, a license review, and the GAMP-5 qualification of a non-deterministic component (see the <a href="../slm_wiki/macro_library/README.md">macro library README</a>). The monitoring core needs none of it; keep the two requests separate so the low-risk piece isn&rsquo;t held up by the AI one.</div>

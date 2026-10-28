@@ -1,0 +1,8 @@
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+/out/
+.venv/
+.env
+*.eml
