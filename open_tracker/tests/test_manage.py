@@ -119,7 +119,7 @@ class ManageTests(unittest.TestCase):
     def test_team_origin_is_normalized_and_rejects_unsafe_values(self):
         self.assertEqual(manage.public_url("https://TRACKER.example.test:443/"), "https://tracker.example.test")
         self.assertEqual(manage.public_url("https://tracker.example.test:8443"), "https://tracker.example.test:8443")
-        for value in ("http://tracker.example.test", "https://user:pass@example.test", "https://example.test/path", "https://example.test#fragment", "https://example.test?x=y", "https://example.test:0", "https://example.test\n"):
+        for value in ("http://tracker.example.test", "https://user:pass@example.test", "https://example.test/path", "https://example.test#fragment", "https://example.test?x=y", "https://example.test:0", "https://example.test\n", "https://tracker{bad", "https://foo;bar", "https://-bad.example", "https://bad_.example", "https://bad..example"):
             with self.subTest(value=value), self.assertRaises(manage.SetupError):
                 manage.public_url(value)
 
@@ -165,6 +165,9 @@ class ManageTests(unittest.TestCase):
         original = manage.load_config(self.workspace)
         with patch.object(manage, "require_terminal"), patch.object(manage, "prompt", side_effect=AssertionError("must not reprompt")), redirect_stdout(self.output):
             manage.setup(self.workspace, "https://tracker.example.test")
+        with patch.object(manage, "require_terminal"), patch.dict(os.environ, TRACKER_CONTAINER="1"):
+            with self.assertRaises(manage.SetupError):
+                manage.setup(self.workspace, "https://tracker.example.test:8443")
         updated = manage.load_config(self.workspace)
         self.assertEqual(updated["secret_key"], original["secret_key"])
         self.assertEqual(updated["public_url"], "https://tracker.example.test")

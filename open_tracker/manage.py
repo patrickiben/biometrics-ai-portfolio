@@ -13,6 +13,7 @@ import json
 import math
 import os
 from pathlib import Path
+import re
 import secrets
 import signal
 import socket
@@ -61,8 +62,13 @@ def public_url(value):
                 or parsed.port is not None and not 1 <= parsed.port <= 65535):
             raise ValueError()
         hostname = parsed.hostname.encode("idna").decode("ascii").lower()
-        if any(c in hostname for c in "/\\@?#") or hostname.startswith("."):
+        if len(hostname) > 253 or "%" in hostname:
             raise ValueError()
+        try:
+            ipaddress.ip_address(hostname)
+        except ValueError:
+            if ":" in hostname or not all(re.fullmatch(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", part) for part in hostname.split(".")):
+                raise ValueError()
         host = "[" + hostname + "]" if ":" in hostname else hostname
         return "https://" + host + (":" + str(parsed.port) if parsed.port not in (None, 443) else "")
     except (ValueError, UnicodeError):
@@ -244,6 +250,7 @@ def setup(workspace, url=None, demo=False):
         config = load_config(workspace)
         if url is not None:
             config["public_url"] = public_url(url)
+            check_expected_url(config)
             save_config(workspace, config)
             print("Hosting URL updated. Restart services to use it.")
         else:
