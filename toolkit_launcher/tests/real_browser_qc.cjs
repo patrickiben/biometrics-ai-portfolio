@@ -12,7 +12,12 @@ const temp=fs.mkdtempSync(path.join(os.tmpdir(),'toolkit-real-fixture-')),worksp
 fs.mkdirSync(output,{recursive:true});
 const report={started_at:new Date().toISOString(),scenarios:[],screenshots:[],errors:[],workspace,external_email_sent:false,model_calls:0,package_installations:0,limitations:['Native file/folder opening is captured to avoid opening applications during QA. Native file picker is covered by the contract fixture, not opened here.']};
 let browser,child,base,token,projectId,projectRoot;
-function capturedPaths(){return fs.readFileSync(opened,'utf8').trim().split('\n').filter(Boolean).map(line=>fs.realpathSync(JSON.parse(line)));}
+function capturedPaths(){return fs.readFileSync(opened,'utf8').trim().split('\n').filter(Boolean).map(line=>JSON.parse(line));}
+function assertNativeOpened(expected){
+  const identity=file=>{const stat=fs.statSync(file,{bigint:true});return `${stat.dev}:${stat.ino}`;};
+  const wanted=identity(expected),actual=capturedPaths().map(file=>({path:file,identity:identity(file)}));
+  assert.ok(actual.some(file=>file.identity===wanted),'Native-open file identity mismatch: '+JSON.stringify({expected,expected_identity:wanted,actual}));
+}
 async function scenario(name,fn){await fn();report.scenarios.push({name,passed:true});console.log('PASS '+name);}
 async function launch(){
   token=crypto.randomBytes(40).toString('hex');
@@ -45,7 +50,7 @@ async function waitExit(){if(child.exitCode!==null)return;await Promise.race([on
     await row.locator('input[type=file]').setInputFiles({name:'synthetic.csv',mimeType:'text/csv',buffer:replacement});await row.getByRole('button',{name:'Replace in project'}).click();await page.waitForFunction(()=>document.getElementById('tool-status').textContent.includes('Replaced'));
     assert.deepEqual(fs.readFileSync(path.join(projectRoot,relative)),replacement);assert.deepEqual(fs.readFileSync(path.join(root,relative)),original);assert.equal(fs.readdirSync(path.join(workspace,'projects',projectId,'input-backups')).length,1);
     await row.locator('input[type=file]').setInputFiles({name:'invalid.csv',mimeType:'text/csv',buffer:Buffer.from('wrong\nvalue\n')});await row.getByRole('button',{name:'Replace in project'}).click();await page.waitForFunction(()=>document.getElementById('tool-error').textContent.includes('column names'));assert.deepEqual(fs.readFileSync(path.join(projectRoot,relative)),replacement);
-    await row.getByRole('button',{name:'Open / edit'}).click();await page.waitForFunction(()=>document.getElementById('tool-status').textContent.includes('Opened'));assert.ok(capturedPaths().includes(fs.realpathSync(path.join(projectRoot,relative))));await page.keyboard.press('Escape');
+    await row.getByRole('button',{name:'Open / edit'}).click();await page.waitForFunction(()=>document.getElementById('tool-status').textContent.includes('Opened'));assertNativeOpened(path.join(projectRoot,relative));await page.keyboard.press('Escape');
   });
   await scenario('Configuration GUI saves numbers, reloads persisted values and rejects code-like text',async()=>{
     await page.locator('[data-module="sas_monitor"] button').first().click();await page.locator('#tool-actions').getByRole('button',{name:'Prepare monitoring configuration'}).click();await page.locator('#configure-form').waitFor({state:'visible'});
@@ -55,7 +60,7 @@ async function waitExit(){if(child.exitCode!==null)return;await Promise.race([on
     await page.locator('[data-module="sas_monitor"] button').first().click();await page.locator('#tool-actions').getByRole('button',{name:'Prepare monitoring configuration'}).click();await page.locator('#configure-form').waitFor({state:'visible'});assert.equal(await page.locator('#configure-fields-study_id').inputValue(),'SYNTHETIC-GUI');assert.equal(await page.locator('#configure-fields-alt_multiple').inputValue(),'3.5');await page.keyboard.press('Escape');
   });
   await scenario('Runtime settings and native folder action use real server validation',async()=>{
-    const detected=await state();await page.locator('#runtime-settings summary').click();await page.locator('#r-path').fill(detected.runtime.r.path);await page.locator('#settings-form button[type=submit]').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Runtime locations saved'));assert.equal((await state()).settings.r_path,detected.runtime.r.path);await page.locator('#runtime-settings summary').click();await page.locator('#open-folder').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Opened your private'));assert.ok(capturedPaths().includes(fs.realpathSync(projectRoot)));
+    const detected=await state();await page.locator('#runtime-settings summary').click();await page.locator('#r-path').fill(detected.runtime.r.path);await page.locator('#settings-form button[type=submit]').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Runtime locations saved'));assert.equal((await state()).settings.r_path,detected.runtime.r.path);await page.locator('#runtime-settings summary').click();await page.locator('#open-folder').click();await page.waitForFunction(()=>document.getElementById('message').textContent.includes('Opened your private'));assertNativeOpened(projectRoot);
   });
   await scenario('Number validator runs actual R and exposes its real log',async()=>{
     await page.locator('[data-module="interpretation"] button').first().click();const module=(await state()).catalog.modules.find(module=>module.id==='interpretation');await page.locator('#tool-actions').getByRole('button',{name:module.actions.find(action=>action.id==='interpretation.check').label,exact:true}).click();await page.locator('#tool-dialog').waitFor({state:'hidden'});const job=await finished('interpretation.check');assert.equal(job.status,'succeeded',job.log);assert.match(job.log,/PASS|pass|OK|faithful/i);report.validator={status:job.status,log:job.log};await page.locator('#refresh-status').click();await page.waitForFunction(()=>document.querySelector('.job .badge')?.textContent==='Finished');
