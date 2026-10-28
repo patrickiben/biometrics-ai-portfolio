@@ -551,9 +551,12 @@ class Workspace:
                 atomic_json(self.job_dir / (ident + '.json'), record)
 
     def job_state(self, ident):
-        if ident not in self.jobs:
-            raise InputError('This task is unavailable.')
-        record = dict(self.jobs[ident])
+        # A terminal state is visible only after its durable record is written.
+        # The worker holds this same lock through record.update + atomic_json.
+        with self.lock:
+            if ident not in self.jobs:
+                raise InputError('This task is unavailable.')
+            record = dict(self.jobs[ident])
         file = self.job_dir / (ident + '.log')
         if file.is_symlink():
             raise InputError('Linked logs are not available through the launcher.')
