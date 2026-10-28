@@ -3,6 +3,52 @@ on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  toolkit-desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.0'
+      - name: Check private-project source inventory
+        run: python toolkit_launcher/source_inventory.py --check
+      - name: Check local API, private files, job lifecycle and native R adapters
+        run: python -m unittest discover -s toolkit_launcher/tests -v
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tools/browser-qc/package-lock.json
+      - name: Install browser checks
+        run: |
+          npm ci --prefix tools/browser-qc
+          tools/browser-qc/node_modules/.bin/playwright install --with-deps chromium
+      - name: Exercise toolkit browser forms
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          TOOLKIT_PYTHON: python
+          QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-browser-qc
+        run: node toolkit_launcher/tests/browser_qc.cjs
+      - name: Exercise the real local R workflow
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          TOOLKIT_PYTHON: python
+          QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-browser-qc
+        run: node toolkit_launcher/tests/real_browser_qc.cjs
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: toolkit-desktop-${{ matrix.os }}
+          path: ${{ runner.temp }}/toolkit-browser-qc
+          retention-days: 7
   tracker-windows:
     runs-on: windows-latest
     timeout-minutes: 15
@@ -74,7 +120,9 @@ jobs:
       - name: Check packaged files, navigation, links and documented counts
         run: python package_qc.py
       - name: Check that generated pages, partials, readouts and tokens match their sources
-        run: python build_pages.py --check
+        run: |
+          python build_pages.py --check
+          python toolkit_launcher/source_inventory.py --check
       - name: Unit tests for the G2 per-program geometric-statistics check
         run: python validation_harness/checks/tests/test_g2_geo.py -v
       - name: Install optional Open Study Tracker shared-server dependencies
@@ -149,3 +197,21 @@ jobs:
           Rscript sim_lifecycle/carryover_oc/tests/test_carryover.R
           cd tlf_interpret
           Rscript selftest.R
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+      - name: Install browser checks for native Shiny apps
+        run: |
+          npm ci --prefix tools/browser-qc
+          tools/browser-qc/node_modules/.bin/playwright install --with-deps chromium
+      - name: Launch every local R app from a private toolkit project
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-shiny-qc
+        run: node toolkit_launcher/tests/shiny_browser_qc.cjs
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: toolkit-shiny-qc
+          path: ${{ runner.temp }}/toolkit-shiny-qc
+          retention-days: 7

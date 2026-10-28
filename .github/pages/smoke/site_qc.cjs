@@ -25,7 +25,7 @@ let browser;
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); const base = `http://127.0.0.1:${server.address().port}${prefix}`;
   browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   const hubs = new Set(['index.html', 'Operations.html', 'Biostatistics.html', 'START_HERE.html', 'GET_STARTED.html']);
-  const visualPages = new Set([...hubs, 'open_tracker/index.html', 'open_tracker/SETUP.html', 'sasr_onleave_wiki/Continuity_Toolkit.html', 'lifecycle_dashboard/Study_Lifecycle_Monitor.html', 'sas_tlf_pseudocode/index.html', 'tlf_interpret/index.html', 'uat_irt/quarto/uat-guide.html', 'uat_irt/quarto/uat-slides.html', 'study/04_analysis/report/report.html']);
+  const visualPages = new Set([...hubs, 'TOOLKIT_SETUP.html', 'toolkit_launcher/index.html', 'open_tracker/index.html', 'open_tracker/SETUP.html', 'sasr_onleave_wiki/Continuity_Toolkit.html', 'lifecycle_dashboard/Study_Lifecycle_Monitor.html', 'sas_tlf_pseudocode/index.html', 'tlf_interpret/index.html', 'uat_irt/quarto/uat-guide.html', 'uat_irt/quarto/uat-slides.html', 'study/04_analysis/report/report.html']);
   let next = 0;
   async function worker() {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, acceptDownloads: true });

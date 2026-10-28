@@ -1,5 +1,7 @@
 # IRT / RTSM: User Acceptance Testing
 
+Use the [point-and-click toolkit setup](../TOOLKIT_SETUP.html) to create a private project, replace the documented input CSVs and launch the local UAT app. Its CSV download saves test results only; preserve defect and traceability changes separately.
+
 UAT of the **Interactive Response Technology** (IRT) / **Randomization & Trial Supply Management**
 (RTSM) system before go-live, from the biostatistics lens: does the vendor-built system implement
 the study's randomization and supply logic exactly? The randomization schedule is produced and owned by

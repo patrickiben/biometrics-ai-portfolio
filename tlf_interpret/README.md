@@ -1,5 +1,7 @@
 # Automated TLF Interpretation: Quarto + local SLM
 
+Use the [point-and-click toolkit setup](../TOOLKIT_SETUP.html) to run the number-validator self-test in a private project, prepare model settings and open the source in your editor. Configuration does not install or validate a model; the runnable self-test needs no model.
+
 A pipeline that **drafts the narrative interpretation** that accompanies each Table/Listing/Figure
 (e.g. the AE-overview paragraph, the PK-parameter summary text), using an **on-prem small language
 model (SLM)**, rendered with **Quarto**, and wired to the deterministic TLF outputs from

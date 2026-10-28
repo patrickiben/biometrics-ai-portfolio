@@ -4,17 +4,27 @@ Open-source tools, templates and worked examples for **biostatistics consultants
 
 **[Choose your task and get started](GET_STARTED.html)** · [Home](index.html) · [Full library](START_HERE.html)
 
-Try the browser demos with no installation. A shared R launcher starts the five local Shiny apps; the tracker also has a standalone browser workspace and a Python CLI. [Point-and-click shared-tracker setup](open_tracker/SETUP.html) provides double-click launchers, a browser wizard, account administration and email settings. An optional hosting shortcut and a portable Docker recipe support HTTPS team access. **This is a general-purpose toolkit, not a deployment for a specific client.** Examples (CP-101 to CP-108) are synthetic. Study use still needs input mapping, method/threshold review and your organization's verification process.
+**[Point-and-click setup for the whole toolkit](TOOLKIT_SETUP.html)** · [Control panel and module catalog](toolkit_launcher/index.html) · [Download the complete ZIP](https://github.com/patrickiben/biometrics-ai-portfolio/archive/refs/heads/main.zip)
+
+Download and extract the ZIP, then double-click **Start Toolkit.command** (macOS) or **Start Toolkit.cmd** (Windows). The local browser control panel covers all five Shiny apps, the reproducible R examples, QC checks, browser workspaces, paired SAS/R libraries and configuration templates. Create a **private project from examples** for each study or engagement, check dependencies, install supported R packages, open apps, upload documented inputs and export the project through the GUI. Python 3.10+ starts the control panel; each card identifies any additional runtime installer. The Linux launcher is **Start Toolkit.sh**.
+
+The [`toolkit_launcher/`](toolkit_launcher/index.html) catalog distinguishes runnable examples from templates and references. The three published Shinylive apps and browser-only workspaces can still be tried without local installation. The external eCRF apps remain a separate repository. The [shared tracker setup](open_tracker/SETUP.html) handles its accounts, hosting and optional email.
+
+**This is a general-purpose toolkit, not a deployment for a specific client.** A new private project contains fictional starter data, not an empty or already configured production study. Source files, generated results and logs are retained in that project. Export app/session data before closing; a project ZIP does not capture unsaved Shiny state or browser storage. The shared tracker’s database and settings live outside that workspace ZIP; use its separate backup controls. SAS pseudocode and model templates still require implementation and review in your licensed/approved tools. See [the setup guide](TOOLKIT_SETUP.html) for inputs, persistence, runtime installation and all 22 module paths, and [QC_REPORT.md](QC_REPORT.md) for the October 2026 QC scope.
+
+<details>
+<summary>Optional terminal interface for R users</summary>
 
 ```sh
-# From a downloaded or cloned checkout; R is required for the Shiny apps.
 Rscript launch_app.R --list
 Rscript launch_app.R --check
 Rscript launch_app.R trialmon --install
-# Also: lifecycle, uat, risk, hours. --install explicitly permits missing-package downloads.
+# Also: lifecycle, uat, risk, hours.
 ```
 
-The launcher finds the checkout even from another working directory, installs only with `--install`, and uses a user-specific library. See [the setup guide](GET_STARTED.html) for module inputs, persistence and testing. See [QC_REPORT.md](QC_REPORT.md) for the scope and limits of the October 2026 QC pass.
+The R launcher finds the complete checkout from another working directory. Package downloads happen only with `--install` and target a user library.
+
+</details>
 
 **Site:** <https://patrickiben.github.io/biometrics-ai-portfolio/>
 

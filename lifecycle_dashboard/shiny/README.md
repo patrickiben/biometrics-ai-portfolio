@@ -1,5 +1,7 @@
 # Study Lifecycle Monitor - Shiny app
 
+For a graphical start, follow the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html), create a private project, then choose the Lifecycle card to check packages, upload the listed inputs and start the app. Save supported app downloads before closing; the terminal instructions below are an optional interface.
+
 A runnable operational study-lifecycle console for a synthetic portfolio of eight early-phase
 studies. Each study is scored from 0 to 100 on four operational dimensions (timeline, data, TLF
 production, resourcing), and the overall score is their weighted blend. The scoring is

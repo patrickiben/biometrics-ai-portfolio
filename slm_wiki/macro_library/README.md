@@ -1,5 +1,7 @@
 # LOCALMIND — a SAS/R helper library for a LOCAL, OFFLINE small language model
 
+Use the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html) to prepare local-model settings and open a private copy in your SAS or R editor. The model runtime, model files and evaluation remain separate setup work; configuration alone does not run this library.
+
 **What it is.** A small, deterministic library that lets SAS or R call an **on-device small
 language model** (Ollama / llama.cpp on `127.0.0.1`, fully offline) for the **language layer
 only** — classify, extract, route, draft — and nothing else. **SAS/R owns every number and

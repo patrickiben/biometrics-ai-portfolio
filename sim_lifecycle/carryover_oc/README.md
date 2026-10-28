@@ -1,5 +1,7 @@
 # Residual carryover and the ICH M13A 5% pre-dose rule (synthetic)
 
+Use the [point-and-click toolkit setup](../../TOOLKIT_SETUP.html) to create a private project, run the known-answer checks and reproduce the carryover study. Scenario changes require review of the source and its assumptions.
+
 Tools built: runs. Exploratory operating-characteristics study on synthetic data. The carryover
 algebra and the 5% pre-dose rule are established (Grizzle 1965; Senn, D'Angelo and Potvin 2004;
 Ocaña, Sánchez and Carrasco 2015; ICH M13A). The subtraction analysis is a sensitivity analysis

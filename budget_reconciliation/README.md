@@ -1,5 +1,7 @@
 # Hours Budget Reconciliation: "Find Hours"
 
+Use the [point-and-click toolkit setup](../TOOLKIT_SETUP.html) to create a private project, upload the documented hours ledger and launch Find Hours. Save the ledger and change-order downloads before closing the app.
+
 When an out-of-scope deliverable suddenly needs doing, where do the hours come from? This component
 reconciles a project's **planned vs actual vs forecast (EAC) hours**, computes the net headroom, and
 sources a new ask from under-run slack and contingency: flagging any shortfall that is genuinely
