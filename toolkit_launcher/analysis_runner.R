@@ -82,7 +82,13 @@ analysis_render <- function(result, directory, relative, css, study) {
       files <- c(files,file.path(relative,c(png,pdf)))
       blocks <- c(blocks,paste0("<h3>",analysis_escape(label),"</h3><p><a href='",pdf,"'>PDF figure</a></p><img alt='",analysis_escape(label),"' src='",png,"'>"))
     } else {
-      if (inherits(x,"TableTree") || inherits(x,"VTableTree")) x <- rtables::as_result_df(x,make_ard=TRUE)
+      if (inherits(x,"TableTree") || inherits(x,"VTableTree")) {
+        # Optional for TableTree outputs only. Shinylive scans function bodies
+        # before execution, so a literal namespace call downloads rtables even
+        # for data-frame-only modules. Resolve it only when this branch is used.
+        table_to_df <- base::getExportedValue("rtables","as_result_df")
+        x <- table_to_df(x,make_ard=TRUE)
+      }
       x <- as.data.frame(x,stringsAsFactors=FALSE)
       if (!ncol(x)) stop("A reported component has no columns.",call.=FALSE)
       numeric_cols <- vapply(x,is.numeric,logical(1))

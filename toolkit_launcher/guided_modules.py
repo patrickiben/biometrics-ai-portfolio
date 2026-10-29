@@ -466,6 +466,9 @@ def _sas_data(slot, rows, columns=None):
                 literal = repr(value)
             lines.append(f"{key}={literal};")
         lines.append("output;")
+    if not rows:
+        # A declaration-only DATA step otherwise writes one all-missing row.
+        lines.append("stop;")
     lines.append("run;")
     return "\n".join(lines) + "\n"
 

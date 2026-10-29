@@ -1,0 +1,3 @@
+# The shared renderer also supports TableTree, which vaccine outputs do not use.
+# The app/core explicitly declare every package used by this module.
+toolkit_launcher/analysis_runner.R

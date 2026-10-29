@@ -1,0 +1,111 @@
+# Native Shiny lifecycle regression. Browser/webR execution is tested separately.
+args <- commandArgs(trailingOnly = FALSE)
+script <- sub("^--file=", "", args[grepl("^--file=", args)][[1]])
+root <- normalizePath(file.path(dirname(script), "../.."), mustWork = TRUE)
+oldwd <- getwd(); setwd(file.path(root, "vaccine/shiny"))
+scope <- new.env(parent = globalenv()); source("app.R", local = scope)
+checks <- 0L
+check <- function(ok, label) { if (!isTRUE(ok)) stop(label, call. = FALSE); checks <<- checks + 1L }
+shiny::testServer(scope$server, {
+  session$setInputs(form_epoch = 0L); session$flushReact()
+  check(identical(rv$state, "empty"), "Fresh session starts empty")
+  check(all(vapply(rv$data, is.null, TRUE)), "Fresh session has no data")
+  check(is.null(current_result()), "Fresh session has no results")
+  session$setInputs(run_analysis = 1L)
+  check(is.null(current_result()), "Unvalidated run is blocked")
+  session$setInputs(load_example = 1L); session$flushReact()
+  example <- vaccine_browser_example(root)
+  do.call(session$setInputs, example$settings[intersect(names(example$settings), scope$VAX_FIELDS)])
+  session$flushReact()
+  check(all(vapply(rv$data, is.data.frame, TRUE)), "Deliberate example loads all feeds")
+  check(!isTRUE(input$review_confirmed), "Example does not approve itself")
+  initial_mapping <- output$mapping_participants
+  session$setInputs(map_participants_USUBJID = "ARM", map_participants_ARM = "USUBJID")
+  session$setInputs(load_example = 2L); session$flushReact()
+  restored <- output$mapping_participants$html
+  for (column in c("USUBJID", "ARM")) {
+    block <- sub(paste0('.*<select id="map_participants_', column, '"[^>]*>(.*?)</select>.*'), "\\1", restored)
+    check(grepl(paste0('value="', column, '" selected'), block, fixed = TRUE), paste("Example restores canonical", column, "mapping"))
+  }
+  session$setInputs(map_participants_USUBJID = "USUBJID", map_participants_ARM = "ARM")
+
+  for (id in scope$VAX_CONFIRM) { do.call(session$setInputs, setNames(list(TRUE), id)); session$flushReact() }
+  check(all(vapply(scope$VAX_CONFIRM, function(id) isTRUE(input[[id]]), TRUE)), "Review flags do not reset one another")
+  session$setInputs(validate_setup = 1L); session$flushReact()
+  check(identical(rv$state, "ready"), "Reviewed example validates")
+  check(isTRUE(is_validated()), "Current snapshot may run")
+  session$setInputs(run_analysis = 2L); session$flushReact()
+  result <- current_result()
+  check(identical(rv$state, "succeeded"), "Actual R computation completed")
+  check(length(result$outputs) == 6L, "All six selected outputs are retained")
+  check(all(file.exists(file.path(result$directory, result$files))), "Every advertised export exists")
+  check("vaccine_analysis.sas" %in% result$files, "Configured SAS reference is available")
+  check("setup_profile.json" %in% result$files, "Reusable setup profile is available")
+  revision_path <- result$directory
+  session$setInputs(study_id = "CHANGED-STUDY", form_epoch = 1L); session$flushReact()
+  check(is.null(current_result()), "Setting change immediately invalidates results")
+  check(!isTRUE(is_validated()), "Changed snapshot must be revalidated")
+  check(!dir.exists(revision_path), "Obsolete result files are removed")
+  session$setInputs(download_bundle = 1L); session$flushReact()
+  check(is.null(current_result()), "Stale download action cannot restore old results")
+  fixture_file <- function() {
+    path <- tempfile(fileext = ".csv"); file.copy(file.path(root, "vaccine/examples/participants.csv"), path); path
+  }
+  start_upload <- function(slot, path, size = file.info(path)$size, count = 1L) {
+    id <- active_upload_id(slot)
+    session$setInputs(upload_started = list(slot = slot, id = id, name = basename(path), size = size, count = count)); session$flushReact(); id
+  }
+  complete_upload <- function(id, path, name = basename(path)) {
+    do.call(session$setInputs, setNames(list(data.frame(name = name, size = file.info(path)$size, type = "text/csv", datapath = path)), id)); session$flushReact()
+  }
+  good <- fixture_file(); id <- start_upload("participants", good)
+  check(is.null(rv$data$participants), "Selection immediately clears the old feed")
+  check(length(rv$pending_uploads) == 1L && identical(rv$state, "uploading"), "Transfer is explicitly pending")
+  session$setInputs(validate_setup = 2L)
+  check(identical(rv$state, "uploading") && !isTRUE(is_validated()), "Pending transfer cannot validate")
+  session$setInputs(run_analysis = 3L)
+  check(is.null(current_result()), "Pending transfer cannot run old data")
+  complete_upload(id, good)
+  check(nrow(rv$data$participants) == 12L && !length(rv$pending_uploads), "Matching successful transfer restores the new feed")
+  check(!file.exists(good) && !identical(id, active_upload_id("participants")), "Upload bytes are removed and control generation advances")
+  id <- start_upload("participants", "oversized.csv", size = 16 * 1024^2 + 1)
+  check(is.null(rv$data$participants) && !length(rv$pending_uploads), "Oversized replacement clears the prior feed without transfer")
+  check(identical(rv$state, "invalid") && grepl("16 MiB", rv$message), "Oversized replacement reports its limit")
+  session$setInputs(validate_setup = 3L)
+  check(identical(rv$state, "invalid") && !isTRUE(is_validated()), "Upload errors cannot yield a Ready status")
+  # An unused feed error must also be explicit rather than Ready with a disabled Run.
+  session$setInputs(outputs = "immunogenicity")
+  start_upload("diary", "oversized-unused.csv", size = 16 * 1024^2 + 1)
+  session$setInputs(validate_setup = 4L)
+  check(identical(rv$state, "invalid") && any(rv$validation$errors$field == "inputs.diary"), "Unused-feed upload errors are explicitly reported")
+  session$setInputs(clear_diary = 1L)
+  check(is.null(rv$upload_errors$diary), "Removing an unused feed clears its upload error")
+  bad <- tempfile(fileext = ".csv"); writeLines(c("a,b", "1,2,3"), bad)
+  id <- start_upload("participants", bad); complete_upload(id, bad)
+  check(is.null(rv$data$participants), "Malformed replacement discards the prior participant feed")
+  check(identical(rv$state, "invalid"), "Malformed upload stays visibly invalid")
+  check(grepl("same number of fields", rv$message, fixed = TRUE), "Malformed upload explains its field-count problem")
+  good <- fixture_file(); id <- start_upload("participants", good)
+  session$setInputs(upload_failed = list(slot = "participants", id = id)); session$flushReact()
+  check(!length(rv$pending_uploads) && grepl("transfer did not complete", rv$message), "Transport failure leaves an actionable error")
+  complete_upload(id, good)
+  check(is.null(rv$data$participants) && !file.exists(good), "Late completion from a failed transfer cannot restore data")
+  good <- fixture_file(); id <- start_upload("participants", good); complete_upload(id, good)
+  check(nrow(rv$data$participants) == 12L && is.null(rv$upload_errors$participants), "A valid retry recovers from failed transfers")
+  good <- fixture_file(); id <- start_upload("participants", good)
+  session$setInputs(reset = 1L); session$flushReact(); complete_upload(id, good)
+  check(all(vapply(rv$data, is.null, TRUE)), "Reset clears all feeds and ignores a pending transfer's late completion")
+  check(is.null(rv$result), "Reset clears all result controls")
+  check(is.null(rv$validation), "Reset clears validation and approval")
+  check(!length(rv$upload_errors) && !length(rv$pending_uploads), "Reset clears upload diagnostics and pending state")
+  session$setInputs(load_example = 3L); session$flushReact()
+  good <- fixture_file(); id <- start_upload("participants", good)
+  session$setInputs(load_example = 4L); session$flushReact(); complete_upload(id, good)
+  check(nrow(rv$data$participants) == 12L && !length(rv$pending_uploads) && !length(rv$upload_errors), "Loading the example ignores an older pending transfer")
+  check(grepl("synthetic", rv$filenames$participants), "Late upload cannot replace example provenance")
+  id <- start_upload("participants", "multiple.csv", size = 100, count = 2L)
+  check(identical(rv$state, "invalid") && !length(rv$pending_uploads), "Multiple-file selection is rejected without a hanging pending state")
+
+})
+setwd(oldwd)
+cat(sprintf("PASS: %d native Shiny lifecycle assertions\n", checks))

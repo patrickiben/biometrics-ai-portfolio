@@ -1357,20 +1357,25 @@
     "reporting"
    ],
    "primary": "programming",
-   "eyebrow": "Guided vaccine analyses",
+   "eyebrow": "Browser vaccine analyses",
    "status": [
     {
      "k": "runs",
-     "text": "Point-and-click R"
+     "text": "Browser R; no installation"
     },
     {
      "k": "synthetic",
      "text": "Synthetic examples and QC"
     }
    ],
-   "summary": "Configure assay results, paired fold rises, response definitions and solicited-reaction diaries through forms. Run descriptive R analyses and retain complete results with SAS reference exports.",
+   "summary": "Run descriptive vaccine R analyses directly in the browser. Upload and map CSVs, configure study definitions, then view results and download complete reports, reproducible inputs and SAS references.",
    "fact": "Study-defined limits, populations and missing-data rules remain explicit. No vaccine-efficacy or protection claim is inferred; native SAS is unexecuted.",
    "links": [
+    {
+     "t": "open",
+     "href": "apps/vaccine/",
+     "text": "Run in browser"
+    },
     {
      "t": "open",
      "href": "vaccine/index.html",
@@ -1388,7 +1393,13 @@
     }
    ],
    "source": "vaccine/README.md",
-   "published": true
+   "published": true,
+   "browser": {
+    "runtime": "shinylive",
+    "href": "apps/vaccine/",
+    "verified": "2026-10-28",
+    "how": "Actual exported-app browser QC: uploaded synthetic CSVs, numerical parity against the shared native R core, downloadable reports and SAS reference exports, themes and session reset. The Pages workflow repeats browser checks before publishing."
+   }
   }
  ]
 }

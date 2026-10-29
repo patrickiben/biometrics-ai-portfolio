@@ -8,7 +8,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{title}} (synthetic data) | Trial biostatistics toolkit</title>
+<title>{{title}} | Trial biostatistics toolkit</title>
 <meta name="description" content="{{summary}}">
 {{{site_head}}}
 <link rel="stylesheet" href="{{REL_PATH}}apps/_shared/launch.css">
@@ -23,7 +23,7 @@
   <section class="page-head launch-intro" aria-labelledby="launch-title">
     <p class="eyebrow">In-browser R Shiny app</p>
     <h1 id="launch-title">{{title}}</h1>
-    <p class="chips"><span class="st st-synthetic">Synthetic data</span><span class="st st-note">R runs in your browser: Shinylive and webR</span></p>
+    <p class="chips"><span class="st st-synthetic">{{data_scope}}</span><span class="st st-note">R runs in your browser: Shinylive and webR</span></p>
     <p class="lede">{{summary}}</p>
     <div class="launch-go">
       <a class="status-pill" href="#app" data-tone="progress"><span class="dot" aria-hidden="true"></span><span class="pill-text">Starting the app below</span></a>
@@ -43,10 +43,10 @@
       <div class="panel launch-facts">
         <h2>Before you start</h2>
         <ul>
-          <li><strong>Synthetic data only.</strong> Every study, participant, site and number here is invented for this toolkit.</li>
+          <li><strong>{{data_scope}}.</strong> {{data_note}}</li>
           <li><strong>R runs in your browser.</strong> Shinylive and webR run the same R code as local R; nothing you enter leaves your computer.</li>
           <li><strong>First visit:</strong> about {{download_mb}} MB to download, usually {{first_s}} seconds on a fast connection and longer on a slow one. Later visits take {{revisit_s}} seconds, because R starts fresh each time.</li>
-          <li><strong>Local R:</strong> <code>shiny::runApp("{{source}}")</code> from the repository.</li>
+          <li><strong>Getting started:</strong> {{usage_note}}</li>
         </ul>
       </div>
       {{#screenshot}}

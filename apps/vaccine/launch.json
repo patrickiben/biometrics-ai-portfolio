@@ -1,0 +1,162 @@
+{
+  "source": "vaccine/shiny",
+  "title": "Vaccine analysis workspace",
+  "summary": "Configure and run descriptive vaccine immunogenicity and solicited-reactogenicity analyses directly in this browser. Upload CSVs or deliberately load the synthetic example, map columns, review study-specific assumptions, and run the same R analysis functions used by the desktop toolkit. No R installation, account or toolkit download is needed.",
+  "data_scope": "Your CSVs or a synthetic example",
+  "data_note": "The initial workspace is blank. Example participants and study settings are fictional; your uploaded inputs are used only in this browser session.",
+  "usage_note": "Use Load synthetic example to explore, or upload your study CSVs. Review the settings and confirmations before running. Download results to keep them; reloading clears the session.",
+  "try": [
+    "Choose Load synthetic example, then inspect the uploaded populations, assay results, administered doses and diaries. The example includes quantification limits and missing observations.",
+    "Review the assay/visit and diary definitions, confirm the study assumptions and run all six selected outputs. Study-defined response thresholds do not establish protection.",
+    "Compare the geometric summaries, paired fold rises, responder counts and diary completeness. Download the complete report ZIP, individual tables or figures, configured SAS reference and reusable setup profile.",
+    "Change an input or setting to see prior results become unavailable until you validate and run again. Reset clears the workspace."
+  ],
+  "links": [
+    {
+      "t": "guide",
+      "label": "Module guide",
+      "href": "../../vaccine/index.html"
+    },
+    {
+      "t": "learn",
+      "label": "Learning companion",
+      "href": "../../vaccine/learning.html"
+    }
+  ],
+  "first_load": {
+    "download_mb": 65,
+    "first_s": "10 to 30",
+    "revisit_s": "8 to 15"
+  },
+  "extra_files": [
+    {
+      "from": "vaccine/analysis.R",
+      "to": "vaccine/analysis.R"
+    },
+    {
+      "from": "vaccine/browser.R",
+      "to": "vaccine/browser.R"
+    },
+    {
+      "from": "vaccine/reference.sas",
+      "to": "vaccine/reference.sas"
+    },
+    {
+      "from": "toolkit_launcher/analysis_runner.R",
+      "to": "toolkit_launcher/analysis_runner.R"
+    },
+    {
+      "from": "assets/theme/tokens.css",
+      "to": "assets/theme/tokens.css"
+    },
+    {
+      "from": "vaccine/examples/README.md",
+      "to": "vaccine/examples/README.md"
+    },
+    {
+      "from": "vaccine/examples/diary.csv",
+      "to": "vaccine/examples/diary.csv"
+    },
+    {
+      "from": "vaccine/examples/diary_template.csv",
+      "to": "vaccine/examples/diary_template.csv"
+    },
+    {
+      "from": "vaccine/examples/doses.csv",
+      "to": "vaccine/examples/doses.csv"
+    },
+    {
+      "from": "vaccine/examples/doses_template.csv",
+      "to": "vaccine/examples/doses_template.csv"
+    },
+    {
+      "from": "vaccine/examples/example_profile.json",
+      "to": "vaccine/examples/example_profile.json"
+    },
+    {
+      "from": "vaccine/examples/example_settings.json",
+      "to": "vaccine/examples/example_settings.json"
+    },
+    {
+      "from": "vaccine/examples/participants.csv",
+      "to": "vaccine/examples/participants.csv"
+    },
+    {
+      "from": "vaccine/examples/participants_template.csv",
+      "to": "vaccine/examples/participants_template.csv"
+    },
+    {
+      "from": "vaccine/examples/titers.csv",
+      "to": "vaccine/examples/titers.csv"
+    },
+    {
+      "from": "vaccine/examples/titers_template.csv",
+      "to": "vaccine/examples/titers_template.csv"
+    }
+  ],
+  "smoke": {
+    "timeout_s": 180,
+    "outputs": [
+      "state_panel"
+    ],
+    "expect": {},
+    "tabs": [],
+    "interactions": [
+      {
+        "name": "A blank client-neutral workspace requires deliberate setup",
+        "steps": [],
+        "expect": [
+          {
+            "visible": "#analysis_state[data-state=\"empty\"]"
+          },
+          {
+            "text": [
+              "#analysis_state .vax-state-count",
+              "0 of 4 feeds loaded"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Synthetic example runs all six reviewed R outputs in the browser",
+        "steps": [
+          {
+            "click": "#load_example"
+          },
+          {
+            "click": ".nav-link[data-value=\"review\"]"
+          },
+          {
+            "click": "#visits_confirmed"
+          },
+          {
+            "click": "#diary_confirmed"
+          },
+          {
+            "click": "#review_confirmed"
+          },
+          {
+            "click": "#validate_setup"
+          },
+          {
+            "click": "#run_analysis"
+          }
+        ],
+        "expect": [
+          {
+            "visible": "#analysis_state[data-state=\"succeeded\"]"
+          },
+          {
+            "visible": ".nav-link.active[data-value=\"results\"]"
+          },
+          {
+            "visible": "#result_summary[data-output-count=\"6\"]"
+          },
+          {
+            "visible": "#result_table table"
+          }
+        ]
+      }
+    ]
+  }
+}

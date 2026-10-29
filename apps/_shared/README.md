@@ -1,6 +1,6 @@
 # Shared parts of the in-browser apps
 
-TRIALMON, the UAT tracker and the Study Lifecycle Monitor run in the visitor's browser with
+TRIALMON, the UAT tracker, the Study Lifecycle Monitor and the vaccine analysis workspace run in the visitor's browser with
 Shinylive (webR). A first visit downloads about 65 MB and takes 10 to 20 seconds, so a visitor
 must always be able to tell what the app is doing. Three shared pieces make sure of that:
 
@@ -14,7 +14,7 @@ must always be able to tell what the app is doing. Three shared pieces make sure
 
 The build ([`../../.github/pages/build_site.R`](../../.github/pages/build_site.R)) stages each
 app's folder with `portfolio_app.R` next to `app.R`, exports it with this template, and checks the
-result. Synthetic data only.
+result. Bundled examples are synthetic; the vaccine workspace also accepts user CSVs into browser session memory.
 
 ## The launch page
 

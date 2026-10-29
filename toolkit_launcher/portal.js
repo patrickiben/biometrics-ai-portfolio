@@ -95,7 +95,7 @@
       card.append(types,node('p',module.summary));
       const actions=node('div',undefined,'actions');
       actions.append(button(state?'Open tool':'View details',()=>openTool(module.id),{primary:true}));
-      const demo=safeURL(module.demo_url);if(demo)actions.append(link('Browser demo ↗',demo,'btn'));
+      const demo=safeURL(module.demo_url);if(demo)actions.append(link((module.browser_label||'Browser demo')+' ↗',demo,'btn'));
       card.append(actions);$('catalog').append(card);
     }
     if(!visible.length)$('catalog').append(node('p',modules().length?'No tools match your search. Try another task or choose all categories.':'The tool catalog is not available. Open the setup guide to find each module.','catalog-empty'));
@@ -506,7 +506,7 @@
     addDetail('What you can adapt',module.customization);addDetail('Saving your work',module.persistence);addDetail('Scope and limits',module.limits);addDetail('Outputs',module.outputs,{list:true});
     const docs=node('div');docs.append(node('h3','Guides & reference'));const list=node('ul');
     for(const doc of module.docs||[]){const url=documentURL(doc.path);if(url){const li=node('li');li.append(link(doc.label||doc.path,url));list.append(li);}}
-    const demo=safeURL(module.demo_url);if(demo){const li=node('li');li.append(link('Open browser demo ↗',demo));list.append(li);}docs.append(list);if(list.childElementCount)$('tool-details').append(docs);
+    const demo=safeURL(module.demo_url);if(demo){const li=node('li');li.append(link((module.browser_label||'Open browser demo')+' ↗',demo));list.append(li);}docs.append(list);if(list.childElementCount)$('tool-details').append(docs);
     renderToolProject(module);
     for(const raw of module.actions||[]){const action=actionDetails(raw);
       if(action.type==='open'){const path=action.path;if(/^https?:/.test(path||'')){const url=safeURL(path);if(url)$('tool-actions').append(link(action.label+' ↗',url,'btn'));}else if(state&&path)$('tool-actions').append(button(action.label,event=>busy(event.currentTarget,()=>act(()=>fileAction(path),'tool-error')),{disabled:!selectedProject()}));}

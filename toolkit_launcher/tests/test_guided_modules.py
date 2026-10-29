@@ -17,6 +17,16 @@ spec.loader.exec_module(guided)
 
 
 class GuidedModulesTest(unittest.TestCase):
+    def test_sas_empty_input_preserves_zero_rows_without_phantom_record(self):
+        # Structural reference-code check; native SAS is not available in CI.
+        columns = [("USUBJID", "text", True), ("GRADE", "number", False)]
+        empty = guided._sas_data("diary", [], columns)
+        self.assertEqual(empty, "data work.diary;\nlength USUBJID $1;\nlength GRADE 8;\nstop;\nrun;\n")
+        populated = guided._sas_data("diary", [{"USUBJID": "P1", "GRADE": ""}], columns)
+        self.assertNotIn("stop;", populated)
+        self.assertEqual(populated.count("output;"), 1)
+        self.assertIn("GRADE=.;", populated)
+
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
         self.path = Path(self.temp.name)

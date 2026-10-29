@@ -1,7 +1,6 @@
-# Build and publish the whole GitHub Pages site: the static pages plus three R Shiny apps that run
-# in the visitor's browser with Shinylive (webR): TRIALMON, the UAT tracker and the lifecycle
-# console, at apps/<name>/. All three share one copy of the Shinylive and webR assets. Synthetic
-# data only. The build output is never committed.
+# Build and publish the whole GitHub Pages site and its registered browser R apps.
+# TRIALMON, UAT, lifecycle and vaccine analyses share Shinylive/webR assets.
+# Bundled data are synthetic; vaccine uploads live only in a visitor's browser memory.
 #
 # Publishing needs the repository's Pages source set to "GitHub Actions" (Settings > Pages). Until
 # then the build job still runs and checks everything, the deploy job is skipped with a notice, and
@@ -61,6 +60,9 @@ jobs:
           Rscript lifecycle_dashboard/tests/test-logic.R
           Rscript lifecycle_dashboard/tests/test-server.R
           Rscript sasr_monitoring_wiki/trialmon_tests/run-tests.R
+          Rscript vaccine/tests/test_browser_core.R
+          Rscript vaccine/tests/test_shiny.R
+          Rscript tests/test_analysis_renderer_dependencies.R
       - name: Build the site (static pages, then shinylive::export for each app)
         # Copies the tracked files into _site/, exports each app listed by apps/<name>/launch.json
         # into _site/apps/<name>/ with shinylive 0.5.0 (assets 0.10.12), with the shared R helper
@@ -86,6 +88,20 @@ jobs:
         run: >-
           node .github/pages/smoke/smoke.mjs _site
           --shots "${RUNNER_TEMP}/smoke" --report "${RUNNER_TEMP}/smoke/report.json"
+      - name: Install vaccine browser QC driver
+        run: npm ci --prefix tools/browser-qc --no-audit --no-fund
+      - name: Verify uploaded vaccine analyses and exports in the actual browser runtime
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/vaccine-webassembly-qc
+        run: node vaccine/tests/browser_app_qc.cjs _site
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: vaccine-webassembly-qc
+          path: ${{ runner.temp }}/vaccine-webassembly-qc
+          retention-days: 14
       - name: Keep the smoke test's screenshots and report
         if: always()
         uses: actions/upload-artifact@v7
