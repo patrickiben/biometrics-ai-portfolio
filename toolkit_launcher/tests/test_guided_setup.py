@@ -55,6 +55,16 @@ class GuidedSetupTests(unittest.TestCase):
             self.assertIn(b'No analysis program', archive.read('SETUP_REPORT.html'))
         self.assertEqual(len(setup.state(self.root, self.module)['builds']), 2)
 
+    def test_recent_history_stays_readable_when_large_revisions_accumulate(self):
+        self.preview()
+        path = self.root / 'toolkit_configuration/sas_monitor.builds.json'
+        path.write_text(json.dumps([{'note': 'x' * 45000} for _ in range(20)]), encoding='utf-8')
+        generated = setup.act(self.root, self.module, 'generate', self.values)
+        state = setup.state(self.root, self.module)
+        self.assertEqual(state['builds'][0]['build_id'], generated['build']['build_id'])
+        self.assertLessEqual(path.stat().st_size, 900000)
+        self.assertLess(len(state['builds']), 21)
+
     def test_generation_requires_current_successful_preview(self):
         self.assertTrue(setup.act(self.root, self.module, 'generate', self.values)['report']['errors'])
         self.preview()
@@ -99,6 +109,17 @@ class GuidedSetupTests(unittest.TestCase):
         for bad in (dict(profile, module_id='localmind'), dict(profile, schema=2), dict(profile, private_path='/tmp/file')):
             with self.assertRaises(InputError):
                 setup.import_profile(other, self.module, bad)
+
+    def test_dynamic_baseline_mapping_is_bounded_and_identifier_only(self):
+        spec = {'steps': [{'fields': [{'id': 'baseline_continuous', 'label': 'Baseline', 'type': 'text', 'default': ''}]}],
+                'inputs': [{'id': 'adsl', 'label': 'ADSL', 'columns': [], 'dynamic_columns_fields': ['baseline_continuous']}]}
+        value = setup.clean_values(spec, {'baseline_continuous': ' disease_score ', 'columns': {'adsl': {'DISEASE_SCORE': 'Score'}}})
+        self.assertEqual(value['columns']['adsl'], {'DISEASE_SCORE': 'Score'})
+        for field in ('X);system(1)', ','.join('COL'+str(i) for i in range(101))):
+            with self.assertRaises(InputError):
+                setup.clean_values(spec, {'baseline_continuous': field, 'columns': {'adsl': {}}})
+        with self.assertRaises(InputError):
+            setup.clean_values(spec, {'baseline_continuous': 'SCORE', 'columns': {'adsl': {'UNDECLARED': 'Score'}}})
 
     def test_profile_shape_and_csv_slot_are_allowlisted(self):
         for values in ([], {'command': 'echo bad'}, {'columns': {'outside': {}}}, {'query_days': float('inf')}, {'study_id': '\x00'}):

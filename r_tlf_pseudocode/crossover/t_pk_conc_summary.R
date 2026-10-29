@@ -4,7 +4,7 @@
 #             Nominal Time Point
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (AVAL = concentration; ATPTN/ATPT = nominal time; APERIOD)
-# NOTE      : PSEUDOCODE. Concentration summary by treatment x nominal time:
+# NOTE      : ANALYSIS TEMPLATE. Concentration summary by treatment x nominal time:
 #             n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max. Geometric
 #             stats ON THE LOG SCALE via pkstats() (x > 0 only). Crossover:
 #             treatment column = dv$trtvar (TRTA, the actual treatment received
@@ -22,7 +22,7 @@ dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 ## Keep PK-evaluable rows; ATPTN is the numeric nominal-time sort key, ATPT the
 ## display label. Treatment column is the ACTUAL treatment (dv$trtvar = TRTA),
 ## NOT the planned sequence, so a given drug's profile pools across periods.
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", !is.na(ATPTN)) %>%
   mutate(trt = .data[[dv$trtvar]])
 
@@ -81,3 +81,5 @@ ttl <- tfl_titles(num = "14.4.1.1", type = "Table",
 
 ## render: rtables (split_rows_by ATPT then analyze stat) or gt grouped by time
 print(tab)
+
+print(pkstats(pc, by=by) %>% select(all_of(by), n_input, n, n_excluded, n_missing, n_nonpositive, n_blq_excluded))

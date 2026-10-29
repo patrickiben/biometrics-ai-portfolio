@@ -4,7 +4,7 @@
 #             (multiples of ULN)
 # POPULATION: Safety Population (SAFFL == "Y"), on-treatment
 # INPUT     : ADLB (PARAMCD in ALT, AST, BILI; ratio-to-ULN)
-# NOTE      : PSEUDOCODE. SAD = parallel dose cohorts; colour = DOSE LEVEL
+# NOTE      : ANALYSIS TEMPLATE. SAD = parallel dose cohorts; colour = DOSE LEVEL
 #             (dv$trtvar = TRT01A, ordered by TRT01AN so escalation reads left->
 #             right in the legend; placebo pooled). Per-participant peak (max)
 #             ALT/ULN (x) vs Total Bilirubin/ULN (y), both log scale. Reference
@@ -16,7 +16,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")                      # colour = TRT01A/TRT01AN (dose level)
 
 ## ratio-to-ULN; prefer ADaM-provided R2ULN, else AVAL / A1HI
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", PARAMCD %in% c("ALT","AST","BILI")) %>%
   mutate(xuln = coalesce(R2ULN, AVAL / A1HI))
 

@@ -4,7 +4,7 @@
 #             (multiples of ULN)
 # POPULATION: Safety Population (SAFFL == "Y"), on-treatment
 # INPUT     : ADLB (PARAMCD in ALT, AST, BILI; ratio-to-ULN)
-# NOTE      : PSEUDOCODE. Per-participant peak (max) ALT/ULN (x) vs Total
+# NOTE      : ANALYSIS TEMPLATE. Per-participant peak (max) ALT/ULN (x) vs Total
 #             Bilirubin/ULN (y), both log scale, colored by treatment.
 #             Reference lines at 3xULN (ALT) and 2xULN (bilirubin) are the
 #             standard regulatory thresholds. Neutral liver-safety scatter.
@@ -14,7 +14,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")
 
 ## ratio-to-ULN; prefer ADaM-provided R2ULN, else AVAL / A1HI
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", PARAMCD %in% c("ALT","AST","BILI")) %>%
   mutate(xuln = coalesce(R2ULN, AVAL / A1HI))
 

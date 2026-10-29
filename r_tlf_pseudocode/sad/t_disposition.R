@@ -3,7 +3,7 @@
 # TITLE     : Participant Disposition by Dose Cohort
 # POPULATION: All Enrolled Participants
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. Participant-level (one row per USUBJID). SAD = parallel
+# NOTE      : ANALYSIS TEMPLATE. Participant-level (one row per USUBJID). SAD = parallel
 #             dose cohorts; the column variable is the DOSE LEVEL (TRT01A), with
 #             placebo typically pooled across cohorts into one "Placebo" column.
 #             Single dose -> one treatment per participant, NO period/sequence
@@ -27,16 +27,11 @@ dv  <- design_vars("SAD")                       # -> trtvar = TRT01A (dose level
 ## screen-fails / enrolled-not-randomized attrition is visible (matches SAS)
 adsl <- adam$adsl %>%
   filter(ENRLFL == "Y") %>%
-  ## pool placebo across cohorts (IDEMPOTENT if ADaM already pooled into TRT01A);
-  ## active arms keep their ascending dose level (TRT01A). dose_ord = TRT01AN
-  ## orders the columns ascending (Placebo at 0). This is the single documented
-  ## pooling point and is a no-op when ADaM has already pooled -> same column set
-  ## and denominators as the SAS twin (which groups by raw TRT01A/TRT01AN).
+  ## Preserve supplied treatment labels. TRT01AN controls display order only;
+  ## its value never identifies placebo or the administered numeric dose.
   mutate(
-    dose_col = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       "Placebo", .data[[dv$trtvar]]),
-    dose_ord = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       0, .data[[dv$trtnvar]]))               # ascending order key
+    dose_col = .data[[dv$trtvar]],
+    dose_ord = .data[[dv$trtnvar]])               # ascending order key
 
 ## --- column denominators (N=) per dose cohort + Total ---------------------
 ## enrolled N drives the % for every disposition row (participant-level)
@@ -89,7 +84,7 @@ tab <- bind_rows(
   })
 
 ## --- stack rows x dose-cohort columns, render ------------------------------
-## Column order = ascending dose (dose_ord; Placebo at 0), Total last -> matches
+## Column order follows the supplied ordering code (dose_ord); Total is last.
 ## the SAS transpose `id TRT01AN` (Total carries trtn=9999, so it sorts last).
 col_ord <- adsl %>% distinct(dose_col, dose_ord) %>% arrange(dose_ord) %>%
   pull(dose_col)
@@ -101,11 +96,8 @@ out <- tab %>%
 ttl <- tfl_titles(num = "14.1.1", type = "Table",
    text = "Participant Disposition by Dose Cohort",
    pop  = "All Enrolled Participants",
-   foot = "SAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Percentages based on enrolled participants per cohort. Discontinued = DCSFL == \"Y\"; discontinuation reasons from ADSL DCSREAS.")
+   foot = "SAD: columns = ascending dose cohorts (TRT01A) with source treatment groups retained. Percentages based on enrolled participants per cohort. Discontinued = DCSFL == \"Y\"; discontinuation reasons from ADSL DCSREAS.")
 
 ## rtables layout: characteristic rows x dose-cohort columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(out)
+
 print(out)

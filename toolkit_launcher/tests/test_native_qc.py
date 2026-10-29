@@ -36,6 +36,12 @@ class PortableQCTest(unittest.TestCase):
         nsas, nr, mismatch, collisions, missing = harness.twin_checks(self.root)
         self.assertEqual((nsas, nr, mismatch, collisions, missing), (1, 1, 0, 0, 2))
 
+    def test_shared_model_helpers_are_not_counted_as_tlf_twins(self):
+        self.put('sas_tlf_pseudocode/design/one.sas', 'num=14.1')
+        self.put('r_tlf_pseudocode/design/one.R', 'num="14.1"')
+        self.put('r_tlf_pseudocode/01_analysis_models.R', 'helper <- function() 1')
+        self.assertEqual(harness.twin_checks(self.root), (1, 1, 0, 0, 0))
+
     def test_r_verdicts_accept_the_existing_colon_format(self):
         self.assertEqual(harness.token("G3_VERDICT: PASS\n", "G3_VERDICT", "FAIL"), "PASS")
         self.assertEqual(harness.token("G9_VERDICT PASS\n", "G9_VERDICT", "FAIL"), "PASS")

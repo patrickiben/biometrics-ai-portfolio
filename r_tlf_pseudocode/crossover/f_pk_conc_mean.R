@@ -4,7 +4,7 @@
 #             (Linear and Semilog)
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (AVAL = concentration; ATPTN nominal time; APERIOD; TRTA)
-# NOTE      : PSEUDOCODE. Mean +/- SD concentration-time profile, one curve per
+# NOTE      : ANALYSIS TEMPLATE. Mean +/- SD concentration-time profile, one curve per
 #             treatment, overlaid (within-participant crossover -> compare TRTA
 #             profiles directly). Two panels: linear y and semilog (log10) y.
 #             LINEAR panel = arithmetic mean +/- SD; SEMILOG panel = geometric
@@ -18,7 +18,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", !is.na(ATPTN)) %>%        # drop missing nominal time
   mutate(
     trt  = .data[[dv$trtvar]],                  # actual treatment = curve grouping

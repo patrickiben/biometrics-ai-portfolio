@@ -4,7 +4,7 @@
 # POPULATION: ADA-Evaluable Population (ADIS-evaluable)
 # INPUT     : ADIS (PARAM/PARAMCD, AVALC/AVAL = ADA result/titer; ABLFL,
 #             ADAEMFL, NABRESC -- same ADIS variable names as the SAS twin)
-# NOTE      : PSEUDOCODE. One row per immunogenicity sample, ordered by dose
+# NOTE      : ANALYSIS TEMPLATE. One row per immunogenicity sample, ordered by dose
 #             level, participant, then nominal time/visit. Shows ADA result, titer,
 #             baseline-record flag (ABLFL), treatment-emergent ADA (ADAEMFL) and
 #             NAb result (NABRESC) -- the identical ADIS variables and displayed
@@ -28,8 +28,8 @@ adis <- adam$adis %>% filter(ADAFL == "Y") %>%
     `Time`      = ATPT,
     `ADA Result`    = AVALC,                          # Positive / Negative
     `Titer`         = if_else(is.na(AVAL), "", as.character(AVAL)),   # reported titer (AVAL)
-    `Baseline`      = if_else(ABLFL   == "Y", "Yes", "No"),  # baseline record (ABLFL)
-    `TE-ADA`        = if_else(ADAEMFL == "Y", "Yes", "No"),  # treatment-emergent (ADAEMFL)
+    `Baseline`      = flag_label(ABLFL),  # baseline record (ABLFL)
+    `TE-ADA`        = flag_label(ADAEMFL),  # treatment-emergent (ADAEMFL)
     `NAb Result`    = NABRESC,                        # NAb result (NABRESC)
     AVISITN, ATPTN) %>%                               # numeric sort keys (dropped at render)
   arrange(DoseN, Participant, AVISITN, ATPTN)

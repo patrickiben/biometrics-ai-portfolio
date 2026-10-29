@@ -3,7 +3,7 @@
 # TITLE     : Overview of Treatment-Emergent Adverse Events by Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (TRTEMFL == "Y"); ADEX for per-PERIOD dosed denominators
-# NOTE      : PSEUDOCODE. Single-/fixed-sequence DDI: Period 1 = reference
+# NOTE      : ANALYSIS TEMPLATE. Single-/fixed-sequence DDI: Period 1 = reference
 #             (victim alone), Period 2 = test (victim + perpetrator). Columns =
 #             dv$byperiod (APERIODC); per-PERIOD denominators = participants dosed in
 #             that APERIOD per ADEX (SAFFL=="Y") -- NEVER ADSL. Counts = PARTICIPANTS
@@ -23,7 +23,7 @@ denom <- adam$adex %>%
   filter(SAFFL == "Y") %>%
   group_by(per = .data[[period_col]]) %>%
   summarise(N = n_distinct(USUBJID), .groups = "drop") %>%
-  bind_rows(tibble(per = "Total", N = n_distinct(adam$adex$USUBJID[adam$adex$SAFFL == "Y"])))
+  bind_rows(tibble(per = "Total", N = n_distinct(adam$adex$USUBJID[which(adam$adex$SAFFL == "Y")])))
 
 adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y")
 
@@ -36,7 +36,7 @@ ae_cat <- function(label, where) {
   bind_rows(per, tot) %>% mutate(category = label)
 }
 
-rel_set <- c("RELATED","POSSIBLE","PROBABLE","DEFINITE")
+rel_set <- toupper(tfl_setting_codes("related_values", "RELATED,POSSIBLE,PROBABLE,DEFINITE"))
 
 ## Canonical 6-category AE overview, same set/order as the SAS twin:
 ## any TEAE / serious / drug-related / severe / leading-to-disc / leading-to-death.
@@ -72,4 +72,5 @@ ttl <- tfl_titles(num = "14.3.1.1", type = "Table",
                 "TEAE = treatment-emergent. Related = AREL in Related/Possible/Probable/Definite. {meddra}."))
 
 ## rtables / gt rendering; one column per period + Total
+ttl$footnotes <- c(paste("Configured relatedness values:",paste(rel_set,collapse=", ")),ttl$footnotes)
 print(rep)

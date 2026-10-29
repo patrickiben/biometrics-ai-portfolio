@@ -3,7 +3,7 @@
 # TITLE     : Overview of Treatment-Emergent Adverse Events by Dose Level
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (TRTEMFL == "Y")
-# NOTE      : PSEUDOCODE. Each row = participants with >=1 event of a category
+# NOTE      : ANALYSIS TEMPLATE. Each row = participants with >=1 event of a category
 #             (n_distinct USUBJID), NOT event rows. n (%) per dose level;
 #             % denominator = SAFFL N per dose level from bign(). SAD: parallel
 #             cohorts -> column = dose level (dv$trtvar = TRT01A, one single dose
@@ -33,7 +33,7 @@ dose_key <- adam$adsl %>% filter(SAFFL == "Y") %>%
 adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y")
 
 ## "related" set, consistent & case-safe (house rule)
-rel_set <- c("RELATED","POSSIBLE","PROBABLE","DEFINITE")
+rel_set <- toupper(tfl_setting_codes("related_values", "RELATED,POSSIBLE,PROBABLE,DEFINITE"))
 
 ## --- one summary row = distinct participants meeting a category predicate -------
 ## Each helper counts distinct participants per dose level AND a Total column
@@ -97,4 +97,5 @@ ttl <- tfl_titles(
 #   analyze("value", afun = identity)
 # tbl <- build_table(lyt, rep); tbl
 
+ttl$footnotes <- c(paste("Configured relatedness values:",paste(rel_set,collapse=", ")),ttl$footnotes)
 print(rep)

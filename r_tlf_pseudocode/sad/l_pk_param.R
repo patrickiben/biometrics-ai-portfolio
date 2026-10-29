@@ -4,7 +4,7 @@
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD = CMAX, TMAX, AUCLST, AUCIFO, AUCPEO, T12, CLFO,
 #             VZFO, LAMZ) -- oral CL/F (CLFO) and Vz/F (VZFO)
-# NOTE      : PSEUDOCODE. One row per participant (parameters across columns),
+# NOTE      : ANALYSIS TEMPLATE. One row per participant (parameters across columns),
 #             ordered by dose level then participant. SAD: one (single) dose per
 #             participant; column var = TRT01A (= dose level). Single-dose NCA
 #             parameters only (no Rac). Non-estimable parameters (BLQ-driven)
@@ -18,7 +18,7 @@ dv  <- design_vars("SAD")
 ## --- parameters to list, in report order (label kept for header) -----------
 pcd <- c("CMAX","TMAX","AUCLST","AUCIFO","AUCPEO","T12","CLFO","VZFO","LAMZ")
 
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% pcd) %>%
   mutate(disp = case_when(
             !is.na(AVAL)                              ~ sprintf("%.4g", AVAL),

@@ -8,6 +8,7 @@ run_harness.sh does (python3 g2_geo.py <R dir> <SAS dir>), restores the file and
   - every planted defect turns G2 red and names the program it is in;
   - every legitimate variant stays green;
   - the committed floor equals the program set, and a set below it turns G2 red.
+Shared-helper cases mutate the actual called function bodies, keeping the same output checks.
 The defect cases are the ones found in the four 2026-10-26 reviews of the per-program G2 (R01
 to R18, S01 to S05, U01 to U05; then N01 to N08, N12 and N13, with N09, N18, N19, N27 and N28 from
 the same probe; then E01 to E03 and the SAS missing-value cases, where an assignment of NA or `.`
@@ -62,39 +63,20 @@ SADF_SAS = SAS + '/sad/f_pk_conc_mean.sas'
 CXP_SAS = SAS + '/crossover/t_pk_param_summary.sas'
 CXP_GEO = '`Geo Mean`      = sprintf("%.3g", geomean)'
 CXP_CV = '`Geo CV%`       = sprintf("%.1f", geocv)'
-CXP_PKSTATS = 'cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%'
+CXP_PKSTATS = 'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%'
 SAS_GM = 'geomean = exp(gmean_log);'
 SAS_CV = 'geocv   = 100*sqrt(exp(gsd_log**2)-1);'
 SAD_GEO = 'geomean = exp(mean(log(AVAL[AVAL > 0]))),      # geometric (semi-log panel)'
 SAD_GROUPS = SAD_GEO + '\n            .groups = "drop") %>%'
-HELP_GM = 'geomean = exp(mean(log(.data[[var]]))),'
-HELP_CV = 'geocv   = 100 * sqrt(exp(stats::var(log(.data[[var]]))) - 1),'
+HELP_GM = 'geomean = if(length(x)) exp(mean(log(x))) else NA_real_,'
+HELP_CV = 'geocv = if(length(x)>1) 100*sqrt(expm1(stats::var(log(x)))) else NA_real_,'
 PKSTATS_USERS = 'relies on the failing pkstats() helper'
 # an empty-data shell row: every value NA, so it must not make mean, sd or cv geometric names
 SHELL = ('empty_cont <- tibble(n = 0L, mean = NA_real_, sd = NA_real_, cv = NA_real_, geomean = NA_real_, '
          'geocv = NA_real_)\n')
 CXP_TMAX = '## --- Tmax: Median (Min, Max) ONLY'
 MACRO_USER = 'crossover/t_ada_impact_pk.R'
-# mad/t_accumulation.R: the trough data frame carries the log column ln_tr; KEEP_AVAL keeps raw AVAL in it
-ACC_TROUGH = 'day = ADY, ln_tr = log(AVAL))'
-KEEP_AVAL = (ACC, ACC_TROUGH, 'day = ADY, AVAL, ln_tr = log(AVAL))')
-ACC_GM = 'geomean  = exp(mean(ln_tr)),'
-ACC_MODEL = '## --- OPTIONAL log-linear mixed model'
-BE = R + '/crossover/t_be_anova.R'
-BE_FIT = 'lmer(lnval ~ seq + per + trt + (1 | subj), data = d)'
-BE_RUN = 'be <- map_dfr('
-BE_TAB = '`Intra-participant CV%` = intra_cv)'
-DP = R + '/sad/t_dose_proportionality.R'
-# sad/t_dose_proportionality.R with its log dose renamed ldose, which the old term pattern did not match
-LDOSE = [(DP, 'lndose = log(dose))', 'ldose = log(dose))'),
-         (DP, 'confint(m, "lndose", level = 0.90)', 'confint(m, "ldose", level = 0.90)'),
-         (DP, 'coef(m)[["lndose"]]', 'coef(m)[["ldose"]]')]
 FORMULA_TEXT = 'formula not written in code'
-
-
-def overall(expr):
-    """an extra Overall Trough Geo Mean column in mad/t_accumulation.R whose value is expr"""
-    return (ACC, ACC_MODEL, f'overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", {expr}))\n{ACC_MODEL}')
 
 
 def d04():
@@ -129,42 +111,66 @@ DEFECTS = {
         [(CXP, '## --- Tmax: Median (Min, Max) ONLY',
           'cont$value[cont$stat == "Geo Mean"] <- cont$value[cont$stat == "Mean (SD)"]\n## --- Tmax: Median (Min, Max) ONLY')],
         'crossover/t_pk_param_summary.R', '"Geo Mean"'),
-    'R10 mean of logs reported without exp()': (
-        [(ACC, 'geomean  = exp(mean(ln_tr)),', 'geomean  = mean(ln_tr),')], 'mad/t_accumulation.R', 'geomean at line'),
-    'R11 geocv from the raw scale': (
-        [(ACC, 'geocv    = 100 * sqrt(exp(stats::var(ln_tr)) - 1),',
-          'geocv    = 100 * sd(exp(ln_tr)) / mean(exp(ln_tr)),')], 'mad/t_accumulation.R', 'geocv at line'),
-    'R12 Rac without the back-transform': (
-        [(ACC, 'rac   = exp(mlogr),', 'rac   = mlogr,')], 'mad/t_accumulation.R', '"Rac (Geo Mean)"'),
+    'R10 mean of logs reported without exp()': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else NA_real_,',
+           'geometric_mean = mean(log(AVAL[is.finite(AVAL) & AVAL > 0])),')],
+         'mad/t_accumulation.R',
+         '"geometric_mean" at line'),
+    'R11 geocv from the raw scale': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geocv = if(length(x)>1) 100*sqrt(expm1(stats::var(log(x)))) else NA_real_,',
+           'geocv = 100 * sd(x) / mean(x),')],
+         'crossover/t_pk_param_summary.R',
+         'relies on the failing pkstats() helper'),
+    'R12 Rac without the back-transform': ([('r_tlf_pseudocode/01_analysis_models.R', 'ratio = exp(mean_delta),', 'ratio = mean_delta,')],
+         'mad/t_accumulation.R',
+         'ratio at line'),
     'R13 backticked `geomean` from exp(mean(x))': (
         [(SADF, GEO_LINE, '`geomean` = exp(mean(AVAL[AVAL > 0])),')], 'sad/f_pk_conc_mean.R', None),
-    'R14 D04 through across()': (
-        [(CXP, 'cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>%',
-          'cont <- pkstats(pp %>% filter(PARAMCD != "TMAX"), var = "AVAL", by = by) %>% '
-          'mutate(across(geomean, ~ exp(mean))) %>%')], 'crossover/t_pk_param_summary.R', 'geomean at line'),
+    'R14 D04 through across()': ([('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% '
+           'mutate(across(geomean, ~ exp(mean))) %>%')],
+         'crossover/t_pk_param_summary.R',
+         'geomean at line'),
     'R15 trailing comment before a line that has log(': (
         [(SADF, SAD_GROUPS, '.groups = "drop",\n            geomean = exp(mean(AVAL[AVAL > 0])))   # geometric\n'
           'prof <- prof %>% mutate(lgm = log(geomean)) %>%')], 'sad/f_pk_conc_mean.R', 'geomean at line'),
-    'R16 helper geomean = exp(mean(x))': (
-        [(HELP, HELP_GM, 'geomean = exp(mean(.data[[var]])),')], 'crossover/t_pk_param_summary.R', PKSTATS_USERS),
-    'R17 helper geomean arithmetic, exp(mean(log())) kept in another column': (
-        [(HELP, HELP_GM, 'lgm = exp(mean(log(.data[[var]]))), geomean = mean(.data[[var]]),')],
-        'crossover/t_pk_param_summary.R', PKSTATS_USERS),
-    'R18 helper geocv = sd(log(x))': (
-        [(HELP, HELP_CV, 'geocv   = 100 * sd(log(.data[[var]])),')], 'crossover/t_pk_param_summary.R', PKSTATS_USERS),
+    'R16 helper geomean = exp(mean(x))': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geomean = if(length(x)) exp(mean(log(x))) else NA_real_,',
+           'geomean = exp(mean(x)),')],
+         'crossover/t_pk_param_summary.R',
+         'relies on the failing pkstats() helper'),
+    'R17 helper geomean arithmetic, exp(mean(log())) kept in another column': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geomean = if(length(x)) exp(mean(log(x))) else NA_real_,',
+           'lgm = exp(mean(log(x))), geomean = mean(x),')],
+         'crossover/t_pk_param_summary.R',
+         'relies on the failing pkstats() helper'),
+    'R18 helper geocv = sd(log(x))': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geocv = if(length(x)>1) 100*sqrt(expm1(stats::var(log(x)))) else NA_real_,',
+           'geocv   = 100 * sd(log(x)),')],
+         'crossover/t_pk_param_summary.R',
+         'relies on the failing pkstats() helper'),
     'R19 Geo Mean column shows geocv': (
         [(CXP, '`Geo Mean`      = sprintf("%.3g", geomean)', '`Geo Mean`      = sprintf("%.3g", geocv)')],
         'crossover/t_pk_param_summary.R', '"Geo Mean"'),
     'R20 Geo CV% column shows geomean': (
         [(CXP, '`Geo CV%`       = sprintf("%.1f", geocv)', '`Geo CV%`       = sprintf("%.1f", geomean)')],
         'crossover/t_pk_param_summary.R', '"Geo CV%"'),
-    'R21 Trough Geo Mean column shows geocv, which the program computes': (
-        [(ACC, '`Trough Geo Mean` = sprintf("%.3g", geomean)', '`Trough Geo Mean` = sprintf("%.3g", geocv)')],
-        'mad/t_accumulation.R', '"Trough Geo Mean"'),
-    'helper without logs (geomean and geocv)': (
-        [(HELP, HELP_GM, 'geomean = exp(mean(.data[[var]])),'),
-         (HELP, HELP_CV, 'geocv   = 100 * sd(.data[[var]]) / mean(.data[[var]]),')],
-        'sad/t_pk_param_summary.R', 'pkstats() FAILS'),
+    'R21 trough geometric_mean shows geocv computed beside it': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else NA_real_,',
+           'geocv = 100 * sqrt(expm1(var(log(AVAL[AVAL > 0])))), geometric_mean = geocv,')],
+         'mad/t_accumulation.R',
+         '"geometric_mean" at line'),
+    'helper without logs (geomean and geocv)': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geomean = if(length(x)) exp(mean(log(x))) else NA_real_,',
+           'geomean = exp(mean(x)),'),
+          ('r_tlf_pseudocode/00_setup_helpers.R',
+           'geocv = if(length(x)>1) 100*sqrt(expm1(stats::var(log(x)))) else NA_real_,',
+           'geocv   = 100 * sd(x) / mean(x),')],
+         'sad/t_pk_param_summary.R',
+         'pkstats() FAILS'),
     'comment-only log in R': (
         [(PARF, GEO_LINE, 'gm = exp(mean(AVAL[AVAL > 0])),   # was exp(mean(log(AVAL)))')],
         'parallel/f_pk_conc_mean.R', 'no log() call'),
@@ -213,12 +219,16 @@ DEFECTS = {
     'comment-only log in SAS (/* */ block)': (
         [(SAS + '/crossover/t_pk_param_summary.sas', 'if AVAL>0 then logv = log(AVAL);',
           'if AVAL>0 then logv = AVAL /* log(AVAL) */;')], 'crossover/t_pk_param_summary.R', 'SAS'),
-    'U01 dose proportionality: parameter not logged': (
-        [(R + '/sad/t_dose_proportionality.R', 'mutate(lnval  = log(AVAL),', 'mutate(lnval  = AVAL,')],
-        'sad/t_dose_proportionality.R', 'not log-derived'),
-    'U02 BE model fitted on raw AVAL, lnval line kept': (
-        [(R + '/crossover/t_be_anova.R', 'lmer(lnval ~ seq', 'lmer(AVAL ~ seq')], 'crossover/t_be_anova.R',
-        'not log-derived'),
+    'U01 dose proportionality: parameter not logged': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'fit <- lm(log(value) ~ log(dose), data = d)',
+           'fit <- lm(value ~ log(dose), data = d)')],
+         'sad/t_dose_proportionality.R',
+         'not log-derived'),
+    'U02 BE model fitted on raw AVAL, lnval line kept': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'formula <- lnval ~ seq + per + trt + (1 | subj)',
+           'formula <- AVAL ~ seq + per + trt + (1 | subj)')],
+         'crossover/t_be_anova.R',
+         'not log-derived'),
     'U03 exp(mean(x)) under another name (parallel)': (
         [(PARF, GEO_LINE, 'gm = exp(mean(AVAL[AVAL > 0])),')], 'parallel/f_pk_conc_mean.R', 'no log() call'),
     'U04 exp(mean(x)) under another name, footnote reworded': (
@@ -227,35 +237,51 @@ DEFECTS = {
     'U05 a to_log( call does not count as log(': (
         [(PARF, GEO_LINE, 'gm = exp(mean(AVAL[AVAL > 0])), lab = to_log(1),')], 'parallel/f_pk_conc_mean.R',
         'no log() call'),
-    'D04 registry defect (exp(mean) overwrites the pkstats geometric mean)': (
-        d04(), 'crossover/t_pk_param_summary.R', 'geomean at line'),
+    'D04 registry defect (exp(mean) overwrites the pkstats geometric mean)': (d04(), 'crossover/t_pk_param_summary.R', 'geomean at line'),
     # second review, 2026-10-26: wrong orders, fallbacks to the arithmetic mean, the SAS log base
-    'N01 trough geomean = mean(exp(ln_tr)), the arithmetic mean': (
-        [(ACC, 'geomean  = exp(mean(ln_tr)),', 'geomean  = mean(exp(ln_tr)),')], 'mad/t_accumulation.R',
-        'geomean at line'),
+    'N01 trough geometric_mean = mean(exp(log(AVAL))), the arithmetic mean': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else NA_real_,',
+           'geometric_mean = mean(exp(log(AVAL[is.finite(AVAL) & AVAL > 0]))),')],
+         'mad/t_accumulation.R',
+         '"geometric_mean" at line'),
     'N02 geomean = exp(log(mean(x))), the arithmetic mean': (
         [(SADF, 'exp(mean(log(AVAL[AVAL > 0])))', 'exp(log(mean(AVAL[AVAL > 0])))')], 'sad/f_pk_conc_mean.R',
         'geomean at line'),
-    'N03 helper geomean = exp(log(mean(x)))': (
-        [(HELP, HELP_GM, 'geomean = exp(log(mean(.data[[var]]))),')], 'crossover/t_pk_param_summary.R',
-        'pkstats() FAILS'),
-    'N04 helper geomean = mean(exp(log(x)))': (
-        [(HELP, HELP_GM, 'geomean = mean(exp(log(.data[[var]]))),')], 'sad/t_pk_param_summary.R', 'pkstats() FAILS'),
-    'N05 PD trough geomean falls back to the arithmetic mean': (
-        [(PD, 'exp(mean(log(AVAL))) else NA_real_,', 'exp(mean(log(AVAL))) else mean(AVAL),')], 'mad/t_pd_summary.R',
-        'geomean at line'),
+    'N03 helper geomean = exp(log(mean(x)))': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geomean = if(length(x)) exp(mean(log(x))) else NA_real_,',
+           'geomean = exp(log(mean(x))),')],
+         'crossover/t_pk_param_summary.R',
+         'pkstats() FAILS'),
+    'N04 helper geomean = mean(exp(log(x)))': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geomean = if(length(x)) exp(mean(log(x))) else NA_real_,',
+           'geomean = mean(exp(log(x))),')],
+         'sad/t_pk_param_summary.R',
+         'pkstats() FAILS'),
+    'N05 PD trough geomean falls back to the arithmetic mean': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else NA_real_,',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else mean(AVAL),')],
+         'mad/t_pd_summary.R',
+         '"geometric_mean" at line'),
     'N06 Geo Mean column coalesce(geomean, mean)': (
         [(CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", coalesce(geomean, mean))')],
         'crossover/t_pk_param_summary.R', '"Geo Mean"'),
-    'N07 geomean <- ifelse(n < 3, mean, geomean) after pkstats()': (
-        [(CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = ifelse(n < 3, mean, geomean)) %>%')],
-        'crossover/t_pk_param_summary.R', 'geomean at line'),
+    'N07 geomean <- ifelse(n < 3, mean, geomean) after pkstats()': ([('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% '
+           'mutate(geomean = ifelse(n < 3, mean, geomean)) %>%')],
+         'crossover/t_pk_param_summary.R',
+         'geomean at line'),
     'N08 exp(mean(log(x)) + var(log(x)) / 2), the lognormal estimate of the arithmetic mean': (
         [(SADF, 'exp(mean(log(AVAL[AVAL > 0])))',
           'exp(mean(log(AVAL[AVAL > 0])) + var(log(AVAL[AVAL > 0])) / 2)')], 'sad/f_pk_conc_mean.R', 'geomean at line'),
-    'N09 helper geocv with a misplaced parenthesis, 100 * sqrt(exp(v)) - 1': (
-        [(HELP, HELP_CV, 'geocv   = 100 * sqrt(exp(stats::var(log(.data[[var]])))) - 1,')],
-        'crossover/t_pk_param_summary.R', 'pkstats() FAILS'),
+    'N09 helper geocv with a misplaced parenthesis, 100 * sqrt(exp(v)) - 1': ([('r_tlf_pseudocode/00_setup_helpers.R',
+           'geocv = if(length(x)>1) 100*sqrt(expm1(stats::var(log(x)))) else NA_real_,',
+           'geocv   = 100 * sqrt(exp(stats::var(log(x)))) - 1,')],
+         'crossover/t_pk_param_summary.R',
+         'pkstats() FAILS'),
     'N19 combined Geo Mean (Geo CV%) column shows the arithmetic CV': (
         [(CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = sprintf("%.3g (%.1f)", geomean, cv)')],
         'crossover/t_pk_param_summary.R', '"Geo Mean (Geo CV%)"'),
@@ -268,9 +294,12 @@ DEFECTS = {
     'combined column pasted from the arithmetic mean (paste0 arguments are all values)': (
         [(CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = paste0(sprintf("%.3g", mean), " (", sprintf("%.1f", geocv), ")")')],
         'crossover/t_pk_param_summary.R', '"Geo Mean (Geo CV%)"'),
-    'pmax(geomean, mean, na.rm = TRUE)': (
-        [(CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = pmax(geomean, mean, na.rm = TRUE)) %>%')],
-        'crossover/t_pk_param_summary.R', 'geomean at line'),
+    'pmax(geomean, mean, na.rm = TRUE)': ([('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% '
+           'mutate(geomean = pmax(geomean, mean, na.rm = TRUE)) %>%')],
+         'crossover/t_pk_param_summary.R',
+         'geomean at line'),
     '10^ of a natural-log mean': (
         [(SADF, 'exp(mean(log(AVAL[AVAL > 0])))', '10^mean(log(AVAL[AVAL > 0]))')], 'sad/f_pk_conc_mean.R',
         'geomean at line'),
@@ -290,23 +319,47 @@ DEFECTS = {
     'SAS macro geomean = exp(log(amean))': (
         [(MAC, 'geomean = exp(meanlog);', 'geomean = exp(log(amean));')], MACRO_USER, 'the macro FAILS'),
     # third review, 2026-10-26: an assignment of NA (R) or . (SAS) alone made its target geometric
-    'E01 empty-data shell row of NA values, Geo Mean column shows the arithmetic mean': (
-        [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS), (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", mean)')],
-        'crossover/t_pk_param_summary.R', '"Geo Mean"'),
-    'E02 empty-data shell row of NA values, Geo CV% column shows the arithmetic CV': (
-        [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS), (CXP, CXP_CV, '`Geo CV%`       = sprintf("%.1f", cv)')],
-        'crossover/t_pk_param_summary.R', '"Geo CV%"'),
+    'E01 empty-data shell row of NA values, Geo Mean column shows the arithmetic mean': ([('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+           'empty_cont <- tibble(n = 0L, mean = NA_real_, sd = NA_real_, cv = NA_real_, geomean = NA_real_, geocv = '
+           'NA_real_)\n'
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%'),
+          ('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           '`Geo Mean`      = sprintf("%.3g", geomean)',
+           '`Geo Mean`      = sprintf("%.3g", mean)')],
+         'crossover/t_pk_param_summary.R',
+         '"Geo Mean"'),
+    'E02 empty-data shell row of NA values, Geo CV% column shows the arithmetic CV': ([('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+           'empty_cont <- tibble(n = 0L, mean = NA_real_, sd = NA_real_, cv = NA_real_, geomean = NA_real_, geocv = '
+           'NA_real_)\n'
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%'),
+          ('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           '`Geo CV%`       = sprintf("%.1f", geocv)',
+           '`Geo CV%`       = sprintf("%.1f", cv)')],
+         'crossover/t_pk_param_summary.R',
+         '"Geo CV%"'),
     'E03 cont$mean[cont$n == 0] <- NA_real_, Geo Mean column shows the arithmetic mean': (
         [(CXP, CXP_TMAX, 'cont$mean[cont$n == 0] <- NA_real_\n' + CXP_TMAX),
          (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", mean)')],
         'crossover/t_pk_param_summary.R', '"Geo Mean"'),
-    'E04 empty-data shell row, then mutate(geomean = mean, geocv = cv) after pkstats()': (
-        [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS[:-4] + ' %>% mutate(geomean = mean, geocv = cv) %>%')],
-        'crossover/t_pk_param_summary.R', 'geomean at line'),
-    'E05 across(c(mean, cv), ~ NA_real_), Geo Mean column shows the arithmetic mean': (
-        [(CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(across(c(mean, cv), ~ NA_real_)) %>%'),
-         (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", mean)')],
-        'crossover/t_pk_param_summary.R', '"Geo Mean"'),
+    'E04 empty-data shell row, then mutate(geomean = mean, geocv = cv) after pkstats()': ([('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+           'empty_cont <- tibble(n = 0L, mean = NA_real_, sd = NA_real_, cv = NA_real_, geomean = NA_real_, geocv = '
+           'NA_real_)\n'
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% '
+           'mutate(geomean = mean, geocv = cv) %>%')],
+         'crossover/t_pk_param_summary.R',
+         'geomean at line'),
+    'E05 across(c(mean, cv), ~ NA_real_), Geo Mean column shows the arithmetic mean': ([('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+           'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% '
+           'mutate(across(c(mean, cv), ~ NA_real_)) %>%'),
+          ('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+           '`Geo Mean`      = sprintf("%.3g", geomean)',
+           '`Geo Mean`      = sprintf("%.3g", mean)')],
+         'crossover/t_pk_param_summary.R',
+         '"Geo Mean"'),
     'E06 SAS if n=0 then mean = .; then the N13 fallback else geomean = mean': (
         [(CXP_SAS, '  ' + SAS_GM, '  if n=0 then mean = .;\n  if n>=3 then geomean = exp(gmean_log); else geomean = mean;')],
         'crossover/t_pk_param_summary.R', 'SAS geomean = mean'),
@@ -317,57 +370,161 @@ DEFECTS = {
         'crossover/t_pk_param_summary.R', 'SAS geomean = mean'),
     # fourth review, 2026-10-26: a data frame with a log column, or a back-transformed value, still
     # counted as log-derived, so exp(mean(<raw values>)) passed
-    'NE2 pull() of raw AVAL from a data frame that carries a log column, piped to mean() and exp()': (
-        [KEEP_AVAL, overall('trough %>% pull(AVAL) %>% mean() %>% exp()')], 'mad/t_accumulation.R',
-        '"Overall Trough Geo Mean"'),
-    'NE2b exp(mean(trough[["AVAL"]])) from that data frame': (
-        [KEEP_AVAL, overall('exp(mean(trough[["AVAL"]]))')], 'mad/t_accumulation.R', '"Overall Trough Geo Mean"'),
-    'NE2c exp(mean(trough$AVAL)) from that data frame (control)': (
-        [KEEP_AVAL, overall('exp(mean(trough$AVAL))')], 'mad/t_accumulation.R', '"Overall Trough Geo Mean"'),
-    'exp(mean(trough[, "AVAL"])) from that data frame': (
-        [KEEP_AVAL, overall('exp(mean(trough[, "AVAL"]))')], 'mad/t_accumulation.R', '"Overall Trough Geo Mean"'),
-    'select(trough, AVAL) unlisted, then mean() and exp()': (
-        [KEEP_AVAL, overall('exp(mean(unlist(select(trough, AVAL))))')], 'mad/t_accumulation.R',
-        '"Overall Trough Geo Mean"'),
-    'ND6 geomean = exp(mean(trough[["day"]])), a raw column of that data frame': (
-        [(ACC, ACC_GM, 'geomean  = exp(mean(trough[["day"]])),')], 'mad/t_accumulation.R', 'geomean at line'),
-    'ND6b base-R subset exp(mean(pp[pp$AVAL > 0, "AVAL"])) of a data frame that carries lnval': (
-        [(BE, BE_RUN, 'gm_all <- exp(mean(pp[pp$AVAL > 0, "AVAL"]))\n' + BE_RUN),
-         (BE, BE_TAB, '`Intra-participant CV%` = intra_cv, `Geo Mean (all)` = sprintf("%.2f", gm_all))')],
-        'crossover/t_be_anova.R', '"Geo Mean (all)"'),
-    'ND5 trough back-transformed per record (ctr = exp(ln_tr)), then exp(mean(ctr))': (
-        [(ACC, ACC_TROUGH, 'day = ADY, ln_tr = log(AVAL), ctr = exp(ln_tr))'),
-         (ACC, ACC_GM, 'geomean  = exp(mean(ctr)),')], 'mad/t_accumulation.R', 'geomean at line'),
-    'exp passed as a function: ctr = sapply(ln_tr, exp), then exp(mean(ctr))': (
-        [(ACC, ACC_TROUGH, 'day = ADY, ln_tr = log(AVAL), ctr = sapply(ln_tr, exp))'),
-         (ACC, ACC_GM, 'geomean  = exp(mean(ctr)),')], 'mad/t_accumulation.R', 'geomean at line'),
-    'ND4 ln_ratio = exp(ln_dN - ln_d1), so Rac = exp(mean(raw ratio))': (
-        [(ACC, 'mutate(ln_ratio = ln_dN - ln_d1)', 'mutate(ln_ratio = exp(ln_dN - ln_d1))')], 'mad/t_accumulation.R',
-        '"Rac (Geo Mean)"'),
+    'NE2 pull() of raw AVAL from a data frame that carries a log column, piped to mean() and exp()': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  trough <- d %>% transmute(day = ADY, AVAL, ln_tr = log(AVAL))\n'
+           '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", trough %>% pull(AVAL) %>% mean() %>% '
+           'exp()))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+         'mad/t_accumulation.R',
+         '"Overall Trough Geo Mean"'),
+    'NE2b exp(mean(trough[["AVAL"]])) from that data frame': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  trough <- d %>% transmute(day = ADY, AVAL, ln_tr = log(AVAL))\n'
+           '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", exp(mean(trough[["AVAL"]]))))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+         'mad/t_accumulation.R',
+         '"Overall Trough Geo Mean"'),
+    'NE2c exp(mean(trough$AVAL)) from that data frame (control)': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  trough <- d %>% transmute(day = ADY, AVAL, ln_tr = log(AVAL))\n'
+           '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", exp(mean(trough$AVAL))))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+         'mad/t_accumulation.R',
+         '"Overall Trough Geo Mean"'),
+    'exp(mean(trough[, "AVAL"])) from that data frame': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  trough <- d %>% transmute(day = ADY, AVAL, ln_tr = log(AVAL))\n'
+           '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", exp(mean(trough[, "AVAL"]))))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+         'mad/t_accumulation.R',
+         '"Overall Trough Geo Mean"'),
+    'select(trough, AVAL) unlisted, then mean() and exp()': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  trough <- d %>% transmute(day = ADY, AVAL, ln_tr = log(AVAL))\n'
+           '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", exp(mean(unlist(select(trough, '
+           'AVAL))))))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+         'mad/t_accumulation.R',
+         '"Overall Trough Geo Mean"'),
+    'ND6 geomean = exp(mean(trough[["day"]])), a raw column of that data frame': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  trough <- d %>% transmute(day = ADY, ln_tr = log(AVAL))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise('),
+          ('r_tlf_pseudocode/01_analysis_models.R',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else NA_real_,',
+           'geometric_mean = exp(mean(trough[["day"]])),')],
+         'mad/t_accumulation.R',
+         '"geometric_mean" at line'),
+    'ND6b base-R subset exp(mean(pp[pp$AVAL > 0, "AVAL"])) of a data frame that carries lnval': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  # Launcher maps the supplied reference/test labels to these canonical labels.',
+           '  pp <- pp %>% mutate(lnval = log(AVAL))\n'
+           '  gm_all <- exp(mean(pp[pp$AVAL > 0, "AVAL"]))\n'
+           '  # Launcher maps the supplied reference/test labels to these canonical labels.'),
+          ('r_tlf_pseudocode/01_analysis_models.R',
+           'df_method = "Satterthwaite (lmerTest)", status = fitted$status)',
+           'df_method = "Satterthwaite (lmerTest)", status = fitted$status, `Geo Mean (all)` = sprintf("%.2f", '
+           'gm_all))')],
+         'crossover/t_be_anova.R',
+         '"Geo Mean (all)"'),
+    'ND5 trough back-transformed per record (ctr = exp(ln_tr)), then exp(mean(ctr))': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  d <- d %>% mutate(ln_tr = log(AVAL), ctr = exp(ln_tr))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise('),
+          ('r_tlf_pseudocode/01_analysis_models.R',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else NA_real_,',
+           'geometric_mean = exp(mean(ctr)),')],
+         'mad/t_accumulation.R',
+         '"geometric_mean" at line'),
+    'exp passed as a function: ctr = sapply(ln_tr, exp), then exp(mean(ctr))': ([('r_tlf_pseudocode/01_analysis_models.R',
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+           '  d <- d %>% mutate(ln_tr = log(AVAL), ctr = sapply(ln_tr, exp))\n'
+           '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise('),
+          ('r_tlf_pseudocode/01_analysis_models.R',
+           'geometric_mean = if (any(is.finite(AVAL) & AVAL > 0)) exp(mean(log(AVAL[is.finite(AVAL) & AVAL > 0]))) '
+           'else NA_real_,',
+           'geometric_mean = exp(mean(ctr)),')],
+         'mad/t_accumulation.R',
+         '"geometric_mean" at line'),
+    'ND4 ln_ratio = exp(ln_dN - ln_d1), so Rac = exp(mean(raw ratio))': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'delta <- log(last[ok]) - log(first[ok]);',
+           'delta <- exp(log(last[ok]) - log(first[ok]));')],
+         'mad/t_accumulation.R',
+         'ratio at line'),
     # fourth review: a program found only by its model left the set when its formula was built from a
     # string or no right-hand-side name matched the dose, treatment, period or sequence pattern
-    'ND1 BE model formula built from a string, raw AVAL response': (
-        [(BE, BE_FIT, 'lmer(as.formula("AVAL ~ seq + per + trt + (1 | subj)"), data = d)')],
-        'crossover/t_be_anova.R', FORMULA_TEXT),
-    'ND1b BE model formula from reformulate(..., response = "AVAL")': (
-        [(BE, BE_FIT, 'lmer(reformulate(c("seq", "per", "trt", "(1 | subj)"), response = "AVAL"), data = d)')],
-        'crossover/t_be_anova.R', FORMULA_TEXT),
-    'ND2 log dose renamed ldose and the dose-proportionality model fitted on raw AVAL': (
-        LDOSE + [(DP, 'm  <- lm(lnval ~ lndose, data = d)', 'm  <- lm(AVAL ~ ldose, data = d)')],
-        'sad/t_dose_proportionality.R', 'not log-derived'),
-    'ND3 BE model on raw AVAL with terms named sq, pd and form': (
-        [(BE, BE_FIT, 'lmer(AVAL ~ sq + pd + form + (1 | subj), data = d)')], 'crossover/t_be_anova.R',
-        'not log-derived'),
-    'NF1 string formula in a program found by its geometric statistics': (
-        [(ACC, 'lmer(ln_tr ~ day + (1 | subj), data = d)', 'lmer(as.formula("ln_tr ~ day + (1 | subj)"), data = d)')],
-        'mad/t_accumulation.R', FORMULA_TEXT),
+    'ND1 BE model formula built from a string, raw AVAL response': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'lmerTest::lmer(formula, data = d, REML = TRUE)',
+           'lmerTest::lmer(as.formula("AVAL ~ seq + per + trt + (1 | subj)"), data = d, REML = TRUE)')],
+         'crossover/t_be_anova.R',
+         'formula not written in code'),
+    'ND1b BE model formula from reformulate(..., response = "AVAL")': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'lmerTest::lmer(formula, data = d, REML = TRUE)',
+           'lmerTest::lmer(reformulate(c("seq", "per", "trt", "(1 | subj)"), response = "AVAL"), data = d, REML = '
+           'TRUE)')],
+         'crossover/t_be_anova.R',
+         'formula not written in code'),
+    'ND2 log dose renamed ldose and the dose-proportionality model fitted on raw value': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'fit <- lm(log(value) ~ log(dose), data = d)',
+           'd <- d %>% mutate(lnval = log(value), ldose = log(dose))\n  fit <- lm(value ~ ldose, data = d)'),
+          ('r_tlf_pseudocode/01_analysis_models.R',
+           'confint(fit, "log(dose)", level = confidence)',
+           'confint(fit, "ldose", level = confidence)')],
+         'sad/t_dose_proportionality.R',
+         'not log-derived'),
+    'ND3 BE model on raw AVAL with terms named sq, pd and form': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'lmerTest::lmer(formula, data = d, REML = TRUE)',
+           'lmerTest::lmer(AVAL ~ sq + pd + form + (1 | subj), data = d, REML = TRUE)')],
+         'crossover/t_be_anova.R',
+         'not log-derived'),
+    'NF1 string formula in a program found by its geometric statistics': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'lmerTest::lmer(log(AVAL) ~ ADY + (1 | USUBJID), data = d, REML = TRUE)',
+           'lmerTest::lmer(as.formula("log(AVAL) ~ ADY + (1 | USUBJID)"), data = d, REML = TRUE)')],
+         'mad/t_accumulation.R',
+         'formula not written in code'),
 }
+
+# The model refactor must keep both BE branches and every transitive helper visible.
+MODEL = R + '/01_analysis_models.R'
+DEFECTS.update({
+    'shared BE fixed-sequence branch fitted on raw AVAL': (
+        [(MODEL, 'formula <- lnval ~ trt + (1 | subj)', 'formula <- AVAL ~ trt + (1 | subj)')],
+        'single_sequence/t_be_anova.R', 'not log-derived'),
+    'shared BE geometric ratio loses back-transform': (
+        [(MODEL, 'gmr = exp(ci$estimate),', 'gmr = ci$estimate,')],
+        'crossover/t_be_anova.R', 'gmr at line'),
+    'shared BE lower limit loses back-transform': (
+        [(MODEL, 'lower = exp(ci$lower.CL),', 'lower = ci$lower.CL,')],
+        'single_sequence/t_be_anova.R', 'lower at line'),
+    'shared paired upper limit loses back-transform': (
+        [(MODEL, 'upper = exp(mean_delta + half),', 'upper = mean_delta + half,')],
+        'mad/t_accumulation.R', 'upper at line'),
+    'shared paired helper missing while caller remains': (
+        [(MODEL, 'tfl_model_paired <- function(first, last, confidence = .95)',
+          'tfl_model_removed_paired <- function(first, last, confidence = .95)')],
+        'mad/t_accumulation.R', 'tfl_model_paired has 0 definitions'),
+    'shared paired helper redefined after original': (
+        [(MODEL, 'tfl_model_trend <- function(d, confidence = .95)',
+          'tfl_model_paired <- function(first, last, confidence = .95) tibble(ratio = mean(last / first))\n'
+          'tfl_model_trend <- function(d, confidence = .95)')],
+        'mad/t_accumulation.R', 'tfl_model_paired has 2 definitions'),
+    'shared power response defect reaches the MAD PD caller': (
+        [(MODEL, 'fit <- lm(log(value) ~ log(dose), data = d)', 'fit <- lm(value ~ log(dose), data = d)')],
+        'mad/t_pd_summary.R', 'not log-derived'),
+    'shared power response defect reaches the MAD ADA caller': (
+        [(MODEL, 'fit <- lm(log(value) ~ log(dose), data = d)', 'fit <- lm(value ~ log(dose), data = d)')],
+        'mad/t_ada_impact_pk.R', 'not log-derived'),
+})
 
 # disclosed limits that turn G2 red although the code is correct: id -> (edits, program, text)
 LIMITS_RED = {
-    'ND1c a correct log-response formula built from a string fails (disclosed)': (
-        [(BE, BE_FIT, 'lmer(as.formula("lnval ~ seq + per + trt + (1 | subj)"), data = d)')],
-        'crossover/t_be_anova.R', FORMULA_TEXT),
+    'ND1c a correct log-response formula built from a string fails (disclosed)': ([('r_tlf_pseudocode/01_analysis_models.R',
+           'lmerTest::lmer(formula, data = d, REML = TRUE)',
+           'lmerTest::lmer(as.formula("lnval ~ seq + per + trt + (1 | subj)"), data = d, REML = TRUE)')],
+         'crossover/t_be_anova.R',
+         'formula not written in code'),
 }
 
 VARIANTS = {
@@ -378,15 +535,17 @@ VARIANTS = {
     'P04 geomean from a log-derived column made earlier': [
         (SADF, GEO_LINE, 'geomean = exp(mean(lav)),'),
         (SADF, 'prof <- pc %>%', 'pc <- pc %>% mutate(lav = log(AVAL))\nprof <- pc %>%')],
-    'NA_real_ fallback for an empty table': [
-        (ACC, '## --- descriptive trough trend per cohort x dosing day (geometric) ----------',
-         '## --- descriptive trough trend per cohort x dosing day (geometric) ----------\n'
-         'empty_desc <- tibble(n = 0L, geomean = NA_real_, geocv = NA_real_)')],
-    'P05 helper geocv as sqrt(exp(sd(log(x))^2) - 1)': [
-        (HELP, HELP_CV, 'geocv   = 100 * sqrt(exp(sd(log(.data[[var]]))^2) - 1),')],
-    'P06 helper closing brace with a trailing comment': [
-        (HELP, '      .groups = "drop")\n}\n', '      .groups = "drop")\n}  # end pkstats\n')],
-    'P07 helper closing brace on the last line': [(HELP, '      .groups = "drop")\n}\n', '      .groups = "drop") }\n')],
+    'NA_real_ fallback for an empty table': [('r_tlf_pseudocode/01_analysis_models.R',
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+          '  empty_desc <- tibble(n = 0L, geomean = NA_real_, geocv = NA_real_)\n'
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+    'P05 helper geocv as sqrt(exp(sd(log(x))^2) - 1)': [('r_tlf_pseudocode/00_setup_helpers.R',
+          'geocv = if(length(x)>1) 100*sqrt(expm1(stats::var(log(x)))) else NA_real_,',
+          'geocv   = 100 * sqrt(exp(sd(log(x))^2) - 1),')],
+    'P06 helper closing brace with a trailing comment': [('r_tlf_pseudocode/00_setup_helpers.R',
+          '    }) %>% ungroup()\n}\n',
+          '    }) %>% ungroup()\n}  # end pkstats\n')],
+    'P07 helper closing brace on the last line': [('r_tlf_pseudocode/00_setup_helpers.R', '    }) %>% ungroup()\n}\n', '    }) %>% ungroup() }\n')],
     'P08 %pkstats (ds=...) with a space': [(SAS + '/crossover/t_ada_impact_pk.sas', '%pkstats(', '%pkstats (')],
     'P09 in-program helper defined with logs': [
         (SADF, GEO_LINE, 'geomean = gmean_log(AVAL),'),
@@ -400,17 +559,21 @@ VARIANTS = {
         (SADF, GEO_LINE, 'geomean = AVAL[AVAL > 0] |> log() |> mean() |> exp(),')],
     'L02 magrittr pipe x %>% log() %>% mean() %>% exp()': [
         (SADF, GEO_LINE, 'geomean = AVAL[AVAL > 0] %>% log() %>% mean() %>% exp(),')],
-    'L04 helper geocv as sqrt(expm1(var(log(x))))': [
-        (HELP, HELP_CV, 'geocv   = 100 * sqrt(expm1(stats::var(log(.data[[var]])))),')],
+    'L04 helper geocv as sqrt(expm1(var(log(x))))': [('r_tlf_pseudocode/00_setup_helpers.R',
+          'geocv = if(length(x)>1) 100*sqrt(expm1(stats::var(log(x)))) else NA_real_,',
+          'geocv   = 100 * sqrt(expm1(stats::var(log(x)))),')],
     'combined Geo Mean (Geo CV%) column from geomean and geocv': [
         (CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = sprintf("%.3g (%.1f)", geomean, geocv)')],
     'combined column pasted from geomean and geocv': [
         (CXP, CXP_GEO, '`Geo Mean (Geo CV%)` = paste0(sprintf("%.3g", geomean), " (", sprintf("%.1f", geocv), ")")')],
-    'if_else(n >= 3, geomean, NA_real_) after pkstats()': [
-        (CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = if_else(n >= 3, geomean, NA_real_)) %>%')],
-    'case_when(n >= 3 ~ geomean, .default = NA_real_) after pkstats()': [
-        (CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(geomean = case_when(n >= 3 ~ geomean, '
-         '.default = NA_real_)) %>%')],
+    'if_else(n >= 3, geomean, NA_real_) after pkstats()': [('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% '
+          'mutate(geomean = if_else(n >= 3, geomean, NA_real_)) %>%')],
+    'case_when(n >= 3 ~ geomean, .default = NA_real_) after pkstats()': [('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% '
+          'mutate(geomean = case_when(n >= 3 ~ geomean, .default = NA_real_)) %>%')],
     'Geo Mean column rounded with round(geomean, 3)': [
         (CXP, CXP_GEO, '`Geo Mean`      = format(round(geomean, 3), nsmall = 3)')],
     'mean of logs held in a name, then exp(mlog)': [
@@ -426,26 +589,53 @@ VARIANTS = {
     'a name with an NA shell row and a geometric assignment stays geometric': [
         (SADF, GEO_LINE, 'gm = exp(mean(log(AVAL[AVAL > 0]))), geomean = gm,'),
         (SADF, 'prof <- pc %>%', 'empty_prof <- tibble(gm = NA_real_, geomean = NA_real_)\nprof <- pc %>%')],
-    'Geo Mean column from a name with a geometric branch and an NA branch': [
-        (CXP, CXP_PKSTATS, CXP_PKSTATS[:-4] + ' %>% mutate(gm = if_else(n >= 3, geomean, NA_real_)) %>%'),
-        (CXP, CXP_GEO, '`Geo Mean`      = sprintf("%.3g", gm)')],
-    'empty-data shell row next to the unchanged Geo Mean and Geo CV% columns': [(CXP, CXP_PKSTATS, SHELL + CXP_PKSTATS)],
+    'Geo Mean column from a name with a geometric branch and an NA branch': [('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>% mutate(gm = '
+          'if_else(n >= 3, geomean, NA_real_)) %>%'),
+         ('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+          '`Geo Mean`      = sprintf("%.3g", geomean)',
+          '`Geo Mean`      = sprintf("%.3g", gm)')],
+    'empty-data shell row next to the unchanged Geo Mean and Geo CV% columns': [('r_tlf_pseudocode/crossover/t_pk_param_summary.R',
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%',
+          'empty_cont <- tibble(n = 0L, mean = NA_real_, sd = NA_real_, cv = NA_real_, geomean = NA_real_, geocv = '
+          'NA_real_)\n'
+          'cont <- pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), var = "AVAL", by = by) %>%')],
     'SAS gm missing for empty groups, else exp(gmean_log); geomean = gm': [
         (SADF_SAS, SAS_GM, 'if n=0 then gm = .; else gm = exp(gmean_log); geomean = gm;')],
     'SAS log10 logs with 10** mean and the log(10)-scaled geocv': [
         (CXP_SAS, 'if AVAL>0 then logv = log(AVAL);', 'if AVAL>0 then logv = log10(AVAL);'),
         (CXP_SAS, SAS_GM, 'geomean = 10**gmean_log;'),
         (CXP_SAS, SAS_CV, 'geocv   = 100*sqrt(exp((log(10)*gsd_log)**2)-1);')],
-    'pull() of the log column, piped to mean() and exp()': [overall('trough %>% pull(ln_tr) %>% mean() %>% exp()')],
-    'exp(mean(trough[["ln_tr"]])) of the log column': [overall('exp(mean(trough[["ln_tr"]]))')],
-    'exp(mean(trough[, "ln_tr"])) of the log column': [overall('exp(mean(trough[, "ln_tr"]))')],
-    'ND2b log dose renamed ldose (the program stays in the set and passes)': LDOSE + [
-        (DP, 'm  <- lm(lnval ~ lndose, data = d)', 'm  <- lm(lnval ~ ldose, data = d)')],
-    'BE model terms renamed sq, pd and form, log response (stays in the set: it reads ADPP)': [
-        (BE, BE_FIT, 'lmer(lnval ~ sq + pd + form + (1 | subj), data = d)')],
-    'BE model formula held in a name': [
-        (BE, BE_FIT, 'lmer(f_be, data = d)'),
-        (BE, 'be_one <- function(param) {', 'f_be <- lnval ~ seq + per + trt + (1 | subj)\nbe_one <- function(param) {')],
+    'pull() of the log column, piped to mean() and exp()': [('r_tlf_pseudocode/01_analysis_models.R',
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+          '  trough <- d %>% transmute(day = ADY, ln_tr = log(AVAL))\n'
+          '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", trough %>% pull(ln_tr) %>% mean() %>% '
+          'exp()))\n'
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+    'exp(mean(trough[["ln_tr"]])) of the log column': [('r_tlf_pseudocode/01_analysis_models.R',
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+          '  trough <- d %>% transmute(day = ADY, ln_tr = log(AVAL))\n'
+          '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", exp(mean(trough[["ln_tr"]]))))\n'
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+    'exp(mean(trough[, "ln_tr"])) of the log column': [('r_tlf_pseudocode/01_analysis_models.R',
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(',
+          '  trough <- d %>% transmute(day = ADY, ln_tr = log(AVAL))\n'
+          '  overall <- tibble(`Overall Trough Geo Mean` = sprintf("%.3g", exp(mean(trough[, "ln_tr"]))))\n'
+          '  summary <- d %>% group_by(TRT01A, ADY) %>% summarise(')],
+    'ND2b log dose renamed ldose (the program stays in the set and passes)': [('r_tlf_pseudocode/01_analysis_models.R',
+          'fit <- lm(log(value) ~ log(dose), data = d)',
+          'd <- d %>% mutate(lnval = log(value), ldose = log(dose))\n  fit <- lm(lnval ~ ldose, data = d)'),
+         ('r_tlf_pseudocode/01_analysis_models.R',
+          'confint(fit, "log(dose)", level = confidence)',
+          'confint(fit, "ldose", level = confidence)')],
+    'BE model terms renamed sq, pd and form, log response (stays in the set: it reads ADPP)': [('r_tlf_pseudocode/01_analysis_models.R',
+          'lmerTest::lmer(formula, data = d, REML = TRUE)',
+          'lmerTest::lmer(lnval ~ sq + pd + form + (1 | subj), data = d, REML = TRUE)')],
+    'BE model formula held in a name': [('r_tlf_pseudocode/01_analysis_models.R',
+          '    fitted <- tfl_model_fit(function() lmerTest::lmer(formula, data = d, REML = TRUE))',
+          '    f_be <- lnval ~ seq + per + trt + (1 | subj)\n'
+          '    fitted <- tfl_model_fit(function() lmerTest::lmer(f_be, data = d, REML = TRUE))')],
 }
 
 
@@ -508,14 +698,21 @@ class G2GeoTest(unittest.TestCase):
     def test_na_only_assignments_make_no_geometric_name(self):
         """names the library assigns only NA (R) or . (SAS) are not geometric; real ones still are"""
         g2 = load_g2()
-        acc = g2.RFile(os.path.join(self.tmp, ACC)).ctx
-        for names in (acc.G, acc.GCV):
-            self.assertFalse({'lo', 'hi', 'slope', 'includes0', '95% CI'} & names, names)
-        self.assertTrue({'rac', 'Rac (Geo Mean)', 'Trough Geo Mean'} <= acc.G, acc.G)
-        self.assertIn('Trough Geo CV%', acc.GCV)
-        pd = g2.RFile(os.path.join(self.tmp, PD)).ctx
-        for names in (pd.G, pd.GCV):
-            self.assertFalse({'beta', 'lcl90', 'ucl90', 'lcl95', 'ucl95', 'slope', 'ss_attained'} & names, names)
+        functions = g2.shared_model_functions(os.path.join(self.tmp, R))
+        paired = functions['tfl_model_paired'][0].ctx
+        trough = functions['tfl_model_trough'][0].ctx
+        trend = functions['tfl_model_trend'][0].ctx
+        for ctx in (paired, trough, trend):
+            for names in (ctx.G, ctx.GCV):
+                self.assertFalse({'mean', 'slope', 'n', 'beta', 'lcl90', 'ucl90', 'ss_attained'} & names, names)
+        self.assertIn('ratio', paired.G)
+        self.assertIn('geometric_mean', trough.G)
+        helper = g2.RFile(os.path.join(self.tmp, HELP)).ctx
+        self.assertIn('geocv', helper.GCV)
+        accumulation = g2.RProgram(os.path.join(self.tmp, ACC), functions)
+        self.assertTrue({'tfl_model_paired', 'tfl_model_trough', 'tfl_model_trend'} <= set(accumulation.dependencies))
+        pd = g2.RProgram(os.path.join(self.tmp, PD), functions)
+        self.assertIn('tfl_model_trough', pd.dependencies)
         for f, var in (('crossover/f_pk_conc_mean.sas', 'lo'), ('crossover/t_be_anova.sas', 'intracv')):
             sc = g2.SasCode(g2.sas_code(os.path.join(self.tmp, SAS, f)))
             g = sc.aliases(lambda ex, names: g2.sas_mean_ok(ex, sc.GM, names), {'geomean'})
@@ -601,6 +798,34 @@ class G2GeoTest(unittest.TestCase):
             for f in (p, q):
                 if os.path.exists(f):
                     os.remove(f)
+
+    def test_shared_helper_discovery_uses_actual_call_graph(self):
+        """Uncalled bodies do not contaminate callers; a new actual call enters the checked set."""
+        helper = os.path.join(self.tmp, R, '01_analysis_models.R')
+        wrapper = os.path.join(self.tmp, R, 'sad', 't_new_shared_geo.R')
+        twin = os.path.join(self.tmp, SAS, 'sad', 't_new_shared_geo.sas')
+        with open(helper, 'rb') as stream:
+            saved = stream.read()
+        try:
+            with open(helper, 'ab') as stream:
+                stream.write(b'\ntfl_model_unused <- function(d) {\n'
+                             b'  d %>% summarise(geomean = exp(mean(AVAL)))\n}\n')
+            ok, n, ev = self.run_check()
+            self.assertEqual((ok, n), (len(EXPECTED), len(EXPECTED)), ev)
+            with open(wrapper, 'w', encoding='utf-8') as stream:
+                stream.write('result <- tfl_model_unused(d)\n')
+            with open(twin, 'w', encoding='utf-8') as stream:
+                stream.write('data result; set d; geomean = exp(AVAL); run;\n')
+            ok, n, ev = self.run_check()
+            self.assertEqual((ok, n), (len(EXPECTED), len(EXPECTED) + 1), ev)
+            self.assertIn('sad/t_new_shared_geo.R', ev.split('; failing: ', 1)[1])
+            self.assertIn('01_analysis_models.R::tfl_model_unused', ev)
+        finally:
+            with open(helper, 'wb') as stream:
+                stream.write(saved)
+            for path in (wrapper, twin):
+                if os.path.exists(path):
+                    os.remove(path)
 
     def test_missing_sas_twin_fails(self):
         p = os.path.join(self.tmp, SAS, 'sad', 't_pk_conc_summary.sas')

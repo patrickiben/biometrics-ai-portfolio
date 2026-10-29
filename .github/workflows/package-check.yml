@@ -51,10 +51,13 @@ jobs:
         run: node toolkit_launcher/tests/real_browser_qc.cjs
       - name: Exercise guided template setup and reusable profiles
         env:
+          TOOLKIT_QA_RUN_ANALYSIS: "1"
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
           TOOLKIT_PYTHON: python
           QA_OUTPUT_DIR: ${{ runner.temp }}/toolkit-browser-qc
-        run: node toolkit_launcher/tests/guided_browser_qc.cjs
+        # CI-only access to its installed jsonlite; production projects keep
+        # their explicitly managed private R library.
+        run: node -e "process.env.R_LIBS_SITE=[process.env.R_LIBS_USER,process.env.R_LIBS_SITE].filter(Boolean).join(require('node:path').delimiter); require('./toolkit_launcher/tests/guided_browser_qc.cjs')"
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -230,4 +233,91 @@ jobs:
         with:
           name: toolkit-shiny-qc
           path: ${{ runner.temp }}/toolkit-shiny-qc
+          retention-days: 7
+  runnable-analysis:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    env:
+      USE_BUNDLED_LIBUV: '1'
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.0'
+          use-public-rspm: true
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::jsonlite
+            any::dplyr
+            any::tidyr
+            any::stringr
+            any::purrr
+            any::tibble
+            any::rtables
+            any::ggplot2
+            any::ggrepel
+            any::patchwork
+            any::emmeans
+            any::lme4
+            any::lmerTest
+            any::pbkrtest
+            any::nlme
+            any::broom
+            any::broom.mixed
+          dependencies: '"hard"'
+      # Single-command steps preserve each exit code under Windows PowerShell.
+      - name: Check all core source programs and edge cases
+        run: Rscript toolkit_launcher/tests/test_analysis_core.R
+      - name: Check independent model methods and adversarial cases
+        run: Rscript tests/test_analysis_models.R
+      - name: Check monitoring boundaries and malformed inputs
+        run: Rscript tests/test_analysis_monitor.R
+      - name: Check complete rendering and failure handling
+        run: Rscript tests/test_analysis_renderer.R
+      - name: Check every input contract and all generated R-backed analyses
+        env:
+          ANALYSIS_CONTRACT_REPORT: ${{ runner.temp }}/analysis-contracts.json
+          ANALYSIS_GENERATED_REPORT: ${{ runner.temp }}/analysis-generated.json
+        run: python -m unittest discover -s tests -p "test_analysis_*.py" -v
+      - name: Check guided provider and immutable analysis lifecycle
+        run: python -m unittest toolkit_launcher.tests.test_guided_tlf toolkit_launcher.tests.test_analysis_jobs -v
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tools/browser-qc/package-lock.json
+      - name: Install guided analysis browser checks
+        run: npm ci --prefix tools/browser-qc
+      - name: Install Chromium with Linux system dependencies
+        if: runner.os == 'Linux'
+        run: tools/browser-qc/node_modules/.bin/playwright install --with-deps chromium
+      - name: Install Chromium on Windows
+        if: runner.os == 'Windows'
+        run: tools/browser-qc/node_modules/.bin/playwright install chromium
+      - name: Execute R and SAS-entry analyses through the browser forms
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          TOOLKIT_PYTHON: python
+          TOOLKIT_QA_RUN_ANALYSIS: '1'
+          TOOLKIT_QA_RUN_TLF: '1'
+          QA_OUTPUT_DIR: ${{ runner.temp }}/analysis-browser-qc
+        # Test-only access to the packages installed above. Production projects
+        # continue to use their own isolated, explicitly installed runtime.
+        run: node -e "process.env.R_LIBS_SITE=[process.env.R_LIBS_USER,process.env.R_LIBS_SITE].filter(Boolean).join(require('node:path').delimiter); require('./toolkit_launcher/tests/guided_browser_qc.cjs')"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: runnable-analysis-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/analysis-contracts.json
+            ${{ runner.temp }}/analysis-generated.json
+            ${{ runner.temp }}/analysis-browser-qc
           retention-days: 7

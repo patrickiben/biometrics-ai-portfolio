@@ -3,11 +3,11 @@
 # TITLE     : Medical History by System Organ Class, Preferred Term and Dose Cohort
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADMH  (MedDRA-coded medical/surgical history)
-# NOTE      : PSEUDOCODE. Participant-level: participants with >=1 condition = distinct
+# NOTE      : ANALYSIS TEMPLATE. Participant-level: participants with >=1 condition = distinct
 #             USUBJID (NOT history rows). % denominator = Safety N per cohort from
 #             bign(). SOC ordered by overall participant frequency desc, PT within
 #             SOC desc. MAD = parallel dose cohorts; columns = DOSE LEVEL (TRT01A)
-#             with placebo pooled + Total. Participant-level, no period/sequence.
+#             with source treatment groups retained + Total. Participant-level, no period/sequence.
 ################################################################################
 source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
@@ -16,15 +16,13 @@ dv  <- design_vars("MAD")                       # -> trtvar = TRT01A (dose level
 ## column denominators (N=) per dose cohort + Total from ADSL (pool placebo)
 adsl  <- adam$adsl %>%
   filter(SAFFL == "Y") %>%
-  mutate(dose_col = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                            "Placebo", .data[[dv$trtvar]]))
+  mutate(dose_col = .data[[dv$trtvar]])
 denom <- bign(adsl %>% mutate(.dc = dose_col), trtvar = ".dc", popfl = "SAFFL")
 
 ## ongoing/relevant medical history; MHOCCUR=="Y" present conditions
 mh <- adam$admh %>%
   filter(SAFFL == "Y", toupper(MHOCCUR) == "Y" | is.na(MHOCCUR)) %>%
-  mutate(dose_col = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                            "Placebo", .data[[dv$trtvar]]))
+  mutate(dose_col = .data[[dv$trtvar]])
 
 ## --- distinct-participant n (%) row helper (vs Safety N per cohort + Total) ---
 mh_row <- function(df, label, ord, indent = FALSE) {
@@ -67,10 +65,7 @@ tab <- bind_rows(any_mh, bysoc) %>%
 ttl <- tfl_titles(num = "14.1.7", type = "Table",
    text = "Medical History by System Organ Class, Preferred Term and Dose Cohort",
    pop  = "Safety Population",
-   foot = "MAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Participants counted once per SOC / PT (distinct USUBJID). Percentages based on Safety Population N per cohort. {meddra}; SOC ordered by overall frequency.")
+   foot = "MAD: columns = ascending dose cohorts (TRT01A) with source treatment groups retained. Participants counted once per SOC / PT (distinct USUBJID). Percentages based on Safety Population N per cohort. {meddra}; SOC ordered by overall frequency.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

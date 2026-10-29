@@ -3,7 +3,7 @@
 # TITLE     : Listing of Electrocardiogram (ECG) Results
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEG (all ECG parameters)
-# NOTE      : PSEUDOCODE. One row per ECG assessment, ordered by SEQUENCE
+# NOTE      : ANALYSIS TEMPLATE. One row per ECG assessment, ordered by SEQUENCE
 #             (TRTSEQPN) then participant, then treatment PERIOD then timepoint
 #             (matches the SAS twin's sequence-first order). Crossover: show treatment
 #             (dv$trtvar = TRTA), the period (dv$byperiod = APERIODC) and
@@ -16,7 +16,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # trtvar=TRTA; seqvar=TRTSEQP; byperiod=APERIOD/APERIODC
 
-eg <- adam$adeg %>% filter(SAFFL == "Y") %>%
+eg <- check_analysis_units(adam$adeg) %>% filter(SAFFL == "Y") %>%
   transmute(
     Participant    = str_extract(USUBJID, "[^-]+$"),         # short site-participant id
     Sequence   = .data[[dv$seqvar]],                     # TRTSEQP (fixed per participant)

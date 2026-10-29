@@ -3,7 +3,7 @@
 # TITLE     : Overview of Treatment-Emergent Adverse Events
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (TRTEMFL == "Y")
-# NOTE      : PSEUDOCODE. Each row = participants with >=1 event of a category
+# NOTE      : ANALYSIS TEMPLATE. Each row = participants with >=1 event of a category
 #             (n_distinct USUBJID), NOT event rows. n (%) per arm; % denominator
 #             = SAFFL N per arm from bign(). Parallel: column = TRT01A (one
 #             treatment per participant). Categories are non-mutually-exclusive
@@ -20,7 +20,7 @@ denom <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
 adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y")
 
 ## "related" set, consistent & case-safe (house rule)
-rel_set <- c("RELATED","POSSIBLE","PROBABLE","DEFINITE")
+rel_set <- toupper(tfl_setting_codes("related_values", "RELATED,POSSIBLE,PROBABLE,DEFINITE"))
 
 ## --- one summary row = distinct participants meeting a category predicate -------
 ## Each helper counts distinct participants per arm AND a Total column (distinct
@@ -79,4 +79,5 @@ ttl <- tfl_titles(
 #   analyze("value", afun = identity)
 # tbl <- build_table(lyt, rep); tbl
 
+ttl$footnotes <- c(paste("Configured relatedness values:",paste(rel_set,collapse=", ")),ttl$footnotes)
 print(rep)

@@ -3,7 +3,7 @@
 # TITLE     : Listing of Participant Disposition by Dose Cohort
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. One row per participant. Dose cohort (TRT01A), key
+# NOTE      : ANALYSIS TEMPLATE. One row per participant. Dose cohort (TRT01A), key
 #             milestone dates, study/treatment completion status and
 #             discontinuation reason. MAD = parallel dose cohorts, repeated
 #             dosing; one dose level per participant -> no period/sequence columns,

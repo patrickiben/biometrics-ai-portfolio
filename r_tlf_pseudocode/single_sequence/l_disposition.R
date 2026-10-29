@@ -3,7 +3,7 @@
 # TITLE     : Listing of Participant Disposition and Period Completion
 # POPULATION: All Enrolled Participants
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. One row per participant, ordered by fixed sequence then
+# NOTE      : ANALYSIS TEMPLATE. One row per participant, ordered by fixed sequence then
 #             participant. ALL ENROLLED -- NOT filtered to SAFFL -- so screen-fail
 #             and pre-dose discontinuations remain visible; SAFFL/PKFL are shown
 #             as Yes/No columns (mirroring the SAS twin) rather than used as a row

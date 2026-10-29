@@ -4,7 +4,7 @@
 #             Treatment Period
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADEG (PARAMCD == "QTCF"; CHG from period baseline)
-# NOTE      : PSEUDOCODE. DESCRIPTIVE (matches the SAS twin -- no inferential
+# NOTE      : ANALYSIS TEMPLATE. DESCRIPTIVE (matches the SAS twin -- no inferential
 #             model). Mean (+/-90% CI) CHG in QTcF from the PERIOD baseline over
 #             nominal post-dose timepoints (x = ATPTN), one line per PERIOD
 #             (dv$byperiod = APERIODC: Period 1 = reference/victim alone, Period 2
@@ -17,7 +17,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SINGLESEQ")                 # byperiod = c("APERIOD","APERIODC")
 perC <- dv$byperiod[2]
 
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", PARAMCD == "QTCF",
          AVISITN > 0, !is.na(CHG)) %>%
   mutate(per = .data[[perC]])

@@ -5,7 +5,7 @@
 # POPULATION: Pharmacodynamic Population (PDFL == "Y" on ADPD)
 # INPUT     : ADPD (PARAMCD/PARAM, AVAL, BASE, CHG, AVISIT/ATPT, APERIOD/APERIODC,
 #             TRTA, TRTSEQP)
-# NOTE      : PSEUDOCODE. One row per participant x parameter x period x timepoint.
+# NOTE      : ANALYSIS TEMPLATE. One row per participant x parameter x period x timepoint.
 #             Crossover ordering keys: sequence (TRTSEQP) -> participant -> period
 #             (APERIOD) -> treatment (TRTA) -> nominal time, so a reviewer can
 #             follow each participant through the crossover. Shows period-specific
@@ -17,7 +17,7 @@ dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 
 ## --- assemble listing rows --------------------------------------------------
 ## participant ordering key = sequence then USUBJID; within participant by period+time.
-lst <- adam$adpd %>%
+lst <- check_analysis_units(adam$adpd) %>%
   filter(PDFL == "Y") %>%
   transmute(
     Sequence  = .data[[dv$seqvar]],             # TRTSEQP  (participant-level order)

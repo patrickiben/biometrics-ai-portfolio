@@ -3,7 +3,7 @@
 # TITLE     : Listing of Adverse Events
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE
-# NOTE      : PSEUDOCODE. One row per AE record, ordered by sequence, participant,
+# NOTE      : ANALYSIS TEMPLATE. One row per AE record, ordered by sequence, participant,
 #             period, then onset. Crossover requires SEQUENCE (dv$seqvar=TRTSEQP)
 #             and PERIOD (dv$byperiod=APERIOD/APERIODC) on the listing so each
 #             event is traceable to the treatment in effect when it emerged.

@@ -4,7 +4,7 @@
 #             Maximum Change from Baseline by Period
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADEG (PARAMCD == "QTCF"; AVAL, CHG, post-baseline)
-# NOTE      : PSEUDOCODE. Counts = PARTICIPANTS (n_distinct USUBJID), NOT records.
+# NOTE      : ANALYSIS TEMPLATE. Counts = PARTICIPANTS (n_distinct USUBJID), NOT records.
 #             ICH E14 thresholds -- absolute QTcF: >450, >480, >500 ms; change
 #             from baseline: >30, >60 ms. Categories are CUMULATIVE (NOT mutually
 #             exclusive) per the E14 convention and the SAS twin: a participant may
@@ -32,7 +32,7 @@ perdenom <- adam$adex %>% filter(SAFFL == "Y") %>%
 
 ## analysis records: safety, analysis-flagged, post-baseline (AVISITN > 0), QTcF
 ## -- same selection as the SAS twin (SAFFL='Y' and ANL01FL='Y' and AVISITN>0).
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", PARAMCD == "QTCF", ANL01FL == "Y", AVISITN > 0) %>%   # post-baseline
   mutate(per = .data[[perC]])
 
@@ -53,7 +53,7 @@ abs_flag <- worst %>%
   pivot_longer(c(`> 450 ms`,`> 480 ms`,`> 500 ms`),
                names_to = "cat", values_to = "flag") %>%
   group_by(per, cat) %>%
-  summarise(n = n_distinct(USUBJID[flag]), .groups = "drop") %>%
+  summarise(n = n_distinct(USUBJID[which(flag)]), .groups = "drop") %>%
   mutate(block = "Maximum post-baseline QTcF")
 
 ## --- change from baseline: CUMULATIVE threshold indicators ------------------
@@ -64,7 +64,7 @@ chg_flag <- worst %>%
   pivot_longer(c(`> 30 ms`,`> 60 ms`),
                names_to = "cat", values_to = "flag") %>%
   group_by(per, cat) %>%
-  summarise(n = n_distinct(USUBJID[flag]), .groups = "drop") %>%
+  summarise(n = n_distinct(USUBJID[which(flag)]), .groups = "drop") %>%
   mutate(block = "Maximum increase from baseline in QTcF")
 
 ## fixed category order within each block for display (matches SAS row set)
@@ -89,8 +89,5 @@ ttl <- tfl_titles(num = "14.3.8.2", type = "Table",
                 "that period. A participant may contribute to both period columns."))
 
 ## rtables: block -> category rows x PERIOD columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("block", page_by = FALSE) %>%
-  analyze("cat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, rep)
+
 print(rep)

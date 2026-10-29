@@ -4,7 +4,7 @@
 #             by Treatment and Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD; BNRIND baseline index, ANRIND analysis index)
-# NOTE      : PSEUDOCODE. Cross-tab of baseline reference range category
+# NOTE      : ANALYSIS TEMPLATE. Cross-tab of baseline reference range category
 #             (BNRIND) x WORST post-baseline category, by analyte/treatment.
 #             Crossover: one shift per participant PER TREATMENT (within-participant),
 #             so the baseline and the worst post-baseline are taken WITHIN each
@@ -22,7 +22,7 @@ analytes <- c("ALT","AST","BILI","ALP","CREAT","BUN","GLUC","HGB","WBC","PLAT","
 ## rank ANRIND so "worst" = furthest from NORMAL (NORMAL=2 -> abs(rank-2))
 nri_rank <- c("LOW" = 1L, "NORMAL" = 2L, "HIGH" = 3L)
 
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", PARAMCD %in% analytes) %>%
   mutate(trt    = .data[[dv$trtvar]],
          period = .data[[dv$byperiod[2]]])           # APERIODC label
@@ -74,9 +74,5 @@ ttl <- tfl_titles(num = "14.3.4.2", type = "Table",
    foot = "Worst post-baseline = category furthest from NORMAL (Low/Normal/High). Baseline and worst taken within each treatment period (within-participant). Rows = baseline category; columns = worst on-treatment category. Source: ADLB (BNRIND, ANRIND).")
 
 ## rtables layout: analyte > treatment, baseline-category rows x worst cols
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM", page_by = TRUE) %>%
-  split_rows_by("trt",   page_by = FALSE) %>%
-  analyze("base_ind", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

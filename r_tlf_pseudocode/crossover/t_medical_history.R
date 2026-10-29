@@ -3,7 +3,7 @@
 # TITLE     : Medical History by System Organ Class and Preferred Term
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADMH  (one row per medical-history condition; MedDRA SOC + PT)
-# NOTE      : PSEUDOCODE. PARTICIPANT-LEVEL table -- medical history is recorded once
+# NOTE      : ANALYSIS TEMPLATE. PARTICIPANT-LEVEL table -- medical history is recorded once
 #             at screening and is fixed within participant, so columns = treatment
 #             SEQUENCE (dv$seqvar = TRTSEQP) + Total, NOT TRTA. Counts = PARTICIPANTS
 #             with the condition (n_distinct USUBJID), NOT history rows. n (%);
@@ -19,6 +19,7 @@ denom <- bign(adam$adsl, trtvar = dv$seqvar, popfl = "SAFFL")
 
 ## ADMH: medical-history conditions present, with participant's sequence label
 mh <- adam$admh %>% filter(SAFFL == "Y", MHOCCUR == "Y") %>%
+  select(-any_of(dv$seqvar)) %>%
   left_join(adam$adsl %>% select(USUBJID, !!dv$seqvar), by = "USUBJID")
 
 ## --- "Any condition" overall row (distinct participants) ------------------------
@@ -47,6 +48,7 @@ soc_ord <- soc   %>% filter(trt == "Total") %>% select(MHBODSYS, socn = nsubj)
 pt_ord  <- socpt %>% filter(trt == "Total") %>% select(MHBODSYS, MHDECOD, ptn = nsubj)
 
 rep <- bind_rows(any_mh, soc, socpt) %>%
+  complete_count_rows(denom) %>%
   left_join(denom, by = "trt") %>%
   mutate(value = n_pct(nsubj, N)) %>%
   left_join(soc_ord, by = "MHBODSYS") %>%

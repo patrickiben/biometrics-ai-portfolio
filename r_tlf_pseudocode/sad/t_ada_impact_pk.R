@@ -6,7 +6,7 @@
 #             evaluable)
 # INPUT     : ADPP (PARAMCD = CMAX, AUCLST, AUCIFO, ...), ADIS (participant-level
 #             treatment-emergent ADA status)
-# NOTE      : PSEUDOCODE. Cross-classifies PK exposure parameters by DOSE LEVEL
+# NOTE      : ANALYSIS TEMPLATE. Cross-classifies PK exposure parameters by DOSE LEVEL
 #             and treatment-emergent ADA status (ADA-positive vs ADA-negative).
 #             ADA status flag = ADAEMFL from ADIS (identical variable to the SAS
 #             twin). Reports the SAME descriptive statistic set as SAS: arithmetic
@@ -26,15 +26,15 @@ dv  <- design_vars("SAD")                      # column = TRT01A (= dose level)
 ## ADAEMFL = treatment-emergent ADA flag (same ADIS variable as the SAS twin)
 ada_status <- adam$adis %>% filter(ADAFL == "Y") %>%
   group_by(USUBJID) %>%
-  summarise(ada_te = any(toupper(ADAEMFL) == "Y", na.rm = TRUE), .groups = "drop") %>%
-  mutate(ADA = if_else(ada_te, "ADA-positive", "ADA-negative"))
+  summarise(ada_te = flag_any(ADAEMFL), .groups = "drop") %>%
+  mutate(ADA = if_else(ada_te, "ADA-positive", "ADA-negative", missing = "Unknown"))
 
 ## --- exposure parameters; merge ADA status onto each participant's PK params ----
 ## active doses only (placebo has no active exposure)
-pp <- adam$adpp %>%
-  filter(PKFL == "Y", PARAMCD %in% c("CMAX","AUCLST","AUCIFO"), .data[[dv$trtnvar]] > 0) %>%
+pp <- check_analysis_units(adam$adpp) %>%
+  filter(PKFL == "Y", PARAMCD %in% c("CMAX","AUCLST","AUCIFO"), .data[[dv$trtvar]] != tfl_settings("placebo_label", "Placebo")) %>%
   inner_join(ada_status, by = "USUBJID") %>%        # PK x ADA evaluable only
-  mutate(trt = .data[[dv$trtvar]], dose = .data[[dv$trtnvar]])
+  mutate(trt = .data[[dv$trtvar]])
 
 by <- c("trt", "PARAMCD", "PARAM", "ADA")
 

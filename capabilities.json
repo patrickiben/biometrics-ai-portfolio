@@ -50,7 +50,7 @@
    "id": "sap",
    "n": 2,
    "name": "SAP and mock shells",
-   "on_site_html": "The <a href=\"study/index.html#stage2\">worked example, stage 2</a>: an estimand with the five ICH E9(R1) attributes, a <a href=\"study/02_sap/sap_excerpt.html\">statistical methods excerpt</a> and <a href=\"study/02_sap/mock_shells.html\">six mock shells</a>, with settings the analysis code reads. TLF template libraries for five early-phase designs, in <a href=\"sas_tlf_pseudocode/index.html\">SAS</a> and <a href=\"r_tlf_pseudocode/index.html\">R</a> (pseudocode). A <a href=\"cqtc_hysteresis/index.html\">prespecified C-QTc hysteresis check</a> with its operating characteristics (synthetic).",
+   "on_site_html": "The <a href=\"study/index.html#stage2\">worked example, stage 2</a>: an estimand with the five ICH E9(R1) attributes, a <a href=\"study/02_sap/sap_excerpt.html\">statistical methods excerpt</a> and <a href=\"study/02_sap/mock_shells.html\">six mock shells</a>, with settings the analysis code reads. TLF template libraries for five early-phase designs, in <a href=\"sas_tlf_pseudocode/index.html\">SAS</a> and <a href=\"r_tlf_pseudocode/index.html\">R</a> (guided R execution; SAS reference exports). A <a href=\"cqtc_hysteresis/index.html\">prespecified C-QTc hysteresis check</a> with its operating characteristics (synthetic).",
    "strongest": {
     "text": "Worked example, stage 2: SAP excerpt and six mock shells",
     "href": "study/index.html#stage2"
@@ -81,7 +81,7 @@
    "id": "programming",
    "n": 4,
    "name": "Programming and TLFs",
-   "on_site_html": "The <a href=\"study/index.html#stage4\">worked example, stage 4</a>: six tables with rtables and tern, each exported to RTF and HTML, three figures and a <a href=\"study/04_analysis/report/report.html\">Quarto results report</a>. SAS and R TLF template libraries (pseudocode; SAS not executed).",
+   "on_site_html": "The <a href=\"study/index.html#stage4\">worked example, stage 4</a>: six tables with rtables and tern, each exported to RTF and HTML, three figures and a <a href=\"study/04_analysis/report/report.html\">Quarto results report</a>. Runnable R TLF programs and SAS reference templates (native SAS not executed).",
    "strongest": {
     "text": "Table 14.4.3.1 (rtables) and the SAS and R template libraries",
     "href": "study/04_analysis/tlf/t_14_4_3_1.html"
@@ -878,7 +878,7 @@
   },
   {
    "id": "r-tlf",
-   "title": "R TLF template library",
+   "title": "Runnable R TLF library",
    "href": "r_tlf_pseudocode/index.html",
    "section": "methods",
    "stages": [
@@ -890,15 +890,15 @@
    "status": [
     {
      "k": "note",
-     "text": "Pseudocode"
+     "text": "Point-and-click R"
     },
     {
      "k": "parse",
-     "text": "Parse-checked (R 4.6.0); not run on data"
+     "text": "Synthetic execution and numerical QC"
     }
    ],
-   "summary": "The R twin of the SAS library: 221 scripts, one complete set per design, written with dplyr, tidyr, rtables, ggplot2, emmeans and lme4.",
-   "fact": "The R scripts parse under R 4.6.0 but have not yet been run on data.",
+   "summary": "221 R programs across five designs, with guided CSV mapping, study settings and complete table, listing and figure exports.",
+   "fact": "R execution is checked on synthetic data, including known answers and malformed-input tests. A new study still needs scientific review.",
    "links": [
     {
      "t": "open",

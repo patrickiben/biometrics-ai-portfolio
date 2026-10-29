@@ -4,7 +4,7 @@
 #             (Reference vs Test) and Nominal Time Point
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (AVAL = concentration; ATPTN/ATPT = nominal time; APERIOD)
-# NOTE      : PSEUDOCODE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max
+# NOTE      : ANALYSIS TEMPLATE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max
 #             per PERIOD x nominal time. Geometric stats ON THE LOG SCALE via
 #             pkstats() (x > 0 only). Single-/fixed-sequence DDI: there is NO
 #             randomized sequence, so concentrations are summarised by study
@@ -22,7 +22,7 @@ dv  <- design_vars("SINGLESEQ")                 # period via dv$byperiod (no seq
 ## Single-sequence: aggregate by study PERIOD (reference vs test), keyed on the
 ## SAME period variable carried on ADPP/ADPC. ATPTN = numeric nominal-time sort
 ## key; ATPT = display label.
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", !is.na(ATPTN)) %>%
   mutate(period  = .data[[dv$byperiod[1]]],     # APERIOD numeric sort key
          periodc = .data[[dv$byperiod[2]]])      # APERIODC label (Reference/Test)
@@ -77,3 +77,5 @@ ttl <- tfl_titles(num = "14.4.1.1", type = "Table",
 
 ## render: rtables split_rows_by(PARAM) -> split_rows_by(ATPT) -> analyze(stat)
 print(tab)
+
+print(pkstats(pc, by=by) %>% select(all_of(by), n_input, n, n_excluded, n_missing, n_nonpositive, n_blq_excluded))

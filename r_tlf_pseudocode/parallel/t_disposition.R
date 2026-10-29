@@ -3,7 +3,7 @@
 # TITLE     : Participant Disposition
 # POPULATION: All Enrolled Participants (ENRLFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. Participant-level (one row per USUBJID). Columns =
+# NOTE      : ANALYSIS TEMPLATE. Participant-level (one row per USUBJID). Columns =
 #             treatment arms (TRT01A) + Total. n (%) for each disposition
 #             category; % denominator = enrolled N per arm. Matches the SAS twin
 #             (enrolled frame; leading "Participants enrolled" row; Discontinued
@@ -78,8 +78,5 @@ ttl <- tfl_titles(num = "14.1.1", type = "Table",
    foot = "Percentages based on the number of enrolled participants per treatment arm. Discontinued = DCSFL='Y'; reasons from ADSL DCSREAS.")
 
 ## rtables layout: characteristic rows x arm columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(out)
+
 print(out)

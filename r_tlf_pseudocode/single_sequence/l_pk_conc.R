@@ -3,7 +3,7 @@
 # TITLE     : Listing of Individual Plasma Concentrations of the Victim Drug
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (one row per sample: analyte, period, nominal + actual time, conc)
-# NOTE      : PSEUDOCODE. One row per concentration record, ordered by participant,
+# NOTE      : ANALYSIS TEMPLATE. One row per concentration record, ordered by participant,
 #             study PERIOD, analyte, then NOMINAL time (ATPTN) -- same sort key as
 #             the SAS twin. Single-/fixed-sequence DDI: show the within-participant
 #             PERIOD (dv$byperiod) so the paired reference-vs-test structure is
@@ -17,7 +17,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SINGLESEQ")                 # period via dv$byperiod; fixed seq
 
-pc <- adam$adpc %>% filter(PKFL == "Y") %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>% filter(PKFL == "Y") %>%
   transmute(
     Participant     = str_extract(USUBJID, "[^-]+$"),     # short site-participant id
     Sequence    = .data[[dv$seqvar]],                 # fixed sequence label (context only)

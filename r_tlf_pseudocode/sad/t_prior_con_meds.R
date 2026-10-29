@@ -3,11 +3,11 @@
 # TITLE     : Prior and Concomitant Medications by Drug Class and Dose Cohort
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADCM  (WHODrug-coded medications; ATC class + preferred name)
-# NOTE      : PSEUDOCODE. Two sections (Prior, Concomitant) via ADCM timing
+# NOTE      : ANALYSIS TEMPLATE. Two sections (Prior, Concomitant) via ADCM timing
 #             flags. Participants with >=1 medication = distinct USUBJID
 #             (NOT med rows). % denominator = Safety N per dose cohort from
 #             bign(). SAD = parallel dose cohorts; column = DOSE LEVEL (TRT01A),
-#             placebo pooled. Single dose -> no period/sequence split.
+#             source treatment groups retained. Single dose -> no period/sequence split.
 ################################################################################
 source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
@@ -16,8 +16,7 @@ dv  <- design_vars("SAD")                       # -> trtvar = TRT01A (dose level
 ## column denominators (N=) per dose cohort + Total from ADSL
 adsl  <- adam$adsl %>%
   filter(SAFFL == "Y") %>%
-  mutate(dose_col = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                            "Placebo", .data[[dv$trtvar]]))
+  mutate(dose_col = .data[[dv$trtvar]])
 denom <- adsl %>%
   group_by(trt = dose_col) %>%
   summarise(N = n_distinct(USUBJID), .groups = "drop") %>%
@@ -27,8 +26,7 @@ denom <- adsl %>%
 ## ONTRTFL = concomitant (taken during treatment). Both can be "Y".
 cm <- adam$adcm %>%
   filter(SAFFL == "Y") %>%
-  mutate(dose_col = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                            "Placebo", .data[[dv$trtvar]]))
+  mutate(dose_col = .data[[dv$trtvar]])
 
 ## --- helper: distinct-participant n (%) by ATC class then preferred name ------
 ## counts DISTINCT participants per cell; % vs Safety N per cohort + Total. Order
@@ -96,11 +94,7 @@ tab <- bind_rows(prior, conmed) %>%
 ttl <- tfl_titles(num = "14.1.6", type = "Table",
    text = "Prior and Concomitant Medications by Drug Class and Dose Cohort",
    pop  = "Safety Population",
-   foot = "SAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Participants counted once per class / medication (distinct USUBJID). Percentages based on Safety Population N per cohort. {whodrug} coding; ATC class = CMCLAS.")
+   foot = "SAD: columns = ascending dose cohorts (TRT01A) with source treatment groups retained. Participants counted once per class / medication (distinct USUBJID). Percentages based on Safety Population N per cohort. {whodrug} coding; ATC class = CMCLAS.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("section", page_by = TRUE) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

@@ -3,7 +3,7 @@
 # TITLE     : Listing of Anti-Drug Antibody (ADA) Results
 # POPULATION: ADA-Evaluable Population (ADIS-evaluable)
 # INPUT     : ADIS
-# NOTE      : PSEUDOCODE. One row per immunogenicity sample, ordered by
+# NOTE      : ANALYSIS TEMPLATE. One row per immunogenicity sample, ordered by
 #             treatment, participant, then nominal time/visit. Shows ADA result,
 #             titer, NAb result and derived treatment-emergent/induced/boosted
 #             status. Parallel-group: one treatment per participant -> column =
@@ -25,9 +25,9 @@ adis <- adam$adis %>% filter(ADAFL == "Y") %>%
     `ADA Result`    = AVALC,                          # Positive / Negative
     `Titer`         = ADATITER,
     `NAb Result`    = NABRES,
-    `Trt-Emergent`  = if_else(toupper(TEADAFL)  == "Y", "Yes", "No"),
-    `Induced`       = if_else(toupper(ADAINDFL) == "Y", "Yes", "No"),
-    `Boosted`       = if_else(toupper(ADABSTFL) == "Y", "Yes", "No"),
+    `Trt-Emergent`  = flag_label(TEADAFL),
+    `Induced`       = flag_label(ADAINDFL),
+    `Boosted`       = flag_label(ADABSTFL),
     AVISITN, ATPTN) %>%                               # numeric sort keys (dropped at render)
   arrange(Treatment, Participant, AVISITN, ATPTN)
 

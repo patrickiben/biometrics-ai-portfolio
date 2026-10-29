@@ -4,7 +4,7 @@
 #             by System Organ Class and Preferred Term, by Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADAE (TRTEMFL == "Y"); ADEX for per-PERIOD dosed denominators
-# NOTE      : PSEUDOCODE. Three stacked blocks (SAE / Death / Withdrawal), each
+# NOTE      : ANALYSIS TEMPLATE. Three stacked blocks (SAE / Death / Withdrawal), each
 #             with a header participant-count row + SOC*PT detail (row label
 #             "SOC: PT", same granularity/format as the SAS twin). Columns =
 #             dv$byperiod (APERIODC): Period 1 reference (victim alone), Period 2
@@ -16,51 +16,13 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SINGLESEQ")                 # TRTA + APERIOD/APERIODC
 
-period_col <- dv$byperiod[2]                    # "APERIODC"
-
-## --- per-PERIOD denominator (period-bearing source: ADEX) ---------------------
-denom <- adam$adex %>%
-  filter(SAFFL == "Y") %>%
-  group_by(per = .data[[period_col]]) %>%
-  summarise(N = n_distinct(USUBJID), .groups = "drop")
-
+# Planned safety columns come from the population source, including zero-event arms.
+denom <- bign(adam$adex, dv$trtvar, "SAFFL")
 adae <- adam$adae %>% filter(SAFFL == "Y", TRTEMFL == "Y")
-
-## --- one block: a header participant-count row + SOC*PT detail for a filter ------
-## SOC*PT detail with row label "SOC: PT" (same granularity/format as SAS twin).
-ae_block <- function(block_label, where) {
-  d <- adae %>% filter(!!where)
-  ## header: distinct participants per period meeting the condition
-  hdr <- d %>% group_by(per = .data[[period_col]]) %>%
-    summarise(nsubj = n_distinct(USUBJID), .groups = "drop") %>%
-    mutate(level = 0L, term = paste("Participants with any", block_label),
-           block = block_label)
-  ## SOC*PT detail: distinct participants per period x SOC x PT
-  pt <- d %>% group_by(per = .data[[period_col]], AESOC, AEDECOD) %>%
-    summarise(nsubj = n_distinct(USUBJID), .groups = "drop") %>%
-    mutate(level = 2L, term = paste0("   ", AESOC, ": ", AEDECOD), block = block_label)
-  pt_ord <- pt %>% group_by(AESOC, AEDECOD) %>% summarise(ptn = sum(nsubj), .groups = "drop")
-  bind_rows(hdr, pt %>% left_join(pt_ord, by = c("AESOC","AEDECOD")) %>% arrange(desc(ptn)))
-}
-
-blocks <- bind_rows(
-  ae_block("serious TEAE (SAE)", quote(AESER == "Y")),
-  ae_block("TEAE leading to death", quote(AESDTH == "Y")),
-  ae_block("TEAE leading to withdrawal",
-           quote(str_detect(toupper(AEACN), "DRUG WITHDRAWN")))
-)
-
-block_levels <- c("serious TEAE (SAE)",
-                  "TEAE leading to death",
-                  "TEAE leading to withdrawal")
-
-rep <- blocks %>%
-  left_join(denom, by = "per") %>%
-  mutate(value = n_pct(nsubj, N),
-         block = factor(block, levels = block_levels)) %>%
-  arrange(block, level) %>%                       # keep within-block PT order from ae_block()
-  select(block, term, level, per, value) %>%
-  pivot_wider(names_from = per, values_from = value)
+rep <- bind_rows(
+  ae_hierarchy(filter(adae, AESER == "Y"), dv$trtvar, denom, "Participants with any SAE") %>% mutate(panel="Serious Adverse Events"),
+  ae_hierarchy(filter(adae, AESDTH == "Y" | toupper(AEOUT) == "FATAL"), dv$trtvar, denom, "Participants with fatal AE") %>% mutate(panel="Adverse Events with Fatal Outcome"),
+  ae_hierarchy(filter(adae, AEACN == "DRUG WITHDRAWN"), dv$trtvar, denom, "Participants with AE leading to discontinuation") %>% mutate(panel="Adverse Events Leading to Discontinuation"))
 
 ttl <- tfl_titles(num = "14.3.1.5", type = "Table",
    text = "Serious Adverse Events, Deaths, and AEs Leading to Withdrawal by System Organ Class and Preferred Term, by Period",

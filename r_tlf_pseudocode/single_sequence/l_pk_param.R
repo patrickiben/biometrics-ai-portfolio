@@ -3,7 +3,7 @@
 # TITLE     : Listing of Individual Plasma PK Parameters of the Victim Drug
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD/PARAM; AVAL; APERIOD/APERIODC; TRTA; TRTSEQP)
-# NOTE      : PSEUDOCODE. One row per participant x PERIOD with PK parameters in
+# NOTE      : ANALYSIS TEMPLATE. One row per participant x PERIOD with PK parameters in
 #             columns (wide), ordered by participant then period. Single-/fixed-
 #             sequence DDI: the within-participant PERIOD (dv$byperiod) drives the
 #             paired structure -- Period 1 = victim alone (reference), Period 2 =
@@ -19,7 +19,7 @@ dv  <- design_vars("SINGLESEQ")                 # period via dv$byperiod; fixed 
 ## Oral (extravascular) study: CL/F = CLFO, Vz/F = VZFO (same codes as SAS twin).
 keep <- c("CMAX","TMAX","AUCLST","AUCIFO","T12","CLFO","VZFO")
 
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% keep) %>%
   mutate(
     Participant   = str_extract(USUBJID, "[^-]+$"),

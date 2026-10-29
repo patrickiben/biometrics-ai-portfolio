@@ -147,7 +147,8 @@
       const open=safeURL(job.url,{local:true});if(open)controls.append(link('Open running tool ↗',open,'btn primary'));
       if(controls.childElementCount)item.append(controls);
       const details=node('details');details.dataset.job=job.id;details.open=opened.has(job.id)||job.status==='failed';details.append(node('summary','Show run log'),node('pre',Array.isArray(job.log)?job.log.join('\n'):job.log||'Waiting for the first log message…','log'));item.append(details);
-      if(job.outputs?.length){const outputs=node('div',undefined,'outputs');for(const output of job.outputs){const label=output.label||output.path||'Download output';const b=button(label,event=>busy(event.currentTarget,()=>act(()=>download(output.url||`/api/files?${new URLSearchParams({project_id:job.project_id,path:output.path})}`,output.path?.split('/').pop()||'output'))));outputs.append(b);}item.append(outputs);}
+      if(job.outputs?.length){const outputs=node('div',undefined,'outputs');for(const output of job.outputs){const label=output.label||output.path||'Download output';const b=button(label,event=>busy(event.currentTarget,()=>act(()=>download(output.url||`/api/files?${new URLSearchParams({project_id:job.project_id,path:output.path})}`,output.path?.split('/').pop()||'output'))));outputs.append(b);if(job.analysis&&output.path?.endsWith('/analysis_report.html'))outputs.append(button('Open analysis report',event=>busy(event.currentTarget,()=>act(()=>api('/api/files/open',{project_id:job.project_id,path:output.path})))));}item.append(outputs);}
+      if(job.analysis)item.append(node('p','This run belongs to one saved package version. Automated QC completion does not grant scientific approval.','small'));
       $('jobs').append(item);
     }
   }
@@ -184,7 +185,7 @@
     for(const field of fields) {
       const wrapper=node('div',undefined,'field'+(field.type==='textarea'?' wide':'')), id=`${container.id}-${field.id||field.name}`, label=node('label',field.label||field.id||field.name);label.htmlFor=id;
       let input;if(field.type==='select'){input=node('select');for(const option of field.choices||field.options||[])input.append(new Option(typeof option==='string'?option:option.label,typeof option==='string'?option:option.value));}
-      else {input=node(field.type==='textarea'?'textarea':'input');if(field.type!=='textarea')input.type=['number','checkbox','password'].includes(field.type)?field.type:'text';}
+      else {input=node(field.type==='textarea'?'textarea':'input');if(field.type!=='textarea')input.type=['number','checkbox','password','date'].includes(field.type)?field.type:'text';}
       input.id=id;input.name=field.id||field.name;input.required=!!field.required;
       if(input.type==='number')input.step=field.step??'any';
       if(input.type==='checkbox')input.checked=!!(values[input.name]??field.default);else input.value=values[input.name]??field.default??'';
@@ -240,6 +241,7 @@
     for(const input of $('guided-inputs').querySelectorAll('select[data-slot]')){
       guided.values.columns[input.dataset.slot]||={};guided.values.columns[input.dataset.slot][input.dataset.column]=input.value;
     }
+    for(const slot of guided.schema.inputs||[])if(slot.dynamic_columns_fields?.length){const allowed=new Set(guidedColumns(slot).map(column=>typeof column==='string'?column:column.id));for(const key of Object.keys(guided.values.columns[slot.id]||{}))if(!allowed.has(key))delete guided.values.columns[slot.id][key];}
   }
   function guideOptions(field) {
     const entries=field.options_by_design?field.options_by_design[guided.values[field.depends_on||'design']]||[]:field.options||field.choices||[];
@@ -272,7 +274,7 @@
         const label=node('label',(field.label||field.id)+(field.required?' *':''));label.htmlFor=id;
         let input;
         if(kind==='select'){input=node('select');for(const option of guideOptions(field))input.append(new Option(option.label||option.value,String(option.value)));}
-        else {input=node(kind==='textarea'?'textarea':'input');if(kind!=='textarea')input.type=['number','checkbox','password'].includes(kind)?kind:'text';}
+        else {input=node(kind==='textarea'?'textarea':'input');if(kind!=='textarea')input.type=['number','checkbox','password','date'].includes(kind)?kind:'text';}
         input.id=id;input.name=field.id;input.dataset.guideControl='true';input.required=!!field.required;
         if(input.type==='checkbox')input.checked=!!guided.values[field.id];else input.value=guided.values[field.id]??'';
         for(const key of ['min','max','step','placeholder','maxlength'])if(field[key]!==undefined)input.setAttribute(key,field[key]);
@@ -300,9 +302,17 @@
     for(const row of meta.preview.slice(0,5)){const tr=node('tr');for(const [index,column] of columns.entries())tr.append(node('td',String(Array.isArray(row)?row[index]??'':row[column]??'')));tbody.append(tr);}
     table.append(tbody);wrap.append(table);box.append(wrap);return box;
   }
+  function guidedColumns(slot) {
+    const columns=[...(slot.columns||[])],known=new Set(columns.map(raw=>typeof raw==='string'?raw:raw.id));
+    for(const field of slot.dynamic_columns_fields||[]){
+      const codes=String(guided.values[field]||'').split(',').map(value=>value.trim().toUpperCase()).filter(value=>/^[A-Z][A-Z0-9_]{0,39}$/.test(value)).slice(0,100);
+      for(const code of codes)if(!known.has(code)){known.add(code);columns.push({id:code,label:code+' · study-specific baseline',type:field==='baseline_continuous'?'number':'text',required:true});}
+    }
+    return columns;
+  }
   function suggestMappings(slot,columns) {
     guided.values.columns[slot.id]||={};const mapping=guided.values.columns[slot.id];
-    for(const raw of slot.columns||[]){
+    for(const raw of guidedColumns(slot)){
       const column=typeof raw==='string'?{id:raw}:raw;
       if(Object.hasOwn(mapping,column.id)&&(mapping[column.id]===''||columns.includes(mapping[column.id])))continue;
       const exact=columns.includes(column.id)?column.id:null,folded=columns.filter(name=>name.toLowerCase()===column.id.toLowerCase());
@@ -350,7 +360,7 @@
       body.append(controls);
       if(meta){
         const mappings=node('div',undefined,'guided-mapping');suggestMappings(slot,meta.columns||[]);
-        for(const raw of slot.columns||[]){
+        for(const raw of guidedColumns(slot)){
           const column=typeof raw==='string'?{id:raw}:raw,field=node('div',undefined,'field'),id='guided-map-'+slot.id+'-'+column.id,label=node('label',(column.label||column.id)+(column.required?' *':''));
           label.htmlFor=id;const select=node('select');select.id=id;select.dataset.slot=slot.id;select.dataset.column=column.id;select.append(new Option('Choose source column',''),...meta.columns.map(name=>new Option(name,name)));select.value=guided.values.columns[slot.id][column.id]||'';
           select.addEventListener('change',()=>{captureGuided();guidedChanged();});field.append(label,select);if(column.description)field.append(node('p',column.description,'help'));mappings.append(field);
@@ -390,6 +400,17 @@
     }
     if(!report.errors?.length)area.prepend(node('p','Setup checks passed. Review the summary and limits before generating.','small'));
   }
+  async function startGuidedAnalysis(build,verb,allowInstall=false) {
+    const own=guided;if(!own||own.projectId!==selected)throw Error('Reopen the setup for the selected project.');
+    const options={module_id:own.moduleId,build_id:build.build_id};if(verb==='install')options.allow_install=allowInstall;
+    const action='analysis.'+verb,result=await api('/api/actions',{project_id:own.projectId,action_id:action,options});
+    $('guided-status').textContent=(verb==='run'?'Analysis and QC':verb==='install'?'Dependency installation':'Dependency check')+' started. Follow progress in Activity & outputs.';
+    await refresh();
+    if(guided===own){own.originToolId=null;$('guided-dialog').close();if($('tool-dialog').open)$('tool-dialog').close();}
+    $('activity-panel').scrollIntoView({behavior:'smooth',block:'start'});message('Started '+(verb==='run'?'analysis and QC for the saved package.':'the analysis dependency '+(verb==='install'?'installation.':'check.')));
+    return result;
+  }
+
   function renderGuidedBuilds() {
     const area=$('guided-builds');area.replaceChildren();const project=guided.projectId;
     for(const build of (guided.builds||[]).slice(0,5)){
@@ -397,6 +418,19 @@
       const actions=node('div',undefined,'actions');
       for(const [path,label] of [[build.zip_path,'Download complete package'],[build.report_path,'Download setup report']])if(path)actions.append(button(label,event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:project,path}),path.split('/').pop()),'guided-error')),{primary:path===build.zip_path}));
       if(build.report_path)actions.append(button('Open setup report',event=>busy(event.currentTarget,()=>act(()=>api('/api/files/open',{project_id:project,path:build.report_path}),'guided-error'))));
+      if(build.engine==='r'&&/^setup-[a-f0-9]{24}$/.test(build.build_id||'')){
+        const isActive=state?.jobs?.some(job=>job.project_id===project&&isRunning(job)),hasR=!!state?.runtime?.r?.available;
+        const note=node('p','Run this saved version with open-source R. Generate a new package after changing settings or inputs. Results and QC are kept separately for every run.','small');card.append(note);
+        const runtimeActions=node('div',undefined,'actions');runtimeActions.append(button('Check analysis dependencies',event=>busy(event.currentTarget,()=>act(()=>startGuidedAnalysis(build,'check'),'guided-error')),{disabled:isActive||!hasR}));
+        runtimeActions.append(button('Run analysis and QC',event=>busy(event.currentTarget,()=>act(()=>startGuidedAnalysis(build,'run'),'guided-error')),{primary:true,disabled:isActive||!hasR}));
+        if(!hasR)card.append(node('p','Install R using Computer setup, then refresh runtime status to run this package.','help'));
+        if(isActive)card.append(node('p','This project already has an active task. Finish or stop it before running another.','help'));
+        const install=node('details',undefined,'details-block');install.append(node('summary','Install missing analysis packages'));
+        const consent=node('label',undefined,'guided-review'),check=node('input');check.type='checkbox';consent.append(check,node('span','Allow downloads from CRAN into this private project’s R library.'));
+        const installButton=button('Install analysis dependencies',event=>busy(event.currentTarget,()=>act(()=>startGuidedAnalysis(build,'install',check.checked),'guided-error')),{disabled:true});check.addEventListener('change',()=>installButton.disabled=!check.checked||isActive||!hasR);install.append(consent,installButton);card.append(runtimeActions,install);
+        const latest=[...(state?.jobs||[])].reverse().find(job=>job.project_id===project&&job.analysis?.build_id===build.build_id&&job.analysis?.module_id===guided.moduleId);
+        if(latest){const label={running:'Running',succeeded:'Completed with automated QC',failed:'Failed — review diagnostics',stopped:'Stopped'}[latest.status]||latest.status;card.append(node('p','Latest analysis: '+label,'small'));for(const output of latest.outputs||[]){if(output.path?.endsWith('/analysis_report.html')||output.path?.endsWith('/results.zip'))actions.append(button(output.label||'Download result',event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:project,path:output.path}),output.path.split('/').pop()),'guided-error'))));}}
+      }
       card.append(actions);area.append(card);
     }
   }

@@ -4,7 +4,7 @@
 #             by Dose Level
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, CHG, AVISIT/AVISITN, ANL01FL)
-# NOTE      : PSEUDOCODE. SAD = parallel dose cohorts; colour/line = DOSE LEVEL
+# NOTE      : ANALYSIS TEMPLATE. SAD = parallel dose cohorts; colour/line = DOSE LEVEL
 #             (dv$trtvar = TRT01A, ordered by TRT01AN; placebo pooled). Mean
 #             change from baseline (CHG) by scheduled visit, one panel per
 #             analyte, one line/colour per dose level, error bars = +/- 1 SE
@@ -18,7 +18,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")                      # colour/line = TRT01A (= dose level)
 
 ## post-baseline analysis records (one per participant/param/visit via ANL01FL)
-lb <- adam$adlb %>%
+lb <- visit_time_labels(check_analysis_units(adam$adlb)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", AVISITN > 0, !is.na(CHG),
          PARAMCD %in% c("ALT","AST","CREAT","K")) %>%   # same panel as SAS twin
   mutate(trt = .data[[dv$trtvar]])             # dose-level grouping

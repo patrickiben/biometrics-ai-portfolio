@@ -3,7 +3,7 @@
 # TITLE     : Mean (+/-SE) Change from Baseline in Vital Signs by Dosing Day/Visit
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADVS (PARAMCD in SYSBP, DIABP, PULSE, TEMP, RESP)
-# NOTE      : PSEUDOCODE. Mean change from baseline (CHG) with +/-1 SE error bars
+# NOTE      : ANALYSIS TEMPLATE. Mean change from baseline (CHG) with +/-1 SE error bars
 #             over scheduled post-baseline visits spanning the repeat-dosing
 #             period, one line per dose cohort, faceted by parameter. MAD =
 #             parallel dose cohorts; between-cohort comparison, colour =
@@ -15,7 +15,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")
 
 ## post-baseline analysis records (CHG defined); scheduled timepoints only
-vs <- adam$advs %>%
+vs <- visit_time_labels(check_analysis_units(adam$advs)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", !is.na(CHG),
          PARAMCD %in% c("SYSBP","DIABP","PULSE","TEMP","RESP")) %>%
   mutate(trt    = .data[[dv$trtvar]],            # dose-level cohort (placebo pooled)

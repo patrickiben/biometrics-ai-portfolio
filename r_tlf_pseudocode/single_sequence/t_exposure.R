@@ -3,7 +3,7 @@
 # TITLE     : Extent of Study Drug Exposure by Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEX (one row per participant per dosing period/interval)
-# NOTE      : PSEUDOCODE. PERIOD table -> split by dv$byperiod (APERIOD/APERIODC):
+# NOTE      : ANALYSIS TEMPLATE. PERIOD table -> split by dv$byperiod (APERIOD/APERIODC):
 #             Period 1 = reference/victim alone, Period 2 = test/victim +
 #             perpetrator. Per-PERIOD denominators come from ADEX (participants dosed
 #             per APERIOD where SAFFL == "Y") -- NEVER from one-row-per-participant
@@ -69,8 +69,5 @@ ttl <- tfl_titles(num = "14.1.4", type = "Table",
                 "administered / planned doses."))
 
 ## rtables layout: characteristic -> stat rows x PERIOD columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

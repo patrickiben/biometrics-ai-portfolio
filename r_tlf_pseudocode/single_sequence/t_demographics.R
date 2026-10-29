@@ -3,7 +3,7 @@
 # TITLE     : Demographic and Baseline Characteristics
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. Continuous: n, Mean (SD), Median, Min-Max.
+# NOTE      : ANALYSIS TEMPLATE. Continuous: n, Mean (SD), Median, Min-Max.
 #             Categorical: n (%). PARTICIPANT-LEVEL table -> columns = the ONE fixed
 #             sequence (dv$seqvar = TRTSEQP) + Total. NO randomized sequence and
 #             NO per-period split here (demographics are participant attributes).
@@ -20,7 +20,7 @@ denom <- bign(adsl, trtvar = dv$seqvar, popfl = "SAFFL")
 
 ## --- continuous block: AGE, WEIGHTBL, HEIGHTBL, BMIBL ----------------------
 cont_block <- function(var, label, dp = 1L, ord) {
-  descstat(adsl, var = var, by = dv$seqvar, dp = dp) %>%
+  descstat(with_total_column(adsl, dv$seqvar), var = var, by = dv$seqvar, dp = dp) %>%
     transmute(seq = .data[[dv$seqvar]], characteristic = label, ord = ord,
               `n`              = as.character(n),
               `Mean (SD)`      = paste(c_mean, c_sd),
@@ -58,8 +58,5 @@ ttl <- tfl_titles(num = "14.1.2", type = "Table",
                                "Population per sequence column."))
 
 ## rtables layout (regulatory): characteristic -> statistic rows x sequence cols
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab) for an HTML/Quarto rendering
+
 print(tab)

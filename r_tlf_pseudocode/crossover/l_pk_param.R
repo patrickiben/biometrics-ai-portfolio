@@ -3,7 +3,7 @@
 # TITLE     : Listing of Individual Plasma PK Parameters
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD/PARAM; AVAL; APERIOD/APERIODC; TRTA; TRTSEQP)
-# NOTE      : PSEUDOCODE. One row per participant x treatment with PK parameters in
+# NOTE      : ANALYSIS TEMPLATE. One row per participant x treatment with PK parameters in
 #             columns (wide), ordered by sequence, participant, period. Crossover:
 #             show planned SEQUENCE (dv$seqvar) + within-participant PERIOD
 #             (dv$byperiod) + actual treatment (dv$trtvar) so the paired
@@ -17,7 +17,7 @@ dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 ## --- subset parameters to report, in display order ------------------------
 keep <- c("CMAX","TMAX","AUCLST","AUCIFO","T12","CL","VZ")
 
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% keep) %>%
   mutate(
     Sequence  = .data[[dv$seqvar]],             # TRTSEQP planned sequence

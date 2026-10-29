@@ -3,7 +3,7 @@
 # TITLE     : Demographic and Baseline Characteristics
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. PARTICIPANT-LEVEL table. In a crossover, demographics are
+# NOTE      : ANALYSIS TEMPLATE. PARTICIPANT-LEVEL table. In a crossover, demographics are
 #             fixed within participant, so columns are the randomized treatment
 #             SEQUENCE (dv$seqvar = TRTSEQP) + Total -- NOT TRTA (which varies by
 #             period). Continuous: n, Mean (SD), Median, Min-Max. Categorical:
@@ -20,7 +20,7 @@ denom <- bign(adsl, trtvar = dv$seqvar, popfl = "SAFFL")
 
 ## --- continuous block: AGE, WEIGHTBL, HEIGHTBL, BMIBL ----------------------
 cont_block <- function(var, label, dp = 1L, ord) {
-  descstat(adsl, var = var, by = dv$seqvar, dp = dp) %>%
+  descstat(with_total_column(adsl, dv$seqvar), var = var, by = dv$seqvar, dp = dp) %>%
     transmute(trt = .data[[dv$seqvar]], characteristic = label, ord = ord,
               `n`              = as.character(n),
               `Mean (SD)`      = paste(c_mean, c_sd),
@@ -55,8 +55,5 @@ ttl <- tfl_titles(num = "14.1.2", type = "Table",
                   foot = "Columns = randomized treatment sequence (TRTSEQP); demographics are fixed within participant. Percentages based on N in the Safety Population per sequence.")
 
 ## rtables layout (regulatory): characteristic -> statistic rows x sequence cols
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab) for an HTML/Quarto rendering
+
 print(tab)

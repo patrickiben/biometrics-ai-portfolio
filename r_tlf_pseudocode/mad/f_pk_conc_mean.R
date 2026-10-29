@@ -5,7 +5,7 @@
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (PARAMCD = analyte concentration; ADY/AVISIT dosing day;
 #             ATPTN nominal time within the interval)
-# NOTE      : PSEUDOCODE. Mean +/- SD per dose cohort x dosing day x nominal time,
+# NOTE      : ANALYSIS TEMPLATE. Mean +/- SD per dose cohort x dosing day x nominal time,
 #             on linear and semilog (log10 y) panels. LINEAR panel = arithmetic
 #             mean +/- SD; SEMILOG panel = geometric mean (exp(mean(log AVAL)) over
 #             AVAL>0), no SD whiskers -- per PK convention. MAD: profiles collected
@@ -17,7 +17,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", ANL01FL == "Y",
          !(AVAL <= 0 | toupper(coalesce(AVALC,"")) == "BLQ"))   # drop BLQ for mean profile
 

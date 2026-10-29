@@ -4,7 +4,7 @@
 #             (Reference vs Test)
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD = CMAX, TMAX, AUCLST, AUCIFO, T12, CL, VZ, ...)
-# NOTE      : PSEUDOCODE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max.
+# NOTE      : ANALYSIS TEMPLATE. n, Mean, SD, CV%, Geo Mean, Geo CV%, Median, Min, Max.
 #             Geometric stats on the LOG scale. Tmax/Tmax,ss (TMAX, TMAXSS) =
 #             Median (Min, Max) ONLY and EXCLUDED from the geometric block (in
 #             both languages). Single-/fixed-sequence DDI: column = study PERIOD
@@ -21,7 +21,7 @@ dv  <- design_vars("SINGLESEQ")                 # column = study PERIOD (no sequ
 ## Tmax-type parameters: Median (Min, Max) only, excluded from the geometric block
 tmax_cds <- c("TMAX", "TMAXSS")
 
-pp <- adam$adpp %>% filter(PKFL == "Y") %>%
+pp <- check_analysis_units(adam$adpp) %>% filter(PKFL == "Y") %>%
   mutate(period  = .data[[dv$byperiod[1]]],     # APERIOD numeric sort key
          periodc = .data[[dv$byperiod[2]]])      # APERIODC label: Reference / Test
 by <- c("period", "periodc", "PARAMCD", "PARAM")
@@ -42,7 +42,7 @@ cont <- pkstats(pp %>% filter(!PARAMCD %in% tmax_cds), var = "AVAL", by = by) %>
 ## --- Tmax / Tmax,ss: Median (Min, Max) ONLY -------------------------------
 tmax <- pp %>% filter(PARAMCD %in% tmax_cds) %>%
   group_by(across(all_of(by))) %>%
-  summarise(med = median(AVAL), min = min(AVAL), max = max(AVAL), .groups = "drop") %>%
+  summarise(med = safe_stat(AVAL[AVAL >= 0], median), min = safe_stat(AVAL[AVAL >= 0], min), max = safe_stat(AVAL[AVAL >= 0], max), .groups = "drop") %>%
   transmute(across(all_of(by)), stat = "Median (Min, Max)",
             value = sprintf("%.2f (%.2f, %.2f)", med, min, max))
 
@@ -62,3 +62,7 @@ ttl <- tfl_titles(num = "14.4.4.1", type = "Table",
 
 ## render: rtables split_rows_by(PARAM), analyze(stat); or gt grouped by PARAM
 print(tab)
+
+# Analysis sample accounting is exported alongside the descriptive table.
+print(pkstats(pp %>% filter(!PARAMCD %in% c("TMAX","TMAXSS")), by=by) %>%
+  select(all_of(by), n_input, n, n_excluded, n_missing, n_nonpositive, n_blq_excluded))

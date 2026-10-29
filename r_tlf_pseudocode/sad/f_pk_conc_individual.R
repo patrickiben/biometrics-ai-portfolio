@@ -4,7 +4,7 @@
 #             (Semi-Logarithmic, Faceted by Cohort)
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (PARAMCD = analyte concentration; NRRELTM actual elapsed time)
-# NOTE      : PSEUDOCODE. Spaghetti / faceted individual profiles on the ACTUAL
+# NOTE      : ANALYSIS TEMPLATE. Spaghetti / faceted individual profiles on the ACTUAL
 #             time grid (NRRELTM), semilog y. One line per participant, coloured by dose
 #             cohort (TRT01A). SAD: single dosing occasion per participant, faceted
 #             by cohort so the ascending dose groups do not overplot. BLQ
@@ -14,7 +14,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", ANL01FL == "Y",
          !(AVAL <= 0 | toupper(coalesce(AVALC,"")) == "BLQ")) %>%   # log plot: drop BLQ
   transmute(USUBJID, PARAM,

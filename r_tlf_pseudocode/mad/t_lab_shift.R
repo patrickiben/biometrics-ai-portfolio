@@ -5,7 +5,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, BNRIND baseline index, ANRIND post-baseline
 #             index, ONTRTFL, ANL01FL)
-# NOTE      : PSEUDOCODE. MAD = parallel dose cohorts with REPEATED dosing; column
+# NOTE      : ANALYSIS TEMPLATE. MAD = parallel dose cohorts with REPEATED dosing; column
 #             variable = DOSE LEVEL (dv$trtvar = TRT01A), placebo pooled. WORST is
 #             taken over ALL on-treatment readings (every dosing day through end of
 #             treatment), so cumulative/repeat-dose effects are captured. Cross-tab
@@ -23,7 +23,7 @@ cat_levels <- c("LOW","NORMAL","HIGH")
 
 ## post-baseline records with a usable normal-range index; ON-treatment spans
 ## the whole repeated-dosing period, so "worst" reflects cumulative exposure
-post <- adam$adlb %>%
+post <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("ALT","AST","BILI","ALP","CREAT","K","NA","HGB","WBC","PLAT"),
          !is.na(ANRIND)) %>%
@@ -43,7 +43,7 @@ worst <- post %>%
   transmute(USUBJID, trt, PARAMCD, PARAM, worst = factor(indf, levels = cat_levels))
 
 ## --- baseline category per participant/param (one row), non-missing only -------
-base <- adam$adlb %>%
+base <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ABLFL == "Y", !is.na(BNRIND), PARAMCD %in% unique(worst$PARAMCD)) %>%
   transmute(USUBJID, PARAMCD,
             base = factor(toupper(BNRIND), levels = cat_levels)) %>%
@@ -78,10 +78,5 @@ ttl <- tfl_titles(num = "14.3.4.2", type = "Table",
                 "pooled). Participants with missing baseline or no normal range excluded."))
 
 ## render: per parameter, per dose-level block -> baseline rows x worst-cat columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM", page_by = TRUE) %>%
-  split_cols_by(dv$trtvar) %>%                              # dose-level columns
-  split_rows_by("base", split_label = "Baseline Category") %>%
-  analyze(c("LOW","NORMAL","HIGH"))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

@@ -1,4 +1,3 @@
-/* Generated from catalog.json; keep both files identical. */
 window.TOOLKIT_CATALOG = {
   "schema": 1,
   "updated": "2026-10-28",
@@ -889,10 +888,10 @@ window.TOOLKIT_CATALOG = {
     {
       "id": "tlf-libraries",
       "title": "Paired SAS and R TLF libraries",
-      "summary": "Choose from 221 paired SAS/R pseudocode templates, map study CSVs and generate a configured package through guided forms.",
+      "summary": "Configure and run 221 R table, listing and figure programs across five study designs, with SAS reference exports.",
       "category": "Templates and references",
       "kind": "templates",
-      "runtime": "Browser to browse; licensed SAS or R 4.4+ and an editor to implement",
+      "runtime": "R 4.4+; packages installed through the local toolkit",
       "docs": [
         {
           "label": "SAS library",
@@ -950,9 +949,9 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Uploaded inputs, saved profiles and versioned packages stay in the private project. Download an individual setup ZIP or export the whole project.",
-      "customization": "Choose study design, outputs, population values and reference labels; upload CSVs and map columns. Preview requirements and generate a versioned package with loaders, drivers and a readiness report. Save or import the setup profile for reuse.",
-      "limits": "Existing analysis methods and unfinished shells remain drafts. R syntax checks do not establish execution or validity; SAS has not been executed. Readiness reports identify source limitations before study review.",
+      "persistence": "Inputs, profiles and immutable setup packages stay in the private project. Every run has a separate HTML report, complete CSV/RDS tables, PDF/PNG figures, QC record, software versions and ZIP download.",
+      "customization": "Choose design, outputs, populations, parameters, dose values, comparison labels and analysis windows; map CSV columns, preview, generate, check packages and run. Save profiles to reuse settings.",
+      "limits": "Software QC uses synthetic fixtures and known answers. Review methods, exclusions, units and model assumptions for each study. Native SAS reference code has not been executed; execution success is separate from study approval.",
       "runner_id": "r_tlf"
     },
     {
@@ -1113,7 +1112,7 @@ window.TOOLKIT_CATALOG = {
       "summary": "Select monitoring checks, map study feeds and set thresholds through a guided form.",
       "category": "Templates and references",
       "kind": "templates",
-      "runtime": "Licensed SAS, or a reviewed R environment; scheduler and SMTP configured separately",
+      "runtime": "R and jsonlite for local checks; scheduler and SMTP configured separately",
       "docs": [
         {
           "label": "Monitoring guide",
@@ -1146,9 +1145,9 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Inputs, reusable profiles and versioned setup packages stay in the private project.",
-      "customization": "Select checks, upload the relevant CSV feeds, map their columns and review thresholds. Generate a self-contained SAS driver and local evidence report without editing paths or variable names.",
-      "limits": "SAS templates have not been executed. Generated checks are for reviewed local execution; scheduling, live feed connections and monitoring emails remain separate deployment work."
+      "persistence": "Inputs and settings remain in the private project. Each run retains separate outputs, diagnostics, software versions and a ZIP download.",
+      "customization": "Select checks, map CSV columns, set thresholds and a visit analysis date, then preview and generate. Check packages and run from the revision card. Save reusable profiles.",
+      "limits": "Eight mapped-CSV checks run locally through the generated revision. Native SAS exports remain unexecuted; scheduling, live feed connections and monitoring emails remain separate."
     },
     {
       "id": "monitoring-wiki",

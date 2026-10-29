@@ -3,7 +3,7 @@
 # TITLE     : Distribution of Plasma PK Parameters by Treatment (Box Plot)
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (PARAMCD/PARAM; AVAL; TRTA; TRTSEQP; USUBJID)
-# NOTE      : PSEUDOCODE. Box plots of key exposure parameters (Cmax, AUClast,
+# NOTE      : ANALYSIS TEMPLATE. Box plots of key exposure parameters (Cmax, AUClast,
 #             AUCinf) by treatment. Crossover: x = actual treatment (dv$trtvar);
 #             overlay individual points with within-participant pairing lines
 #             (group = USUBJID) so the paired structure is visible. Exposure
@@ -17,7 +17,7 @@ dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 
 params <- c("CMAX","AUCLST","AUCIFO")
 
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% params, AVAL > 0) %>%   # >0 for log axis
   transmute(
     subj  = USUBJID,

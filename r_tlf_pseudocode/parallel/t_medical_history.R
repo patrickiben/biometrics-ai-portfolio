@@ -3,7 +3,7 @@
 # TITLE     : Medical History by System Organ Class and Preferred Term
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADMH  (MedDRA-coded medical/surgical history)
-# NOTE      : PSEUDOCODE. Participant-level: participants with >=1 condition = distinct
+# NOTE      : ANALYSIS TEMPLATE. Participant-level: participants with >=1 condition = distinct
 #             USUBJID (NOT history rows). % denominator = Safety N per arm from
 #             bign(). SOC ordered by overall participant frequency desc, PT within
 #             SOC desc. Columns = treatment arms (TRT01A) + Total. Parallel-
@@ -63,8 +63,5 @@ ttl <- tfl_titles(num = "14.1.7", type = "Table",
    pop  = "Safety Population",
    foot = "Participants counted once per SOC / PT (distinct USUBJID). Percentages based on Safety Population N per arm. {meddra}; SOC ordered by overall frequency.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

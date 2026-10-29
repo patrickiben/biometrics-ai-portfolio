@@ -3,7 +3,7 @@
 # TITLE     : Listing of Individual Plasma PK Parameters
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (one row per participant x parameter: PARAMCD/AVAL)
-# NOTE      : PSEUDOCODE. One row per participant, parameters in columns (Cmax, Tmax,
+# NOTE      : ANALYSIS TEMPLATE. One row per participant, parameters in columns (Cmax, Tmax,
 #             AUClast, AUCinf, t1/2, CL/F, Vz/F, %AUCextrap, ...). Ordered by
 #             treatment then participant. Flags non-estimable / excluded parameters.
 #             Column grouping = TRT01A = dose level. No derivation of numbers
@@ -16,7 +16,7 @@ dv  <- design_vars("PARALLEL")
 ## --- parameters to list, in report order (label kept for header) -----------
 pcd <- c("CMAX","TMAX","AUCLST","AUCIFO","AUCPEO","T12","CLFO","VZFO","LAMZ")
 
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% pcd) %>%
   mutate(disp = case_when(
             !is.na(AVAL)                              ~ sprintf("%.4g", AVAL),

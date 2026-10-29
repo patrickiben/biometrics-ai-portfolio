@@ -6,7 +6,7 @@
 #             evaluable)
 # INPUT     : ADPP (PARAMCD = CMAX, AUCLST, AUCIFO, ...), ADIS (participant-level
 #             treatment-emergent ADA status)
-# NOTE      : PSEUDOCODE. Cross-classifies PK exposure parameters by treatment
+# NOTE      : ANALYSIS TEMPLATE. Cross-classifies PK exposure parameters by treatment
 #             and treatment-emergent ADA status (ADA-positive vs ADA-negative).
 #             Geometric stats ON THE LOG scale via pkstats() (geomean =
 #             exp(mean(log)), geo CV% = 100*sqrt(exp(var(log))-1)) -- never
@@ -21,11 +21,11 @@ dv  <- design_vars("PARALLEL")
 ## --- participant-level treatment-emergent ADA status from ADIS (not re-derived) -
 ada_status <- adam$adis %>% filter(ADAFL == "Y") %>%
   group_by(USUBJID) %>%
-  summarise(ada_te = any(toupper(TEADAFL) == "Y", na.rm = TRUE), .groups = "drop") %>%
-  mutate(ADA = if_else(ada_te, "ADA-positive", "ADA-negative"))
+  summarise(ada_te = flag_any(TEADAFL), .groups = "drop") %>%
+  mutate(ADA = if_else(ada_te, "ADA-positive", "ADA-negative", missing = "Unknown"))
 
 ## --- exposure parameters; merge ADA status onto each participant's PK params ----
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% c("CMAX","AUCLST","AUCIFO")) %>%
   inner_join(ada_status, by = "USUBJID") %>%        # PK x ADA evaluable only
   mutate(trt = .data[[dv$trtvar]])

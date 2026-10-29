@@ -3,7 +3,7 @@
 # TITLE     : Listing of Vital Signs
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADVS
-# NOTE      : PSEUDOCODE. One row per vital-sign assessment, ordered by dose
+# NOTE      : ANALYSIS TEMPLATE. One row per vital-sign assessment, ordered by dose
 #             cohort, participant, parameter, then visit/timepoint. Shows observed
 #             value, baseline, change, and the analysis-range flag. MAD =
 #             parallel dose cohorts with repeated dosing: one treatment per
@@ -14,7 +14,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")
 
-vs <- adam$advs %>% filter(SAFFL == "Y") %>%
+vs <- check_analysis_units(adam$advs) %>% filter(SAFFL == "Y") %>%
   transmute(
     `Dose Cohort` = .data[[dv$trtvar]],              # TRT01A = dose level
     Participant       = str_extract(USUBJID, "[^-]+$"),  # short site-participant id

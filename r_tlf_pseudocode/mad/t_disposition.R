@@ -3,7 +3,7 @@
 # TITLE     : Participant Disposition
 # POPULATION: All Enrolled Participants (ENRLFL == "Y"); counts also vs Safety / PK Pops
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. Participant-level (one row per USUBJID). MAD = parallel
+# NOTE      : ANALYSIS TEMPLATE. Participant-level (one row per USUBJID). MAD = parallel
 #             dose cohorts with REPEATED dosing; the column variable is the DOSE
 #             LEVEL (TRT01A), with placebo typically pooled across cohorts into
 #             one "Placebo" column. One treatment per participant -> NO period/
@@ -21,10 +21,8 @@ adsl <- adam$adsl %>%
   ## MAD convention: pool placebo across all ascending cohorts into one column,
   ## keep active arms at their ascending dose level (TRT01A). TRT01AN orders cols.
   mutate(
-    dose_col = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       "Placebo", .data[[dv$trtvar]]),
-    dose_ord = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       0, .data[[dv$trtnvar]]))               # ascending order key
+    dose_col = .data[[dv$trtvar]],
+    dose_ord = .data[[dv$trtnvar]])               # ascending order key
 
 ## --- column denominators (N=) per dose cohort + Total ---------------------
 ## enrolled N drives the % for every disposition row (participant-level)
@@ -98,11 +96,8 @@ out <- tab %>%
 ttl <- tfl_titles(num = "14.1.1", type = "Table",
    text = "Participant Disposition",
    pop  = "All Enrolled Participants",
-   foot = "MAD: columns = ascending dose cohorts (TRT01A) with placebo pooled; repeated dosing. Completed dosing regimen = COMPDOSF; PK steady-state population = PKSSFL. Percentages based on enrolled participants per cohort. Discontinued = DCSFL; reasons from ADSL DCSREAS.")
+   foot = "MAD: columns = ascending dose cohorts (TRT01A) with source treatment groups retained; repeated dosing. Completed dosing regimen = COMPDOSF; PK steady-state population = PKSSFL. Percentages based on enrolled participants per cohort. Discontinued = DCSFL; reasons from ADSL DCSREAS.")
 
 ## rtables layout: characteristic rows x dose-cohort columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("value", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(out)
+
 print(out)

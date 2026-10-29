@@ -3,7 +3,7 @@
 # TITLE     : Extent of Study Drug Exposure by Treatment and Period
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEX  (one analysis record per participant per APERIOD; AVAL/TRTDURD/NDOSES)
-# NOTE      : PSEUDOCODE. PERIOD-BEARING table. In a crossover each participant is
+# NOTE      : ANALYSIS TEMPLATE. PERIOD-BEARING table. In a crossover each participant is
 #             exposed to a different TREATMENT in each PERIOD, so exposure is
 #             summarized by TRTA (the actual treatment received that period) and
 #             optionally by APERIOD. Exposure from ADaM-derived analysis vars

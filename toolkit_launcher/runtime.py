@@ -95,7 +95,7 @@ def source_files(root=ROOT):
     for name in data['files']:
         path = safe_path(root, name)
         # A manifest cannot opt private runtime state into project copies.
-        if any(p in {'.git', '.venv', 'node_modules', '__pycache__', '.biostat-toolkit', '.open-study-tracker', 'mail-preview', 'toolkit_configuration', 'input-backups', 'template_inputs', 'template_outputs'} for p in Path(name).parts):
+        if any(p in {'.git', '.venv', 'node_modules', '__pycache__', '.biostat-toolkit', '.open-study-tracker', 'mail-preview', 'toolkit_configuration', 'input-backups', 'template_inputs', 'template_outputs', 'template_runs'} for p in Path(name).parts):
             raise InputError('The toolkit source inventory contains runtime state.')
         if path.name in {'config.json', 'project.json', 'launcher-settings.json', '.launcher-session.json', '.desktop-state.json', '.desktop.lock', '.toolkit.lock', 'launcher.log'} or re.search(r'\.(?:sqlite3?|db|eml)(?:-(?:wal|shm|journal))?$', name, re.I):
             raise InputError('The toolkit source inventory contains private state.')
@@ -270,10 +270,12 @@ class Workspace:
                         continue
                     path = safe_path(root, output['path'], exists=False)
                     if path.is_file():
-                        outputs.append({'path': output['path'], 'label': output['path']})
+                        outputs.append({'path': output['path'], 'label': str(output.get('label', output['path']))[:300]})
                 clean = {key: record[key] for key in required}
                 clean.update(outputs=outputs, finished_at=record.get('finished_at'), error=record.get('error'),
                              long_running=bool(record.get('long_running')), url=None)
+                if isinstance(record.get('analysis'), dict) and all(isinstance(record['analysis'].get(key), str) for key in ('module_id', 'build_id', 'run_id')):
+                    clean['analysis'] = {key: record['analysis'][key] for key in ('module_id', 'build_id', 'run_id')}
                 if clean['status'] == 'running':
                     clean.update(status='failed', finished_at=timestamp(),
                                  error='The launcher stopped before this task finished. Review its log, then run the action again when ready.')
@@ -467,6 +469,8 @@ class Workspace:
             record = {'id': job_id, 'action_id': action_id, 'module_id': definition.get('module_id', ''), 'project_id': ident,
                       'label': definition.get('label', action_id), 'status': 'running', 'started_at': timestamp(), 'finished_at': None,
                       'url': None, 'outputs': [], 'error': None, 'long_running': bool(plan.get('long_running'))}
+            if plan.get('analysis'):
+                record['analysis'] = dict(plan['analysis'])
             self.jobs[job_id] = record
             self.stops[job_id] = threading.Event()
             atomic_json(self.job_dir / (job_id + '.json'), record)
@@ -517,8 +521,9 @@ class Workspace:
                     if code and not self.stops[ident].is_set():
                         error = 'This task could not finish. Review its log and runtime checks.'
                         break
-                if not error and not self.stops[ident].is_set():
-                    for name in plan.get('outputs', []):
+                if (not error and not self.stops[ident].is_set()) or plan.get('failure_outputs'):
+                    diagnostic = bool(error or self.stops[ident].is_set())
+                    for name in plan.get('failure_outputs' if diagnostic else 'outputs', []):
                         try:
                             path = safe_path(root, name, exists=False)
                         except InputError:
@@ -531,7 +536,8 @@ class Workspace:
                             except (InputError, ValueError):
                                 continue
                             if not any(item['path'] == relative for item in record['outputs']):
-                                record['outputs'].append({'path': relative, 'label': relative})
+                                label = plan.get('output_labels', {}).get(relative, relative)
+                                record['outputs'].append({'path': relative, 'label': ('Diagnostic: ' if diagnostic else '') + label})
                             if len(record['outputs']) >= 2000:
                                 break
                         if len(record['outputs']) >= 2000:

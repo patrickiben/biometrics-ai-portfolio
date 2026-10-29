@@ -3,7 +3,7 @@
 # TITLE     : Extent of Study Drug Exposure by Dose Cohort
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEX  (dosing records; SAD = a single administration per participant)
-# NOTE      : PSEUDOCODE. SAD = parallel dose cohorts; column = DOSE LEVEL
+# NOTE      : ANALYSIS TEMPLATE. SAD = parallel dose cohorts; column = DOSE LEVEL
 #             (TRT01A). SINGLE DOSE -> exactly one administration per participant,
 #             so "exposure" = the single administered dose; NO cumulative-dose
 #             or duration-of-repeated-dosing concept (that is MAD). Per-cohort
@@ -17,14 +17,12 @@ dv  <- design_vars("SAD")                       # -> trtvar = TRT01A (dose level
 
 ## ADEX = dosing-bearing source. SAD has a single administration per participant, so
 ## the exposure denominator is "participants dosed" derived from ADEX itself, and
-## the column is the administered dose level (TRT01A). Placebo pooled.
+## the column is the administered dose level (TRT01A). Source treatment groups retained.
 adex <- adam$adex %>%
   filter(SAFFL == "Y") %>%
   mutate(
-    dose_col = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                       "Placebo", .data[[dv$trtvar]]),
-    dose_ord = if_else(toupper(.data[[dv$trtvar]]) == "PLACEBO" | .data[[dv$trtnvar]] == 0,
-                       0, .data[[dv$trtnvar]]))
+    dose_col = .data[[dv$trtvar]],
+    dose_ord = .data[[dv$trtnvar]])
 
 ## --- per-participant single-dose roll-up --------------------------------------
 ## SAD: one dosing record per participant. Guard against >1 record by summing, but
@@ -46,7 +44,7 @@ denom <- exp_subj %>%
 
 ## --- continuous exposure block (single-dose) ------------------------------
 cont_block <- function(var, label, dp = 1L, ord) {
-  descstat(exp_subj, var = var, by = "trt", dp = dp) %>%
+  descstat(with_total_column(exp_subj,"trt"), var = var, by = "trt", dp = dp) %>%
     transmute(trt, characteristic = label, ord = ord,
               `n`         = as.character(n),
               `Mean (SD)` = paste(c_mean, c_sd),
@@ -96,8 +94,5 @@ ttl <- tfl_titles(num = "14.1.4", type = "Table",
    pop  = "Safety Population",
    foot = "SAD single dose: one administration per participant. Denominator = participants dosed per cohort (ADEX, SAFFL=='Y'). Dose-normalized = administered dose / baseline weight. No cumulative-dose/duration concept (single dose).")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

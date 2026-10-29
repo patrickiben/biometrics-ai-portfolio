@@ -80,36 +80,15 @@ add "G3 Data structure & integrity" "the analysis data passes the custom structu
     "custom structural checks ${CONF:-?} (checks/conformance.R; not Pinnacle 21 or CDISC CORE); $SUBJ trial-sense 'subject' in programs; $PII PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)"
 
 # ---- G4 Double-programming parity (SAS <-> R) ------------------------------
-NSAS=$(find $SAS -name '*.sas' ! -name '00_setup*' | wc -l | tr -d ' ')
-NR=$(find $R -name '*.R' ! -name '00_setup*' | wc -l | tr -d ' ')
-read MM COLL < <(python3 - <<'PY'
-import re,glob,os,collections
-def num(p):
-    t=open(p,encoding="utf-8",errors="ignore").read()
-    m=re.search(r'num\s*=\s*"?([0-9]+(?:\.[0-9]+)+)',t); return m.group(1) if m else None
-mm=0; coll=0
-for des in os.listdir("sas_tlf_pseudocode"):
-    dd=f"sas_tlf_pseudocode/{des}"
-    if not os.path.isdir(dd): continue
-    for sas in glob.glob(f"{dd}/*.sas"):
-        name=os.path.basename(sas)[:-4]
-        if name.startswith("00_setup"): continue
-        rf=f"r_tlf_pseudocode/{des}/{name}.R"
-        if os.path.exists(rf) and num(sas)!=num(rf): mm+=1
-    for lang,ext in (("sas_tlf_pseudocode","sas"),("r_tlf_pseudocode","R")):
-        by=collections.defaultdict(list)
-        for f in glob.glob(f"{lang}/{des}/*.{ext}"):
-            n=os.path.basename(f);
-            if n.startswith("00_setup"): continue
-            k=num(f)
-            if k: by[k].append(n)
-        coll+=sum(1 for v in by.values() if len(v)>1)
-print(mm,coll)
-PY
+read -r NSAS NR MM COLL MISSING < <(python3 - <<'PYTHON'
+from pathlib import Path
+from toolkit_launcher.native_harness import twin_checks
+print(*twin_checks(Path('.')))
+PYTHON
 )
-G4=green; { [ "$NSAS" = "$NR" ] && [ "${MM:-1}" = 0 ] && [ "${COLL:-1}" = 0 ] && [ "${RBAD:-1}" = 0 ]; } || G4=red
+G4=green; { [ "$NSAS" = "$NR" ] && [ "${MM:-1}" = 0 ] && [ "${COLL:-1}" = 0 ] && [ "${MISSING:-1}" = 0 ] && [ "${RBAD:-1}" = 0 ]; } || G4=red
 add "G4 SAS/R twin structural parity" "the SAS and R twins line up program for program (structure only)" "$G4" \
-    "$NSAS SAS / $NR R twin programs; $MM twin TLF-number mismatches; $COLL within-design number collisions; all R parse. Structural only: SAS is not executed (no license), so no outputs are compared, and the R twins were written to mirror the SAS"
+    "$NSAS SAS / $NR R twin programs; $MM twin TLF-number mismatches; $COLL within-design number collisions; $MISSING unmatched stems; all R parse. Structural only: SAS is not executed (no license), so no outputs are compared, and the R twins were written to mirror the SAS"
 
 # ---- G5 Adversarial QC panel (manual record) -------------------------------
 # Not computed by this script: a hand-entered record of an AI-agent review panel.

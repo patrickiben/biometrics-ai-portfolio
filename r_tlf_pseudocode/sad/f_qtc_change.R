@@ -3,7 +3,7 @@
 # TITLE     : Mean (+/-95% CI) Change from Baseline in QTcF by Dose and Timepoint
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADEG (PARAMCD == "QTCF")
-# NOTE      : PSEUDOCODE. Descriptive mean change-from-baseline (CHG) QTcF with
+# NOTE      : ANALYSIS TEMPLATE. Descriptive mean change-from-baseline (CHG) QTcF with
 #             95% confidence-interval error bars over nominal post-dose timepoints
 #             (ATPTN), one line per DOSE COHORT. Horizontal reference lines at 0, 30
 #             and 60 ms (ICH E14 categorical thresholds for an increase).
@@ -24,7 +24,7 @@ dose_order <- adam$adsl %>% filter(SAFFL == "Y") %>%
 
 ## post-baseline QTcF analysis records (CHG defined); x-axis = nominal post-dose
 ## timepoint (ATPTN), tick labels = ATPT text ordered by ATPTN.
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", PARAMCD == "QTCF", !is.na(CHG)) %>%
   mutate(trt = factor(.data[[dv$trtvar]], levels = dose_order),
          tp  = factor(ATPT, levels = unique(ATPT[order(ATPTN)])))

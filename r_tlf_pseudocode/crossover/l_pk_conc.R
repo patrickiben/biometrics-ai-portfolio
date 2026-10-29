@@ -4,7 +4,7 @@
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (AVAL = concentration; ATPT/ATPTN nominal time; ARRLT actual
 #             relative time; APERIOD/APERIODC; TRTA; TRTSEQP)
-# NOTE      : PSEUDOCODE. One row per concentration record, ordered by sequence,
+# NOTE      : ANALYSIS TEMPLATE. One row per concentration record, ordered by sequence,
 #             participant, period, then nominal time. Crossover: show the planned
 #             SEQUENCE (dv$seqvar) and the within-participant PERIOD (dv$byperiod)
 #             plus the actual treatment (dv$trtvar) so each sample's period AND
@@ -15,7 +15,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("CROSSOVER")                 # TRTA + APERIOD + TRTSEQP
 
-conc <- adam$adpc %>% filter(PKFL == "Y") %>%
+conc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>% filter(PKFL == "Y") %>%
   transmute(
     Sequence  = .data[[dv$seqvar]],             # TRTSEQP  (planned sequence)
     Participant   = str_extract(USUBJID, "[^-]+$"), # short site-participant id

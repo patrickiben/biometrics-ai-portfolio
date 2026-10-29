@@ -3,7 +3,7 @@
 # TITLE     : Mean (+/-SE) Change from Baseline in QTcF by Visit/Timepoint
 # POPULATION: Safety Population (SAFFL == "Y"), post-baseline
 # INPUT     : ADEG (PARAMCD == "QTCF")
-# NOTE      : PSEUDOCODE. Mean change-from-baseline (CHG) QTcF with +/-1 SE error
+# NOTE      : ANALYSIS TEMPLATE. Mean change-from-baseline (CHG) QTcF with +/-1 SE error
 #             bars over nominal post-baseline timepoints, one line per treatment
 #             arm. Reference lines at 0, 30 and 60 ms (ICH E14 categorical
 #             thresholds for an increase from baseline).
@@ -14,7 +14,7 @@ env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("PARALLEL")
 
 ## post-baseline QTcF analysis records (CHG defined)
-eg <- adam$adeg %>%
+eg <- check_analysis_units(adam$adeg) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", PARAMCD == "QTCF", !is.na(CHG)) %>%
   mutate(trt = .data[[dv$trtvar]],
          tp  = factor(AVISIT, levels = unique(AVISIT[order(AVISITN)])))

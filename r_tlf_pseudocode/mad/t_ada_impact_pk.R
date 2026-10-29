@@ -7,7 +7,7 @@
 # INPUT     : ADPP (steady-state PARAMCD = CMAXSS, AUCTAU/AUCTAUSS, CMINSS, RAC*;
 #             single-dose Day 1 PARAMCD = CMAX, AUCTAU for Rac context),
 #             ADIS (participant-level treatment-emergent ADA status)
-# NOTE      : PSEUDOCODE. Cross-classifies STEADY-STATE PK exposure parameters
+# NOTE      : ANALYSIS TEMPLATE. Cross-classifies STEADY-STATE PK exposure parameters
 #             and the ACCUMULATION RATIO by DOSE LEVEL and treatment-emergent ADA
 #             status (ADA-positive vs ADA-negative). Geometric stats ON THE LOG
 #             scale via pkstats() (geomean = exp(mean(log)), geo CV% =
@@ -25,29 +25,30 @@
 #             ADA x exposure test. Reported PK = validated PK tool per the study's SOPs.
 ################################################################################
 source("../00_setup_helpers.R")
+source("../01_analysis_models.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")                      # column = TRT01A (= dose level)
 
 ## --- participant-level treatment-emergent ADA status from ADIS (not re-derived) -
 ada_status <- adam$adis %>% filter(ADAFL == "Y") %>%
   group_by(USUBJID) %>%
-  summarise(ada_te = any(toupper(TEADAFL) == "Y", na.rm = TRUE), .groups = "drop") %>%
-  mutate(ADA = if_else(ada_te, "ADA-positive", "ADA-negative"))
+  summarise(ada_te = flag_any(TEADAFL), .groups = "drop") %>%
+  mutate(ADA = if_else(ada_te, "ADA-positive", "ADA-negative", missing = "Unknown"))
 
 ## steady-state exposure params + accumulation ratio in ADPP; active doses only
 ## (placebo has no active exposure / log(0) dose downstream). Rac is precomputed
 ## by the validated PK tool (PARAMCD = RACMAX / RACTAU); we summarise, not derive.
-SS_PARAMS  <- c("CMAXSS", "AUCTAU", "CMINSS", "CTROUGH")    # steady-state exposure
-RAC_PARAMS <- c("RACMAX", "RACAUC")                          # accumulation ratios (pre-derived ADPP)
+SS_PARAMS  <- tfl_model_codes("mad_pk_parameters", "CMAXSS, AUCTAU")    # steady-state exposure
+RAC_PARAMS <- tfl_model_codes("ada_rac_parameters", "RACMAX, RACAUC")                          # accumulation ratios (pre-derived ADPP)
 
 ## --- exposure + Rac parameters; merge ADA status onto each participant's PK params
-pp <- adam$adpp %>%
-  filter(PKFL == "Y", PARAMCD %in% c(SS_PARAMS, RAC_PARAMS),
-         .data[[dv$trtnvar]] > 0) %>%
+pp <- check_analysis_units(adam$adpp) %>%
+  filter(PKFL == "Y", PARAMCD %in% c(SS_PARAMS, RAC_PARAMS), ADY == tfl_settings("analysis_day", 14)) %>%
   inner_join(ada_status, by = "USUBJID") %>%        # PK x ADA evaluable only
-  mutate(trt = .data[[dv$trtvar]], dose = .data[[dv$trtnvar]],
+  mutate(trt = .data[[dv$trtvar]], dose = tfl_model_dose(.data[[dv$trtvar]]),
          pgroup = if_else(PARAMCD %in% RAC_PARAMS,
-                          "Accumulation ratio", "Steady-state exposure"))
+                          "Accumulation ratio", "Steady-state exposure")) %>% filter(dose > 0)
+tfl_model_units(pp)
 
 by <- c("pgroup", "trt", "PARAMCD", "PARAM", "ADA")
 
@@ -77,20 +78,10 @@ tab <- gx %>%
 ## ratio r = max/min dose (0.80/1.25 acceptance bounds). Flags whether ADA
 ## perturbs the steady-state exposure-dose relationship. Descriptive support;
 ## reported model = validated PK tool per the study's SOPs.
-dp_by_ada <- pp %>%
-  filter(pgroup == "Steady-state exposure", dose > 0, AVAL > 0) %>%
+dp_by_ada <- pp %>% filter(pgroup == "Steady-state exposure") %>%
   group_by(PARAMCD, PARAM, ADA) %>%
-  filter(n_distinct(dose) >= 2L, n() >= 3L) %>%
-  group_modify(~{
-    r  <- max(.x$dose) / min(.x$dose)
-    m  <- lm(log(AVAL) ~ log(dose), data = .x)
-    ci <- confint(m, "log(dose)", level = 0.90)
-    tibble(beta  = unname(coef(m)["log(dose)"]),
-           lcl90 = ci[1], ucl90 = ci[2],
-           betaL = 1 + log(0.80) / log(r),       # critical-region lower bound
-           betaH = 1 + log(1.25) / log(r),       # critical-region upper bound
-           within = ci[1] >= (1 + log(0.80)/log(r)) & ci[2] <= (1 + log(1.25)/log(r)))
-  }) %>% ungroup()
+  group_modify(~ tfl_model_power(transmute(.x, USUBJID, dose, value=AVAL),
+    confidence=tfl_model_confidence("dose_confidence", .90), bounds=tfl_model_bounds("dose"))) %>% ungroup()
 
 ## --- ADA shift in accumulation: Rac geo-mean ratio (ADA+ / ADA-) per dose ---
 ## within dose level, ratio of geometric-mean Rac for ADA-positive vs negative;
@@ -99,27 +90,15 @@ rac_shift <- pp %>%
   filter(pgroup == "Accumulation ratio", AVAL > 0) %>%
   group_by(trt, PARAMCD, PARAM, ADA) %>%
   summarise(n = n_distinct(USUBJID), geomean = exp(mean(log(AVAL))), .groups = "drop") %>%
-  pivot_wider(names_from = ADA, values_from = c(n, geomean)) %>%
+  mutate(ADA=factor(ADA, levels=c("ADA-positive","ADA-negative","Unknown"))) %>%
+  pivot_wider(names_from = ADA, values_from = c(n, geomean), names_expand=TRUE) %>%
   mutate(`Rac GMR (ADA+/ADA-)` = `geomean_ADA-positive` / `geomean_ADA-negative`)
 
-ttl <- tfl_titles(num = "14.5.2.1", type = "Table",
-   text = "Impact of Anti-Drug Antibody Status on Steady-State PK Exposure and Accumulation by Dose Level",
-   pop  = "PK Parameter and ADA-Evaluable Population",
-   foot = paste("Geometric mean / Geo CV% on the log scale (exp(mean(log)),",
-                "100*sqrt(exp(var(log))-1)). ADA status = treatment-emergent (ADIS).",
-                "Multiple ascending dose: columns = dose level x ADA status (active doses);",
-                "steady-state exposure (Cmax,ss / AUCtau,ss / Cmin,ss) and accumulation",
-                "ratio Rac (Day N / Day 1, precomputed by the validated PK tool).",
-                "Exploratory STEADY-STATE dose-proportionality power model",
-                "log(param)~log(dose) per ADA stratum; slope beta vs critical region",
-                "betaL=1+log(0.80)/log(r), betaH=1+log(1.25)/log(r), r=max/min dose.",
-                "Rac GMR = geo-mean accumulation-ratio ratio (ADA+ / ADA-) within dose.",
-                "Subgroup n may be small -- interpret with caution. No formal ADA x",
-                "exposure statistical test."))
-
-## rtables/gt rendering; param-group blocks (steady-state exposure, accumulation
-## ratio), dose-level x ADA-status columns; dose-proportionality power-model
-## slopes (dp_by_ada) and Rac GMR (rac_shift) appended as footnote blocks
+ttl <- tfl_titles(num="14.5.2.1", text="ADA Status and Configured Final-Day PK by Dose Level", pop="PK Parameter and ADA-Evaluable Population",
+  foot=paste("Descriptive subgroup comparisons; no formal ADA-by-exposure test. Final analysis day:",tfl_model_number("analysis_day",14),
+    ". Dose unit:",tfl_model_setting("dose_unit", ""),". Power-model confidence:",tfl_model_confidence("dose_confidence",.90),
+    "; bounds:",paste(tfl_model_bounds("dose"),collapse=" / "),
+    ". Accumulation ratios use supplied ADPP codes:",paste(RAC_PARAMS,collapse=", "),". Unknown ADA flags remain unknown."))
 print(tab)
-print(dp_by_ada)    # MAD: ADA-stratified steady-state dose-proportionality slope
-print(rac_shift)    # MAD: ADA shift in accumulation ratio (GMR ADA+/ADA-)
+print(dp_by_ada)
+print(rac_shift)

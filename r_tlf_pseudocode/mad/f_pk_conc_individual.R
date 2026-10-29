@@ -5,7 +5,7 @@
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (PARAMCD = analyte concentration; ATM actual elapsed time;
 #             AVISIT/ADY dosing day)
-# NOTE      : PSEUDOCODE. Spaghetti / faceted individual profiles on the ACTUAL
+# NOTE      : ANALYSIS TEMPLATE. Spaghetti / faceted individual profiles on the ACTUAL
 #             time grid (ATM), semilog y. One line per participant, coloured by dose
 #             cohort (TRT01A). MAD: repeated daily dosing -> facet by dose cohort
 #             x dosing day (Day 1 single dose vs Day N steady state) so the
@@ -16,7 +16,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("MAD")
 
-pc <- adam$adpc %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>%
   filter(PKFL == "Y", ANL01FL == "Y",
          !(AVAL <= 0 | toupper(coalesce(AVALC,"")) == "BLQ")) %>%   # log plot: drop BLQ
   transmute(USUBJID, PARAM,

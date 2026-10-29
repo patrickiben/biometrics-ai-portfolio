@@ -3,7 +3,7 @@
 # TITLE     : Listing of Individual Plasma PK Parameters
 # POPULATION: PK Parameter Population (PKFL == "Y")
 # INPUT     : ADPP (one row per participant x dosing day x parameter: PARAMCD/AVAL)
-# NOTE      : PSEUDOCODE. One row per participant x dosing DAY, parameters in columns.
+# NOTE      : ANALYSIS TEMPLATE. One row per participant x dosing DAY, parameters in columns.
 #             Ordered by dose cohort, participant, then dosing day. Flags non-estimable
 #             / excluded parameters. MAD = parallel cohorts, REPEATED dosing:
 #             Day 1 carries single-dose parameters (Cmax, AUClast, AUCinf, t1/2);
@@ -24,7 +24,7 @@ pcd <- c("CMAX","TMAX","AUCLST","AUCIFO","T12","CLFO","VZFO",
          "CMAXSS","TMAXSS","AUCTAU","CMINSS","CTROUGH","CAVGSS","CLSS",
          "RACMAX","RACAUC")
 
-pp <- adam$adpp %>%
+pp <- check_analysis_units(adam$adpp) %>%
   filter(PKFL == "Y", PARAMCD %in% pcd) %>%
   mutate(disp = case_when(
             !is.na(AVAL)                              ~ sprintf("%.4g", AVAL),

@@ -48,3 +48,5 @@ input-backups/
 # Private guided-study inputs and generated packages
 template_inputs/
 template_outputs/
+
+template_runs/

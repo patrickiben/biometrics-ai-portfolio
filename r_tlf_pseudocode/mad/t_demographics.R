@@ -3,9 +3,9 @@
 # TITLE     : Demographic and Baseline Characteristics by Dose Cohort
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADSL
-# NOTE      : PSEUDOCODE. Continuous: n, Mean (SD), Median, Min-Max.
+# NOTE      : ANALYSIS TEMPLATE. Continuous: n, Mean (SD), Median, Min-Max.
 #             Categorical: n (%). MAD = parallel dose cohorts; columns = DOSE
-#             LEVEL (TRT01A) with placebo pooled into one column + Total. One
+#             LEVEL (TRT01A) with source treatment groups retained into one column + Total. One
 #             treatment per participant -> participant-level table, no period/sequence.
 ################################################################################
 source("../00_setup_helpers.R")
@@ -16,17 +16,15 @@ dv  <- design_vars("MAD")                       # -> trtvar = TRT01A (dose level
 adsl <- adam$adsl %>%
   filter(SAFFL == "Y") %>%
   mutate(
-    dose_col = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       "Placebo", .data[[dv$trtvar]]),
-    dose_ord = if_else(toupper(TRT01A) == "PLACEBO" | TRT01AN == 0,
-                       0, .data[[dv$trtnvar]]))
+    dose_col = .data[[dv$trtvar]],
+    dose_ord = .data[[dv$trtnvar]])
 
 ## column denominators (N=) per dose cohort + Total (key on dose_col)
 denom <- bign(adsl %>% mutate(.dc = dose_col), trtvar = ".dc", popfl = "SAFFL")
 
 ## --- continuous block: AGE, WEIGHTBL, HEIGHTBL, BMIBL ----------------------
 cont_block <- function(var, label, dp = 1L, ord) {
-  descstat(adsl, var = var, by = "dose_col", dp = dp) %>%
+  descstat(with_total_column(adsl, "dose_col"), var = var, by = "dose_col", dp = dp) %>%
     transmute(trt = dose_col, characteristic = label, ord = ord,
               `n`              = as.character(n),
               `Mean (SD)`      = paste(c_mean, c_sd),
@@ -58,11 +56,8 @@ tab <- bind_rows(cont, catg) %>%
 ttl <- tfl_titles(num = "14.1.2", type = "Table",
                   text = "Demographic and Baseline Characteristics by Dose Cohort",
                   pop  = "Safety Population",
-                  foot = "MAD: columns = ascending dose cohorts (TRT01A) with placebo pooled. Percentages based on Safety Population N per cohort.")
+                  foot = "MAD: columns = ascending dose cohorts (TRT01A) with source treatment groups retained. Percentages based on Safety Population N per cohort.")
 
 ## rtables layout (regulatory): characteristic -> statistic rows x cohort columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab) for an HTML/Quarto rendering
+
 print(tab)

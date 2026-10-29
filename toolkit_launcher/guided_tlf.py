@@ -1,8 +1,4 @@
-"""Pure, client-neutral guided setup for the existing R/SAS TLF draft libraries.
-
-This configures inputs and copies source programs. It deliberately does not
-complete unfinished analyses, derive ADaM, or certify statistical output.
-"""
+"""Client-neutral guided R analysis packages with native SAS reference exports."""
 from __future__ import annotations
 
 import csv
@@ -13,6 +9,8 @@ import json
 import math
 import re
 from pathlib import Path
+
+from . import analysis_contracts, analysis_form_fields
 
 DESIGNS = {"parallel": "Parallel group", "crossover": "Crossover", "single_sequence": "Single / fixed sequence", "sad": "Single ascending dose", "mad": "Multiple ascending dose"}
 COMMON = "STUDYID USUBJID TRT01A TRT01AN TRTA TRTAN TRTSEQP TRTSEQPN APERIOD APERIODC SAFFL PKFL ITTFL ANL01FL"
@@ -37,10 +35,13 @@ for _slot, _extra in {
     "adsl": "HRBL SYSBPBL DIABPBL QTCFBL CREATBL CHILDPOT BMICAT RENALGR1 HEPATGR1 CYPPHENO TRT02A DCPERIOD SITEID PKSSFL COMPDOSF COMPP1FL COMPP2FL CONFL RFSTDTC RFENDTC DCSDTC TR01SDTM TR02SDTM BSACRBL BMIGR1 RFGR1 RENALGR CUMDOSEN ISEVALFL",
     "adae": "APERIODN",
     "adis": "ADABLFL ADAEMFL ISEVALFL PARCAT1 NABRESC ADAPOSFL TRTEMFL",
-    "adex": "TRTDURD NDOSES EXCMPLPC EXPLDOS EXADJ",
+    "adex": "TRTDURD NDOSES EXCMPLPC EXPLDOS EXADJ WEIGHTBL",
+    "adcm": "CONFL",
+    "addv": "RANDFL",
     "adlb": "ATOXGRH ATOXGRL ATOXGR CRIT1FL ADTC",
     "admh": "MHCAT",
     "adpc": "NRRELTM AFRLT ARRLT ARELTM ADTM",
+    "advs": "A1HI A1LO",
 }.items():
     DOMAIN_FIELDS[_slot].update(_extra.split())
 NUMERIC = set("TRT01AN TRTAN TRTSEQPN APERIOD AGE HEIGHTBL WEIGHTBL BMIBL SBPBL DBPBL PULSEBL CRCLBL EGFRBL AESEVN ASTDY AENDY ADURN AVAL BASE CHG PCHG AVISITN ATPTN ADY A1HI A1LO R2ULN ATOXGRN BTOXGRN ANRLO ANRHI ATM EXDOSE EXDUR ADATITER".split())
@@ -48,9 +49,9 @@ NUMERIC.update("HRBL SYSBPBL DIABPBL QTCFBL CREATBL DCPERIOD APERIODN TRTDURD ND
 DATES = set("RANDDT TRTSDT TRTEDT EOSDT DTHDT ASTDT AENDT ADT".split())
 FLAGS = {"SAFFL": "safety_yes", "PKFL": "pk_yes", "ITTFL": "itt_yes", "PDFL": "pd_yes", "ADAFL": "ada_yes", "TRTEMFL": "emergent_yes"}
 LIMITATIONS = [
-    "Configured source drafts, not validated study analyses. Existing methods, fixed parameter lists, category definitions, and unfinished rendering sections are retained for qualified statistical review.",
-    "CSV inputs must already contain the ADaM analysis variables and derivations required by the selected outputs. This setup does not derive ADaM, choose an estimand, or approve a statistical analysis plan.",
-    "A successful setup check validates files, mappings, types, and selected structural requirements; it does not establish model suitability, statistical correctness, or complete report rendering.",
+    "Open-source R computes the selected configured analyses and records execution/QC. Scientific review and study-specific validation remain separate.",
+    "Inputs must already contain the required analysis-ready ADaM variables, population flags and derivations. Setup does not derive ADaM or choose an estimand or analysis plan.",
+    "Native SAS programs are reference exports and have not been executed or validated by this R workflow. The R results include CSV files readable by SAS.",
 ]
 
 
@@ -77,66 +78,9 @@ def _tokens(text, lang):
     return set(re.findall(r"\b[A-Z][A-Z0-9_]+\b", bare)) | {a or b for a, b in strings}
 
 
-def _requirements(text, lang, design, stem):
-    """Source-derived structural contract; not a general-purpose code analyzer.
-
-    Domain vocabularies prevent derived report columns and quoted value codes
-    from becoming upload requirements. Dynamic design/helper fields are explicit.
-    The manifest labels this as a structural check, never execution validation.
-    """
-    code = _code(text, lang)
-    domains = sorted(set(re.findall(r"adam[.$](ad\w+)", code, re.I)) & DOMAIN_FIELDS.keys())
-    tokens = _tokens(text, lang)
-    req = {slot: tokens & DOMAIN_FIELDS[slot] for slot in domains}
-    for slot, fields in req.items():
-        # All source domains represent participants, including denominator inputs.
-        fields.add("USUBJID")
-        if slot == "adsl" and stem == "l_sae_death":
-            req[slot] = {"USUBJID", "DTHDT"}
-            continue
-        if design in {"crossover", "single_sequence"}:
-            if slot == "adsl":
-                if "seqvar" in code.lower() or "TRTSEQP" in tokens:
-                    fields.add("TRTSEQP")
-                    if lang == "sas":
-                        fields.add("TRTSEQPN")
-                if re.search(r"(?:bign\(adam\$adsl[^\n]*dv\$trtvar|%bign\(ds=adam\.adsl[^\n]*trtvar=&TRTVAR)", code):
-                    fields.add("TRTA")
-                    if lang == "sas":
-                        fields.add("TRTAN")
-            else:
-                if "trtvar" in code.lower():
-                    fields.add("TRTA")
-                if "trtnvar" in code.lower():
-                    fields.add("TRTAN")
-                if "byperiod" in code.lower():
-                    fields.update({"APERIOD", "APERIODC"})
-        elif "trtvar" in code.lower():
-            fields.add("TRT01A")
-            if "trtnvar" in code.lower():
-                fields.add("TRT01AN")
-        if slot == "adsl" and ("bign(" in code or "%bign(" in code):
-            for flag in re.findall(r'popfl\s*=\s*["\']?([A-Z]+FL)', code, re.I):
-                fields.add(flag.upper())
-        if slot == "adpp" and ("pkstats(" in code or "%pkstats(" in code):
-            fields.add("AVAL")
-        # A symbol in a paired domain is not an input requirement on both sides
-        # of a join. These source families have explicit population ownership.
-        if slot not in {"adsl", "adpc", "adpp"}:
-            fields.discard("PKFL")
-        if slot in {"adpc", "adpp", "adpd", "adis"}:
-            fields.discard("SAFFL")
-        if slot == "adsl":
-            fields.discard("ANL01FL")
-        if slot == "adex" and stem not in {"t_exposure", "t_dose_proportionality"}:
-            fields.intersection_update({"USUBJID", "SAFFL", "TRTA", "TRTAN", "TRT01A", "TRT01AN", "APERIOD", "APERIODC"})
-        if slot == "adis" and stem == "t_ada_impact_pk":
-            fields.intersection_update({"USUBJID", "ADAFL", "ISEVALFL", "TEADAFL", "ADAEMFL", "ADAPOSFL", "TRTEMFL", "PARCAT1", "TRTA", "TRTAN", "TRT01A", "TRT01AN", "APERIOD", "APERIODC"})
-            if lang == "r" and design == "crossover":
-                fields.add("PARAMCD")
-        if slot == "adpc" and "cqtc_hysteresis" in stem:
-            fields.difference_update({"ANL01FL", "CHG", "BASE"})
-    return {slot: sorted(fields) for slot, fields in req.items()}
+def _requirements(text, lang, design, stem, values=None):
+    """Explicit reviewed R execution contracts are shared by both entry points."""
+    return {slot: sorted(columns) for slot, columns in analysis_contracts.required_columns(design, stem, values).items()}
 
 
 def _inventory(module_id, root):
@@ -176,22 +120,22 @@ def schema(module_id, root):
         _field("reference_label", "Reference treatment / period source label", default="Reference", description="BE comparisons only: mapped to Reference. For fixed sequence, this is APERIODC; otherwise TRTA."),
         _field("test_label", "Test treatment / period source label", default="Test", description="BE comparisons only: mapped to Test. The existing comparison supports exactly these two levels."),
         _field("profile_days", "Full concentration–QTc profile days", default="1, 14", description="MAD concentration–QTc templates: comma-separated integer ADY values specified in your analysis plan."),
-        _field("steady_state_first_day", "First steady-state trough day", "number", 5, min=1, max=10000, description="MAD accumulation template: first ADY included in the existing trough slope model."),
+        _field("steady_state_first_day", "First trough assessment day", "number", 5, min=1, max=10000, description="MAD accumulation/PD assessment: first ADY included in the prespecified trough window. A configured final day does not establish steady state."),
         _field("cqtc_form", "Prespecified concentration–QTc model form", "select", "LINEAR", options=[{"value": "LINEAR", "label": "Linear"}, {"value": "EMAX", "label": "Emax"}], description="SAD/MAD hysteresis table only; select the form already specified in the analysis plan."),
         _field("marked_high", "Marked high laboratory threshold (× ULN)", "number", 1.5, min=0.000001, max=1000, description="Parallel R abnormal laboratory listing only; replaces its explicit source threshold."),
         _field("marked_low", "Marked low laboratory threshold (× LLN)", "number", 0.5, min=0, max=1000, description="Parallel R abnormal laboratory listing only; replaces its explicit source threshold."),
     ]
-    if lang == "sas":
-        settings = [f for f in settings if f["id"] not in {"marked_high", "marked_low"}]
-    else:
-        settings = [f for f in settings if f["id"] != "steady_state_first_day"]
+    reporting, models = analysis_form_fields.fields(_field)
     return {"title": ("R" if lang == "r" else "SAS") + " TLF guided study setup",
-        "intro": "Choose draft outputs, upload prepared ADaM CSV exports, map columns, and generate a configured project. All five designs are available. Setup does not complete unfinished analyses or approve methods.",
+        "intro": "Select analyses, map prepared ADaM CSVs, and configure study-specific choices. Generate a package, then use Run analysis and QC. Open-source R computes results; native SAS programs are supplied as unexecuted references.",
         "steps": [{"id": "study", "title": "Study and outputs", "description": "Use your own neutral study identifier and approved design.", "fields": fields},
             {"id": "inputs", "title": "ADaM inputs and column mappings", "description": "Only domains needed by your selected outputs are required. Use ISO dates (YYYY-MM-DD), numeric analysis values, and character participant identifiers. Optional columns may be needed by another output; Validate lists the exact selected requirements.", "fields": []},
-            {"id": "settings", "title": "Population values and study selectors", "description": "Controls apply only where a selected source template uses them. Existing statistical methods and other category definitions remain in the draft and are listed for review.", "fields": mappings + settings},
-            {"id": "review", "title": "Review before generating", "description": "Review the mapping and method limitations. Generation creates files; it does not execute analysis.", "fields": [_field("reviewed", "I reviewed the selected draft methods and input mappings", "checkbox", False, required=True)]}],
+            {"id": "settings", "title": "Population values and study selectors", "description": "Set source population values and selectors used by your chosen analyses.", "fields": mappings + settings},
+            {"id": "reporting", "title": "Baseline, AE and laboratory definitions", "description": "Prespecify the definitions used by selected descriptive outputs. Other outputs ignore these controls.", "fields": reporting},
+            {"id": "models", "title": "Model and dose settings", "description": "Use the choices in your analysis plan. Dose models require actual doses, not treatment ordering codes.", "fields": models},
+            {"id": "review", "title": "Review before generating", "description": "Check the mappings and study-specific methods before saving an executable revision.", "fields": [_field("reviewed", "I reviewed the selected methods and input mappings", "checkbox", False, required=True)]}],
         "inputs": [{"id": slot, "label": slot.upper() + " CSV", "description": "Prepared " + slot.upper() + " analysis records; selection determines required columns.",
+            "dynamic_columns_fields": ["baseline_continuous", "baseline_categorical"] if slot == "adsl" else [],
             "columns": [{"id": col, "label": col, "type": "number" if col in NUMERIC else "date" if col in DATES else "text", "required": False} for col in sorted(columns)]} for slot, columns in DOMAIN_FIELDS.items()]}
 
 
@@ -226,14 +170,8 @@ def validate(module_id, values, inputs, root):
         for key in ("study_id", "meddra", "whodrug"):
             if re.search(r'[&%\'";\r\n]', v[key]):
                 error(key, "SAS report metadata cannot contain quotes, semicolons, percent signs, or ampersands.")
-    for key in FLAGS.values():
-        if not v[key]:
-            error(key, "Enter the source value that means included / yes.")
-    for key in ("pk_parameter", "pd_parameter"):
-        if not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,39}", v[key]):
-            error(key, "Use a PARAMCD of 1–40 letters, digits, underscores, dots, or hyphens.")
     if v.get("reviewed") is not True:
-        error("reviewed", "Review and acknowledge the draft methods and input mappings before generating.")
+        error("reviewed", "Review and acknowledge the selected methods and input mappings before generating.")
     if not isinstance(v.get("design"), str) or v["design"] not in DESIGNS:
         error("design", "Choose an available study design.")
         v["design"] = "parallel"
@@ -243,12 +181,17 @@ def validate(module_id, values, inputs, root):
         error("outputs", "Select at least one output from the chosen design.")
         outputs = []
     v["outputs"] = list(dict.fromkeys(outputs))
-    requirements = {}
-    for stem in v["outputs"]:
-        for slot, cols in available[stem]["requirements"].items():
-            requirements.setdefault(slot, set()).update(cols)
+    relevant = set()
+    if any(any(part in stem for part in ("pk_conc", "pkpd", "cqtc", "accumulation")) for stem in v["outputs"]): relevant.add("pk_parameter")
+    if any("pd" in stem for stem in v["outputs"]): relevant.add("pd_parameter")
+    if "t_accumulation" in v["outputs"] or v["design"] == "mad" and "t_pd_summary" in v["outputs"]: relevant.add("steady_state_first_day")
+    if any("lab" in stem for stem in v["outputs"]): relevant.update(("marked_high", "marked_low"))
+    if any("cqtc" in stem for stem in v["outputs"]): relevant.update(("profile_days", "cqtc_form"))
+    for key in ("pk_parameter", "pd_parameter"):
+        if key in relevant and not re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9_.-]{0,39}", v[key]):
+            error(key, "Use a PARAMCD of 1–40 letters, digits, underscores, dots, or hyphens.")
     for key, low, high in [("steady_state_first_day", 1, 10000), ("marked_high", 0.000001, 1000), ("marked_low", 0, 1000)]:
-        if key not in v:
+        if key not in v or key not in relevant:
             continue
         try:
             if isinstance(v.get(key), bool):
@@ -259,14 +202,22 @@ def validate(module_id, values, inputs, root):
             v[key] = int(number) if key == "steady_state_first_day" else number
         except (TypeError, ValueError):
             error(key, f"Enter a valid {'integer' if key == 'steady_state_first_day' else 'number'} from {low} to {high}.")
-    days = v.get("profile_days", "")
+    doses = analysis_form_fields.normalize(v, error, DOMAIN_FIELDS["adsl"], NUMERIC)
+    requirements = {}
+    for stem in v["outputs"]:
+        for slot, cols in analysis_contracts.required_columns(v["design"], stem, v).items():
+            requirements.setdefault(slot, set()).update(cols)
+    for flag, key in FLAGS.items():
+        if any(flag in columns for columns in requirements.values()) and not v[key]:
+            error(key, "Enter the source value that means included / yes.")
+    days = v.get("profile_days", "") if "profile_days" in relevant else "1, 14"
     if not isinstance(days, str) or len(days) > 500 or not re.fullmatch(r"\s*\d{1,5}(?:\s*,\s*\d{1,5})*\s*", days):
         error("profile_days", "Enter comma-separated positive integer study days.")
     else:
         profile_days = list(dict.fromkeys(int(x.strip()) for x in days.split(",")))
         if len(profile_days) > 40 or any(not 1 <= d <= 10000 for d in profile_days):
             error("profile_days", "Use 1–40 days, each between 1 and 10000.")
-    if not isinstance(v.get("cqtc_form"), str) or v["cqtc_form"] not in {"LINEAR", "EMAX"}:
+    if "cqtc_form" in relevant and (not isinstance(v.get("cqtc_form"), str) or v["cqtc_form"] not in {"LINEAR", "EMAX"}):
         error("cqtc_form", "Choose Linear or Emax.")
     if "t_be_anova" in v["outputs"] and (not v["reference_label"] or not v["test_label"] or v["reference_label"] == v["test_label"]):
         error("reference_label", "BE comparison needs two distinct nonempty source labels.")
@@ -294,7 +245,10 @@ def validate(module_id, values, inputs, root):
             error("columns." + slot, "Column mappings must be an object.")
             chosen = {}
         mapping = {}
-        for col in sorted(DOMAIN_FIELDS[slot]):
+        selected_columns = set(DOMAIN_FIELDS[slot])
+        if slot == "adsl" and "t_baseline_characteristics" in v["outputs"]:
+            selected_columns.update(required)
+        for col in sorted(selected_columns):
             candidates = [h for h in headers if h.upper() == col]
             source = chosen.get(col, candidates[0] if len(candidates) == 1 else "")
             if source and (not isinstance(source, str) or source not in headers):
@@ -307,7 +261,7 @@ def validate(module_id, values, inputs, root):
         records_by_slot[slot] = rows
         for col, source in mapping.items():
             vals = [row[source] for row in rows]
-            if col in NUMERIC:
+            if col in NUMERIC or (slot == "adsl" and col in baseline_numeric(v)):
                 bad = [x for x in vals if x.strip() and (not _is_number(x))]
                 if bad:
                     error(f"columns.{slot}.{col}", f"{col} contains {len(bad)} nonnumeric/nonfinite values; correct the prepared input.")
@@ -348,15 +302,20 @@ def validate(module_id, values, inputs, root):
         warnings.append("MedDRA version was not supplied; applicable generated footnotes will say Not specified.")
     if "adcm" in requirements and not v["whodrug"]:
         warnings.append("WHODrug release was not supplied; applicable generated footnotes will say Not specified.")
-    if v["design"] == "mad" and "f_pkpd_overlay" in v["outputs"]:
-        warnings.append("MAD PK/PD overlay: the source does not implement its stated steady-state day filter. Supply the intended profile data and review the draft's labeling; setup does not assert steady-state selection.")
-    if lang == "r" and "t_accumulation" in v["outputs"]:
-        warnings.append("R accumulation: the source trough slope uses all supplied qualifying trough days; its described prespecified plateau-window filter is not implemented. Review data selection and the statistical interpretation.")
-    if lang == "r" and v["design"] == "crossover" and "t_ada_impact_pk" in v["outputs"]:
-        warnings.append("R crossover ADA impact: the retained source maps a missing joined ADA status to ADA-negative. This assumption needs explicit study review before using the draft results.")
-    if lang == "sas":
-        warnings.append("SAS source helpers and reports contain unfinished sections. SAS software/license is needed to run the generated draft; setup does not validate a SAS execution.")
-    summary = [f"{len(v['outputs'])} {DESIGNS[v['design']]} draft outputs selected.", f"{len(requirements)} required ADaM domains; mappings and types checked."]
+    dose_slots = set()
+    for stem in v["outputs"]:
+        if (v["design"], stem) in analysis_form_fields.DOSE_OUTPUTS:
+            dose_slots.add("adeg" if "cqtc" in stem else "adpd" if stem == "t_pd_summary" else "adpp")
+    for slot in dose_slots:
+        if slot in records_by_slot and "TRT01A" in maps[slot]:
+            observed = {row[maps[slot]["TRT01A"]] for row in records_by_slot[slot]}
+            missing = sorted(observed - set(doses))
+            if missing:
+                error("dose_map", "Map actual doses for every uploaded " + slot.upper() + " treatment: " + ", ".join(missing))
+    if any("cqtc_hysteresis" in stem for stem in v["outputs"]) and doses:
+        if doses.get(v["placebo_label"]) != 0 or any(dose <= 0 for label, dose in doses.items() if label != v["placebo_label"]):
+            error("dose_map", "Concentration–QTc requires the specified placebo label at dose 0 and every active treatment at a positive dose.")
+    summary = [f"{len(v['outputs'])} {DESIGNS[v['design']]} analysis outputs selected.", f"{len(requirements)} required ADaM domains; mappings and types checked."]
     return {"errors": errors, "warnings": warnings, "summary": summary, "normalized": v,
             "requirements": {k: sorted(cols) for k, cols in requirements.items()}}
 
@@ -407,9 +366,10 @@ def _r_string(value):
 
 
 def _configure_source(text, lang, v):
-    profile_days = list(dict.fromkeys(int(x.strip()) for x in v["profile_days"].split(",")))
+    profile_days = list(dict.fromkeys(int(x.strip()) for x in (v["profile_days"] if any("cqtc" in stem for stem in v["outputs"]) else "1, 14").split(",")))
     if lang == "r":
         text, n = re.subn(r'^source\("\.\./00_setup_helpers\.R"\)\s*$', '# Helpers and canonical data are supplied by 00_run.R.', text, flags=re.M)
+        text = re.sub(r'^source\("\.\./01_analysis_models\.R"\)\s*$', '# Model helpers are supplied by 00_setup.R.', text, flags=re.M)
         text, m = re.subn(r'^env\s*<-\s*setup\([^\n]*\)\s*$', 'env <- guided_setup()', text, flags=re.M)
         for variable, value in [("PCCD", v["pk_parameter"]), ("PC_CD", v["pk_parameter"]), ("PDCD", v["pd_parameter"]), ("PD_CD", v["pd_parameter"]), ("PARAM_CD", v["pd_parameter"]), ("FORM", v["cqtc_form"])]:
             text = re.sub(r'(?m)^(' + variable + r'\s*<-\s*)"[^"\n]*"', lambda match: match[1] + _r_string(value), text)
@@ -429,50 +389,75 @@ def _configure_source(text, lang, v):
 
 
 def build(module_id, normalized, inputs, root):
-    """Return a portable bundle. Caller must first obtain an error-free validate."""
+    """Build portable R execution plus clearly unexecuted native SAS references."""
     check = validate(module_id, normalized, inputs, root)
     if check["errors"]:
         raise ValueError("TLF setup validation failed: " + "; ".join(e["message"] for e in check["errors"]))
-    v = check["normalized"]
-    lang = _language(module_id)
-    inventory = _inventory(module_id, root)[v["design"]]
-    ext = "R" if lang == "r" else "sas"
+    v, root = check["normalized"], Path(root)
     data = _canonical_rows(v, inputs)
-    files, sources, programs = {}, [], []
+    files, sources = {}, []
+    r_inventory = _inventory("r_tlf", root)[v["design"]]
+    sas_inventory = _inventory("sas_tlf", root)[v["design"]]
+    r_programs, sas_programs = [], []
     for slot, rows in data.items():
-        files[f"{lang}/data/{slot}.csv"] = _csv_text(list(v["columns"][slot]), rows)
+        for language in ("r", "sas"):
+            files[f"{language}/data/{slot}.csv"] = _csv_text(list(v["columns"][slot]), rows)
     for stem in v["outputs"]:
-        item = inventory[stem]
-        configured = _configure_source(item["text"], lang, v)
-        name = f"programs/{stem}.{ext}"
-        files[f"{lang}/{name}"] = configured
-        programs.append((name, configured))
-        sources.append({"output": stem, "title": item["title"], "status": "configured draft; execution and methods unvalidated", "source": str(item["path"].relative_to(root)), "source_sha256": item["sha256"], "required_columns": item["requirements"], "configured_sha256": hashlib.sha256(configured.encode()).hexdigest()})
-    helper_name = "00_setup_helpers.R" if lang == "r" else "00_setup_macros.sas"
-    helper = (_library(module_id, root) / helper_name).read_text(encoding="utf-8")
-    # The supplied setup adapter is the only entry point; remove example defaults
-    # from its unused source setup signature as well to avoid stale study metadata.
-    helper = helper.replace('study = "CP-101", adam = "/data/adam", out = "/data/tfl"', 'study = "", adam = "", out = ""')
-    files[f"{lang}/{helper_name}"] = helper
-    if lang == "r":
-        files["r/00_setup.R"] = _r_setup(v)
-        files["r/00_run.R"] = _r_driver(v, [name for name, _ in programs])
-        files["r/study.Rproj"] = "Version: 1.0\nRestoreWorkspace: No\nSaveWorkspace: No\nAlwaysSaveHistory: No\nEncoding: UTF-8\n"
-    else:
-        files["sas/00_run.sas"] = _sas_driver(v, data, helper, programs)
-    files["template_inventory.json"] = json.dumps({"study": v["study_id"], "design": v["design"], "outputs": sources, "limitations": LIMITATIONS, "helper_sha256": hashlib.sha256((_library(module_id, root) / helper_name).read_bytes()).hexdigest()}, indent=2) + "\n"
-    files["README.txt"] = _readme(lang, v)
-    return {"files": files, "summary": [f"Generated {len(programs)} configured {lang.upper()} draft programs with canonical CSV data and a fixed driver.", "Source hashes, input contracts, and explicit draft status are included in template_inventory.json."], "limitations": check["warnings"]}
+        item, native = r_inventory[stem], sas_inventory[stem]
+        configured = _configure_source(item["text"], "r", v)
+        reference = _configure_source(native["text"], "sas", v)
+        files[f"r/programs/{stem}.R"] = configured
+        files[f"sas/programs/{stem}.sas"] = "/* Native SAS reference: not executed or QC-approved by the R workflow. */\n" + reference
+        r_programs.append(f"programs/{stem}.R")
+        sas_programs.append((f"programs/{stem}.sas", reference))
+        sources.append({"output": stem, "title": item["title"], "engine": "r", "status": "configured analysis; run and scientific review pending",
+            "source": item["path"].relative_to(root).as_posix(), "source_sha256": item["sha256"],
+            "required_columns": _requirements(item["text"], "r", v["design"], stem, v),
+            "configured_sha256": hashlib.sha256(configured.encode()).hexdigest(),
+            "sas_reference": {"source": native["path"].relative_to(root).as_posix(), "source_sha256": native["sha256"], "status": "unexecuted reference; native SAS validation required"}})
+    helper_hashes = {}
+    for helper_name in ("00_setup_helpers.R", "01_analysis_models.R"):
+        path = root / "r_tlf_pseudocode" / helper_name
+        helper_hashes[helper_name] = hashlib.sha256(path.read_bytes()).hexdigest()
+        text = path.read_text(encoding="utf-8")
+        files["r/" + helper_name] = text.replace('study = "CP-101", adam = "/data/adam", out = "/data/tfl"', 'study = "", adam = "", out = ""')
+    sas_helper = (root / "sas_tlf_pseudocode/00_setup_macros.sas").read_text(encoding="utf-8")
+    files["sas/00_setup_macros.sas"] = sas_helper
+    files["sas/00_run.sas"] = _sas_driver(v, data, sas_helper, sas_programs)
+    files["r/00_setup.R"] = _r_setup(v)
+    files["r/00_run.R"] = _r_driver(v, r_programs)
+    files["r/study.Rproj"] = "Version: 1.0\nRestoreWorkspace: No\nSaveWorkspace: No\nAlwaysSaveHistory: No\nEncoding: UTF-8\n"
+    for name in ("toolkit_launcher/analysis_runner.R", "toolkit_launcher/analysis_monitor.R", "assets/theme/tokens.css"):
+        files[name] = (root / name).read_text(encoding="utf-8")
+    # The enclosing generator adds its full profile and integrity manifest; this
+    # minimal profile also makes direct provider bundles independently runnable.
+    files["setup_profile.json"] = json.dumps({"schema": 1, "module_id": module_id, "values": v}, indent=2) + "\n"
+    files["template_inventory.json"] = json.dumps({"study": v["study_id"], "design": v["design"], "engine": "r", "approved": False,
+        "outputs": sources, "limitations": LIMITATIONS, "helper_sha256": helper_hashes}, indent=2) + "\n"
+    files["README.txt"] = _readme(_language(module_id), v)
+    return {"files": files, "summary": [f"Generated {len(r_programs)} executable R analyses with mapped CSV inputs and study settings.",
+        "Native SAS references are included without a SAS execution claim. Use Run analysis and QC to create results, then review them scientifically."], "limitations": check["warnings"]}
+
+
+def baseline_numeric(v):
+    return {x.strip().upper() for x in v.get("baseline_continuous", "").split(",") if x.strip()} if "t_baseline_characteristics" in v.get("outputs", []) else set()
 
 
 def _r_setup(v):
-    lines = ['# Generated setup; all values came from the guided form.', 'source(file.path(bundle_root, "00_setup_helpers.R"), local = TRUE)',
-        'guided_setup <- function() setup(study = ' + _r_string(v["study_id"]) + ', adam = file.path(bundle_root, "data"), out = file.path(bundle_root, "draft_results"), meddra = ' + _r_string(v["meddra"] or "Not specified") + ', whodrug = ' + _r_string(v["whodrug"] or "Not specified") + ')', 'adam <- list()']
+    execution_settings = dict(v)
+    for key in ("dose_map", "lab_high_limits", "lab_low_limits"):
+        execution_settings[key] = analysis_form_fields.mapping(v.get(key, ""), key, lambda *_: None, parameter=key != "dose_map")
+    lines = ['# Generated setup; all values came from the guided form.',
+        'options(tfl.settings = jsonlite::fromJSON(' + _r_string(json.dumps(execution_settings)) + ', simplifyVector = FALSE))',
+        'source(file.path(bundle_root, "00_setup_helpers.R"), local = TRUE)',
+        'source(file.path(bundle_root, "01_analysis_models.R"), local = TRUE)',
+        'guided_setup <- function() setup(study = ' + _r_string(v["study_id"]) + ', adam = file.path(bundle_root, "data"), out = getOption("tfl.run_root", file.path(bundle_root, "analysis_results")), meddra = ' + _r_string(v["meddra"] or "Not specified") + ', whodrug = ' + _r_string(v["whodrug"] or "Not specified") + ')', 'adam <- list()']
     for slot, mapping in v["columns"].items():
         lines.append('adam$' + slot + ' <- read.csv(file.path(bundle_root, "data", "' + slot + '.csv"), colClasses = "character", check.names = FALSE, na.strings = "", fileEncoding = "UTF-8")')
         for col in mapping:
-            if col in NUMERIC:
-                lines.append(f'adam${slot}${col} <- as.numeric(adam${slot}${col})')
+            if col in NUMERIC or (slot == "adsl" and col in baseline_numeric(v)):
+                target = f'adam${slot}${col}' if col in DOMAIN_FIELDS[slot] else f'adam${slot}[[{_r_string(col)}]]'
+                lines.append(f'{target} <- as.numeric({target})')
             elif col in DATES:
                 lines.append(f'adam${slot}${col} <- as.Date(adam${slot}${col}, format = "%Y-%m-%d")')
     lines.append('env <- guided_setup()')
@@ -480,54 +465,41 @@ def _r_setup(v):
 
 
 def _r_driver(v, names):
-    return '''# Open this file in RStudio and click Source. Generated drafts require method/QC review.
+    return r'''# Open this generated file in RStudio and click Source. No path edits are needed.
+# The launcher also offers Run analysis and QC with pinned-input verification.
 local({
   candidates <- unlist(lapply(sys.frames(), function(f) if (!is.null(f$ofile)) f$ofile else NULL))
   own <- candidates[basename(candidates) == "00_run.R"]
-  if (!length(own) && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) {
-    own <- rstudioapi::getActiveDocumentContext()$path
-  }
+  if (!length(own) && requireNamespace("rstudioapi", quietly = TRUE) && rstudioapi::isAvailable()) own <- rstudioapi::getActiveDocumentContext()$path
   if (!length(own) || !file.exists(own[length(own)])) {
     message("Select this generated 00_run.R file in the file picker.")
     own <- file.choose()
   }
-  bundle_root <- dirname(normalizePath(own[length(own)], mustWork = TRUE))
-  out <- file.path(bundle_root, "draft_results")
-  dir.create(out, showWarnings = FALSE)
-  selected <- c(''' + ", ".join(_r_string(name) for name in names) + ''')
-  for (program in selected) {
-    label <- tools::file_path_sans_ext(basename(program))
-    unlink(file.path(out, paste0(label, c(".txt", ".pdf", ".rds"))))
-  }
-  write.csv(data.frame(program = basename(selected), execution = "not run", error = ""),
-            file.path(out, "execution_status.csv"), row.names = FALSE)
-  source(file.path(bundle_root, "00_setup.R"), local = TRUE)
-  status <- list()
-  for (program in selected) {
-    label <- tools::file_path_sans_ext(basename(program))
-    scope <- new.env(parent = environment())
-    log <- file(file.path(out, paste0(label, ".txt")), open = "wt")
-    grDevices::pdf(file.path(out, paste0(label, ".pdf")))
-    sink(log)
-    error <- tryCatch({
-      sys.source(file.path(bundle_root, program), envir = scope)
-      objects <- mget(intersect(c("tab", "rep", "p", "be", "disp", "ae", "pc", "rac_tab", "ss_slope"), ls(scope)), envir = scope)
-      saveRDS(objects, file.path(out, paste0(label, ".rds")))
-      ""
-    }, error = function(e) conditionMessage(e))
-    sink(); close(log); grDevices::dev.off()
-    status[[length(status) + 1L]] <- data.frame(program = label,
-      execution = if (nzchar(error)) "failed" else "executed draft; not validated",
-      error = error, stringsAsFactors = FALSE)
-  }
-  write.csv(do.call(rbind, status), file.path(out, "execution_status.csv"), row.names = FALSE)
-  message("Draft run finished. Review draft_results/execution_status.csv and every result before use.")
+  bundle <- dirname(dirname(normalizePath(own[length(own)], mustWork = TRUE)))
+  results <- file.path(dirname(bundle), paste0(basename(bundle), "-analysis-results"))
+  dir.create(results, recursive = TRUE, showWarnings = FALSE)
+  run <- tempfile(pattern = "run-", tmpdir = results)
+  if (!dir.create(run)) stop("Could not create a separate analysis results folder.")
+  config <- jsonlite::fromJSON(file.path(bundle, "setup_profile.json"), simplifyVector = FALSE)
+  plan <- list(schema = 1L, module_id = config$module_id, build_root = bundle,
+    run_root = normalizePath(run, mustWork = TRUE), source_root = bundle,
+    build_id = basename(bundle), run_id = basename(run), approved = FALSE,
+    execution_mode = "portable; launcher input-integrity verification not applied")
+  jsonlite::write_json(plan, file.path(run, "portable_plan.json"), pretty = TRUE, auto_unbox = TRUE)
+  source(file.path(bundle, "toolkit_launcher/analysis_runner.R"), local = TRUE)
+  passed <- run_analysis(plan)
+  message("Results: ", file.path(run, "analysis_report.html"))
+  message("Review execution_status.csv, qc.json and every output. Scientific approval remains separate.")
+  if (interactive()) utils::browseURL(file.path(run, "analysis_report.html"))
+  if (!isTRUE(passed)) stop("Analysis failed; review the diagnostic report in the new results folder.", call. = FALSE)
 })
 '''
 
 
 def _sas_driver(v, data, helper, programs):
-    lines = ["/* Self-contained generated DRAFT. Open in SAS Studio/Enterprise Guide and click Run.",
+    lines = ["/* Native SAS reference export. Not executed or validated by this R workflow.",
+        "   These source drafts may require additional native SAS inputs and completion.",
+        "   Use the accompanying R package for the supported executable analysis.",
         "   Data are staged in WORK; no client paths, macro substitutions from uploaded cells,",
         "   or PROC IMPORT type guessing. Character data use inert hex literals.",
         "   Review the SAS log and draft results. */", helper,
@@ -537,7 +509,7 @@ def _sas_driver(v, data, helper, programs):
         cols = list(v["columns"][slot])
         lines.append("data adam." + slot + ";")
         for col in cols:
-            if col in NUMERIC or col in DATES:
+            if col in NUMERIC or col in DATES or (slot == "adsl" and col in baseline_numeric(v)):
                 lines.append("length " + col + " 8;")
             else:
                 length = max([1] + [len(row[col].encode("utf-8")) for row in rows])
@@ -548,7 +520,7 @@ def _sas_driver(v, data, helper, programs):
         for row in rows:
             for col in cols:
                 value = row[col]
-                if col in NUMERIC:
+                if col in NUMERIC or (slot == "adsl" and col in baseline_numeric(v)):
                     lines.append(col + "=" + (format(float(value), ".17g") if value.strip() else ".") + ";")
                 elif col in DATES:
                     lines.append(col + "=" + ("input('" + value + "',yymmdd10.)" if value else ".") + ";")
@@ -572,6 +544,8 @@ def _sas_driver(v, data, helper, programs):
 
 
 def _readme(lang, v):
-    start = ("Double-click r/study.Rproj to open the generated project in RStudio. Open 00_run.R and click Source. If needed, use Tools > Install Packages to install dplyr, tidyr, stringr, purrr, tibble, rtables, ggplot2, emmeans, lme4, broom, broom.mixed, and nlme (concentration–QTc models). The generated driver reads its adjacent data/ folder and writes draft_results/ with a per-output execution_status.csv, text logs, PDF graphics, and RDS objects. An execution error is recorded as failed; an executed draft still requires review."
-        if lang == "r" else "Open sas/00_run.sas in SAS Studio or Enterprise Guide and click Run. This self-contained driver includes the data, helpers, and configured source programs; it needs no file-path editing. It stages inputs/results in session-local WORK. Review the SAS log for every error/warning and save reviewed results using your SAS application's interface. SAS software and the procedures used by your selected templates must be available. Source macros and report layouts still include unfinished sections.")
-    return ("GUIDED TLF SETUP — CONFIGURED DRAFTS\nStudy: " + v["study_id"] + "\nDesign: " + DESIGNS[v["design"]] + "\n\n" + start + "\n\n" + "\n".join(LIMITATIONS) + "\n\nColumns retain character identifiers; dates are ISO YYYY-MM-DD. Only configured population flags and, for BE outputs, the selected comparison labels are recoded. Other ADaM values and methods remain unchanged. Source program copies are in programs/; template_inventory.json records source hashes and structural input requirements. The generated bundle contains your mapped input records: keep it in the appropriate project storage.\n")
+    return ("GUIDED TLF ANALYSIS PACKAGE\nStudy: " + v["study_id"] + "\nDesign: " + DESIGNS[v["design"]] +
+        "\n\nIn the toolkit, select Run analysis and QC on this saved package. Check dependencies first; Install analysis dependencies downloads missing R packages only after consent. Every attempt gets a separate results folder, HTML report, CSV/RDS tables, PDF/PNG figures, software versions, QC and ZIP. Open analysis report to review all selected outputs.\n\n" +
+        "Portable alternative: extract the complete package, open r/study.Rproj in RStudio, open 00_run.R, and click Source. A new sibling analysis-results folder is created for each attempt. The portable driver uses the bundled engine; it does not apply the launcher's pinned-input checks or create its ZIP. Open its HTML report or use Print / save PDF. Install the documented analysis dependencies with RStudio Tools > Install Packages if needed.\n\n" +
+        "Native SAS files in sas/ are reference exports. They have not been executed or validated here and may require additional native inputs or programming. SAS users can read the canonical CSV results produced by R. No native SAS completion is claimed.\n\n" +
+        "\n".join(LIMITATIONS) + "\n\nMapped identifiers remain character values. Dates use ISO YYYY-MM-DD. template_inventory.json records the explicit input contracts, source hashes and separate SAS-reference status. The package contains mapped study data; keep it in appropriate private storage.\n")

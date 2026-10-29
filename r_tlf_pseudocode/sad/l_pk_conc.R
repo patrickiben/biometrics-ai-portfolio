@@ -3,7 +3,7 @@
 # TITLE     : Listing of Individual Plasma Concentrations
 # POPULATION: PK Concentration Population (PKFL == "Y")
 # INPUT     : ADPC (one row per sample: analyte, nominal + actual time, conc)
-# NOTE      : PSEUDOCODE. One row per concentration record, ordered by dose
+# NOTE      : ANALYSIS TEMPLATE. One row per concentration record, ordered by dose
 #             cohort, participant, analyte, then ACTUAL time. Shows nominal vs actual
 #             time, BLQ flag, and time deviation. Listings show all collected
 #             samples (not only analysis-flagged). SAD = parallel cohorts:
@@ -13,7 +13,7 @@ source("../00_setup_helpers.R")
 env <- setup(study = "CP-101", adam = "/data/adam", out = "/data/tfl")
 dv  <- design_vars("SAD")
 
-pc <- adam$adpc %>% filter(PKFL == "Y") %>%
+pc <- check_analysis_units(adam$adpc) %>% filter(PARAMCD == tfl_settings("pk_parameter", "CONC")) %>% filter(PKFL == "Y") %>%
   transmute(
     `Dose Cohort` = .data[[dv$trtvar]],               # = dose level
     Participant     = str_extract(USUBJID, "[^-]+$"),     # short site-participant id

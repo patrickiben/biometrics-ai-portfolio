@@ -3,7 +3,7 @@
 # TITLE     : Medical History by System Organ Class and Preferred Term
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADMH (MedDRA coded medical / surgical history)
-# NOTE      : PSEUDOCODE. Counts = distinct PARTICIPANTS with a condition
+# NOTE      : ANALYSIS TEMPLATE. Counts = distinct PARTICIPANTS with a condition
 #             (n_distinct USUBJID), NOT history rows. PARTICIPANT-LEVEL table ->
 #             columns = the ONE fixed sequence (dv$seqvar). Ongoing/past history
 #             (MHENRF / pre-treatment). SOC sorted by overall freq desc; PT
@@ -65,7 +65,5 @@ ttl <- tfl_titles(num = "14.1.7", type = "Table",
                 "Safety Population N per fixed sequence."))
 
 ## rtables/gt rendering; SOC bold (level 1), PT indented (level 2)
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  analyze("term", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, rep)   ## or gt::gt(rep)
+
 print(rep)

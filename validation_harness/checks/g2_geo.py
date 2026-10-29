@@ -10,7 +10,7 @@ number is the gating count. It reads the code and runs nothing. Unit tests:
 validation_harness/checks/tests/test_g2_geo.py.
 
 Which programs. The set is derived from content: every .R file under the R directory
-(00_setup_helpers.R excepted; it is checked as the helper) whose code calls pkstats(), uses the
+(00_setup_helpers.R and 01_analysis_models.R excepted; their called bodies are checked as helpers) whose code calls pkstats(), uses the
 name geomean or geocv (bare, backticked or quoted), assigns a column whose name matches "Geo Mean"
 or "Geometric Mean" (not "... Ratio") or "Geo CV", takes exp(mean(...)) or 10^mean(...), or fits
 a model (lm, lmer, glmer, lme, gls, glm, aov, nls) whose formula is not written in code (it then
@@ -20,7 +20,14 @@ string that is an ADPP file name). The committed floor FLOOR (28) is the size of
 changed: when fewer programs are found, the second number is still FLOOR and each missing program
 counts as failing, so a program that drops out of the set turns G2 red.
 
-R rules. The file is tokenized: comments are dropped and string literals are never read as code
+Shared model functions. A wrapper's code references to tfl_model_* are resolved recursively
+against actual unique function definitions in 01_analysis_models.R. Every reachable function is
+checked in its own scope, so an unrelated C-QTc raw-response model cannot contaminate PK checks,
+and a log assignment in one function cannot disguise a raw response in another. Missing or
+multiply defined called functions fail every dependent wrapper. The helper itself is not a
+program and has no artificial SAS twin. The program floor remains 28.
+
+R rules. Each source unit is tokenized: comments are dropped and string literals are never read as code
 (a quoted name in name position, or a string inside the brackets of an assignment target, still
 names the column assigned). Assignments are `=`, `<-`, `<<-`, `:=`, `->`, `->>`, targets such as
 x$name, x[["name"]] and backticked or quoted names, every named argument (so mutate(),
@@ -57,7 +64,7 @@ anywhere in the file, qualifies (fixed points).
     ifelse(), if_else(), coalesce(), case_when(), pmin() and pmax() is its own leaf. Native and
     magrittr pipes are rewritten as nested calls, and a function definition contributes its body
     (the last statement of a braced body).
-  - geomean, and every Geo Mean column: every leaf is NA, a geometric name (geomean, or a name
+  - geomean, and every Geo Mean / geometric_mean column: every leaf is NA, a geometric name (geomean, or a name
     with an assignment whose every leaf passes this rule and at least one leaf is not NA), a call
     of a function defined in the file whose every leaf passes in the same way, or exactly
     exp(<natural-log mean>), 10^<log10 mean> or 2^<log2 mean> with nothing around it. So
@@ -76,6 +83,15 @@ anywhere in the file, qualifies (fixed points).
     name is followed to its assignment; a formula not written in code, such as as.formula("..."),
     reformulate() or paste(), fails; one-sided formulas are skipped).
   - the program uses log, log10 or log2, or calls pkstats() and the helper passes.
+  - every literal assignment to a formula variable is checked, including separate design
+    branches. An unreadable formula assignment fails even if another branch is readable.
+  - tfl_model_paired() ratio must be a geometric mean of the paired log differences, and its
+    lower/upper endpoints must retain exp() of log-scale quantities. Conditional NA values do
+    not turn arithmetic means into geometric ones.
+  - tfl_model_be() gmr/lower/upper must exponentiate estimate/lower.CL/upper.CL from a confint
+    of an emmeans contrast of a model with checked log response. Its intra_cv_percent follows
+    the same geometric-CV rule, with sigma() tied to that checked model. These narrow exported
+    helper contracts are checked from code, not presumed from the function name.
   - pkstats() in 00_setup_helpers.R: its function body must assign geomean and geocv, each by the
     rules above, so sqrt(exp(sd(log(x))^2) - 1) is accepted.
 
@@ -105,7 +121,7 @@ read also after `else`, `if ... then`, `else if ... then`, `when (...)` and `oth
     The twin of an R program found only by its model must fit a MODEL.
 
 Disclosed limits: log(x + c) counts as log-derived (the shift is not detected). The analysis is
-flow-insensitive and stays within one file (the helper and the macro excepted): a name counts as
+flow-insensitive within each source unit (a program or one resolved shared function; the helper and the macro excepted): a name counts as
 geometric when any one of its assignments, other than NA (R) or missing (SAS) alone, qualifies,
 although every geomean and geocv assignment is checked; likewise mutate(AVAL = log(AVAL)) makes
 AVAL log-derived everywhere in the file. Requiring every assignment to qualify would flag the
@@ -117,8 +133,7 @@ literal name from a plain name (ci[1, "lower"], or a column of a data frame logg
 log(d)) counts as that name only, so it is not log-derived; a data-frame function not listed
 passes on all its arguments; and powers other than 10^ and 2^ (exp(1)^x) do not end
 log-derivation. Display rows built by row index, or by case_when() on a statistic label, are not
-seen. Plot mappings (aes(), SGPLOT) and the GMR, its confidence limits, Rac confidence limits and
-intra-participant CV columns are not checked. Package geometric-mean functions (DescTools::Gmean(),
+seen. Plot mappings (aes(), SGPLOT) and arbitrary GMR/Rac/CI display labels are not recognized. The named shared BE/paired helper outputs above are checked explicitly. Package geometric-mean functions (DescTools::Gmean(),
 psych::geometric.mean()) and exp() of an emmeans column are not recognized and fail, as does an R
 geocv computed from log10 values. A raw-scale model in one of these programs would be flagged even
 if it were legitimate, and a new program that fits a raw-scale model with a dose or treatment term
@@ -131,7 +146,7 @@ import re
 import sys
 
 # ----------------------------------------------------------------------------- shared patterns
-GEO_MEAN_COL = re.compile(r'(?i)\bgeo(?:metric)?\.?\s*mean\b(?!\s*ratio)')
+GEO_MEAN_COL = re.compile(r'(?i)\bgeo(?:metric)?[._ ]*mean\b(?!\s*ratio)')
 GEO_CV_COL = re.compile(r'(?i)\bgeo(?:metric)?\.?\s*cv\b')
 # a right-hand-side term that marks a BE or dose-proportionality model (ldose, EXDOSE, log10dose, TRTA,
 # APERIOD, TRTSEQP, formulation, and the bare names per, form and arm)
@@ -1169,7 +1184,8 @@ class RCtx:
     def _add_lm(self, r, f, lv):
         ch = False
         for b in self.LM:
-            if lv and all(self.log_mean(b, x) for x in lv):
+            real = [x for x in lv if not is_na(x)]
+            if real and all(self.log_mean(b, x) for x in real):
                 ch |= self._grow(self.LM[b], r.targets)
         return ch
 
@@ -1282,9 +1298,12 @@ class RCtx:
 
 
 class RFile:
-    def __init__(self, path):
-        with open(path, encoding='utf-8', errors='replace') as fh:
-            self.toks = r_tokens(fh.read())
+    def __init__(self, path=None, tokens=None):
+        if tokens is not None:
+            self.toks = list(tokens)
+        else:
+            with open(path, encoding='utf-8', errors='replace') as fh:
+                self.toks = r_tokens(fh.read())
         self.M = matches(self.toks)
         self.recs = r_assignments(self.toks, self.M)
         self.ctx = RCtx(self.recs)
@@ -1308,20 +1327,24 @@ class RFile:
             if i and is_op(t[i - 1], '$', '@'):
                 continue
             form = pick_arg(split_args(t[i + 1:self.M[i + 1] + 1]), ('formula', 'fixed'), 0) or []
+            forms = [form]
             if len(form) == 1 and form[0].k == 'name':
-                defs = [r.expr for r in self.recs if form[0].v in r.targets and any(is_op(y, '~') for y in r.expr)]
-                form = defs[0] if defs else form
-            d, k = 0, None
-            for j, y in enumerate(form):
-                d += y.k in OPENERS
-                d -= y.k in CLOSERS
-                if d == 0 and is_op(y, '~'):
-                    k = j
-                    break
-            if k is None:
-                out.append((x.ln, None, []))
-            elif k > 0:
-                out.append((x.ln, form[:k], form[k + 1:]))
+                defs = [r.expr for r in self.recs if form[0].v in r.targets
+                        and not (len(r.expr) == 1 and is_name(r.expr[0], form[0].v))]
+                forms = defs or [form]
+            # Check every branch's literal formula, not only the first assignment.
+            for form in forms:
+                d, k = 0, None
+                for j, y in enumerate(form):
+                    d += y.k in OPENERS
+                    d -= y.k in CLOSERS
+                    if d == 0 and is_op(y, '~'):
+                        k = j
+                        break
+                if k is None:
+                    out.append((x.ln, None, []))
+                elif k > 0:
+                    out.append((x.ln, form[:k], form[k + 1:]))
         return out
 
     def geo_signal(self):
@@ -1356,7 +1379,7 @@ class RFile:
         return self.reads_adpp()
 
 
-def check_r(rf, helper_ok):
+def check_r(rf, helper_ok, require_log=True):
     """(problems, counts) for one R program"""
     c, prob = {'assign': 0, 'col': 0, 'model': 0}, []
     x = rf.ctx
@@ -1378,7 +1401,7 @@ def check_r(rf, helper_ok):
         elif not x.ld_any(lhs):
             prob.append(f'model at line {ln} has a response that is not log-derived')
     uses_pk = rf.calls('pkstats')
-    if not (rf.has_log() or uses_pk):
+    if require_log and not (rf.has_log() or uses_pk):
         prob.append('no log() call in code and no pkstats()')
     if uses_pk and not helper_ok:
         prob.append('relies on the failing pkstats() helper')
@@ -1765,16 +1788,141 @@ def count(k, one, many):
     return f'{k} {one if k == 1 else many}'
 
 
+def shared_model_functions(root):
+    """Parse actual top-level helper definitions once, keeping function scopes separate."""
+    path = os.path.join(root, '01_analysis_models.R')
+    if not os.path.isfile(path):
+        return {}
+    with open(path, encoding='utf-8') as stream:
+        tokens = r_tokens(stream.read())
+    records = r_assignments(tokens, matches(tokens))
+    functions = {}
+    for rec in records:
+        if rec.expr and is_name(rec.expr[0], 'function'):
+            for name in rec.targets:
+                if name.startswith('tfl_model_'):
+                    functions.setdefault(name, []).append(RFile(tokens=rec.raw))
+    return functions
+
+
+def model_dependencies(rf):
+    """Only code references count; quoted/commented helper names cannot supply coverage."""
+    return {token.v for token in rf.toks if token.k == 'name' and token.v.startswith('tfl_model_')}
+
+
+class RProgram(RFile):
+    """A wrapper and the exact transitive shared functions it uses (no unrelated C-QTc)."""
+    def __init__(self, path, functions):
+        super().__init__(path)
+        self.dependencies, self.dependency_errors = {}, []
+        pending = list(model_dependencies(self))
+        seen = set()
+        while pending:
+            name = pending.pop()
+            if name in seen:
+                continue
+            seen.add(name)
+            definitions = functions.get(name, [])
+            if len(definitions) != 1:
+                self.dependency_errors.append(f'{name} has {len(definitions)} definitions in 01_analysis_models.R; exactly one is required')
+            for index, unit in enumerate(definitions):
+                self.dependencies[name if index == 0 else name + '#' + str(index)] = unit
+                pending.extend(model_dependencies(unit) - seen)
+
+    def geo_signal(self):
+        return super().geo_signal() or any(unit.geo_signal() for unit in self.dependencies.values())
+
+    def model_signal(self):
+        return super().model_signal() or any(unit.model_signal() for unit in self.dependencies.values()) or bool(self.dependency_errors)
+
+
+def _qualified_model_reference(tokens, roots):
+    t = tokens
+    return (len(t) == 1 and t[0].k == 'name' and t[0].v in roots) or (
+        len(t) == 3 and t[0].k == 'name' and t[0].v in roots and is_op(t[1], '$') and is_name(t[2], 'fit'))
+
+
+def check_model_outputs(name, unit):
+    """Check the actual exported paired/BE estimates after their helper refactor.
+
+    Mean ratios require an exponentiated log-scale estimate; CI endpoints must
+    retain their exponentiation. BE estimates must originate in emmeans contrasts
+    of a model whose response passed the same log-derivation rules.
+    """
+    if name not in {'tfl_model_paired', 'tfl_model_be'}:
+        return [], 0
+    problems, count = [], 0
+    models = unit.models()
+    logged = bool(models) and all(lhs is not None and unit.ctx.ld_any(lhs) for _, lhs, _ in models)
+    roots = {tg for r in unit.recs if facts(r.expr)[1] & MODEL_FUNS for tg in r.targets} if logged else set()
+    em = {tg for r in unit.recs if 'emmeans' in facts(r.expr)[1] and any(t.k == 'name' and t.v in roots for t in r.expr) for tg in r.targets}
+    contrasts = {tg for r in unit.recs if 'contrast' in facts(r.expr)[1] and facts(r.expr)[0] & em for tg in r.targets}
+    intervals = {tg for r in unit.recs if 'confint' in facts(r.expr)[1] and (facts(r.expr)[0] & contrasts or 'contrast' in facts(r.expr)[1] and facts(r.expr)[0] & em) for tg in r.targets}
+    required = {'ratio', 'lower', 'upper'} if name == 'tfl_model_paired' else {'gmr', 'lower', 'upper', 'intra_cv_percent'}
+    seen = set()
+    for rec in unit.recs:
+        for target in set(rec.targets) & required:
+            seen.add(target); count += 1
+            leaves_ = leaves(rec.value)
+            okay = bool(leaves_)
+            for leaf in leaves_:
+                if is_na(leaf):
+                    continue
+                fn, arg, rest = call_form(strip_parens(leaf))
+                if target == 'intra_cv_percent':
+                    # Replace only verified logged model references, never an
+                    # arbitrary data-frame column named fit, before applying CV rules.
+                    replaced = []
+                    i = 0
+                    while i < len(leaf):
+                        width = 3 if _qualified_model_reference(leaf[i:i+3], roots) else 1 if _qualified_model_reference(leaf[i:i+1], roots) else 0
+                        if width:
+                            replaced.append(Tok('name', '.g2_logged_model', leaf[i].ln)); i += width
+                        else:
+                            replaced.append(leaf[i]); i += 1
+                    unit.ctx.L['e'].add('.g2_logged_model')
+                    okay &= unit.ctx.ok_cv(replaced)
+                elif name == 'tfl_model_paired':
+                    okay &= unit.ctx.ok_mean(leaf) if target == 'ratio' else fn == 'exp' and bool(arg) and not rest and unit.ctx.ld('e', arg)
+                else:
+                    field = {'gmr': 'estimate', 'lower': 'lower.CL', 'upper': 'upper.CL'}[target]
+                    a = strip_parens(arg or [])
+                    okay &= fn == 'exp' and not rest and len(a) == 3 and a[0].k == 'name' and a[0].v in intervals and is_op(a[1], '$') and a[2].v == field
+            if not okay:
+                problems.append(f'{target} at line {rec.ln} is not a log-scale back-transform of its model estimate')
+    for target in sorted(required - seen):
+        problems.append(f'{name} has no checked {target} output')
+    return problems, count
+
+
+def check_program(rf, helper_ok):
+    if not isinstance(rf, RProgram) or not rf.dependencies and not rf.dependency_errors:
+        return check_r(rf, helper_ok)
+    problems, totals = check_r(rf, helper_ok, require_log=False)
+    problems.extend(rf.dependency_errors)
+    for name, unit in rf.dependencies.items():
+        issues, counts = check_r(unit, helper_ok, require_log=False)
+        outputs, count = check_model_outputs(name, unit)
+        counts['col'] += count
+        problems.extend('01_analysis_models.R::' + name + ': ' + issue for issue in issues + outputs)
+        for key in totals:
+            totals[key] += counts[key]
+    units = [rf, *rf.dependencies.values()]
+    if not any(unit.has_log() or unit.calls('pkstats') for unit in units):
+        problems.append('no log() call in code and no pkstats()')
+    return problems, totals
+
+
 def find_programs(R):
-    """[(path relative to R, RFile, has geometric statistics)] of the R programs G2 checks"""
-    out = []
+    """Resolve wrappers by actual function references without counting helpers as programs."""
+    out, functions = [], shared_model_functions(R)
     for d, dirs, files in os.walk(R):
         dirs.sort()
         for f in sorted(files):
             p = os.path.join(d, f)
             rel = os.path.relpath(p, R)
-            if f.endswith('.R') and rel != '00_setup_helpers.R':
-                rf = RFile(p)
+            if f.endswith('.R') and rel not in {'00_setup_helpers.R', '01_analysis_models.R'}:
+                rf = RProgram(p, functions)
                 geo = rf.geo_signal()
                 if geo or rf.model_signal():
                     out.append((rel, rf, geo))
@@ -1790,7 +1938,7 @@ def run(R, SAS):
     routes = {'pkstats': 0, 'means': 0, 'model': 0}
     bad = []
     for rel, rf, geo in progs:
-        rprob, c = check_r(rf, helper_ok)
+        rprob, c = check_program(rf, helper_ok)
         for k in tot:
             tot[k] += c[k]
         sprob, route = check_sas(os.path.join(SAS, rel)[:-2] + '.sas', macro, geo, c['model'] > 0)
@@ -1810,16 +1958,16 @@ def run(R, SAS):
           f'pkstats(), use geomean or geocv, assign a Geo Mean or Geo CV% column, take exp(mean()) or '
           f'10^mean(), or fit a model whose formula is not written in code, whose right-hand side names a '
           f'dose, treatment, period, sequence or formulation term, or that reads ADPP); comments are ignored '
-          f'and strings are never read as code. R: a name is log-derived when assigned from log() (log10, '
+          f'and strings are never read as code. Shared model calls resolve to separate actual helper-function scopes; missing or duplicate definitions fail their callers. R: a name is log-derived when assigned from log() (log10, '
           f'log2) or a log-derived name, a column taken from a data frame by name (d$x, d[["x"]], pull(d, x)) '
           f'counts as that column only, and exp() or 10^ ends log-derivation; in {tot["assign"]} geomean/geocv '
-          f'assignments and {tot["col"]} Geo Mean/Geo CV% columns, every '
+          f'assignments and {tot["col"]} geometric/ratio output columns, every '
           f'branch (if/else, ifelse, if_else, coalesce, case_when, pmin, pmax) inside display wrappers such as '
           f'sprintf() and round() is NA, a geometric name or function of the file, or exactly exp() of a '
           f'log-scale mean (mean(), coef() or similar of a natural-log value; 10^ of a log10 one), for a CV '
           f'exactly [100*]sqrt(exp(V) - 1) or sqrt(expm1(V)) with V a natural-log variance (a name assigned '
           f'only NA is not geometric); {tot["model"]} '
-          f'models have a log-derived response (a formula not written in code fails); and each program '
+          f'models have a log-derived response (every formula assignment is checked; a formula not written in code fails); paired/BE helper ratios and endpoints retain their log-scale back-transforms; and each program '
           f'uses log() (or log10/log2) or calls pkstats() ({helper}). SAS twin at the same path: every geomean '
           f'(round() unwrapped) is missing, a geometric name, or exp() of a PROC MEANS mean of a natural-log '
           f'variable (10** for log10), every geocv missing, a geometric-CV name or [100*]sqrt(exp(V)-1) with V '

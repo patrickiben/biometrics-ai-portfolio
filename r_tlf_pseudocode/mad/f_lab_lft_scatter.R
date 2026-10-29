@@ -4,7 +4,7 @@
 #             (multiples of ULN)
 # POPULATION: Safety Population (SAFFL == "Y"), on-treatment
 # INPUT     : ADLB (PARAMCD in ALT, AST, BILI; ratio-to-ULN)
-# NOTE      : PSEUDOCODE. MAD = parallel dose cohorts with REPEATED dosing; each
+# NOTE      : ANALYSIS TEMPLATE. MAD = parallel dose cohorts with REPEATED dosing; each
 #             point is one participant's PEAK on-treatment value taken over the WHOLE
 #             repeated-dosing period (every dosing day through end of treatment),
 #             so cumulative liver signal is captured. Per-participant peak (max)
@@ -19,7 +19,7 @@ dv  <- design_vars("MAD")                      # colour = TRT01A (= dose level)
 
 ## ratio-to-ULN; prefer ADaM-provided R2ULN, else AVAL / A1HI. ON-treatment over
 ## the full repeated-dosing period so the peak reflects cumulative exposure.
-lb <- adam$adlb %>%
+lb <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", PARAMCD %in% c("ALT","AST","BILI")) %>%
   mutate(xuln = coalesce(R2ULN, AVAL / A1HI))
 

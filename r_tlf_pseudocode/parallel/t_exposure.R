@@ -3,7 +3,7 @@
 # TITLE     : Extent of Study Drug Exposure
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADEX  (BDS: AVAL keyed by PARAMCD, one record per exposure param)
-# NOTE      : PSEUDOCODE. Parallel-group: one treatment per participant, treatment
+# NOTE      : ANALYSIS TEMPLATE. Parallel-group: one treatment per participant, treatment
 #             = TRT01A (= dose level for ascending-dose layouts). ADEX is the
 #             long/BDS exposure dataset; per-participant exposure read from AVAL by
 #             PARAMCD (DURD=duration days, TDOSE=cumulative dose, NDOSE=number of
@@ -28,7 +28,7 @@ denom <- bign(adam$adsl, trtvar = dv$trtvar, popfl = "SAFFL")
 ## --- continuous exposure block: AVAL summarized per PARAMCD x arm -----------
 ## Subset ADEX to one exposure PARAMCD, then descstat on AVAL.
 cont_block <- function(pcd, label, dp = 1L, ord) {
-  descstat(adex %>% filter(PARAMCD == pcd), var = "AVAL", by = "trt", dp = dp) %>%
+  descstat(with_total_column(adex %>% filter(PARAMCD == pcd),"trt"), var = "AVAL", by = "trt", dp = dp) %>%
     transmute(trt, characteristic = label, ord = ord,
               `n`         = as.character(n),
               `Mean (SD)` = paste(c_mean, c_sd),
@@ -71,8 +71,5 @@ ttl <- tfl_titles(num = "14.1.4", type = "Table",
    pop  = "Safety Population",
    foot = "Column = assigned treatment/dose level (TRT01A). Cumulative dose (TDOSE), duration (DURD, days), number of doses (NDOSE) and dose intensity (DOSINT, %) from ADEX AVAL by PARAMCD. Percentages based on Safety Population N per arm.")
 
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("characteristic", page_by = FALSE) %>%
-  analyze("stat", afun = function(x) in_rows(.list = as.list(x)))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)

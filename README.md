@@ -10,9 +10,9 @@ Download and extract the ZIP, then double-click **Start Toolkit.command** (macOS
 
 The [`toolkit_launcher/`](https://patrickiben.github.io/biometrics-ai-portfolio/toolkit_launcher/index.html) catalog distinguishes runnable examples from templates and references. The three published Shinylive apps and browser-only workspaces can still be tried without local installation. The external eCRF apps remain a separate repository. The [shared tracker setup](https://patrickiben.github.io/biometrics-ai-portfolio/open_tracker/SETUP.html) handles its accounts, hosting and optional email.
 
-**Guided template setup:** choose study design and outputs, upload and map CSV inputs, preview requirements, then generate a versioned study package. Forms cover the SAS/R TLF libraries, monitoring checks, LOCALMIND findings and AE/PK draft reports. Save or import setup profiles to reuse choices across projects. Supported study settings no longer require code edits; unfinished analysis methods and shells remain explicitly identified for implementation and review.
+**Guided template setup:** choose study design and outputs, upload and map CSV inputs, preview requirements, then generate a versioned study package. Forms cover the SAS/R TLF libraries, monitoring checks, LOCALMIND findings and AE/PK draft reports. Save or import setup profiles to reuse choices across projects. The 221 R TLF programs, eight monitoring checks and aggregate interpretation verification can then run through buttons. Each attempt retains its own complete results and QC report. R is the runnable default; SAS reference exports remain available.
 
-**This is a general-purpose toolkit, not a deployment for a specific client.** A new private project contains fictional starter data, not an empty or already configured production study. Source files, generated results and logs are retained in that project. Export app/session data before closing; a project ZIP does not capture unsaved Shiny state or browser storage. The shared tracker’s database and settings live outside that workspace ZIP; use its separate backup controls. SAS pseudocode and model templates still require implementation and review in your licensed/approved tools. See [the setup guide](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) for inputs, persistence, runtime installation and all 22 module paths, and [QC_REPORT.md](QC_REPORT.md) for the October 2026 QC scope.
+**This is a general-purpose toolkit, not a deployment for a specific client.** A new private project contains fictional starter data, not an empty or already configured production study. Source files, generated results and logs are retained in that project. Export app/session data before closing; a project ZIP does not capture unsaved Shiny state or browser storage. The shared tracker’s database and settings live outside that workspace ZIP; use its separate backup controls. Native SAS reference code has not been executed. Study-specific scientific review and model-service configuration remain separate. See [the setup guide](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) for inputs, persistence, runtime installation and all 22 module paths, and [QC_REPORT.md](QC_REPORT.md) for the October 2026 QC scope.
 
 <details>
 <summary>Optional terminal interface for R users</summary>
@@ -37,7 +37,7 @@ The R launcher finds the complete checkout from another working directory. Packa
 ## What's inside
 
 **Statistical programming (SAS + R)**
-- **ADaM-based TLF pseudocode libraries:** 221 Table/Listing/Figure programs **each** in SAS and R
+- **ADaM-based TLF libraries:** 221 Table/Listing/Figure programs **each** in SAS and R
   (pharmaverse: `dplyr` + `rtables` + `ggplot2` + `emmeans`), across every early-phase design
   (parallel, crossover, single/fixed-sequence, SAD, MAD). Geometric PK on the log scale, distinct-participant
   counts, period denominators. The SAS programs have not been executed (no SAS license); the R programs

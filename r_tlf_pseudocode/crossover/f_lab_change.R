@@ -4,7 +4,7 @@
 #             Over Time by Treatment
 # POPULATION: Safety Population (SAFFL == "Y"), analysis records (ANL01FL=="Y")
 # INPUT     : ADLB (PARAMCD; CHG, AVISIT/AVISITN, ANL01FL)
-# NOTE      : PSEUDOCODE. Mean change-from-baseline (+/- SE) by nominal visit,
+# NOTE      : ANALYSIS TEMPLATE. Mean change-from-baseline (+/- SE) by nominal visit,
 #             one line per ACTUAL treatment (dv$trtvar = TRTA). Crossover:
 #             within-participant, so each participant contributes to every treatment
 #             line; visits are the per-period nominal lab schedule (AVISITN).
@@ -17,7 +17,7 @@ dv  <- design_vars("CROSSOVER")                 # trtvar = TRTA ; byperiod = APE
 ## analytes to display (one facet each) -- liver-function panel, matches SAS twin
 analytes <- c("ALT","AST","BILI","CREAT","ALP","GGT")
 
-lb <- adam$adlb %>%
+lb <- visit_time_labels(check_analysis_units(adam$adlb)) %>%
   filter(SAFFL == "Y", ANL01FL == "Y", AVISITN > 0,
          PARAMCD %in% analytes, !is.na(CHG)) %>%
   mutate(trt   = .data[[dv$trtvar]],

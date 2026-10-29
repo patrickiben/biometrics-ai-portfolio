@@ -3,7 +3,7 @@
 # TITLE     : Listing of Pharmacodynamic / Biomarker Results
 # POPULATION: PD-Evaluable Population (PDFL == "Y")
 # INPUT     : ADPD
-# NOTE      : PSEUDOCODE. One row per PD record, ordered by PERIOD, participant,
+# NOTE      : ANALYSIS TEMPLATE. One row per PD record, ordered by PERIOD, participant,
 #             parameter, then nominal time. Shows observed value, baseline,
 #             change and % change. Single-/fixed-sequence DDI: a participant is
 #             followed across BOTH periods -> a PERIOD column (dv$byperiod,
@@ -18,7 +18,7 @@ dv  <- design_vars("SINGLESEQ")                 # byperiod = c("APERIOD","APERIO
 options(tfl.study = env$study)
 perN <- dv$byperiod[1]; perC <- dv$byperiod[2]  # numeric + character period
 
-pd <- adam$adpd %>% filter(PDFL == "Y") %>%
+pd <- check_analysis_units(adam$adpd) %>% filter(PDFL == "Y") %>%
   transmute(
     Period      = .data[[perC]],                     # Period 1 ref / Period 2 test+perp
     Participant     = str_extract(USUBJID, "[^-]+$"),    # short site-participant id

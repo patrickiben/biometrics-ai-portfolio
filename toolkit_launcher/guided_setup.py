@@ -25,6 +25,10 @@ SOURCE_DIRS = {"r_tlf": "r_tlf_pseudocode", "sas_tlf": "sas_tlf_pseudocode",
                "interpretation": "tlf_interpret"}
 
 
+def source_directories(module_id):
+    return ("r_tlf_pseudocode", "sas_tlf_pseudocode") if module_id in {"r_tlf", "sas_tlf"} else (SOURCE_DIRS[module_id],)
+
+
 def provider(module_id):
     if not isinstance(module_id, str) or module_id not in MODULES:
         raise InputError("Choose a supported template module.")
@@ -37,12 +41,13 @@ def provider(module_id):
 
 def schema(root, module_id):
     selected = provider(module_id)
-    directory = safe_path(root, SOURCE_DIRS[module_id], exists=False)
     # Providers read source templates for inventory and generated copies. Check
     # their whole directory before those reads, including linked subdirectories.
-    for path in directory.rglob("*"):
-        if path.is_symlink():
-            raise InputError("Template sources must be regular files inside this project.")
+    for relative in source_directories(module_id):
+        directory = safe_path(root, relative, exists=False)
+        for path in directory.rglob("*"):
+            if path.is_symlink():
+                raise InputError("Template sources must be regular files inside this project.")
     return selected.schema(module_id, root)
 
 
@@ -99,6 +104,14 @@ def clean_values(spec, values):
     result["columns"] = {}
     for slot, mapping in maps.items():
         targets = {col["id"] for col in slots[slot].get("columns", [])}
+        for field_id in slots[slot].get("dynamic_columns_fields", []):
+            raw = result.get(field_id, "")
+            if not isinstance(raw, str):
+                raise InputError("Enter canonical column identifiers for the selected baseline fields.")
+            extra = {part.strip().upper() for part in raw.split(",") if part.strip()}
+            if len(extra) > 100 or any(not re.fullmatch(r"[A-Z][A-Z0-9_]{0,39}", key) for key in extra):
+                raise InputError("Use at most 100 canonical column identifiers for each baseline field list.")
+            targets.update(extra)
         if not isinstance(mapping, dict) or set(mapping) - targets or any(not isinstance(v, str) or len(v) > 200 for v in mapping.values()):
             raise InputError("Choose the listed target columns for " + slots[slot]["label"] + ".")
         result["columns"][slot] = dict(mapping)
@@ -210,13 +223,22 @@ def upload(root, module_id, slot_id, filename, encoded):
 
 
 def source_hashes(root, module_id):
-    directory = safe_path(root, SOURCE_DIRS[module_id], exists=False)
     result = {}
-    for path in sorted(directory.rglob("*")):
-        if path.suffix.lower() in {".r", ".sas", ".qmd"}:
-            relative = path.relative_to(root).as_posix()
-            checked = safe_path(root, relative)
-            result[relative] = hashlib.sha256(checked.read_bytes()).hexdigest()
+    for folder in source_directories(module_id):
+        directory = safe_path(root, folder, exists=False)
+        for path in sorted(directory.rglob("*")):
+            if path.suffix.lower() in {".r", ".sas", ".qmd"}:
+                relative = path.relative_to(root).as_posix()
+                checked = safe_path(root, relative)
+                result[relative] = hashlib.sha256(checked.read_bytes()).hexdigest()
+    # Preview also pins the installed generator and execution implementation.
+    for name in ("guided_setup.py", "guided_tlf.py", "guided_modules.py", "analysis_contracts.py", "analysis_form_fields.py", "analysis_runner.R", "analysis_monitor.R", "analysis_jobs.py"):
+        path = ROOT / "toolkit_launcher" / name
+        if path.is_file():
+            result["toolkit_launcher/" + name] = hashlib.sha256(path.read_bytes()).hexdigest()
+    theme = ROOT / "assets/theme/tokens.css"
+    if theme.is_file():
+        result["assets/theme/tokens.css"] = hashlib.sha256(theme.read_bytes()).hexdigest()
     return result
 
 
@@ -267,6 +289,12 @@ def act(root, module_id, action, values):
         generated = provider(module_id).build(module_id, values, inputs, root)
     except ValueError as error:
         raise InputError(str(error)) from None
+    # The provider reads inputs/templates to construct a package. Reconfirm the
+    # previewed bytes after those reads, before publishing any immutable revision.
+    latest_inputs = input_records(root, module_id, spec)
+    latest_sources = source_hashes(root, module_id)
+    if digest(values, latest_inputs, latest_sources) != current:
+        raise InputError("Inputs or analysis sources changed during generation. Preview the current revision and generate again.")
     files = generated["files"]
     if not isinstance(files, dict) or not files or len(files) > 1200:
         raise InputError("The generated package is incomplete or too large.")
@@ -278,6 +306,13 @@ def act(root, module_id, action, values):
     files["input_manifest.json"] = json.dumps({slot: {key: value for key, value in record.items() if key not in {"absolute_path", "preview"}} for slot, record in inputs.items()}, indent=2, ensure_ascii=False) + "\n"
     files["source_fingerprints.json"] = json.dumps(sources, indent=2) + "\n"
     files["SETUP_REPORT.html"] = readiness_html(module_id, values, report, inputs, sources, limitations)
+    runnable = module_id in {"r_tlf", "sas_tlf", "sas_monitor", "interpretation"}
+    bundle_hash = None
+    if runnable:
+        fingerprints = {name: hashlib.sha256(content.encode("utf-8") if isinstance(content, str) else content).hexdigest() for name, content in files.items()}
+        manifest = json.dumps({"schema": 1, "module_id": module_id, "files": fingerprints}, indent=2, ensure_ascii=False) + "\n"
+        files["analysis_bundle.json"] = manifest
+        bundle_hash = hashlib.sha256(manifest.encode("utf-8")).hexdigest()
     parent = private_dir(root, f"template_outputs/{module_id}")
     revision = "setup-" + secrets.token_hex(12)
     stage = Path(tempfile.mkdtemp(prefix=".stage-", dir=parent))
@@ -307,11 +342,18 @@ def act(root, module_id, action, values):
         build = {"status": "configured", "created_at": timestamp(), "module_id": module_id,
                  "paths": [prefix + "/" + name for name in files], "zip_path": prefix + "/study-setup.zip",
                  "report_path": prefix + "/SETUP_REPORT.html", "profile_path": prefix + "/setup_profile.json", "digest": current}
+        if runnable:
+            build.update(build_id=revision, engine="r", bundle_sha256=bundle_hash)
         history_path = f"toolkit_configuration/{module_id}.builds.json"
         history = bounded_json(root, history_path, [])
         if not isinstance(history, list):
             raise InputError("The package history cannot be read.")
-        atomic_json(root / history_path, [build, *history][:30])
+        retained = [build, *history][:30]
+        # Keep the latest revision accessible even for large all-output packages.
+        # Old folders remain intact; only the bounded recent-history index shrinks.
+        while len(retained) > 1 and len(json.dumps(retained, ensure_ascii=False, indent=2).encode("utf-8")) > 900000:
+            retained.pop()
+        atomic_json(root / history_path, retained)
         atomic_json(directory / (module_id + ".guided.json"), profile)
         return {"values": values, "report": report, "build": build, "profile_path": profile_path(module_id)}
     finally:

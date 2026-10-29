@@ -4,7 +4,7 @@
 # POPULATION: Safety Population (SAFFL == "Y")
 # INPUT     : ADLB (PARAMCD/PARAM, BNRIND baseline index, ANRIND post-baseline
 #             index, ONTRTFL, ANL01FL)
-# NOTE      : PSEUDOCODE. Cross-tab Baseline category (BNRIND) x WORST post-
+# NOTE      : ANALYSIS TEMPLATE. Cross-tab Baseline category (BNRIND) x WORST post-
 #             baseline category per participant/parameter. Counts = distinct
 #             PARTICIPANTS; % denominator = participants with a non-missing baseline in
 #             that row, per arm. WORST = category FURTHEST from NORMAL (not the
@@ -17,7 +17,7 @@ dv  <- design_vars("PARALLEL")                 # column = TRT01A (= dose level)
 cat_levels <- c("LOW","NORMAL","HIGH")
 
 ## post-baseline records with a usable normal-range index
-post <- adam$adlb %>%
+post <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ONTRTFL == "Y", ANL01FL == "Y",
          PARAMCD %in% c("ALT","AST","BILI","ALP","CREAT","K","NA","HGB","WBC","PLAT"),
          !is.na(ANRIND)) %>%
@@ -36,7 +36,7 @@ worst <- post %>%
   transmute(USUBJID, trt, PARAMCD, PARAM, worst = factor(indf, levels = cat_levels))
 
 ## --- baseline category per participant/param (one row), non-missing only -------
-base <- adam$adlb %>%
+base <- check_analysis_units(adam$adlb) %>%
   filter(SAFFL == "Y", ABLFL == "Y", !is.na(BNRIND), PARAMCD %in% unique(worst$PARAMCD)) %>%
   transmute(USUBJID, PARAMCD,
             base = factor(toupper(BNRIND), levels = cat_levels)) %>%
@@ -70,10 +70,5 @@ ttl <- tfl_titles(num = "14.3.4.2", type = "Table",
                 "with missing baseline or no normal range excluded."))
 
 ## render: per parameter, per arm block -> baseline rows x worst-category columns
-lyt <- basic_table(title = ttl$titles[3], main_footer = ttl$footnotes) %>%
-  split_rows_by("PARAM", page_by = TRUE) %>%
-  split_cols_by(dv$trtvar) %>%
-  split_rows_by("base", split_label = "Baseline Category") %>%
-  analyze(c("LOW","NORMAL","HIGH"))
-# tbl <- build_table(lyt, tab)   ## or gt::gt(tab)
+
 print(tab)
