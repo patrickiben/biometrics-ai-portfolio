@@ -286,6 +286,8 @@ jobs:
         run: Rscript vaccine/tests/test_analysis.R
       - name: Check independently authored vaccine scientific invariants
         run: Rscript vaccine/tests/test_scientific_invariants.R
+      - name: Check browser vaccine adapter parity and reproducible exports
+        run: Rscript vaccine/tests/test_browser_core.R
       - name: Execute vaccine packages and adversarial revisions
         run: python -m unittest discover -s tests -p "test_vaccine_generated.py" -v
       - name: Check every input contract and all generated R-backed analyses
@@ -339,4 +341,50 @@ jobs:
             ${{ runner.temp }}/analysis-generated.json
             ${{ runner.temp }}/analysis-browser-qc
             ${{ runner.temp }}/vaccine-browser-qc
+          retention-days: 7
+  vaccine-webassembly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: '4.6.0'
+          use-public-rspm: true
+      - name: Install pinned exporter and browser-app dependencies
+        shell: Rscript {0}
+        run: |
+          install.packages("pak")
+          pak::pkg_install(c("shinylive@0.5.0", "shiny", "bslib", "DT", "ggplot2", "jsonlite", "testthat"))
+      - name: Check vaccine Shiny state transitions and shared-source publication boundaries
+        run: |
+          Rscript vaccine/tests/test_shiny.R
+          Rscript tests/test_analysis_renderer_dependencies.R
+          python -m unittest tools.tests.test_pages_build -v
+      - name: Export the actual browser vaccine application
+        run: Rscript .github/pages/build_site.R "${RUNNER_TEMP}/vaccine-site" vaccine
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: stable
+      - name: Install browser QC driver
+        run: npm ci --prefix tools/browser-qc --no-audit --no-fund
+      - name: Execute uploaded vaccine data in WebAssembly and verify complete downloads
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/vaccine-webassembly-qc
+          VACCINE_CAPACITY_QC: '1'
+        run: node vaccine/tests/browser_app_qc.cjs "${RUNNER_TEMP}/vaccine-site"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: vaccine-webassembly-qc
+          path: ${{ runner.temp }}/vaccine-webassembly-qc
           retention-days: 7

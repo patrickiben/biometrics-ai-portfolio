@@ -888,10 +888,10 @@ window.TOOLKIT_CATALOG = {
     {
       "id": "vaccine",
       "title": "Vaccine immunogenicity and reactogenicity",
-      "summary": "Configure antibody summaries, response definitions and solicited reaction summaries with guided study settings and synthetic examples.",
-      "category": "Templates and references",
-      "kind": "templates",
-      "runtime": "R 4.4+; packages installed through the local toolkit",
+      "summary": "Run all six descriptive vaccine analyses directly in your browser: upload CSVs, map columns, review study rules and download complete results and SAS references.",
+      "category": "Interactive apps",
+      "kind": "browser",
+      "runtime": "Browser R with no installation; optional local R workflow",
       "docs": [
         {
           "label": "Vaccine analysis guide",
@@ -915,10 +915,12 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Mapped inputs and settings stay in the private project. Each generated revision and analysis run has its own downloadable package and QC record.",
-      "customization": "Choose outputs and study-specific assay, response and reaction settings in guided forms. Download input templates or try fictional data, map CSV columns, preview and run.",
+      "persistence": "Browser inputs and results stay in session memory. Download results and the setup profile to retain them; reload or reset clears the session. The optional local toolkit retains private project revisions.",
+      "customization": "Start blank or deliberately load the fictional example. Choose outputs, map uploaded CSVs and configure assay, response and diary rules in guided forms.",
       "limits": "Review assay handling, populations, response definitions, observation windows and missing data for each study. Software execution and QC do not establish protection, clinical safety or study approval. Native SAS reference exports are unexecuted.",
-      "runner_id": "vaccine"
+      "runner_id": "vaccine",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/vaccine/",
+      "browser_label": "Run in browser"
     },
     {
       "id": "tlf-libraries",

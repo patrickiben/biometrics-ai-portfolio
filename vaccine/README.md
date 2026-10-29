@@ -1,16 +1,36 @@
 # Vaccine study analysis
 
-[Open the module guide](index.html) · [Learning companion](learning.html) · [Reference ledger](REFERENCES.md) · [Point-and-click toolkit setup](../TOOLKIT_SETUP.html)
+[Run vaccine analyses in your browser](../apps/vaccine/) · [Module guide](index.html) · [Learning companion](learning.html) · [Reference ledger](REFERENCES.md)
 
-This client-neutral module provides six descriptive outputs from mapped analysis-ready CSVs. Run it through the downloaded toolkit's local control panel: create a private project, open the vaccine module, select outputs, map inputs, configure assumptions, preview, generate a revision and run its R analysis. The public website contains the guide and optional teaching material; private study analysis runs locally.
+Open the [browser application](../apps/vaccine/) to configure and run all six descriptive analyses from mapped, analysis-ready CSVs. No installation, account, toolkit download, command-line steps or code edits are required. R runs inside the browser and uses the same numerical core as the optional desktop toolkit. The initial application and runtime assets need to load before analysis begins.
 
-No command-line steps or code edits are required for the supported workflow. R must be available on the computer; the toolkit supplies checks, installation guidance and package-install controls. R is the execution engine. Native SAS exports remain unexecuted reference code and have not been reconciled against R.
+The workspace starts without a client, study or selected outputs. Uploaded study files are processed in the browser session and are not sent to an analysis server. **Reset all** clears the loaded inputs and results; closing or reloading the app clears the session. Download any results you want to retain before leaving.
+
+R is the execution engine. Configured native SAS exports remain unexecuted reference code and have not been reconciled against R. Successful execution does not provide scientific review or study approval.
+
+## Use your study data
+
+1. Enter a study identifier and select the outputs to compute. Define your population-flag values and confidence level.
+2. Upload the required UTF-8 CSV files and review each source-column mapping. Blank templates can be downloaded from the Inputs tab; source headers do not need to match the canonical names.
+3. Supply the assay, visit, quantification-limit and response definitions required by your selected outputs. For reaction analyses, specify the actual dose labels, symptoms, inclusive diary window, protocol grade scale and denominator policy.
+4. Review the displayed configuration and manually confirm the applicable study definitions. Click **Validate this configuration**, resolve any reported issues, then **Run selected analyses**.
+5. Explore the tables and figures, review missingness and assumptions, and download the results.
+
+Changing study settings, confirmations, mappings or uploaded inputs invalidates earlier validation and results. Review and validate the current configuration before running again; old result downloads are removed. A loaded synthetic example also requires manual confirmations.
 
 ## Try the synthetic example
 
-Download [the synthetic settings profile](examples/example_profile.json) and deliberately import it with **Import profile** in the vaccine setup form. Review the fictional assay, thresholds and schedule. The profile contains settings only and leaves all review confirmations false.
+Click **Load synthetic example** in the browser application. This deliberately loads the fictional settings and all four example feeds, restores their canonical mappings, and leaves the review confirmations unchecked. Review the assay, thresholds, schedule and denominator policy, confirm the applicable definitions, validate and run.
 
-In **Upload and map inputs**, choose **Use synthetic example** for participants, titers, doses and diary, or inspect the [participants](examples/participants.csv), [assay results](examples/titers.csv), [administered doses](examples/doses.csv) and [diary](examples/diary.csv) files directly. Confirm the reviewed assumptions, preview, generate and run. The example includes censored observations and incomplete diaries. Its numerical thresholds are teaching values, not protection cutoffs or recommendations for a study.
+You can inspect the [participants](examples/participants.csv), [assay results](examples/titers.csv), [administered doses](examples/doses.csv) and [diary](examples/diary.csv) files directly. The example includes censored observations and incomplete diaries. Its numerical thresholds are teaching values, not protection cutoffs or recommendations for a study. The [synthetic settings profile](examples/example_profile.json) is also available for the optional desktop workflow.
+
+## Keep the complete result set
+
+Use **Complete review package (.zip)**, extract the ZIP, then open `analysis_report.html`. The report index links to every output, complete paginated tables, and figure files. Downloading the index alone does not include its linked results.
+
+The package includes complete table CSVs and RDS objects, figure PNGs and PDFs, input/population audits, settings and mappings, the configured SAS reference, software versions, source files, a file inventory and an R reproduction script. Individual files, the report index, setup profile and SAS reference can also be downloaded from the Results tab. Downloading a profile records settings; it does not preserve uploaded study data or restore an entire browser session.
+
+Result CSVs protect formula-like text with an apostrophe; RDS objects preserve original values. Input CSVs are retained as data for reproduction and may contain the original text. The file inventory detects accidental changes and is not a signature or scientific validation. The exported R reproduction route is optional; the browser analysis itself requires no installed R.
 
 ## Outputs
 
@@ -38,7 +58,22 @@ Canonical qualifiers are `EXACT`, `BLQ`, `ALQ` and `MISSING`; the forms map stud
 
 ## Input capacity
 
-Each CSV accepts at most 100,000 records and 16 MB. A revision supports up to 50 distinct arm labels, 50 follow-up visits, 50 dose labels and 50 symptoms; each expected participant/visit or diary grid is limited to 1,000,000 rows. Preview checks these bounds before execution. Select fewer visits, doses or symptoms in separate revisions while preserving the intended population and assessment window. Review the ARM mapping if participant identifiers were accidentally mapped as arm labels. Diary figures are divided by dose and into groups of at most four symptoms so large selections remain readable.
+| Limit | Browser application | Optional desktop toolkit |
+| --- | --- | --- |
+| Each uploaded CSV | 16 MiB; 200,000 records | 16 MiB; 100,000 records |
+| Each expected participant/visit or diary grid | 250,000 assessments | 1,000,000 assessments |
+| Diary-profile figures per run | 32 pages | No separate 32-page browser limit |
+| Result download | 50 MiB of encoded payload per file or complete package, approximately 37.5 MiB of raw files | Local result package |
+
+Both routes support up to 50 distinct arm labels, 50 follow-up visits, 50 dose labels and 50 symptoms. The expected grids include missing assessments, so they can be larger than the uploaded files. Diary figures use one dose per figure and at most four symptoms per page. The browser checks its limits before execution or download; available memory can also depend on the browser and device.
+
+If a selected grid or figure set is too large, select fewer follow-up visits, doses or symptoms per run while retaining the full eligible population and prespecified assessment window. Do not remove participants or shorten the scientific window merely to fit a capacity limit. The optional desktop route can support larger expected grids when its separate CSV limits are satisfied. Review the ARM mapping if participant identifiers were accidentally mapped as arm labels.
+
+If the complete browser package exceeds the encoded download limit, computed estimates are unchanged and individual-file downloads remain available within that limit. Keep all required companion files together to retain the linked reports and reproduction materials.
+
+## Optional desktop route
+
+The existing [point-and-click toolkit setup](../TOOLKIT_SETUP.html) remains available. Download the toolkit, create a private project, open the vaccine module, select and map inputs, configure assumptions, preview, generate a revision and run its R analysis through the local control panel. This route requires R on the computer; the toolkit provides checks, installation guidance and package-install controls. No command-line steps or code edits are required for that supported workflow. It uses the same analysis definitions below and retains the unexecuted SAS-reference qualification.
 
 ## Analysis definitions and assumptions
 
@@ -46,7 +81,7 @@ Each CSV accepts at most 100,000 records and 16 MB. A revision supports up to 50
 - Paired fold rise uses each participant's `log(post) - log(baseline)`. Summarising independent baseline and follow-up populations would answer a different question. Both records must be usable under the configured censoring policy.
 - BLQ handling is exclusion, half-LLOQ, or LLOQ; ALQ handling is exclusion or ULOQ. Substitution is an explicit analysis assumption and can change means and response classifications. It does not estimate censored values or propagate assay-curve uncertainty.
 - Response rules are explicitly configured: threshold means `post >= response_threshold`; fold rise means `post >= baseline * fold_threshold`. For a baseline-conditional response, `baseline < baseline_threshold` uses the post-value threshold, while baseline at or above that split uses the paired fold-rise rule. Threshold-only analysis needs a usable post value; fold-rise and conditional rules need a usable pair. No protection cutoff is supplied. A missing or excluded required result does not automatically count as a nonresponse. Proportions use an evaluable participant denominator and exact Clopper–Pearson intervals; conservative coverage does not resolve bias from informative missingness.
-- Diary windows include both selected endpoints. The default **complete-window** policy requires an observed grade for every configured day for the participant/dose/symptom. The optional **observed** policy requires at least one assessed day and is labelled observed-reaction incidence. Incomplete and missing coverage are reported. Missing entries are never filled with grade zero.
+- Diary windows include both selected endpoints. The **complete-window** policy requires an observed grade for every configured day for the participant/dose/symptom. The **observed** policy requires at least one assessed day and is labelled observed-reaction incidence. The browser requires a deliberate policy selection; complete-window is the desktop form's default. Incomplete and missing coverage are reported. Missing entries are never filled with grade zero.
 - Maximum grade describes recorded observations in that window. Incomplete diaries can miss a higher unobserved grade. The configured integer grade scale is `0..maximum`, with maximum chosen from 1–5; it is not a seriousness classification.
 - Visit plots are descriptive. This version does not fit longitudinal, efficacy, correlate-of-protection, assay calibration or immunobridging models, and does not perform treatment-comparison hypothesis tests or batch-effect adjustment.
 

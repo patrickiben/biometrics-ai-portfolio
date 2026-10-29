@@ -6,11 +6,11 @@ Open-source tools, templates and worked examples for **biostatistics consultants
 
 **[Point-and-click setup for the whole toolkit](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html)** · [Control panel and module catalog](https://patrickiben.github.io/biometrics-ai-portfolio/toolkit_launcher/index.html) · [Download the complete ZIP](https://github.com/patrickiben/biometrics-ai-portfolio/archive/refs/heads/main.zip)
 
-Download and extract the ZIP, then double-click **Start Toolkit.command** (macOS) or **Start Toolkit.cmd** (Windows). The local browser control panel covers all five Shiny apps, the reproducible R examples, QC checks, browser workspaces, paired SAS/R libraries and configuration templates. Create a **private project from examples** for each study or engagement, check dependencies, install supported R packages, open apps, upload documented inputs and export the project through the GUI. Python 3.10+ starts the control panel; each card identifies any additional runtime installer. The Linux launcher is **Start Toolkit.sh**.
+For local workflows, download and extract the ZIP, then double-click **Start Toolkit.command** (macOS) or **Start Toolkit.cmd** (Windows). The local browser control panel covers all five Shiny apps, the reproducible R examples, QC checks, browser workspaces, paired SAS/R libraries and configuration templates. Create a **private project from examples** for each study or engagement, check dependencies, install supported R packages, open apps, upload documented inputs and export the project through the GUI. Python 3.10+ starts the control panel; each card identifies any additional runtime installer. The Linux launcher is **Start Toolkit.sh**.
 
-The [`toolkit_launcher/`](https://patrickiben.github.io/biometrics-ai-portfolio/toolkit_launcher/index.html) catalog distinguishes runnable examples from templates and references. The three published Shinylive apps and browser-only workspaces can still be tried without local installation. The external eCRF apps remain a separate repository. The [shared tracker setup](https://patrickiben.github.io/biometrics-ai-portfolio/open_tracker/SETUP.html) handles its accounts, hosting and optional email.
+The [`toolkit_launcher/`](https://patrickiben.github.io/biometrics-ai-portfolio/toolkit_launcher/index.html) catalog distinguishes runnable examples from templates and references. The four published Shinylive apps and browser-only workspaces run without local installation. The vaccine app accepts mapped study CSVs and computes results entirely in the browser. The external eCRF apps remain a separate repository. The [shared tracker setup](https://patrickiben.github.io/biometrics-ai-portfolio/open_tracker/SETUP.html) handles its accounts, hosting and optional email.
 
-**[Vaccine immunogenicity and reactogenicity](https://patrickiben.github.io/biometrics-ai-portfolio/vaccine/index.html):** guided assay/visit setup, log-scale geometric summaries, paired fold rises, study-defined response rates and solicited-reaction summaries. Includes an [illustrated learning companion](https://patrickiben.github.io/biometrics-ai-portfolio/vaccine/learning.html), synthetic CSVs, a reusable example profile, runnable R and unexecuted SAS reference exports.
+**[Run vaccine analyses in your browser](https://patrickiben.github.io/biometrics-ai-portfolio/apps/vaccine/):** no R installation, account or toolkit download. Start with a blank workspace or deliberately load the synthetic example, map CSVs, confirm study definitions, validate and run all six same-core R outputs. Download the complete results ZIP, individual tables/figures, setup profile and configured SAS reference. Settings or input changes invalidate earlier results; reset or reload clears the browser session. Includes an [illustrated learning companion](https://patrickiben.github.io/biometrics-ai-portfolio/vaccine/learning.html). [Browser limits and workflow](vaccine/README.md) are documented separately from the optional desktop route; native SAS remains unexecuted.
 
 **Guided template setup:** choose study design and outputs, upload and map CSV inputs, preview requirements, then generate a versioned study package. Forms cover the SAS/R TLF libraries, monitoring checks, LOCALMIND findings and AE/PK draft reports. Save or import setup profiles to reuse choices across projects. The 221 R TLF programs, eight monitoring checks and aggregate interpretation verification can then run through buttons. Each attempt retains its own complete results and QC report. R is the runnable default; SAS reference exports remain available.
 
@@ -96,12 +96,15 @@ The R launcher finds the complete checkout from another working directory. Packa
 - **LOCALMIND macro library:** deterministic SAS/R macros that call a local, offline small language model for
   the text layer only (classify, extract, draft); SAS/R owns every number. → [`slm_wiki/`](slm_wiki/macro_library/README.md)
 
-**Interactive dashboards** (synthetic example data)
+**Interactive apps and dashboards**
+
 - Participant-safety monitoring (**TRIALMON**, with a Safety Review Committee packet), trial-risk early warning
   (participant and study tiers), and a study-lifecycle monitor.
+  These include synthetic examples for exploration.
   → [`sasr_monitoring_wiki/TRIALMON_Dashboard.html`](sasr_monitoring_wiki/TRIALMON_Dashboard.html) · [`risk_monitor/`](risk_monitor/quarto/risk-guide.html) · [`lifecycle_dashboard/`](lifecycle_dashboard/quarto/lifecycle-guide.html)
 - The TRIALMON, UAT and lifecycle R Shiny apps also run in the browser with Shinylive:
   [`apps/`](apps/trialmon/) (TRIALMON) · [UAT tracker](apps/uat_irt/) · [lifecycle monitor](apps/lifecycle_dashboard/).
+- [Vaccine immunogenicity and reactogenicity](apps/vaccine/) runs all six analyses in the browser using the shared R numerical core. Upload mapped study CSVs or explicitly load the fictional example; no software installation or account is needed. Confirm assumptions and review missingness before interpretation. Download results before closing or reloading the session.
 
 **Validation & QC**
 - **Trial-Management Validation Harness:** ten gates (reproducibility, PK and count conventions, data structure
@@ -143,7 +146,7 @@ method studies, the harness page and the app launch pages) are built by `build_p
 ## Hosting and package checks
 
 GitHub Pages builds the site with GitHub Actions (`.github/workflows/pages.yml`): it copies the static files,
-exports the three R apps with Shinylive, and opens every app in headless Chrome before deploying; nothing is
+exports the four R apps with Shinylive, and opens every app in headless Chrome before deploying; nothing is
 published unless every app passes.
 
 Run `python3 package_qc.py` from a complete checkout to check navigation, local links, retired content,

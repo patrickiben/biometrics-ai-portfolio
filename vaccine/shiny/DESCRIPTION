@@ -1,0 +1,6 @@
+Package: vaccineBrowser
+Version: 0.1.0
+Title: Browser Vaccine Analysis Workspace
+Description: Browser UI for the shared descriptive vaccine analysis engine.
+License: MIT
+Imports: shiny, bslib, DT, ggplot2, jsonlite
