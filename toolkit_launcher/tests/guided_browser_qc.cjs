@@ -4,8 +4,9 @@
  * NODE_PATH=/path/to/node_modules CHROME_PATH=/path/to/chrome node toolkit_launcher/tests/guided_browser_qc.cjs
  */
 const {chromium}=require('playwright');
+const {checkDownloadedReportThemes}=require('./report_theme_qc.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const cp=require('node:child_process'),crypto=require('node:crypto'),{once}=require('node:events'),{pathToFileURL}=require('node:url');
+const cp=require('node:child_process'),crypto=require('node:crypto'),{once}=require('node:events');
 const root=path.resolve(__dirname,'../..'),temp=fs.mkdtempSync(path.join(os.tmpdir(),'toolkit-guided-fixture-'));
 const workspace=path.join(temp,'private'),output=process.env.QA_OUTPUT_DIR?path.join(process.env.QA_OUTPUT_DIR,'guided-browser'):path.join(temp,'evidence');fs.mkdirSync(output,{recursive:true});
 const report={started_at:new Date().toISOString(),scenarios:[],screenshots:[],errors:[],external_email_sent:false,model_calls:0,analysis_programs_executed:0};
@@ -135,13 +136,7 @@ async function generate(moduleId){
   await scenario('Downloaded HTML reports support light and dark themes on desktop and mobile',async()=>{
     const extract="import sys,json,pathlib,zipfile\np=pathlib.Path(sys.argv[1]);out=p/'reports';out.mkdir(exist_ok=True);files=[]\nfor z in sorted(p.glob('*.zip')):\n with zipfile.ZipFile(z) as package:\n  for i,name in enumerate(package.namelist()):\n   if name.endswith('.html'):\n    target=out/z.stem/name;target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(package.read(name));files.append(str(target))\nprint(json.dumps(files))\n";
     const files=JSON.parse(cp.execFileSync(process.env.TOOLKIT_PYTHON||'python3',['-c',extract,output],{encoding:'utf8'}));assert.ok(files.length>=5);
-    for(const file of files)for(const theme of ['light','dark'])for(const width of [1440,390]){
-      // A fresh viewport avoids stale compositor strips after headless Chrome resize.
-      const preview=await browser.newPage({viewport:{width,height:width===390?844:1000},colorScheme:theme});preview.on('pageerror',error=>report.errors.push(error.message));await preview.goto(pathToFileURL(file).href);
-      assert.equal(await preview.locator('.theme-toggle').count(),1);await preview.evaluate(theme=>localStorage.setItem('bp-theme',theme),theme);await preview.reload();assert.equal(await preview.locator('html').getAttribute('data-theme'),theme);await preview.locator('.theme-toggle').click();assert.notEqual(await preview.locator('html').getAttribute('data-theme'),theme);await preview.locator('.theme-toggle').click();assert.equal(await preview.locator('html').getAttribute('data-theme'),theme);
-      assert.equal(await preview.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,path.basename(file)+' horizontal overflow');const name='report-'+path.relative(path.join(output,'reports'),file).replace(/\.html$/,'').replaceAll(path.sep,'-')+'-'+theme+'-'+width+'.png';await preview.screenshot({path:path.join(output,name)});report.screenshots.push(name);await preview.close();
-    }
-    report.html_reports_checked=files.length;
+    await checkDownloadedReportThemes({browser,files,directory:path.join(output,'reports'),output,report});
   });
   await scenario('Guided pages produce no script errors or CSP violations',async()=>assert.deepEqual(report.errors,[]));
   await page.locator('#stop-launcher').click();await page.locator('#reconnect-panel').waitFor({state:'visible'});if(child.exitCode===null)await once(child,'exit');report.passed=true;console.log('Evidence: '+output);

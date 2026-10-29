@@ -949,6 +949,7 @@
     "toolkit_launcher/tests/guided_browser_qc.cjs",
     "toolkit_launcher/tests/helpers.py",
     "toolkit_launcher/tests/real_browser_qc.cjs",
+    "toolkit_launcher/tests/report_theme_qc.cjs",
     "toolkit_launcher/tests/shiny_browser_qc.cjs",
     "toolkit_launcher/tests/study_smoke.py",
     "toolkit_launcher/tests/test_analysis_core.R",

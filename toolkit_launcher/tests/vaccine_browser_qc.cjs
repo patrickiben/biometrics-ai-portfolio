@@ -4,8 +4,9 @@
  */
 'use strict';
 const {chromium}=require('playwright');
+const {checkDownloadedReportThemes}=require('./report_theme_qc.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),os=require('node:os'),path=require('node:path');
-const cp=require('node:child_process'),crypto=require('node:crypto'),{once}=require('node:events'),{pathToFileURL}=require('node:url');
+const cp=require('node:child_process'),crypto=require('node:crypto'),{once}=require('node:events');
 const root=path.resolve(__dirname,'../..'),temp=fs.mkdtempSync(path.join(os.tmpdir(),'vaccine browser QC '));
 const workspace=path.join(temp,'private'),output=process.env.QA_OUTPUT_DIR?path.join(process.env.QA_OUTPUT_DIR,'vaccine-browser'):path.join(temp,'evidence');
 fs.mkdirSync(output,{recursive:true});
@@ -127,12 +128,7 @@ async function inspectRun(job,number){
     const state=await api('/api/template-setup?'+new URLSearchParams({project_id:project,module_id:'vaccine'}));assert.deepEqual(state.inputs,{});await validate();assert.ok(await page.locator('#guided-report .report-errors').count());assert.equal(await page.locator('#guided-generate').isDisabled(),true);await close();
   });
   await scenario('Exported analysis reports preserve theme controls and fit mobile and desktop',async()=>{
-    for(const file of first.html)for(const theme of ['light','dark'])for(const width of [1440,390]){
-      const preview=await browser.newPage({viewport:{width,height:width===390?844:1000},colorScheme:theme});preview.on('pageerror',error=>report.errors.push(error.message));await preview.goto(pathToFileURL(file).href);assert.equal(await preview.locator('.theme-toggle').count(),1);
-      await preview.evaluate(theme=>localStorage.setItem('bp-theme',theme),theme);await preview.reload();assert.equal(await preview.locator('html').getAttribute('data-theme'),theme);await preview.locator('.theme-toggle').click();assert.notEqual(await preview.locator('html').getAttribute('data-theme'),theme);await preview.locator('.theme-toggle').click();assert.equal(await preview.locator('html').getAttribute('data-theme'),theme);
-      assert.equal(await preview.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),true,'Report overflow '+file);
-      const name='report-'+path.relative(path.join(output,'analysis-1-reports'),file).replace(/\.html$/,'').replaceAll(path.sep,'-')+'-'+theme+'-'+width+'.png';await preview.screenshot({path:path.join(output,name)});report.screenshots.push(name);await preview.close();
-    }report.html_reports_checked=first.html.length;
+    await checkDownloadedReportThemes({browser,files:first.html,directory:path.join(output,'analysis-1-reports'),output,report});
   });
   await scenario('No script errors or content-security-policy violations occur',async()=>assert.deepEqual(report.errors,[]));
   await page.locator('#stop-launcher').click();await page.locator('#reconnect-panel').waitFor({state:'visible'});if(child.exitCode===null)await once(child,'exit');report.passed=true;console.log('Evidence: '+output);
