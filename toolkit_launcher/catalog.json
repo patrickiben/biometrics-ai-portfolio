@@ -886,6 +886,41 @@
       "runner_id": "cqtc"
     },
     {
+      "id": "vaccine",
+      "title": "Vaccine immunogenicity and reactogenicity",
+      "summary": "Configure antibody summaries, response definitions and solicited reaction summaries with guided study settings and synthetic examples.",
+      "category": "Templates and references",
+      "kind": "templates",
+      "runtime": "R 4.4+; packages installed through the local toolkit",
+      "docs": [
+        {
+          "label": "Vaccine analysis guide",
+          "path": "vaccine/index.html"
+        },
+        {
+          "label": "Immunity learning companion",
+          "path": "vaccine/learning.html"
+        }
+      ],
+      "workspace_paths": [
+        "vaccine"
+      ],
+      "inputs": [],
+      "actions": [
+        {
+          "id": "vaccine",
+          "module_id": "vaccine",
+          "label": "Set up vaccine analyses",
+          "type": "guided"
+        }
+      ],
+      "outputs": [],
+      "persistence": "Mapped inputs and settings stay in the private project. Each generated revision and analysis run has its own downloadable package and QC record.",
+      "customization": "Choose outputs and study-specific assay, response and reaction settings in guided forms. Download input templates or try fictional data, map CSV columns, preview and run.",
+      "limits": "Review assay handling, populations, response definitions, observation windows and missing data for each study. Software execution and QC do not establish protection, clinical safety or study approval. Native SAS reference exports are unexecuted.",
+      "runner_id": "vaccine"
+    },
+    {
       "id": "tlf-libraries",
       "title": "Paired SAS and R TLF libraries",
       "summary": "Configure and run 221 R table, listing and figure programs across five study designs, with SAS reference exports.",

@@ -81,7 +81,7 @@
    "id": "programming",
    "n": 4,
    "name": "Programming and TLFs",
-   "on_site_html": "The <a href=\"study/index.html#stage4\">worked example, stage 4</a>: six tables with rtables and tern, each exported to RTF and HTML, three figures and a <a href=\"study/04_analysis/report/report.html\">Quarto results report</a>. Runnable R TLF programs and SAS reference templates (native SAS not executed).",
+   "on_site_html": "The <a href=\"study/index.html#stage4\">worked example, stage 4</a>: six tables with rtables and tern, each exported to RTF and HTML, three figures and a <a href=\"study/04_analysis/report/report.html\">Quarto results report</a>. Runnable R TLF programs and SAS reference templates (native SAS not executed). The <a href=\"vaccine/index.html\">vaccine module</a> adds guided immunogenicity and solicited-reaction analyses with an optional illustrated learning companion.",
    "strongest": {
     "text": "Table 14.4.3.1 (rtables) and the SAS and R template libraries",
     "href": "study/04_analysis/tlf/t_14_4_3_1.html"
@@ -90,7 +90,8 @@
     "study-4",
     "sas-tlf",
     "r-tlf",
-    "sandbox"
+    "sandbox",
+    "vaccine"
    ]
   },
   {
@@ -227,7 +228,8 @@
     "title": "Local R only",
     "eyebrow": "Local R",
     "modules": [
-     "hours"
+     "hours",
+     "vaccine"
     ],
     "disclosure_html": "The find-hours app runs in local R (see its README); its guide and snapshot are static pages rendered with Quarto."
    }
@@ -254,7 +256,8 @@
      "r-tlf",
      "monitoring-macros",
      "monitoring-wiki",
-     "open-tracker"
+     "open-tracker",
+     "vaccine"
     ]
    },
    {
@@ -1343,6 +1346,49 @@
    "section": "quality",
    "published": false,
    "source": "reserved until the AI-use compliance kit's branch merges; renders nowhere"
+  },
+  {
+   "id": "vaccine",
+   "title": "Vaccine immunogenicity and reactogenicity",
+   "href": "vaccine/index.html",
+   "section": "methods",
+   "stages": [
+    "programming",
+    "reporting"
+   ],
+   "primary": "programming",
+   "eyebrow": "Guided vaccine analyses",
+   "status": [
+    {
+     "k": "runs",
+     "text": "Point-and-click R"
+    },
+    {
+     "k": "synthetic",
+     "text": "Synthetic examples and QC"
+    }
+   ],
+   "summary": "Configure assay results, paired fold rises, response definitions and solicited-reaction diaries through forms. Run descriptive R analyses and retain complete results with SAS reference exports.",
+   "fact": "Study-defined limits, populations and missing-data rules remain explicit. No vaccine-efficacy or protection claim is inferred; native SAS is unexecuted.",
+   "links": [
+    {
+     "t": "open",
+     "href": "vaccine/index.html",
+     "text": "Vaccine module"
+    },
+    {
+     "t": "guide",
+     "href": "vaccine/learning.html",
+     "text": "Illustrated learning companion"
+    },
+    {
+     "t": "source",
+     "href": "vaccine/analysis.R",
+     "text": "R methods"
+    }
+   ],
+   "source": "vaccine/README.md",
+   "published": true
   }
  ]
 }

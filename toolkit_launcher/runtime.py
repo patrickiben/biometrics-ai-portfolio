@@ -584,6 +584,7 @@ class Workspace:
         with lock:
             if getattr(process, '_toolkit_stopped', False):
                 return
+            wait_deadline = None
             if os.name == 'nt':
                 handle = getattr(process, '_toolkit_windows_job', None)
                 if handle:
@@ -595,26 +596,36 @@ class Workspace:
                 # All commands start a new session, making the leader PID the
                 # owned group ID. A dead/reaped leader does not imply an empty
                 # group, so use group existence through the whole grace period.
-                try:
-                    os.killpg(process.pid, signal.SIGTERM)
-                except ProcessLookupError:
-                    pass
-                else:
-                    deadline = time.monotonic() + PROCESS_STOP_GRACE
+                def signal_group(sig, deadline):
+                    while True:
+                        try:
+                            os.killpg(process.pid, sig)
+                            return True
+                        except ProcessLookupError:
+                            return False
+                        except PermissionError:
+                            # XNU killpg1 can find a group while skipping its
+                            # exiting/zombie members and return EPERM. Retry
+                            # only on Darwin, requiring success or ESRCH; a
+                            # persistent permission failure still propagates.
+                            if sys.platform != 'darwin' or time.monotonic() >= deadline:
+                                raise
+                            process.poll()
+                            time.sleep(min(.05, max(0, deadline - time.monotonic())))
+                deadline = time.monotonic() + PROCESS_STOP_GRACE
+                if signal_group(signal.SIGTERM, deadline):
                     while time.monotonic() < deadline:
                         process.poll()
-                        try:
-                            os.killpg(process.pid, 0)
-                        except ProcessLookupError:
+                        if not signal_group(0, deadline):
                             break
-                        time.sleep(.05)
+                        time.sleep(min(.05, max(0, deadline - time.monotonic())))
                     else:
-                        try:
-                            os.killpg(process.pid, signal.SIGKILL)
-                        except ProcessLookupError:
-                            pass
+                        # A final-signal race uses the existing reap budget,
+                        # rather than adding another termination grace period.
+                        wait_deadline = time.monotonic() + 5
+                        signal_group(signal.SIGKILL, wait_deadline)
             try:
-                process.wait(timeout=5)
+                process.wait(timeout=5 if wait_deadline is None else max(0, wait_deadline - time.monotonic()))
             except subprocess.TimeoutExpired:
                 process.kill()
                 process.wait(timeout=5)

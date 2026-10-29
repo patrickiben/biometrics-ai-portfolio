@@ -8,6 +8,7 @@ import sys
 import tempfile
 import threading
 import time
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -261,6 +262,92 @@ while True:
             self.assertEqual(desktop.main(["--workspace", str(self.folder / "desktop"), "--no-browser", "--port", "8101"]), 0)
         self.assertFalse(holding["lock"])
         self.assertFalse((self.folder / "desktop/.launcher-session.json").exists())
+
+
+class ProcessGroupRaceTests(unittest.TestCase):
+    """A Darwin zombie group is distinct from a genuine signal denial."""
+
+    def exercise(self, stage, *, platform='darwin', persistent=False, remains_alive=False):
+        clock, calls, waits = [0.0], [], []
+        term, kill = 15, 9
+        target = {'term': term, 'probe': 0, 'kill': kill}[stage]
+        denied = [0]
+        process = SimpleNamespace(pid=43210, poll=lambda: -15,
+                                  wait=lambda timeout: waits.append(timeout) or -15,
+                                  kill=lambda: self.fail('Unexpected single-process fallback'))
+
+        def signal_group(pid, sig):
+            self.assertEqual(pid, process.pid)
+            calls.append(sig)
+            if sig == target:
+                denied[0] += 1
+                if persistent or denied[0] == 1:
+                    raise PermissionError(1, 'signal permission fixture')
+                if not remains_alive:
+                    raise ProcessLookupError(3, 'group disappeared')
+
+        def sleep(seconds):
+            self.assertGreater(seconds, 0)
+            clock[0] += seconds
+
+        with patch.object(runtime, 'os', SimpleNamespace(name='posix', killpg=signal_group)), \
+             patch.object(runtime, 'sys', SimpleNamespace(platform=platform)), \
+             patch.object(runtime, 'signal', SimpleNamespace(SIGTERM=term, SIGKILL=kill)), \
+             patch.object(runtime, 'time', SimpleNamespace(monotonic=lambda: clock[0], sleep=sleep)), \
+             patch.object(runtime, 'PROCESS_STOP_GRACE', .1):
+            if persistent or platform != 'darwin':
+                with self.assertRaises(PermissionError):
+                    runtime.Workspace._terminate(process)
+                self.assertFalse(getattr(process, '_toolkit_stopped', False))
+                self.assertEqual(waits, [])
+            else:
+                runtime.Workspace._terminate(process)
+                self.assertTrue(process._toolkit_stopped)
+                self.assertEqual(len(waits), 1)
+                self.assertTrue(0 <= waits[0] <= 5)
+                before = list(calls)
+                runtime.Workspace._terminate(process)
+                self.assertEqual(calls, before, 'Do not signal a previously stopped group again')
+        return clock[0], calls, denied[0], waits
+
+    def test_darwin_transient_term_probe_and_kill_denials_require_confirmation(self):
+        for stage in ('term', 'probe', 'kill'):
+            with self.subTest(stage=stage):
+                elapsed, calls, denied, waits = self.exercise(stage)
+                self.assertEqual(denied, 2, 'EPERM must be followed by the confirming ESRCH')
+                self.assertLessEqual(elapsed, .15 + 1e-9)
+                if stage == 'kill':
+                    self.assertAlmostEqual(elapsed + waits[0], .1 + 5, places=8)
+
+    def test_darwin_persistent_denial_is_reported_within_existing_budgets(self):
+        for stage in ('term', 'probe', 'kill'):
+            with self.subTest(stage=stage):
+                elapsed, calls, denied, _ = self.exercise(stage, persistent=True)
+                self.assertGreater(denied, 1)
+                self.assertAlmostEqual(elapsed, .1 + (5 if stage == 'kill' else 0), places=8)
+
+    def test_darwin_transient_probe_does_not_abandon_a_surviving_descendant(self):
+        _, calls, _, _ = self.exercise('probe', remains_alive=True)
+        self.assertIn(9, calls, 'A still-present group must receive SIGKILL after the grace window')
+
+    def test_other_platforms_do_not_retry_permission_denials(self):
+        for stage in ('term', 'probe', 'kill'):
+            with self.subTest(stage=stage):
+                _, _, denied, _ = self.exercise(stage, platform='linux')
+                self.assertEqual(denied, 1)
+
+    def test_windows_keeps_owned_job_termination_without_posix_probes(self):
+        closed, waits = [], []
+        process = SimpleNamespace(pid=43210, _toolkit_windows_job='owned-job',
+                                  wait=lambda timeout: waits.append(timeout) or -15,
+                                  kill=lambda: self.fail('Owned Windows job must use its handle'))
+        with patch.object(runtime, 'os', SimpleNamespace(name='nt')), \
+             patch.object(runtime, 'terminate_windows_job', side_effect=closed.append):
+            runtime.Workspace._terminate(process)
+        self.assertEqual(closed, ['owned-job'])
+        self.assertEqual(waits, [5])
+        self.assertIsNone(process._toolkit_windows_job)
+        self.assertTrue(process._toolkit_stopped)
 
 
 if __name__ == "__main__":

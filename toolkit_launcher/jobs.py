@@ -293,7 +293,7 @@ def build_plan(action_id: str, project_root: str | Path, options: dict | None = 
             analysis_jobs.resolve_build(root, module_id, build_id)
         except ValueError as error:
             raise JobError(str(error)) from None
-        packages = ANALYSIS_PACKAGES if module_id in {"r_tlf", "sas_tlf"} else ("jsonlite",)
+        packages = ANALYSIS_PACKAGES if module_id in {"r_tlf", "sas_tlf"} else ("jsonlite", "ggplot2") if module_id == "vaccine" else ("jsonlite",)
         if action_id == "analysis.install":
             expr = ("p <- " + _r_vector(packages) + "; "
                     "missing <- p[!vapply(p,requireNamespace,logical(1),quietly=TRUE)]; "

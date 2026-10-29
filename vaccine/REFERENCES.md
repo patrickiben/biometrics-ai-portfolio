@@ -1,0 +1,39 @@
+# Vaccine module reference ledger
+
+Sources were checked on 2026-10-28. Research examples support specific distinctions; their products, pathogens and assay values are not module defaults. The analysis module is descriptive. This ledger is not a claim of clinical validation or universal applicability.
+
+## Statistical methods and grading
+
+1. **R Core Team — Student t distribution documentation.** [Official R documentation](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/TDist.html). Defines the quantile used for log-scale mean and paired log-ratio intervals. Exponentiation is the module's geometric-mean construction. The interval needs its sampling/distribution assumptions; it does not represent between-participant prediction or assay-fit uncertainty.
+2. **Clopper CJ, Pearson ES (1934).** *The Use of Confidence or Fiducial Limits Illustrated in the Case of the Binomial.* Biometrika 26:404–413. [Original method](https://doi.org/10.1093/biomet/26.4.404); [official R `binom.test` documentation](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/binom.test.html). Supports the central exact binomial interval. Coverage is at least nominal under the binomial model; it can be conservative and does not correct selection or missing-data bias.
+3. **FDA (2007).** *Toxicity Grading Scale for Healthy Adult and Adolescent Volunteers Enrolled in Preventive Vaccine Clinical Trials.* [Official guidance](https://www.fda.gov/regulatory-information/search-fda-guidance-documents/toxicity-grading-scale-healthy-adult-and-adolescent-volunteers-enrolled-preventive-vaccine-clinical). Supports symptom-specific grading context. The module accepts protocol-assigned grades; it does not impose this scale on every study, derive grades from raw measures, or equate severity with seriousness.
+
+## Biological measurements and interpretation
+
+4. **Victora GD et al. (2010).** *Germinal Center Dynamics Revealed by Multiphoton Microscopy Using a Photoactivatable Fluorescent Reporter.* Cell 143:592–605. [Primary study](https://pmc.ncbi.nlm.nih.gov/articles/PMC3035939/), [DOI](https://doi.org/10.1016/j.cell.2010.10.032). Experimental support for germinal-centre cell dynamics and selection involving T-cell help. It does not establish an immune system implementing a formal Bayesian algorithm.
+5. **Turner JS et al. (2021).** *SARS-CoV-2 mRNA vaccines induce persistent human germinal centre responses.* Nature 596:109–113. [Primary study](https://www.nature.com/articles/s41586-021-03738-2). Documents antigen-specific human responses in the studied vaccination setting. It supplies biological context, not a universal timeline for every vaccine.
+6. **Kim W et al. (2022).** *Germinal centre-driven maturation of B cell response to mRNA vaccination.* Nature 604:141–145. [Primary study](https://www.nature.com/articles/s41586-022-04527-1). Supports continued maturation and links among sampled germinal-centre, memory and plasma-cell responses. It does not make serum antibody magnitude a complete readout of memory or protection.
+7. **Pinto D et al. (2020).** *Cross-neutralization of SARS-CoV-2 by a human monoclonal SARS-CoV antibody.* Nature 583:290–295. [Primary study](https://www.nature.com/articles/s41586-020-2349-y). Measures binding, avidity/affinity and neutralization separately. The teaching occupancy toy uses the standard one-to-one equilibrium expression and synthetic numbers; it is not a fit to this paper's data. Lower dissociation constant K_D means stronger affinity under comparable conditions. Multivalent avidity and polyclonal serum titers are distinct quantities.
+8. **Gilbert PB et al. (2022).** *Immune correlates analysis of the mRNA-1273 COVID-19 vaccine efficacy clinical trial.* Science 375:43–50. [Primary analysis](https://pmc.ncbi.nlm.nih.gov/articles/PMC9017870/), [DOI](https://doi.org/10.1126/science.abm3425). Demonstrates context-specific associations of binding and neutralizing markers with symptomatic COVID-19 risk. Lack of randomized antibody assignment and restrictions on strain, follow-up and clinical outcome limit interpretation. No assay threshold from this work is adopted as a module default or individual protection guarantee.
+9. **Siangphoe U et al. (2023).** *Associations of Immunogenicity and Reactogenicity After Severe Acute Respiratory Syndrome Coronavirus 2 mRNA-1273 Vaccine in the COVE and TeenCOVE Trials.* Clinical Infectious Diseases 76:271–280. [Primary secondary analysis](https://pubmed.ncbi.nlm.nih.gov/36130187/), [DOI](https://doi.org/10.1093/cid/ciac780). Systemic reactions were associated with antibody levels in this setting, while responses also occurred without reactions. This does not support using a person's symptoms as a protection test.
+10. **Thomas SJ et al. (2021).** *Safety and Efficacy of the BNT162b2 mRNA Covid-19 Vaccine through 6 Months.* New England Journal of Medicine 385:1761–1773. [Primary trial report](https://www.nejm.org/doi/abs/10.1056/NEJMoa2110345). Illustrates that reactogenicity patterns can differ with prior infection and dose. It does not establish a universal dose-2-greater-than-dose-1 rule.
+11. **Karikó K et al. (2005).** *Suppression of RNA recognition by Toll-like receptors: the impact of nucleoside modification and the evolutionary origin of RNA.* Immunity 23:165–175. [Primary experiments](https://pubmed.ncbi.nlm.nih.gov/16111635/), [DOI](https://doi.org/10.1016/j.immuni.2005.06.008). Supports effects of specified nucleoside modifications on RNA sensing in the experimental systems. This study did not test every modern mRNA formulation or establish a single clinical “precision” variable.
+12. **Andries O et al. (2015).** *N(1)-methylpseudouridine-incorporated mRNA outperforms pseudouridine-incorporated mRNA by providing enhanced protein expression and reduced immunogenicity in mammalian cell lines and mice.* Journal of Controlled Release 217:337–344. [Primary experiments](https://pubmed.ncbi.nlm.nih.gov/26342664/), [DOI](https://doi.org/10.1016/j.jconrel.2015.08.051). Preclinical evidence on modified RNA expression and innate responses. Effects are system-dependent; “reduced immunogenicity” here should not be confused with reduced desired antigen-specific vaccine immunogenicity.
+
+## Optional theoretical lens
+
+13. **Friston K (2013).** *Life as we know it.* Journal of the Royal Society Interface 10:20130475. [Author's university repository](https://discovery.ucl.ac.uk/id/eprint/1399513/), [DOI](https://doi.org/10.1098/rsif.2013.0475). A theoretical argument and simulations using Markov-blanket assumptions. It supplies a modelling vocabulary; it is not empirical evidence that the vaccine assays in this module measure free energy, beliefs or precision. A statistical blanket requires a specified conditional-independence relation. An anatomical membrane alone does not establish that relation.
+
+## Adaptation and corrections
+
+The companion draws its teaching outline from the author's earlier *Immunity as Active Inference* page. The source file was not changed or published wholesale. The new version:
+
+- separates established biological observations from optional modelling interpretations;
+- corrects the direction of affinity versus K_D;
+- distinguishes binding measurements, functional neutralization and clinical protection;
+- removes universal protection thresholds and automatic seroprotection claims;
+- treats reactogenicity and immunogenicity as different measurements;
+- avoids asserting that membranes or nested anatomy automatically satisfy Markov-blanket assumptions;
+- replaces unavailable slide/course/one-page downloads with an accessible on-page self-check and complete print route.
+
+The module's calculations are determined by its declared input contract and generated analysis settings, not by the optional theoretical analogy.

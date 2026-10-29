@@ -26,6 +26,16 @@ csv <- read.csv(file.path(output,'component-02.csv'),check.names=FALSE)
 stopifnot(csv$Label[1]=="'=1+1",readRDS(file.path(output,'component-02.rds'))$Label[1]=='=1+1')
 stopifnot(file.info(file.path(output,'component-03.png'))$size>1000,file.info(file.path(output,'component-03.pdf'))$size>1000)
 stopifnot(readRDS(file.path(output,'component-04.rds'))$stat=='25')
+# Direct components (such as vaccine plots) are first drawn during rendering.
+# Export warnings must survive in the per-output report, log and return metadata.
+direct <- file.path(folder,'direct-warning');dir.create(direct)
+plot <- ggplot2::ggplot(data.frame(x=1:3,y=c(1,NA,3)),ggplot2::aes(x,y))+ggplot2::geom_point()
+rendered <- analysis_render(list(components=list(list(name='Missing plot row',value=plot)),warnings=character()),
+                            direct,'direct-warning','', 'Synthetic warning check')
+stopifnot(any(grepl('Removed',rendered$warnings,fixed=TRUE)),
+          any(grepl('Removed',readLines(file.path(direct,'program.log')),fixed=TRUE)),
+          any(grepl('Execution warnings',readLines(file.path(direct,'index.html')),fixed=TRUE)),
+          'direct-warning/program.log' %in% rendered$files)
 manifest <- jsonlite::fromJSON(file.path(plan$run_root,'output_manifest.json'),simplifyVector=FALSE)
 stopifnot(length(manifest$outputs)==1L,!manifest$approved,all(file.exists(file.path(plan$run_root,unlist(manifest$outputs[[1]]$files)))))
 for(source_text in c('print(data.frame(x=1)); stop("deliberate failure")','print(data.frame(x=Inf))','print(data.frame(x="NaN"))','x <- 2')) {

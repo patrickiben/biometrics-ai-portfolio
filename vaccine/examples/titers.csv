@@ -1,0 +1,37 @@
+USUBJID,ASSAY,ANTIGEN,UNIT,VISIT,AVAL,QUALIFIER,LLOQ,ULOQ
+VAX001,Assay-A,Antigen-A,AU/mL,Baseline,10,EXACT,5,160
+VAX001,Assay-A,Antigen-A,AU/mL,Day 28,40,EXACT,5,160
+VAX001,Assay-A,Antigen-A,AU/mL,Day 56,30,EXACT,5,160
+VAX002,Assay-A,Antigen-A,AU/mL,Baseline,20,EXACT,5,160
+VAX002,Assay-A,Antigen-A,AU/mL,Day 28,80,EXACT,5,160
+VAX002,Assay-A,Antigen-A,AU/mL,Day 56,40,EXACT,5,160
+VAX003,Assay-A,Antigen-A,AU/mL,Baseline,,BLQ,5,160
+VAX003,Assay-A,Antigen-A,AU/mL,Day 28,25,EXACT,5,160
+VAX003,Assay-A,Antigen-A,AU/mL,Day 56,15,EXACT,5,160
+VAX004,Assay-A,Antigen-A,AU/mL,Baseline,40,EXACT,5,160
+VAX004,Assay-A,Antigen-A,AU/mL,Day 28,,ALQ,5,160
+VAX004,Assay-A,Antigen-A,AU/mL,Day 56,80,EXACT,5,160
+VAX005,Assay-A,Antigen-A,AU/mL,Baseline,,MISSING,5,160
+VAX005,Assay-A,Antigen-A,AU/mL,Day 28,50,EXACT,5,160
+VAX005,Assay-A,Antigen-A,AU/mL,Day 56,,MISSING,5,160
+VAX006,Assay-A,Antigen-A,AU/mL,Baseline,10,EXACT,5,160
+VAX006,Assay-A,Antigen-A,AU/mL,Day 28,20,EXACT,5,160
+VAX006,Assay-A,Antigen-A,AU/mL,Day 56,15,EXACT,5,160
+VAX007,Assay-A,Antigen-A,AU/mL,Baseline,10,EXACT,5,160
+VAX007,Assay-A,Antigen-A,AU/mL,Day 28,20,EXACT,5,160
+VAX007,Assay-A,Antigen-A,AU/mL,Day 56,10,EXACT,5,160
+VAX008,Assay-A,Antigen-A,AU/mL,Baseline,20,EXACT,5,160
+VAX008,Assay-A,Antigen-A,AU/mL,Day 28,20,EXACT,5,160
+VAX008,Assay-A,Antigen-A,AU/mL,Day 56,15,EXACT,5,160
+VAX009,Assay-A,Antigen-A,AU/mL,Baseline,5,EXACT,5,160
+VAX009,Assay-A,Antigen-A,AU/mL,Day 28,10,EXACT,5,160
+VAX009,Assay-A,Antigen-A,AU/mL,Day 56,5,EXACT,5,160
+VAX010,Assay-A,Antigen-A,AU/mL,Baseline,,BLQ,5,160
+VAX010,Assay-A,Antigen-A,AU/mL,Day 28,,BLQ,5,160
+VAX010,Assay-A,Antigen-A,AU/mL,Day 56,5,EXACT,5,160
+VAX011,Assay-A,Antigen-A,AU/mL,Baseline,20,EXACT,5,160
+VAX011,Assay-A,Antigen-A,AU/mL,Day 28,,MISSING,5,160
+VAX011,Assay-A,Antigen-A,AU/mL,Day 56,10,EXACT,5,160
+VAX012,Assay-A,Antigen-A,AU/mL,Baseline,40,EXACT,5,160
+VAX012,Assay-A,Antigen-A,AU/mL,Day 28,40,EXACT,5,160
+VAX012,Assay-A,Antigen-A,AU/mL,Day 56,20,EXACT,5,160

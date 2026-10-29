@@ -1,0 +1,36 @@
+{
+  "schema": 1,
+  "module_id": "vaccine",
+  "values": {
+    "study_id": "VAX-DEMO",
+    "outputs": [
+      "immunogenicity",
+      "fold_rise",
+      "response",
+      "titer_plot",
+      "reactogenicity",
+      "diary_profile"
+    ],
+    "assay": "Assay-A",
+    "antigen": "Antigen-A",
+    "unit": "AU/mL",
+    "baseline_visit": "Baseline",
+    "followup_visits": "Day 28\nDay 56",
+    "confidence": 0.95,
+    "blq_policy": "half_lloq",
+    "alq_policy": "uloq",
+    "response_rule": "conditional",
+    "response_threshold": 40,
+    "fold_threshold": 4,
+    "baseline_threshold": 10,
+    "dose_labels": "Dose 1\nDose 2",
+    "symptoms": "Pain\nFatigue",
+    "day_start": 0,
+    "day_end": 6,
+    "max_grade": 3,
+    "react_denominator": "complete",
+    "visits_confirmed": false,
+    "diary_confirmed": false,
+    "review_confirmed": false
+  }
+}

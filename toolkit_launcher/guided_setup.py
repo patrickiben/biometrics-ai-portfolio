@@ -18,11 +18,11 @@ import zipfile
 
 from .runtime import InputError, MAX_FILE, ROOT, atomic_json, safe_path, timestamp
 
-MODULES = {"r_tlf", "sas_tlf", "sas_monitor", "localmind", "interpretation"}
+MODULES = {"r_tlf", "sas_tlf", "sas_monitor", "localmind", "interpretation", "vaccine"}
 MAX_ROWS = 100000
 SOURCE_DIRS = {"r_tlf": "r_tlf_pseudocode", "sas_tlf": "sas_tlf_pseudocode",
                "sas_monitor": "sas_r_automation/macro_library", "localmind": "slm_wiki/macro_library",
-               "interpretation": "tlf_interpret"}
+               "interpretation": "tlf_interpret", "vaccine": "vaccine"}
 
 
 def source_directories(module_id):
@@ -35,6 +35,9 @@ def provider(module_id):
     if module_id in {"r_tlf", "sas_tlf"}:
         from . import guided_tlf
         return guided_tlf
+    if module_id == "vaccine":
+        from . import guided_vaccine
+        return guided_vaccine
     from . import guided_modules
     return guided_modules
 
@@ -232,7 +235,7 @@ def source_hashes(root, module_id):
                 checked = safe_path(root, relative)
                 result[relative] = hashlib.sha256(checked.read_bytes()).hexdigest()
     # Preview also pins the installed generator and execution implementation.
-    for name in ("guided_setup.py", "guided_tlf.py", "guided_modules.py", "analysis_contracts.py", "analysis_form_fields.py", "analysis_runner.R", "analysis_monitor.R", "analysis_jobs.py"):
+    for name in ("guided_setup.py", "guided_tlf.py", "guided_modules.py", "guided_vaccine.py", "analysis_contracts.py", "analysis_form_fields.py", "analysis_runner.R", "analysis_monitor.R", "analysis_vaccine.R", "analysis_jobs.py"):
         path = ROOT / "toolkit_launcher" / name
         if path.is_file():
             result["toolkit_launcher/" + name] = hashlib.sha256(path.read_bytes()).hexdigest()
@@ -306,7 +309,7 @@ def act(root, module_id, action, values):
     files["input_manifest.json"] = json.dumps({slot: {key: value for key, value in record.items() if key not in {"absolute_path", "preview"}} for slot, record in inputs.items()}, indent=2, ensure_ascii=False) + "\n"
     files["source_fingerprints.json"] = json.dumps(sources, indent=2) + "\n"
     files["SETUP_REPORT.html"] = readiness_html(module_id, values, report, inputs, sources, limitations)
-    runnable = module_id in {"r_tlf", "sas_tlf", "sas_monitor", "interpretation"}
+    runnable = module_id in {"r_tlf", "sas_tlf", "sas_monitor", "interpretation", "vaccine"}
     bundle_hash = None
     if runnable:
         fingerprints = {name: hashlib.sha256(content.encode("utf-8") if isinstance(content, str) else content).hexdigest() for name, content in files.items()}

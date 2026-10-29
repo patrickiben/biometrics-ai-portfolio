@@ -335,6 +335,13 @@
       own.pendingUploads--;if(guided===own)updateGuidedGenerate();
     }
   }
+  async function useGuidedExample(slot) {
+    const own=guided,sequence=guidedSequence;
+    const result=await response('/api/files?'+new URLSearchParams({project_id:own.projectId,path:slot.example_path}));
+    const blob=await result.blob();
+    if(sequence!==guidedSequence||guided!==own)return;
+    await uploadGuided(slot,new File([blob],slot.example_path.split('/').pop(),{type:'text/csv'}));
+  }
   function selectedGuidedInputs() {
     const selectionFields=guidedFields().filter(field=>['select','multiselect','template-select'].includes(field.type));
     const slots=new Set();let hasMetadata=false;
@@ -358,6 +365,15 @@
       const controls=node('div',undefined,'actions');controls.append(picker,replace);
       if(meta?.path)controls.append(button('Download input',event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:guided.projectId,path:meta.path}),meta.filename||slot.id+'.csv'),'guided-error'))));
       body.append(controls);
+      if(slot.template_path||slot.example_path){
+        const examples=node('div',undefined,'actions');
+        if(slot.template_path)examples.append(button('Download template',event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:guided.projectId,path:slot.template_path}),slot.template_path.split('/').pop()),'guided-error'))));
+        if(slot.example_path){
+          examples.append(button('Download synthetic example',event=>busy(event.currentTarget,()=>act(()=>download('/api/files?'+new URLSearchParams({project_id:guided.projectId,path:slot.example_path}),slot.example_path.split('/').pop()),'guided-error'))));
+          examples.append(button('Use synthetic example',()=>busy($('guided-dialog'),()=>act(()=>useGuidedExample(slot),'guided-error')).finally(updateGuidedGenerate)));
+        }
+        body.append(examples,node('p','Synthetic examples are fictional. Using an example replaces this input through the usual upload checks; choose and review study settings separately.','help'));
+      }
       if(meta){
         const mappings=node('div',undefined,'guided-mapping');suggestMappings(slot,meta.columns||[]);
         for(const raw of guidedColumns(slot)){

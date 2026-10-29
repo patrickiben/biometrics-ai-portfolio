@@ -58,6 +58,14 @@ analysis_capture <- function(scope, program, directory) {
 
 analysis_render <- function(result, directory, relative, css, study) {
   blocks <- character(); checks <- list()
+  render_warnings <- character()
+  capture_render <- function(expr) withCallingHandlers(expr,warning=function(w) {
+    message <- conditionMessage(w)
+    render_warnings <<- unique(c(render_warnings,message))
+    # Keep diagnostics even if a subsequent rendering operation fails.
+    cat(paste0("Rendering warning: ",message,"\n"),file=file.path(directory,"program.log"),append=TRUE)
+    invokeRestart("muffleWarning")
+  })
   if(!any(vapply(result$components,function(c) inherits(c$value,"ggplot"),logical(1)))) unlink(file.path(directory,"printed_figures.pdf"))
   auxiliary <- c("program.log","printed_figures.pdf","verified_preview.json")
   files <- file.path(relative,auxiliary[file.exists(file.path(directory,auxiliary))])
@@ -69,8 +77,8 @@ analysis_render <- function(result, directory, relative, css, study) {
     if(component$name %in% c("Recomputed facts","Unapproved paragraph")) label <- component$name
     if (inherits(x,"ggplot")) {
       png <- paste0(key,".png"); pdf <- paste0(key,".pdf")
-      ggplot2::ggsave(file.path(directory,png),x,width=10,height=6.5,dpi=150,bg="white",limitsize=TRUE)
-      if(capabilities("cairo")) ggplot2::ggsave(file.path(directory,pdf),x,width=10,height=6.5,device=grDevices::cairo_pdf,bg="white") else ggplot2::ggsave(file.path(directory,pdf),x,width=10,height=6.5,bg="white")
+      capture_render(ggplot2::ggsave(file.path(directory,png),x,width=10,height=6.5,dpi=150,bg="white",limitsize=TRUE))
+      if(capabilities("cairo")) capture_render(ggplot2::ggsave(file.path(directory,pdf),x,width=10,height=6.5,device=grDevices::cairo_pdf,bg="white")) else capture_render(ggplot2::ggsave(file.path(directory,pdf),x,width=10,height=6.5,bg="white"))
       files <- c(files,file.path(relative,c(png,pdf)))
       blocks <- c(blocks,paste0("<h3>",analysis_escape(label),"</h3><p><a href='",pdf,"'>PDF figure</a></p><img alt='",analysis_escape(label),"' src='",png,"'>"))
     } else {
@@ -97,12 +105,14 @@ analysis_render <- function(result, directory, relative, css, study) {
       checks[[length(checks)+1L]] <- list(id=paste(relative,key,sep="/"),passed=TRUE,details=paste(nrow(x),"complete rows exported; no infinite/non-number results."))
     }
   }
+  result$warnings <- unique(c(result$warnings,render_warnings))
+  if(file.exists(file.path(directory,"program.log"))) files <- unique(c(files,file.path(relative,"program.log")))
   title <- if(is.list(result$title)&&length(result$title$titles)>=3L) result$title$titles[[3]] else basename(relative)
   foot <- if(is.list(result$title)) result$title$footnotes else character()
   note <- paste0("<p class='note'>Computed output. Scientific review and study approval remain separate. CSV exports protect formula-like text with an apostrophe; RDS objects retain original values.</p>",if(length(foot)) paste0("<ul>",paste0("<li>",analysis_escape(foot),"</li>",collapse=""),"</ul>") else "")
   if(length(result$warnings)) note <- paste0(note,"<h2>Execution warnings</h2><ul>",paste0("<li>",analysis_escape(result$warnings),"</li>",collapse=""),"</ul>")
   writeLines(analysis_page(title,paste0(note,paste(blocks,collapse="\n")),css,study),file.path(directory,"index.html"),useBytes=TRUE)
-  list(files=c(files,file.path(relative,"index.html")),checks=checks,title=title)
+  list(files=c(files,file.path(relative,"index.html")),checks=checks,title=title,warnings=result$warnings)
 }
 
 run_analysis <- function(plan) {
@@ -126,7 +136,7 @@ run_analysis <- function(plan) {
       result <- fn(directory)
       rendered <- analysis_render(result,directory,relative,css,cfg$study_id)
       checks <<- c(checks,rendered$checks)
-      warnings <<- unique(c(warnings,result$warnings))
+      warnings <<- unique(c(warnings,rendered$warnings))
     },error=function(e) error <<- conditionMessage(e))
     if(!is.null(error)) {
       errors <<- c(errors,paste(id,error,sep=": "))
@@ -156,6 +166,19 @@ run_analysis <- function(plan) {
         record(output_id,function(directory) {
           scope <- new.env(parent=shared)
           analysis_capture(scope,file.path(bundle_root,"programs",paste0(output_id,".R")),directory)
+        })
+      })
+    } else if(plan$module_id=="vaccine") {
+      source(file.path(plan$source_root,"toolkit_launcher/analysis_vaccine.R"),local=TRUE)
+      vaccine <- analysis_vaccine_prepare(build)
+      selected <- unlist(cfg$outputs,use.names=FALSE)
+      if(!length(selected)||anyDuplicated(selected)||any(!selected %in% c("immunogenicity","fold_rise","response","titer_plot","reactogenicity","diary_profile"))) stop("Select valid vaccine outputs.")
+      for(id in selected) local({
+        output_id <- id
+        record(output_id,function(directory) {
+          result <- vaccine$scope$vaccine_output(output_id,vaccine$prepared,vaccine$config)
+          writeLines(c(paste("Vaccine output:",output_id),"Completed using the recorded settings and immutable inputs."),file.path(directory,"program.log"))
+          result
         })
       })
     } else if(plan$module_id=="sas_monitor") {
@@ -196,7 +219,7 @@ run_analysis <- function(plan) {
   qc <- list(schema=1L,passed=passed,status=if(passed) "passed" else "failed",all_selected_outputs_completed=passed,checks=checks,errors=errors,warnings=warnings,approved=FALSE,scope="Execution, structural and explicit method checks; not independent clinical validation or approval.")
   manifest <- list(schema=1L,status=if(passed) "succeeded" else "failed",module_id=plan$module_id,build_id=plan$build_id,run_id=plan$run_id,started_at=started,finished_at=format(Sys.time(),"%Y-%m-%dT%H:%M:%SZ",tz="UTC"),study_id=cfg$study_id,outputs=outputs,approved=FALSE,bundle_sha256=plan$bundle_sha256,engine_sha256=plan$engine_sha256)
   analysis_json(qc,file.path(out,"qc.json")); analysis_json(manifest,file.path(out,"output_manifest.json"))
-  body <- paste0("<p class='note'>",if(passed) "All selected outputs completed." else "This analysis did not complete successfully. Failed outputs have no successful result attached."," Scientific review and study approval remain separate.</p><h2>Execution status</h2>",analysis_table(status),"<ul>",paste(vapply(outputs,function(x) paste0("<li><a href='outputs/",x$id,"/index.html'>",analysis_escape(x$title),"</a> — ",analysis_escape(x$status),"</li>"),character(1)),collapse=""),"</ul>",if(length(errors)) paste0("<h2>Errors</h2><pre>",analysis_escape(paste(errors,collapse="\n")),"</pre>") else "","<h2>QC scope</h2><p>",analysis_escape(qc$scope),"</p><h2>Recorded settings</h2><pre>",analysis_escape(jsonlite::toJSON(cfg,pretty=TRUE,auto_unbox=TRUE,null="null")),"</pre><h2>Software versions</h2>",analysis_table(versions),"<p><a href='output_manifest.json'>Run manifest</a> · <a href='qc.json'>QC details</a> · <a href='execution_status.csv'>Status CSV</a></p>")
+  body <- paste0("<p class='note'>",if(passed) "All selected outputs completed." else "This analysis did not complete successfully. Failed outputs have no successful result attached."," Scientific review and study approval remain separate.</p><h2>Execution status</h2>",analysis_table(status),"<ul>",paste(vapply(outputs,function(x) paste0("<li><a href='outputs/",x$id,"/index.html'>",analysis_escape(x$title),"</a> — ",analysis_escape(x$status),"</li>"),character(1)),collapse=""),"</ul>",if(length(errors)) paste0("<h2>Errors</h2><pre>",analysis_escape(paste(errors,collapse="\n")),"</pre>") else "",if(length(warnings)) paste0("<h2>Execution warnings</h2><pre>",analysis_escape(paste(warnings,collapse="\n")),"</pre>") else "","<h2>QC scope</h2><p>",analysis_escape(qc$scope),"</p><h2>Recorded settings</h2><pre>",analysis_escape(jsonlite::toJSON(cfg,pretty=TRUE,auto_unbox=TRUE,null="null")),"</pre><h2>Software versions</h2>",analysis_table(versions),"<p><a href='output_manifest.json'>Run manifest</a> · <a href='qc.json'>QC details</a> · <a href='execution_status.csv'>Status CSV</a></p>")
   writeLines(analysis_page("Study analysis results",body,css,cfg$study_id),file.path(out,"analysis_report.html"),useBytes=TRUE)
   cat(if(passed) "ANALYSIS PASSED" else "ANALYSIS FAILED",":",sum(status$status=="completed"),"/",nrow(status),"outputs completed.\n")
   invisible(passed)

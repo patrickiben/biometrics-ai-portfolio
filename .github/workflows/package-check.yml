@@ -282,13 +282,19 @@ jobs:
         run: Rscript tests/test_analysis_monitor.R
       - name: Check complete rendering and failure handling
         run: Rscript tests/test_analysis_renderer.R
+      - name: Check vaccine numerical methods and missing-data boundaries
+        run: Rscript vaccine/tests/test_analysis.R
+      - name: Check independently authored vaccine scientific invariants
+        run: Rscript vaccine/tests/test_scientific_invariants.R
+      - name: Execute vaccine packages and adversarial revisions
+        run: python -m unittest discover -s tests -p "test_vaccine_generated.py" -v
       - name: Check every input contract and all generated R-backed analyses
         env:
           ANALYSIS_CONTRACT_REPORT: ${{ runner.temp }}/analysis-contracts.json
           ANALYSIS_GENERATED_REPORT: ${{ runner.temp }}/analysis-generated.json
         run: python -m unittest discover -s tests -p "test_analysis_*.py" -v
       - name: Check guided provider and immutable analysis lifecycle
-        run: python -m unittest toolkit_launcher.tests.test_guided_tlf toolkit_launcher.tests.test_analysis_jobs -v
+        run: python -m unittest toolkit_launcher.tests.test_guided_tlf toolkit_launcher.tests.test_guided_vaccine toolkit_launcher.tests.test_analysis_jobs -v
       - uses: actions/setup-node@v6
         with:
           node-version: '24'
@@ -312,6 +318,18 @@ jobs:
         # Test-only access to the packages installed above. Production projects
         # continue to use their own isolated, explicitly installed runtime.
         run: node -e "process.env.R_LIBS_SITE=[process.env.R_LIBS_USER,process.env.R_LIBS_SITE].filter(Boolean).join(require('node:path').delimiter); require('./toolkit_launcher/tests/guided_browser_qc.cjs')"
+      - name: Execute vaccine setup and analyses through browser controls
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          TOOLKIT_PYTHON: python
+          QA_OUTPUT_DIR: ${{ runner.temp }}/vaccine-browser-qc
+        run: node -e "process.env.R_LIBS_SITE=[process.env.R_LIBS_USER,process.env.R_LIBS_SITE].filter(Boolean).join(require('node:path').delimiter); require('./toolkit_launcher/tests/vaccine_browser_qc.cjs')"
+      - name: Check vaccine guide and scientific learning interactions
+        env:
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          TOOLKIT_PYTHON: python
+          QA_OUTPUT_DIR: ${{ runner.temp }}/vaccine-browser-qc
+        run: node vaccine/tests/content_browser_qc.cjs
       - uses: actions/upload-artifact@v7
         if: always()
         with:
@@ -320,4 +338,5 @@ jobs:
             ${{ runner.temp }}/analysis-contracts.json
             ${{ runner.temp }}/analysis-generated.json
             ${{ runner.temp }}/analysis-browser-qc
+            ${{ runner.temp }}/vaccine-browser-qc
           retention-days: 7
