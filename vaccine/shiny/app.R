@@ -322,9 +322,13 @@ server <- function(input, output, session) {
   current_snapshot <- function() list(settings = isolate(settings()), revision = isolate(rv$revision), epoch = epoch())
   is_validated <- reactive({ !length(rv$pending_uploads) && !length(rv$upload_errors) && !is.null(rv$validated) && identical(rv$validated, current_snapshot()) && isTRUE(rv$validation$ok) })
   output$validate_control <- renderUI({ rv$revision
-    actionButton("validate_setup", "Validate this configuration", class = "btn-primary", disabled = if (length(rv$pending_uploads)) "disabled" else NULL)
+    actionButton("validate_setup", "Validate this configuration", class = "btn-primary", disabled = length(rv$pending_uploads) > 0L)
   })
-  output$run_control <- renderUI(actionButton("run_analysis", "Run selected analyses", class = "btn-primary", disabled = if (!isTRUE(is_validated())) "disabled" else NULL))
+  output$run_control <- renderUI(actionButton("run_analysis", "Run selected analyses", class = "btn-primary", disabled = !isTRUE(is_validated())))
+  # Uploads and setup changes occur outside Review. Keep these controls current
+  # while its tab is hidden so returning cannot restore a cached enabled Run.
+  outputOptions(output, "validate_control", suspendWhenHidden = FALSE)
+  outputOptions(output, "run_control", suspendWhenHidden = FALSE)
   observeEvent(input$validate_setup, {
     clear_result(); rv$validated <- NULL
     if (length(rv$pending_uploads)) { rv$state <- "uploading"; rv$message <- "Wait for the selected file to finish uploading or remove that feed to cancel."; return() }
