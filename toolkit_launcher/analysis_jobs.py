@@ -17,13 +17,14 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from toolkit_launcher.runtime import ROOT, InputError, atomic_json, safe_path, timestamp
 
-MODULES = {"r_tlf", "sas_tlf", "sas_monitor", "interpretation"}
+MODULES = {"r_tlf", "sas_tlf", "sas_monitor", "interpretation", "vaccine"}
 BUILD_ID = re.compile(r"setup-[a-f0-9]{24}\Z")
 RUN_ID = re.compile(r"run-[a-f0-9]{32}\Z")
 SHA = re.compile(r"[a-f0-9]{64}\Z")
 RESULTS = ("analysis_report.html", "output_manifest.json", "qc.json", "execution_status.csv", "software_versions.csv")
 MAX_BUNDLE = 128 * 1024 * 1024
 ENGINE_FILES = ("toolkit_launcher/analysis_runner.R", "toolkit_launcher/analysis_monitor.R",
+                "toolkit_launcher/analysis_vaccine.R",
                 "toolkit_launcher/analysis_jobs.py", "assets/theme/tokens.css")
 
 
@@ -164,7 +165,7 @@ def verify_results(run_root, plan=None):
         profile = read_json(Path(plan["build_root"]) / "setup_profile.json")
         values = profile.get("values", {}) if isinstance(profile, dict) else {}
         module = plan["module_id"]
-        expected = values.get("outputs") if module in {"r_tlf", "sas_tlf"} else values.get("checks") if module == "sas_monitor" else ["interpretation"]
+        expected = values.get("outputs") if module in {"r_tlf", "sas_tlf", "vaccine"} else values.get("checks") if module == "sas_monitor" else ["interpretation"]
         actual = [item.get("id") for item in outputs]
         if (not isinstance(expected, list) or not expected or any(not isinstance(x, str) for x in expected)
                 or len(set(expected)) != len(expected) or len(actual) != len(expected) or set(actual) != set(expected)):

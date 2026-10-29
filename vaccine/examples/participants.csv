@@ -1,0 +1,13 @@
+USUBJID,ARM,IMMFL,SAFEFL
+VAX001,Vaccine,Y,Y
+VAX002,Vaccine,Y,Y
+VAX003,Vaccine,Y,Y
+VAX004,Vaccine,Y,Y
+VAX005,Vaccine,Y,Y
+VAX006,Vaccine,N,Y
+VAX007,Comparator,Y,Y
+VAX008,Comparator,Y,Y
+VAX009,Comparator,Y,Y
+VAX010,Comparator,Y,Y
+VAX011,Comparator,Y,Y
+VAX012,Comparator,Y,N
