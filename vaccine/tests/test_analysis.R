@@ -182,4 +182,29 @@ if(file.exists('vaccine/examples/example_settings.json')) {
  fixture<-vaccine_prepare(feeds,settings)
  for(id in settings$outputs) {out<-vaccine_output(id,fixture,settings);for(z in out$components)if(inherits(z$value,'ggplot'))ggplot2::ggplot_build(z$value);check(TRUE,paste('Rich fixture',id))}
 }
-cat(sprintf('PASS: %d vaccine numerical, boundary, missingness, metamorphic and output checks.\n',count))
+# Structural SAS export check only: no native SAS execution is claimed here.
+# Follow macro block nesting so an unrelated earlier guard cannot satisfy this check.
+sas_response_guarded <- function(text, marker) {
+ text<-gsub('/\\*.*?\\*/','',text,perl=TRUE)
+ positions<-gregexpr(marker,text,fixed=TRUE)[[1]]
+ if(length(positions)!=1L||positions[[1]]<1L)return(FALSE)
+ prefix<-substr(text,1L,positions[[1]]-1L)
+ pattern<-'(?is)%if\\s+[^;]*?%then\\s+%do\\s*;|%do\\s*;|%end\\s*;'
+ tokens<-regmatches(prefix,gregexpr(pattern,prefix,perl=TRUE))[[1]]
+ stack<-logical()
+ for(token in tokens) {
+  if(grepl('^%end',token,ignore.case=TRUE)) {
+   if(!length(stack))return(FALSE)
+   stack<-head(stack,-1L)
+  } else stack<-c(stack,grepl('^%if\\s+&_vax_response\\s*>\\s*0\\s+%then',token,ignore.case=TRUE,perl=TRUE))
+ }
+ any(stack)
+}
+sas<-paste(readLines('vaccine/reference.sas',warn=FALSE,encoding='UTF-8'),collapse='\n')
+classification_markers<-c("if response_rule='threshold' then do;","else if response_rule in ('fold_rise','conditional') then do;")
+table_markers<-c('data vax_response;','set _vax_pair_counts;','n_denominator=n_response_evaluable;n_event=n_responders;')
+check(all(vapply(classification_markers,function(m)sas_response_guarded(sas,m),logical(1))),'SAS response classification is guarded by selected response output')
+check(all(vapply(table_markers,function(m)sas_response_guarded(sas,m),logical(1))),'SAS response table and rate calculation are guarded by selected response output')
+unguarded_sas<-gsub('%if &_vax_response>0 %then %do;','%if 1=1 %then %do;',sas,fixed=TRUE)
+check(!any(vapply(c(classification_markers,table_markers),function(m)sas_response_guarded(unguarded_sas,m),logical(1))),'Structural SAS regression rejects removed selected-output guards')
+cat(sprintf('PASS: %d vaccine numerical, boundary, missingness, metamorphic, output and SAS structural checks.\n',count))

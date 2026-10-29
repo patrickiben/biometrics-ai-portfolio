@@ -17,11 +17,11 @@ class VaccineSetupTest(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.path = Path(self.temp.name)
-        self.values = json.loads((ROOT / "vaccine/examples/example_settings.json").read_text())
+        self.values = json.loads((ROOT / "vaccine/examples/example_settings.json").read_text(encoding="utf-8"))
         self.values.update(review_confirmed=True, visits_confirmed=True, diary_confirmed=True)
         self.inputs = {}
         for slot in vaccine.FEEDS:
-            self.write(slot, (ROOT / f"vaccine/examples/{slot}.csv").read_text())
+            self.write(slot, (ROOT / f"vaccine/examples/{slot}.csv").read_text(encoding="utf-8"))
 
     def write(self, slot, text):
         path = self.path / (slot + ".csv")
@@ -29,7 +29,7 @@ class VaccineSetupTest(unittest.TestCase):
         self.inputs[slot] = setup.csv_metadata(path, f"inputs/{slot}.csv")
 
     def edit(self, slot, fn):
-        rows = list(csv.DictReader(io.StringIO((self.path / (slot + ".csv")).read_text())))
+        rows = list(csv.DictReader(io.StringIO((self.path / (slot + ".csv")).read_text(encoding="utf-8"))))
         columns = list(rows[0])
         fn(rows)
         out = io.StringIO(newline="")
@@ -70,9 +70,9 @@ class VaccineSetupTest(unittest.TestCase):
                 self.assertTrue(self.report(**changes)["errors"])
 
     def test_custom_header_flag_and_qualifier_mappings(self):
-        text = (self.path / "participants.csv").read_text().replace("USUBJID", "Person").replace(",Y", ",Included").replace(",N", ",Excluded")
+        text = (self.path / "participants.csv").read_text(encoding="utf-8").replace("USUBJID", "Person").replace(",Y", ",Included").replace(",N", ",Excluded")
         self.write("participants", text)
-        self.write("titers", (self.path / "titers.csv").read_text().replace(",EXACT,", ",Measured,").replace(",BLQ,", ",Low,").replace(",ALQ,", ",High,").replace(",MISSING,", ",Unavailable,"))
+        self.write("titers", (self.path / "titers.csv").read_text(encoding="utf-8").replace(",EXACT,", ",Measured,").replace(",BLQ,", ",Low,").replace(",ALQ,", ",High,").replace(",MISSING,", ",Unavailable,"))
         report = self.report(yes_value="Included", no_value="Excluded", columns={"participants": {"USUBJID": "Person"}},
                              qualifier_exact="Measured", qualifier_blq="Low", qualifier_alq="High", qualifier_missing="Unavailable")
         self.assertFalse(report["errors"], report["errors"])
@@ -82,7 +82,7 @@ class VaccineSetupTest(unittest.TestCase):
         self.assertTrue(self.report(qualifier_exact="BLQ")["errors"])
 
     def test_each_analytic_key_rejects_duplicates(self):
-        original = {k: (self.path / (k + ".csv")).read_text() for k in self.inputs}
+        original = {k: (self.path / (k + ".csv")).read_text(encoding="utf-8") for k in self.inputs}
         for slot in vaccine.FEEDS:
             with self.subTest(slot=slot):
                 self.edit(slot, lambda rows: rows.append(copy.deepcopy(rows[0])))
@@ -96,7 +96,7 @@ class VaccineSetupTest(unittest.TestCase):
         self.assertTrue(any("administered-dose roster" in e["message"] for e in self.report()["errors"]))
 
     def test_units_and_censoring_are_not_silently_combined(self):
-        original = (self.path / "titers.csv").read_text()
+        original = (self.path / "titers.csv").read_text(encoding="utf-8")
         for change in ({"UNIT": "different unit"}, {"AVAL": "0"}, {"AVAL": "NaN"}, {"AVAL": "Inf"},
                        {"LLOQ": "900", "ULOQ": "10"}, {"AVAL": "", "QUALIFIER": "EXACT"},
                        {"QUALIFIER": "BLQ", "LLOQ": ""}, {"QUALIFIER": "ALQ", "ULOQ": ""},
@@ -116,7 +116,7 @@ class VaccineSetupTest(unittest.TestCase):
         self.assertEqual(len(report["data"]["participants"]), 12)
 
     def test_grade_semantics_and_fractional_days_are_validated(self):
-        original = (self.path / "diary.csv").read_text()
+        original = (self.path / "diary.csv").read_text(encoding="utf-8")
         for change in ({"GRADE": "-1"}, {"GRADE": "4"}, {"GRADE": "1.5"}, {"DAY": "1.1"}):
             with self.subTest(change=change):
                 self.edit("diary", lambda rows: rows[0].update(change))
@@ -169,7 +169,7 @@ class VaccineSetupTest(unittest.TestCase):
         self.assertEqual(config["followup_visits"], ["Day 28", "Day 56"])
         self.assertEqual(set(config["outputs"]), set(vaccine.OUTPUTS))
         self.assertEqual(set(k for k in built if k.startswith("inputs/")), {f"inputs/{s}.csv" for s in vaccine.FEEDS})
-        self.assertEqual(built["R/vaccine_analysis.R"], (ROOT / "vaccine/analysis.R").read_text())
+        self.assertEqual(built["R/vaccine_analysis.R"], (ROOT / "vaccine/analysis.R").read_text(encoding="utf-8"))
         self.assertNotIn("](index.html)", built["README.md"])
         self.assertIn("](https://patrickiben.github.io/biometrics-ai-portfolio/vaccine/index.html)", built["README.md"])
         self.assertIn("](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html)", built["README.md"])
