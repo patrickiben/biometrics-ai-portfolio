@@ -177,6 +177,9 @@ for file in root.rglob('*.html'):
   const file=path.join(out,'inputs','oversized.csv'),fd=fs.openSync(file,'w');fs.ftruncateSync(fd,16*1024*1024+1);fs.closeSync(fd);await nav('inputs');await fileInput('participants').setInputFiles(file);await settle();await expectState('invalid');assert.match(await frame.locator('#analysis_state').innerText(),/16 MiB|16 MB|maximum|too large/i);assert.match(await frame.locator('#input_status_participants').innerText(),/No data|missing/i);await noStaleResults();await nav('review');assert.equal(await unavailable('run_analysis'),true);
   await nav('inputs');await upload('participants',files.participants);await setValue('map_participants_USUBJID','Participant ID');await setValue('map_participants_ARM','Treatment group');await stableSettings();await confirmAndRun();
  });
+ await scenario('Immediate concurrent file selections each complete once and produce the current results',async()=>{
+  await nav('inputs');await Promise.all([upload('participants',files.participants),upload('titers',files.titers)]);await noStaleResults();await confirmAndRun();const settings={...cfg,react_denominator:'observed'};const result=await collectTables('concurrent',nativeExpected('concurrent',data,settings));knownAnswers(result.tables,'observed');
+ });
  await scenario('Invalid column mappings, units, duplicates, numeric inputs and orphan doses block analysis',async()=>{
   await nav('inputs');await setValue('map_participants_USUBJID','Treatment group');await rejectSetup(/duplicat|mapping|same source|distinct source/i);await nav('inputs');await setValue('map_participants_USUBJID','Participant ID');
   const challenges=[
