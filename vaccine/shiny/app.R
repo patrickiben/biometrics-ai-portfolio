@@ -127,6 +127,8 @@ server <- function(input, output, session) {
   active_upload_id <- function(slot) paste0("file_", slot, "_", isolate(upload_versions[[slot]]()))
   rotate_upload <- function(slot) upload_versions[[slot]](isolate(upload_versions[[slot]]()) + 1L)
   completed_uploads <- new.env(parent = emptyenv())
+  received_uploads <- new.env(parent = emptyenv())
+  forget_upload <- function(id) if (exists(id, envir = received_uploads, inherits = FALSE)) rm(list = id, envir = received_uploads)
   epoch <- function() as.integer(isolate(input$form_epoch) %or% 0L)
   clear_result <- function() {
     old <- isolate(rv$result)
@@ -254,18 +256,27 @@ server <- function(input, output, session) {
     rv$upload_errors[[slot]] <- paste(VAX_FEED_LABELS[[slot]], "— the file transfer did not complete. Choose the CSV again or Reset.")
     rotate_upload(slot); invalidate(TRUE)
   }, priority = 250)
-  observeEvent(reactiveValuesToList(input), {
+  observeEvent(list(reactiveValuesToList(input), lapply(upload_versions, function(version) version())), {
     values <- reactiveValuesToList(input)
-    ids <- grep("^file_(participants|titers|doses|diary)_[0-9]+$", names(values), value = TRUE)
+    ids <- unique(c(grep("^file_(participants|titers|doses|diary)_[0-9]+$", names(values), value = TRUE), ls(received_uploads)))
     for (id in ids) {
-      upload <- values[[id]]
+      upload <- if (exists(id, envir = received_uploads, inherits = FALSE)) get(id, envir = received_uploads) else values[[id]]
       if (exists(id, envir = completed_uploads, inherits = FALSE) || !is.data.frame(upload) || nrow(upload) != 1L || !"datapath" %in% names(upload)) next
-      assign(id, TRUE, envir = completed_uploads)
       slot <- sub("^file_(.*)_[0-9]+$", "\\1", id)
       pending <- rv$pending_uploads[[slot]]
-      if (!identical(id, active_upload_id(slot)) || is.null(pending) || !identical(pending$id, id)) {
-        unlink(upload$datapath[[1]]); next
+      if (!identical(id, active_upload_id(slot))) {
+        assign(id, TRUE, envir = completed_uploads)
+        forget_upload(id); unlink(upload$datapath[[1]]); next
       }
+      # webR can deliver the completed file before the selection event. Keep a
+      # current-generation completion until that event supplies matching metadata;
+      # Reset/example rotate the generation and still discard an old completion.
+      # A delayed initial NULL from the new file binding can also follow its
+      # completed value, so retain the metadata until selection is reconciled.
+      if (is.null(pending)) { assign(id, upload, envir = received_uploads); next }
+      assign(id, TRUE, envir = completed_uploads)
+      forget_upload(id)
+      if (!identical(pending$id, id)) { unlink(upload$datapath[[1]]); next }
       if (!identical(as.character(upload$name[[1]]), as.character(pending$name)) || !isTRUE(as.numeric(upload$size[[1]]) == pending$size)) {
         unlink(upload$datapath[[1]]); rv$pending_uploads[[slot]] <- NULL
         rv$upload_errors[[slot]] <- paste(VAX_FEED_LABELS[[slot]], "— the completed transfer did not match the selected file. Choose it again.")
