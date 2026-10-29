@@ -84,9 +84,13 @@ async function setup(settings,files,mapping={}){
  await nav('diary');for(const key of ['dose_labels','symptoms','day_start','day_end','max_grade','react_denominator'])await setValue(key,settings[key]);
 }
 async function confirmAndRun(count=6,timeout=120000){
- await nav('review');await stableSettings();for(const id of ['visits_confirmed','diary_confirmed','review_confirmed'])await setValue(id,true);await stableSettings();for(const id of ['visits_confirmed','diary_confirmed','review_confirmed'])assert.equal(await frame.locator('#'+id).isChecked(),true,'Review remained checked after stable settings: '+id);
+ const previousRunId=report.runs?.at(-1)?.run_id||null;
+ await nav('review');await stableSettings();const selected=await frame.locator('#outputs input:checked').evaluateAll(nodes=>nodes.map(node=>node.value).sort());assert.equal(selected.length,count,'Requested output selection');for(const id of ['visits_confirmed','diary_confirmed','review_confirmed'])await setValue(id,true);await stableSettings();for(const id of ['visits_confirmed','diary_confirmed','review_confirmed'])assert.equal(await frame.locator('#'+id).isChecked(),true,'Review remained checked after stable settings: '+id);
  await frame.locator('#validate_setup').click();await settle();await frame.waitForFunction(()=>['ready','invalid','error'].includes(document.querySelector('#analysis_state')?.dataset.state),null,{timeout:120000});assert.equal(await state(),'ready',await frame.locator('#validation_messages').innerText());await frame.locator('#run_analysis').click();await expectState('succeeded',timeout);await nav('results');
- assert.equal(await frame.locator('#result_summary').getAttribute('data-output-count'),String(count));assert.equal(await frame.locator('.shiny-output-error:not(.shiny-output-error-validation)').count(),0);
+ // Nested renderUI outputs arrive after the server's success state. Wait for this
+ // run's summary and choices; a cached previous summary must never satisfy QC.
+ await frame.waitForFunction(({count,previousRunId,selected})=>{const summary=document.querySelector('#result_summary'),choices=[...document.querySelectorAll('#result_output option')].map(node=>node.value).sort();return document.querySelector('#analysis_state')?.dataset.state==='succeeded'&&summary?.dataset.runId&&summary.dataset.runId!==previousRunId&&summary.dataset.outputCount===String(count)&&!summary.closest('.recalculating')&&JSON.stringify(choices)===JSON.stringify(selected);},{count,previousRunId,selected},{timeout:30000});
+ const runId=await frame.locator('#result_summary').getAttribute('data-run-id');assert.notEqual(runId,previousRunId,'A new result set was rendered');assert.equal(await frame.locator('#result_summary').getAttribute('data-output-count'),String(count));assert.equal(await frame.locator('.shiny-output-error:not(.shiny-output-error-validation)').count(),0);report.runs=report.runs||[];report.runs.push({run_id:runId,outputs:selected});
 }
 async function collectTables(name,expected){
  const options=await frame.locator('#download_choice option').evaluateAll(nodes=>nodes.map(n=>({value:n.value,label:n.textContent})));const tables={};
