@@ -117,12 +117,13 @@ for (a in APPS) {
   if (!length(src) || !all(file.copy(src, file.path(stage, relative), copy.date = TRUE))) fail(a$name, ": could not stage ", a$source)
   stage_app_shared(a, files, stage)
   if (!file.copy(HELPER, file.path(stage, "portfolio_app.R"))) fail(a$name, ": could not add ", HELPER)
-  config <- jsonlite::toJSON(list(app = a$name, relPath = "../../", download_mb = a$first_load$download_mb,
-                                  timeout_s = LOAD_TIMEOUT_S, timeout_started_s = STARTED_TIMEOUT_S,
-                                  compute_timeout_s = COMPUTE_TIMEOUT_S, busy_timeout_s = BUSY_TIMEOUT_S),
-                             auto_unbox = TRUE)
+  config <- list(app = a$name, relPath = "../../", download_mb = a$first_load$download_mb,
+                 timeout_s = LOAD_TIMEOUT_S, timeout_started_s = STARTED_TIMEOUT_S,
+                 compute_timeout_s = COMPUTE_TIMEOUT_S, busy_timeout_s = BUSY_TIMEOUT_S)
+  config$status <- a$status   # the top bar's status, for a monitoring app; absent otherwise
+  config <- jsonlite::toJSON(config, auto_unbox = TRUE)
   params <- c(CHROME, list(title = a$title, summary = a$summary, try = a$try, links = a$links,
-                 screenshot = a$screenshot, source = a$source,
+                 screenshot = a$screenshot, source = a$source, status = a$status,
                  data_scope = if (is.null(a$data_scope)) "Synthetic data" else a$data_scope,
                  data_note = if (is.null(a$data_note)) "Every study, participant, site and number in the example is invented for this toolkit." else a$data_note,
                  usage_note = if (is.null(a$usage_note)) "No installation is needed for this browser app. The source is also available in the toolkit." else a$usage_note,
@@ -169,6 +170,7 @@ for (a in APPS) {
   need(grepl('id="launch-config"', page, fixed = TRUE) && grepl("../../apps/_shared/launch.js", page, fixed = TRUE),
        paste0(a$name, ": the page is not the launch page"))
   need(grepl(a$title, page, fixed = TRUE), paste0(a$name, ": the launch page lacks its title"))
+  if (!is.null(a$status)) need(grepl('data-mc-status="', page, fixed = TRUE), paste0(a$name, ": the launch page does not name its status"))
   need(!grepl("{{", page, fixed = TRUE), paste0(a$name, ": the launch page has an unfilled template field"))
   need(!dir.exists(file.path(d, "shinylive")), paste0(a$name, ": has its own copy of the assets"))
   for (l in a$links) need(file.exists(file.path(d, sub("[#?].*$", "", l$href))),

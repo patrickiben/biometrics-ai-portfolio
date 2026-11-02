@@ -20,6 +20,8 @@
 //     another window size), ends with every expectation met (an element visible, its exact text,
 //     an attribute or a computed style, inside the app's viewport, or focused) and leaves no
 //     output anywhere in an error;
+//   - the top bar's status (smoke.status) never reads the site's default line above a monitoring app,
+//     and once the app is ready reads what the app computed, as do the static pages that quote it;
 //   - after all of that the launch page reports no problem and no failed panel, and R is idle;
 //   - nothing the visit asked the site for answered 404 (webR, for one, falls back to downloading a
 //     missing package from elsewhere, so an app could still start without a file it should ship),
@@ -410,6 +412,12 @@ async function checkApp(spec) {
     if (!intro.fcp || intro.fcp > MAX_FCP) fail(`launch page first contentful paint ${intro.fcp ? Math.round(intro.fcp) + " ms" : "missing"} (limit ${MAX_FCP} ms)`);
     if (!intro.status.trim()) fail("the status line is empty");
     if (!intro.bar || intro.current !== "Operations") fail(`the launch page lacks the site's top bar with Operations current and the theme toggle (current: "${intro.current}")`);
+    const barOf = (p) => p.evaluate(() => {
+      const s = document.querySelector("header.top .mc-status");
+      return s ? { text: s.textContent.trim(), tone: s.className.replace("mc-status", "").trim() } : null;
+    });
+    const bar0 = await barOf(page);
+    if (smoke.status && (!bar0 || /nominal/i.test(bar0.text))) fail(`the top bar reads ${JSON.stringify(bar0)} while the app starts`);
     if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${spec.name}-launch.png`) });
 
     // the app: ready, with content, without errors
@@ -451,6 +459,19 @@ async function checkApp(spec) {
         const o = (r.outputs || []).find((x) => x.id === id);
         if (!o) fail(`expected value for ${id}, which is not in smoke.outputs`);
         else if (o.detail.trim() !== String(want)) fail(`output ${id} reads "${o.detail}", expected "${want}"`);
+      }
+      if (smoke.status) {
+        const same = (b) => b && b.text === smoke.status.text && b.tone === smoke.status.tone;
+        const bar = await barOf(page);
+        if (!same(bar)) fail(`the top bar reads ${JSON.stringify(bar)}, expected "${smoke.status.text}" (${smoke.status.tone})`);
+        for (const p of smoke.status.pages || []) {
+          const other = await browser.newPage();
+          await other.goto(`${BASE}/${p}`, { waitUntil: "load", timeout: 30000 });
+          const quoted = await barOf(other);
+          await other.close();
+          if (!same(quoted)) fail(`${p}: the top bar reads ${JSON.stringify(quoted)}, but the app computes "${smoke.status.text}" (${smoke.status.tone})`);
+        }
+        await page.bringToFront();
       }
       if (SHOTS) {
         await page.evaluate(() => document.getElementById("app").scrollIntoView());

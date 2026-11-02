@@ -16,8 +16,10 @@
     {"t": "snapshot", "label": "Read-only snapshot", "href": "../../uat_irt/quarto/uat-dashboard.html"}
   ],
   "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "status": {"text": "{#gate .uat-verdict-title}", "tones": [["NOT ready", "RED", "Go-live \u00b7 NOT ready"], ["READY", "GREEN", "Go-live \u00b7 READY"]]},
   "smoke": {
     "timeout_s": 150,
+    "status": {"text": "Go-live \u00b7 NOT ready", "tone": "RED"},
     "outputs": ["changes", "v_total", "v_pass", "v_fail", "v_def", "v_cov",
                 "v_total_note", "v_pass_note", "v_fail_note", "v_def_note", "v_cov_note",
                 "tests", "gate", "detail", "plot", "defects"],

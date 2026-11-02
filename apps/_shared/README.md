@@ -50,7 +50,10 @@ step usually stalls, and if one of the app's files then gets no answer within 20
 that file); or one update keeps R busy for 45 seconds. Each problem has a Reload button (Keep
 waiting comes first while the start may still finish), links to the guide and the read-only
 snapshot, and technical details for a bug report; the clock stops at a hard failure.
-`window.launchStatus` and `data-state` on `#app` expose the same state to tests. Full screen covers
+`window.launchStatus` and `data-state` on `#app` expose the same state to tests. The top bar's status
+readout states what the app computed, not the site's default line: `launch.js` reads it from the
+app's frame ("Status pending" until then, "Status unavailable" once the app has stopped), as
+`"status"` in `launch.json` says. Full screen covers
 the page: what is behind the app leaves the tab order, and a copy of the top bar's theme toggle sits
 in the app's bar. The app follows the page's theme: its own
 page reads the saved `bp-theme` choice when it loads, and `launch.js` sets `data-bs-theme` on it
@@ -111,9 +114,14 @@ server <- function(input, output, session) {
 `screenshot` (`null`, or `src`, an optional light-theme twin `src_light`, `alt`, `width`, `height`,
 `caption`), `links` (`t`, the kind of link the chip's glyph shows: `open`, `guide` or `snapshot`;
 `label`; and `href` relative to `apps/<name>/`), `first_load` (`download_mb`, `first_s`,
-`revisit_s`), and `smoke`:
+`revisit_s`), `status` (optional, for a monitoring app: `text`, the top bar's readout, where
+`{selector}` takes the text of that output in the app's frame, and `tones`, lists of a regular
+expression, a color (`RED`, `AMBER` or `GREEN`) and optionally a shorter text, the first match
+deciding; the bar holds about 21 characters at 1100 px, the narrowest width that shows it), and `smoke`:
 `timeout_s`, `outputs` (ids that must have content on first load), `expect` (exact text for some
-of them), `fit` (optional: a CSS selector and a window width at which that element must fit its box
+of them), `status` (`text` and `tone` the top bar must read once the app is ready, and `pages`, static
+pages that quote the same status), `fit` (optional: a CSS selector and a window width at which that
+element must fit its box
 without sideways scrolling, for example a table at phone width), `tabs` (a tab label and the
 outputs it must fill once clicked; `"theme": true` repeats the theme check on that tab, for its
 plots) and, optionally, `interactions`: named step lists done with real mouse and keyboard events

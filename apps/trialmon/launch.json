@@ -17,8 +17,10 @@
     {"t": "guide", "label": "Guide", "href": "../../sasr_monitoring_wiki/trialmon_quarto/trialmon-guide.html"}
   ],
   "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "status": {"text": "Study CP-101 \u00b7 {#v_overall}", "tones": [["RED$", "RED"], ["AMBER$", "AMBER"], ["GREEN$", "GREEN"]]},
   "smoke": {
     "timeout_s": 150,
+    "status": {"text": "Study CP-101 \u00b7 RED", "tone": "RED", "pages": ["sasr_monitoring_wiki/index.html"]},
     "outputs": ["v_overall", "v_part", "v_study", "v_red", "v_amber", "v_watch", "v_n", "worklist", "packet", "window_note"],
     "expect": {"v_overall": "RED", "v_part": "RED", "v_study": "AMBER", "v_red": "5", "v_amber": "7", "v_watch": "2", "v_n": "18"},
     "tabs": [

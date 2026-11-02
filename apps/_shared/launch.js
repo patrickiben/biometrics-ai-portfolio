@@ -21,6 +21,8 @@
    saved as bp-theme) or the system setting. The app's page reads the same saved choice when it
    loads (bp_theme_head() in portfolio_app.R) and hears later changes; this page also sets the
    theme on the app's page directly, so the two never disagree.
+   The top bar's status readout (assets/ui.js) states what the app computed, read from the same frame;
+   "status" in launch.json says which outputs. An app without one keeps the site's default line.
    State for tests and bug reports: window.launchStatus, and data-state on #app. */
 (function () {
   'use strict';
@@ -141,6 +143,29 @@
     barReload.classList.toggle('btn--primary', t !== 'warn');   // while it may still finish, waiting comes first
     app.setAttribute('data-state', L.stage);
     if (L.problem) app.setAttribute('data-problem', L.problem); else app.removeAttribute('data-problem');
+    renderBarStatus(t);
+  }
+  // the app's own status in the site's top bar: {selector} in cfg.status.text takes that output's text.
+  // Pending until the app has computed it; unavailable once the app has stopped or that output failed.
+  var barStatus = cfg.status ? document.querySelector('.top .mc-status') : null;
+  function appStatus() {
+    try {
+      var doc = attachedTo.document, whole = true;
+      var text = cfg.status.text.replace(/\{([^}]+)\}/g, function (m, sel) {
+        var e = doc.querySelector(sel), v = e && !e.closest('.shiny-output-error') ? (e.textContent || '').trim() : '';
+        if (!v) whole = false;
+        return v;
+      });
+      return whole ? text : null;
+    } catch (e) { return null; }   // the app's page is not readable yet
+  }
+  function renderBarStatus(t) {
+    if (!barStatus) return;
+    var text = t === 'error' ? null : appStatus(), level = 'pending';
+    if (text) cfg.status.tones.some(function (x) { if (!new RegExp(x[0]).test(text)) return false; level = x[1]; text = x[2] || text; return true; });
+    else text = t === 'error' || L.ready ? 'Status unavailable' : 'Status pending';
+    if (barStatus.lastChild.nodeValue !== text) barStatus.lastChild.nodeValue = text;
+    barStatus.className = 'mc-status ' + level;
   }
   function setStage(name) {
     if (ORDER.indexOf(name) <= ORDER.indexOf(L.stage) && name !== 'page') { render(); return; }

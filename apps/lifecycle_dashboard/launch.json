@@ -15,8 +15,10 @@
     {"t": "snapshot", "label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
   ],
   "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
+  "status": {"text": "{#k_risk} at risk, {#k_watch} on watch", "tones": [["^0 at risk, 0 on", "GREEN"], ["^0 at risk", "AMBER"], ["at risk", "RED"]]},
   "smoke": {
     "timeout_s": 150,
+    "status": {"text": "1 at risk, 3 on watch", "tone": "RED"},
     "outputs": ["k_n", "k_n_sub", "k_risk", "k_risk_sub", "k_watch", "k_watch_sub", "k_q", "k_q_sub", "k_del", "k_del_sub",
                 "k_dbl", "k_dbl_sub", "heat", "signals_hdr", "signals", "detail_hdr", "breakdown", "milestones", "funnel",
                 "deliv", "trend", "trend_note", "inputs", "whatif_state"],

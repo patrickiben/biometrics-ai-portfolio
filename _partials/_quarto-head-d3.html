@@ -43,10 +43,14 @@
     else if (b.hasAttribute("data-theme-reset")) apply(null, true);
     else menu(b, b.getAttribute("aria-expanded") !== "true");
   });
-  // the site's command-bar readout (as site.js adds on Home and Operations): status and a UTC clock
+  // the site's command-bar readout (as site.js adds on Home and Operations): status and a UTC clock.
+  // A monitoring page names its real status on <body> (data-mc-status, data-mc-tone), so it never gets the default line.
   var bar = d.querySelector(".top > .wrap"), tog = bar && bar.querySelector(".theme-toggle");
   if (bar && tog && !bar.querySelector(".mc-status")) {
-    var st = d.createElement("span"); st.className = "mc-status"; st.innerHTML = '<span class="dot"></span> All sectors nominal';
+    var own = d.body.getAttribute("data-mc-status");
+    var st = d.createElement("span"); st.className = "mc-status"; st.innerHTML = '<span class="dot"></span>';
+    st.appendChild(d.createTextNode(own || "All sectors nominal"));
+    if (own) { st.classList.add(d.body.getAttribute("data-mc-tone") || "pending"); st.setAttribute("role", "status"); }
     var ck = d.createElement("span"); ck.className = "mc-clock";
     bar.insertBefore(st, tog); bar.insertBefore(ck, tog);
     var pad = function (n) { return String(n).padStart(2, "0"); };
