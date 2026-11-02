@@ -201,6 +201,9 @@ html:not(.js) .theme-toggle { display: none; }
 .top .mc-status { display: inline-flex; align-items: center; gap: 7px; padding-left: 12px; border-left: 1px solid var(--line-2);
   font: 400 10.5px/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--green); white-space: nowrap; }
 .top .mc-status .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; animation: mc-pulse 2.4s infinite; }
+.top .mc-status.RED { color: var(--red); }
+.top .mc-status.AMBER { color: var(--amber); }
+.top .mc-status.pending { color: var(--muted); }
 .top .mc-clock { font: 400 10.5px/1 var(--mono); letter-spacing: .08em; color: var(--muted); white-space: nowrap; }
 @keyframes mc-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
 @media (max-width: 1099.98px) { .top .mc-status, .top .mc-clock { display: none; } }
@@ -749,6 +752,11 @@ main .stage > .kicker, main section > .kicker { color: var(--amber); }
     fetch("teeth/results/summary.json").then(function(r){return r.ok?r.json():null;}).then(function(j){if(j)teeth(j);}).catch(function(){});
   }
   function render(L){
+    // the top bar states this ledger's own count; assets/ui.js reads the attributes when it runs below
+    var auto=L.total-(L.manual||0)-(L.unsigned||0), bar=document.querySelector(".top .mc-status"), line=L.green+" of "+auto+" gates green";
+    var tone=L.green===auto?"GREEN":L.gates.some(function(g){return !/^(green|manual|stale|not signed)$/.test(g.status);})?"RED":"AMBER";
+    document.body.setAttribute("data-mc-status",line); document.body.setAttribute("data-mc-tone",tone);
+    if(bar){bar.className="mc-status "+tone;bar.lastChild.nodeValue=line;}
     document.getElementById("meta").innerHTML =
       "Generated "+L.generated+" · "+L.r_version+" · <b>"+L.green+" of "+(L.total-(L.manual||0)-(L.unsigned||0))+" automated gates green</b>"+(L.manual?" · "+L.manual+" manual record":"")+(L.unsigned?" · "+L.unsigned+" not signed":"")+" · human sign-off pending";
     document.getElementById("gates").innerHTML = L.gates.map(function(g){
@@ -816,10 +824,14 @@ main .stage > .kicker, main section > .kicker { color: var(--amber); }
     else if (b.hasAttribute("data-theme-reset")) apply(null, true);
     else menu(b, b.getAttribute("aria-expanded") !== "true");
   });
-  // the site's command-bar readout (as site.js adds on Home and Operations): status and a UTC clock
+  // the site's command-bar readout (as site.js adds on Home and Operations): status and a UTC clock.
+  // A monitoring page names its real status on <body> (data-mc-status, data-mc-tone), so it never gets the default line.
   var bar = d.querySelector(".top > .wrap"), tog = bar && bar.querySelector(".theme-toggle");
   if (bar && tog && !bar.querySelector(".mc-status")) {
-    var st = d.createElement("span"); st.className = "mc-status"; st.innerHTML = '<span class="dot"></span> All sectors nominal';
+    var own = d.body.getAttribute("data-mc-status");
+    var st = d.createElement("span"); st.className = "mc-status"; st.innerHTML = '<span class="dot"></span>';
+    st.appendChild(d.createTextNode(own || "All sectors nominal"));
+    if (own) { st.classList.add(d.body.getAttribute("data-mc-tone") || "pending"); st.setAttribute("role", "status"); }
     var ck = d.createElement("span"); ck.className = "mc-clock";
     bar.insertBefore(st, tog); bar.insertBefore(ck, tog);
     var pad = function (n) { return String(n).padStart(2, "0"); };
