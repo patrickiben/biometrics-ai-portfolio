@@ -42,8 +42,8 @@ The R launcher finds the complete checkout from another working directory. Packa
 - **ADaM-based TLF libraries:** 221 Table/Listing/Figure programs **each** in SAS and R
   (pharmaverse: `dplyr` + `rtables` + `ggplot2` + `emmeans`), across every early-phase design
   (parallel, crossover, single/fixed-sequence, SAD, MAD). Geometric PK on the log scale, distinct-participant
-  counts, period denominators. The SAS programs have not been executed (no SAS license); the R programs
-  parse but have not been run on data.
+  counts, period denominators. The SAS programs have not been executed (no SAS license); all 221 R programs
+  execute on synthetic fixtures, as a software check rather than validation of any study.
   → [`sas_tlf_pseudocode/`](sas_tlf_pseudocode/index.html) · [`r_tlf_pseudocode/`](r_tlf_pseudocode/index.html)
 - **Worked bioequivalence study:** one 2x2 crossover taken from PowerTOST sample size and a blockrand schedule
   through an ICH E9(R1) estimand and SAP excerpt, admiral ADaM with a Pinnacle 21-layout specification and XPT
