@@ -52,8 +52,10 @@ waiting comes first while the start may still finish), links to the guide and th
 snapshot, and technical details for a bug report; the clock stops at a hard failure.
 `window.launchStatus` and `data-state` on `#app` expose the same state to tests. The top bar's status
 readout states what the app computed, not the site's default line: `launch.js` reads it from the
-app's frame ("Status pending" until then, "Status unavailable" once the app has stopped), as
-`"status"` in `launch.json` says. Full screen covers
+app's frame, as `"status"` in `launch.json` says. It reads "Status pending" until the app has
+computed it, and again once R has spent 2 s updating it; "Status unavailable" once the app has
+stopped, or when that output failed, is empty or shows only a message. While a what-if is in effect
+the bar keeps the status of the data as loaded, because a what-if is not the study's status. Full screen covers
 the page: what is behind the app leaves the tab order, and a copy of the top bar's theme toggle sits
 in the app's bar. The app follows the page's theme: its own
 page reads the saved `bp-theme` choice when it loads, and `launch.js` sets `data-bs-theme` on it
@@ -115,12 +117,15 @@ server <- function(input, output, session) {
 `caption`), `links` (`t`, the kind of link the chip's glyph shows: `open`, `guide` or `snapshot`;
 `label`; and `href` relative to `apps/<name>/`), `first_load` (`download_mb`, `first_s`,
 `revisit_s`), `status` (optional, for a monitoring app: `text`, the top bar's readout, where
-`{selector}` takes the text of that output in the app's frame, and `tones`, lists of a regular
-expression, a color (`RED`, `AMBER` or `GREEN`) and optionally a shorter text, the first match
-deciding; the bar holds about 21 characters at 1100 px, the narrowest width that shows it), and `smoke`:
+`{selector}` takes the text of that output in the app's frame; `whatif`, optionally, a selector that
+matches in the app's page only while a what-if is in effect; and `tones`, lists of a regular
+expression, a color (`RED`, `AMBER`, `watch` or `GREEN`) and optionally a shorter text, the first match
+deciding, with text that matches none shown as `AMBER`; the bar holds about 21 characters at 1100 px,
+the narrowest width that shows it), and `smoke`:
 `timeout_s`, `outputs` (ids that must have content on first load), `expect` (exact text for some
-of them), `status` (`text` and `tone` the top bar must read once the app is ready, and `pages`, static
-pages that quote the same status), `fit` (optional: a CSS selector and a window width at which that
+of them), `status` (`text` and `tone` the top bar must read once the app is ready, again after the
+theme and tab checks and after a reload, and `pages`, static pages that quote the same status; while
+the app starts it must read "Status pending"), `fit` (optional: a CSS selector and a window width at which that
 element must fit its box
 without sideways scrolling, for example a table at phone width), `tabs` (a tab label and the
 outputs it must fill once clicked; `"theme": true` repeats the theme check on that tab, for its
@@ -138,15 +143,18 @@ in the app, in order, on the same page, each with expectations, for example the 
            {"type": "Open"}, {"key": "Enter"}]}
 ```
 
-Steps are `click`, `dblclick`, `focus` (CSS selectors in the app's page), `key`, `type` and `wait`
-(ms); a click, a key and a wait are each followed by waiting for R to finish what they started.
+Steps are `click`, `dblclick`, `focus` (CSS selectors in the app's page), `key` (with `repeat`,
+optionally, to press it that many times), `type` and `wait` (ms); a click, a key and a wait are
+each followed by waiting for R to finish what they started.
 Expectations are `visible`, `text` (a selector and its exact text), `attr` (a selector, an
 attribute and its exact value), `style` (a selector, a computed style property and a regular
 expression, for example a focus ring), `inViewport` and `focused` (the focused element matches the
-selector). `viewport` (optional) sets the window size for that interaction only; `after` cleans up.
+selector). `bar` (optional: `text` and `tone`) is what the top bar must read once the steps are done.
+`viewport` (optional) sets the window size for that interaction only; `after` cleans up.
 The lifecycle monitor's interactions tab onto its what-if sliders (no value may change; the focused
-track is a named slider with its value and a ring on the handle) and then move one with an arrow
-key; TRIALMON's moves along its tab strip with an arrow key and expects a 2 px focus outline.
+track is a named slider with its value and a ring on the handle), move one with an arrow key, and
+then move CP-108's to 80%, which clears every at-risk study while the top bar keeps "1 at risk, 3 on
+watch"; TRIALMON's moves along its tab strip with an arrow key and expects a 2 px focus outline.
 
 ## The smoke test
 
