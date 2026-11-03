@@ -12,18 +12,40 @@ const report=[];
 try{
 for(const app of selection.split(',')){
  const folder=path.join(evidence,app);fs.mkdirSync(folder,{recursive:true});const browser=await puppeteer.launch({executablePath:process.env.CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true,args:['--no-sandbox','--disable-dev-shm-usage']});
+ let page,frame;
  try{
-  const page=await browser.newPage();await page.setViewport({width:1360,height:1000});const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+  page=await browser.newPage();await page.setViewport({width:1360,height:1000});const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   const cdp=await page.createCDPSession();await cdp.send('Page.setDownloadBehavior',{behavior:'allow',downloadPath:folder});
   await page.goto(`${base}/apps/${app}/`);await page.waitForFunction(()=>window.launchStatus?.ready||window.launchStatus?.problem,{timeout:150000});const launch=await page.evaluate(()=>window.launchStatus);assert.equal(launch.problem,null,JSON.stringify(launch.events));
-  const frame=page.frames().find(f=>/app_/.test(f.url()));assert(frame);await frame.waitForSelector('#bw_status .bw-status[data-active="false"]');assert(await frame.$eval('#bw_export',e=>e.disabled));
+  frame=page.frames().find(f=>/app_/.test(f.url()));assert(frame);await frame.waitForSelector('#bw_status .bw-status[data-active="false"]');assert(await frame.$eval('#bw_export',e=>e.disabled));
   assert(await frame.evaluate(()=>[...document.body.children].filter(e=>e.id!=='bw_workspace'&&!['SCRIPT','STYLE','LINK'].includes(e.tagName)).every(e=>getComputedStyle(e).display==='none')));
   const top=await page.$eval('.top',e=>e.textContent);assert(!/Status pending.*GREEN/.test(top));await page.screenshot({path:path.join(folder,'blank.png'),fullPage:true});
   async function ready(){await frame.waitForFunction(()=>document.querySelector('#bw_status .bw-status')?.dataset.active==='true'&&document.body.dataset.bwState==='ready'&&!document.documentElement.classList.contains('shiny-busy'),{timeout:45000});await wait(400);}
   let downloads=0;
   async function download(){const before=new Set(fs.readdirSync(folder));await frame.click('#bw_export');let candidate;for(let i=0;i<200;i++){candidate=fs.readdirSync(folder).find(n=>!before.has(n)&&n.endsWith('.zip'));if(candidate){try{const data=fs.readFileSync(path.join(folder,candidate));if(data.length>=22&&data.readUInt32LE(data.length-22)===0x06054b50)break;}catch{}candidate=undefined;}await wait(100);}assert(candidate,'complete workspace download');const content=fs.readFileSync(path.join(folder,candidate));fs.renameSync(path.join(folder,candidate),path.join(folder,`download-${++downloads}.zip`));return unpack(content);}
-  async function upload(files){await frame.click('#bw_change');const input=await frame.$('#bw_files');await input.uploadFile(...files);await frame.waitForSelector('#bw_apply',{visible:true,timeout:20000});await wait(600);}
-  async function apply(){const confirm=await frame.$('input[id^="bw_confirm_"]');await confirm.click();await frame.click('#bw_apply');try{await ready();}catch(error){throw Error(`${app}: ${await frame.$eval('#bw_message',e=>e.textContent)} (${error.message})`);}}
+  // renderUI can replace every mapping control while newly bound selects report
+  // their initial values. Wait for bound, synchronized controls and a quiet DOM;
+  // locator actions then reacquire nodes if a later replacement still occurs.
+  async function settleMapping(){await frame.waitForFunction(()=>{
+    const panel=document.getElementById('bw_mapping'),controls=[...panel?.querySelectorAll('select,input')||[]],values=window.Shiny?.shinyapp?.$inputValues;
+    const idle=!document.documentElement.classList.contains('shiny-busy')&&!panel?.classList.contains('recalculating');
+    const bound=controls.length&&controls.every(e=>e.classList.contains('shiny-bound-input')&&values?.[e.id]===(e.type==='checkbox'?e.checked:e.value));
+    const signature=JSON.stringify(controls.map(e=>[e.id,e.value,e.checked]));
+    const previous=window.operationalQCMapping;
+    if(!idle||!bound){window.operationalQCMapping=null;return false;}
+    if(!previous||previous.signature!==signature||controls.some((e,i)=>e!==previous.controls[i])){window.operationalQCMapping={controls,signature,since:performance.now()};return false;}
+    return performance.now()-previous.since>=300;
+  },{timeout:30000,polling:100});}
+  async function upload(files){await frame.locator('#bw_change').click();const input=await frame.$('#bw_files');await input.uploadFile(...files);await frame.waitForSelector('#bw_apply',{visible:true,timeout:20000});await settleMapping();}
+  async function apply(){try{
+    await settleMapping();
+    await frame.locator('input[id^="bw_confirm_"]').fill(true);
+    await settleMapping();
+    assert(await frame.$eval('input[id^="bw_confirm_"]',e=>e.checked),'Current mapping confirmation remains checked');
+    await frame.locator('#bw_apply').click();
+    await ready();
+  }catch(error){const detail=await frame.evaluate(()=>({message:document.querySelector('#bw_message')?.textContent,state:document.body.dataset.bwState,busy:document.documentElement.classList.contains('shiny-busy'),confirmation:[...document.querySelectorAll('input[id^="bw_confirm_"]')].map(e=>({id:e.id,checked:e.checked,bound:e.classList.contains('shiny-bound-input')}))})).catch(()=>null);throw Error(`${app}: apply failed ${JSON.stringify(detail)} (${error.message})`,{cause:error});}}
+
   await frame.click('#bw_example');await ready();const initial=await download(),jsonName=Object.keys(initial).find(n=>n.endsWith('-workspace.json')),saved=JSON.parse(initial[jsonName]);
   assert(Object.keys(initial).some(n=>n.startsWith('outputs/')));assert(Object.keys(initial).some(n=>n.startsWith('source/')));
   // Use different identifiers from every bundled CP/RAND scenario; preserve cross-table references.
@@ -62,7 +84,7 @@ for(const app of selection.split(',')){
   // Blank setup remains operable at phone width and follows both themes.
   await page.setViewport({width:390,height:844});await wait(300);assert(await frame.$eval('#bw_workspace',e=>e.getBoundingClientRect().right<=innerWidth+1));await page.screenshot({path:path.join(folder,'phone-blank.png'),fullPage:true});assert.deepEqual(errors,[]);
   report.push({app,passed:true,inputs:Object.keys(saved.inputs).length,outputs:Object.keys(initial).filter(n=>n.startsWith('outputs/')).length,checks:[...(app==='trialmon'?['uploaded HTML header stays inert text']:[]),'blank','CSV mapping','custom identifiers','ZIP inputs/results/source','editable settings','JSON restore','malformed replacement','export disabled','status cleared','reset','phone setup']});console.log(app,'PASS',report.at(-1));
- }catch(error){report.push({app,passed:false,error:String(error.stack||error)});console.error(app,error);}
+ }catch(error){await page?.screenshot({path:path.join(folder,'failure.png'),fullPage:true}).catch(()=>{});report.push({app,passed:false,error:String(error.stack||error)});console.error(app,error);}
  finally{await browser.close();fs.writeFileSync(path.join(evidence,'report.json'),JSON.stringify(report,null,2));}
 }
 }finally{server.close();}
