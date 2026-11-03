@@ -37,6 +37,7 @@
     <p class="meta"><span class="lab tools">Tools built</span><span class="st st-runs">Runs: cqtc_hysteresis/R/run_oc.R</span><span class="st st-synthetic">Exploratory (synthetic)</span></p>
     <p class="synthetic">Synthetic data only: simulated for this page; not trial data and not a regulatory deliverable.</p>
   </section>
+<div class="note"><p><a class="btn" href="../apps/methods/?module=cqtc">Run C-QTc scenarios in your browser</a></p><p>Select canonical scenarios and simulation precision in browser forms. Original scenario seeds, exact intervals and optional known-answer controls are retained. No local R, command line, account or toolkit download is required. Save results before reloading.</p></div>
 
   <div class="note"><p><strong>Tools built:</strong> a small formalization of the standard C-QTc hysteresis check. The signed loop area is established (cyclicity analysis; the hysteresis-loop literature). This page computes it on residuals from the prespecified direct-effect model and documents its operating characteristics on synthetic data. It supplements, and does not replace, the prespecified C-QTc model or effect-compartment modeling.</p></div>
 
@@ -314,7 +315,7 @@
   <p><strong>What is new here is small:</strong> the area computed on residuals from the prespecified direct-effect model, so the check is conditional on the form the SAP already names; a test whose standard error allows for the time-matched placebo mean that every active participant's ddQTcF shares, with the exact sign-flip test kept for designs where nothing is shared; documented operating characteristics, including where the raw area fails under a curved direct effect, how much a one-sample test overstates significance with a pooled placebo, and how far the placebo group limits power; and the Day -1 confound check, with its weakness shown.</p>
   <p class="small"><strong>Provenance note.</strong> The framing, splitting a lag-1 cross-moment into symmetric and antisymmetric parts with a time-reversal null, follows my author draft <em>Anticipating Network Contagions: When Directedness Outperforms Connectedness</em> (with the editor at Applied Network Science; author draft 5 July 2026; <a href="https://github.com/patrickiben/directed-asymmetry-contagion">github.com/patrickiben/directed-asymmetry-contagion</a>).</p>
 
-  <h2 id="rerun">Rerun it</h2>
+  <h2 id="rerun">Optional native reproduction</h2>
 <pre><code>Rscript cqtc_hysteresis/R/run_oc.R        # from the repository root; about 3 minutes; rewrites out/ and this page
 Rscript cqtc_hysteresis/tests/test_area.R # geometry, exactness, the placebo-mean identity, known answers and the shell gates
 </code></pre>

@@ -344,7 +344,7 @@ jobs:
           retention-days: 7
   vaccine-webassembly:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v7
@@ -357,15 +357,19 @@ jobs:
       - name: Install pinned exporter and browser-app dependencies
         shell: Rscript {0}
         run: |
-          install.packages("pak")
-          pak::pkg_install(c("shinylive@0.5.0", "shiny", "bslib", "DT", "ggplot2", "jsonlite", "testthat"))
+          source(".github/pages/install_browser_dependencies.R")
       - name: Check vaccine Shiny state transitions and shared-source publication boundaries
         run: |
           Rscript vaccine/tests/test_shiny.R
           Rscript tests/test_analysis_renderer_dependencies.R
           python -m unittest tools.tests.test_pages_build -v
+          python -m unittest discover -s browser_modules/tests -p "test_*.py" -v
+          python -m unittest discover -s browser_modules/validation/tests -p "test_*.py" -v
+          Rscript browser_modules/tests/test-stub-profile.R
+          Rscript browser_modules/tests/test-operational.R
+          Rscript browser_modules/tests/methods.R
       - name: Export the actual browser vaccine application
-        run: Rscript .github/pages/build_site.R "${RUNNER_TEMP}/vaccine-site" vaccine
+        run: Rscript .github/pages/build_site.R "${RUNNER_TEMP}/vaccine-site"
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
@@ -382,6 +386,27 @@ jobs:
           QA_OUTPUT_DIR: ${{ runner.temp }}/vaccine-webassembly-qc
           VACCINE_CAPACITY_QC: '1'
         run: node vaccine/tests/browser_app_qc.cjs "${RUNNER_TEMP}/vaccine-site"
+      - name: Install operational-app browser driver
+        run: npm ci --prefix .github/pages/smoke --no-audit --no-fund
+      - name: Execute complete browser analysis and operational workflows
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/all-browser-qc
+        run: |
+          node browser_modules/tests/navigation-browser.cjs "${RUNNER_TEMP}/vaccine-site" "${RUNNER_TEMP}/all-browser-qc/navigation"
+          node browser_modules/tests/workbench-browser.cjs "${RUNNER_TEMP}/vaccine-site"
+          python browser_modules/tests/workbench-parity.py "${RUNNER_TEMP}/all-browser-qc"
+          node browser_modules/tests/methods-browser.cjs "${RUNNER_TEMP}/vaccine-site"
+          node browser_modules/tests/operational-browser.mjs "${RUNNER_TEMP}/vaccine-site" "${RUNNER_TEMP}/all-browser-qc/operational"
+          node --test browser_modules/register/tests/core.test.mjs
+          node browser_modules/tests/reference-browser.cjs "${RUNNER_TEMP}/vaccine-site" "${RUNNER_TEMP}/all-browser-qc" full
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: all-browser-webassembly-qc
+          path: ${{ runner.temp }}/all-browser-qc
+          retention-days: 7
       - uses: actions/upload-artifact@v7
         if: always()
         with:

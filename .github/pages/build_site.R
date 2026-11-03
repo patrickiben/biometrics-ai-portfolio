@@ -142,6 +142,18 @@ for (a in APPS) {
 
 unlink(stage_root, recursive = TRUE)
 
+# Direct browser workspaces reuse these R package assets and pinned Python.
+# They run reviewed providers in workers; no local Python/R service is needed.
+if (!length(selected_apps)) {
+  # The direct webR workspaces do not use Shinylive core-package autoloading.
+  Sys.setenv(SHINYLIVE_DOWNLOAD_WASM_CORE_PACKAGES=paste(shinylive:::resolve_dependencies(c("shiny","bslib","renv"),local=FALSE),collapse=","))
+  shinylive::export("browser_modules/engine", out,
+    subdir = "browser-runtime/engine-build", assets_version = ASSETS, quiet = FALSE)
+  unlink(file.path(out, "browser-runtime/engine-build"), recursive = TRUE)
+  if (system2("python3", c(".github/pages/browser_assets.py", shQuote(normalizePath(out)))) != 0L)
+    fail("browser workspace assets failed integrity checks")
+}
+
 # 4. checks -----------------------------------------------------------------
 problems <- character()
 need <- function(cond, msg) if (!isTRUE(cond)) problems <<- c(problems, msg)

@@ -1,0 +1,59 @@
+{
+  "source": "risk_monitor/shiny",
+  "title": "Operational risk signals",
+  "summary": "Upload a participant/study operational signal feed, inspect the transparent weighted heuristic scores and worst-tier levels, and explore labeled signal-level changes. These operational scores are not calibrated probabilities of trial termination.",
+  "try": [
+    "Download blank CSV templates or select your source CSV and map its columns.",
+    "Validate the inputs, explore the editable controls and save the complete workspace to retain results.",
+    "Load the fictional example only when you want a guided demonstration."
+  ],
+  "links": [
+    {
+      "t": "guide",
+      "label": "Module guide",
+      "href": "../../risk_monitor/README.md"
+    }
+  ],
+  "first_load": {
+    "download_mb": 65,
+    "first_s": "10 to 30",
+    "revisit_s": "8 to 15"
+  },
+  "extra_files": [
+    {
+      "from": "browser_modules/shared/browser_workspace.R",
+      "to": "browser_workspace.R"
+    },
+    {
+      "from": "browser_modules/shared/browser_workspace.js",
+      "to": "browser_workspace.js"
+    },
+    {
+      "from": "browser_modules/shared/browser_workspace.css",
+      "to": "browser_workspace.css"
+    }
+  ],
+  "data_scope": "Your study inputs \u00b7 optional fictional example",
+  "data_note": "No client is preconfigured. Files remain in browser memory; save the complete workspace before closing or reloading.",
+  "smoke": {
+    "timeout_s": 150,
+    "setup": [
+      {
+        "click": "#bw_example"
+      },
+      {
+        "wait": 1200
+      }
+    ],
+    "outputs": [
+      "v_overall",
+      "v_part",
+      "v_study",
+      "signals",
+      "feed"
+    ],
+    "expect": {},
+    "tabs": [],
+    "interactions": []
+  }
+}

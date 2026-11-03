@@ -321,9 +321,10 @@ html[data-theme] .top b{white-space:normal}
 </nav>
 <main id="main" tabindex="-1"><section id="start" aria-label="Start here">
     <h1>SAS/R Trial-Monitoring Automation &mdash; coverage you can run today</h1>
-    <p class="lede">A deterministic, <strong>no-AI</strong> monitoring layer. It automates trial monitoring using <strong>only validated SAS and/or R, inside the client&rsquo;s existing environment</strong> &mdash; so your backup and the client stay informed while you are away, with <strong>no new tools, no new vendor, and no PHI egress</strong>.</p>
+    <div class="callout"><p><a href="../browser_modules/workbench/?module=sas_monitor"><strong>Run the eight monitoring checks in your browser</strong></a></p><p>Map your CSV feeds, configure the data cut and thresholds, review assumptions, and run R without installing software. Download complete results and configured, unexecuted SAS reference programs. No client is preselected. Schedules, live feeds and email are optional service connections; the deployment pattern below does not configure those services or validate your study implementation.</p></div>
+    <p class="lede">A deterministic, <strong>no-AI</strong> monitoring layer. The browser workspace runs the toolkit&rsquo;s reviewed R checks locally in your tab. A team can also adapt the programs for its own computing environment and service connections after study-specific validation and access review.</p>
     <div class="callout warn"><strong>Read the one honest framing first.</strong> This reliably <strong>DETECTS</strong> and <strong>DELIVERS</strong> pre-specified facts &mdash; counts, thresholds, deltas, reconciliation breaks, run failures &mdash; to a human, reproducibly. It does <strong>not</strong> triage, narrate, or judge clinical meaning; the medical monitor and humans own every decision. <strong>Necessary, not sufficient &mdash; and that is the point.</strong></div>
-    <h2>The 60-second version</h2>
+    <h2>Optional service deployment: the 60-second version</h2>
     <ol>
       <li>A <strong>scheduler</strong> (OS Task Scheduler / cron) fires a <strong>version-controlled SAS or R program</strong> in unattended batch mode, under a <strong>service account</strong>.</li>
       <li>The program ingests the latest validated extract, runs <strong>deterministic checks</strong>, and renders a <strong>report</strong> (SAS ODS / R Markdown).</li>
@@ -331,12 +332,12 @@ html[data-theme] .top b{white-space:normal}
       <li>Every run emits a <strong>heartbeat</strong> with a data-freshness timestamp &mdash; so silence is never assumed.</li>
     </ol>
     <p>See it end-to-end in <a href="#watch">Coverage while on leave</a> &mdash; a full month on Study CP-101.</p>
-    <h2>Why this is the lowest-risk of the three pipelines</h2>
-    <p>It adds <strong>nothing new</strong>: no LLM, no model to validate, no vendor, no data leaving the validated boundary. Every reported number comes from the same double-programmed, QC&rsquo;d programs the team already uses. So there is <strong>nothing new to approve before it runs</strong> &mdash; only the study&rsquo;s normal program validation and change control.</p>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <h2>Deployment assumptions</h2>
+    <p>These deterministic checks use no language model. A deployed service still needs reviewed input mappings, tested programs, configured access, delivery checks and normal change control. Toolkit QC does not mean that a team&rsquo;s implementation has been double-programmed, validated or approved.</p>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="arch" aria-label="Architecture">
     <h1>The deterministic loop &mdash; scheduler &rarr; program &rarr; report &rarr; notify</h1>
-    <p>Every component already exists and is qualified inside a validated SAS/R environment. Pick whichever scheduler is <em>already approved</em> in your shop &mdash; do not introduce a new orchestrator just for this.</p>
+    <p>In an existing qualified SAS/R environment, a team can use its approved scheduler and infrastructure. Otherwise, the implementation and its connections need their own setup and qualification. These services are optional; browser execution does not start a background scheduler.</p>
     <div class="flow">
       <div class="node out"><b>Scheduler (the clock)</b><span>Windows Task Scheduler / cron &mdash; runs under a <b>service account</b>, survives reboots, logs its own history</span></div>
       <div class="arrow">&darr;</div>
@@ -503,7 +504,7 @@ endsas;</code></pre>
       <p><b>Step 8: heartbeat.</b> This block opens <code>adam.adae</code> with <code>%sysfunc(open(adam.adae))</code>, reads the observation count via <code>attrn(&_did,nlobs)</code> only if the open returned a nonzero handle, and immediately closes the handle with <code>%sysfunc(close(&_did))</code> so no dataset handle leaks. <code>%tm_heartbeat</code> then records that count and pings the backup watcher address supplied as <code>watcher_to=&CFG_BACKUP</code>. The heartbeat is what proves the job actually ran to completion: if the daily heartbeat is missing, the watcher knows the job died rather than assuming all was well.</p>
       <p><b>Friday weekly pack.</b> An <code>%if</code> tests whether today is Friday (<code>weekday(today())=6</code>) and, only then, calls <code>%tm_digest</code> again to build the CP-101 Weekly Status PDF from the enrollment, AE, DLT, query, and visit sections, sending it to both your backup and the client. This adds a lower-frequency roll-up for the client on top of the daily digest without changing the daily behavior on other weekdays. It reuses the same validated result datasets, so the weekly numbers are the same numbers SAS already produced during the run.</p>
       <p><b>Completion note and endsas.</b> A final <code>%put NOTE:</code> writes a tagged one-line summary to the log with the overall run status and return code (<code>&TM_STATUS</code>, <code>&TM_RC</code>), giving the batch log a single grep-able line that says how the run ended. <code>endsas;</code> then terminates the SAS session cleanly so the batch wrapper gets a definite exit. Together these make the run's outcome unambiguous to both the log reader and the scheduler.</p>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="checks" aria-label="The checks catalog">
     <h1>The monitoring-checks catalog</h1>
     <p>A fixed battery of <strong>deterministic flags</strong> that run unattended and give the same answer every time on the same data. Each is a pure data computation in validated SAS (<code>PROC FREQ/MEANS/SQL/REPORT</code>, ODS) or R (<code>dplyr</code> + admiral-style derivations + <code>gt</code>/<code>flextable</code> + <code>safetyGraphics</code> for eDISH). <b>A flag is a prompt to look &mdash; never an adjudication.</b></p>
@@ -726,7 +727,7 @@ if (sys.nframe() == 0) {
       <li><b>R:</b> <code>cronR::cron_add(command = cronR::cron_rscript("tm_companion.R"), frequency = "daily", at = "02:00")</code>, or <code>taskscheduleR::taskscheduler_create()</code> on Windows. Pin packages with <code>renv</code>.</li>
       <li><b>Dry-run first,</b> then trust the heartbeat: the job fails loud on any error and emits a completion NOTE, so a stale run announces itself instead of masquerading as fresh.</li>
     </ul>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="alerts" aria-label="Reporting  alerting">
     <h1>Two-tier reporting &amp; escalation</h1>
     <p>Entirely inside the validated environment &mdash; zero AI, zero new vendor, zero PHI egress.</p>
@@ -748,7 +749,7 @@ if (sys.nframe() == 0) {
       <tr><td><b>R-native</b></td><td><code>Microsoft365R</code> (Graph) for Outlook/Teams/SharePoint, or <code>blastula</code>/<code>sendmailR</code> for richer HTML email.</td><td>Microsoft365R routes through Graph/AAD (cloud auth) &mdash; fine inside the tenant; confirm it suits your data-handling posture.</td></tr>
     </table>
     <div class="callout tip"><b>Alert bodies carry de-identified signal only</b> (e.g. &ldquo;Cohort 3: 2 of 6 flagged for Grade&ge;3 ALT shift &mdash; review&rdquo;), not participant-level PHI. Record-level detail stays in the attached report on the validated share, linked, not emailed.</div>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="watch" aria-label="Coverage while on leave">
     <h1>Coverage while on leave &mdash; a month on Study CP-101</h1>
     <p class="lede">The deterministic system doing its one job: keeping Phase&nbsp;1 monitoring alive and self-escalating for a month while the lead is unreachable in Europe &mdash; with zero AI and zero new tools.</p>
@@ -780,7 +781,7 @@ NOTE: [TRIALMON] run complete - status=RED rc=0
     <p><b>Worst-case roll-up decides the run status.</b> The run is GREEN, AMBER, or RED by the worst single finding. On this night the liver screen met the pre-specified criteria (ALT 4.2x ULN together with total bilirubin 1.6x), so the run is RED. The AND-gate is the point: a high transaminase on its own does not trip it.</p>
     <p><b>Tier-1 digest always, tier-2 urgent alert only on RED.</b> Every run emails the daily digest with the status and the attached PDF. A RED run additionally dispatches an urgent alert to the covering biostatistician, the PM, and a backup alias, naming the medical monitor to contact and the 30-minute acknowledgement window. The job routes attention, it never adjudicates.</p>
     <p><b>Evidence packet, then the heartbeat.</b> The job writes a one-page evidence packet for the flagged finding, then a heartbeat that proves it ran. An external watcher alerts if the heartbeat stops, so silence is never mistaken for GREEN. The medical monitor and the covering biostatistician own every decision that follows.</p>
-    <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="safeguards" aria-label="Won't fail silently">
     <h1>Why it won&rsquo;t fail silently</h1>
     <div class="callout warn"><b>The SOP rule:</b> &ldquo;no news&rdquo; is <b>never</b> interpreted as &ldquo;all clear.&rdquo; A successful, data-fresh run must say so explicitly, and the <em>absence</em> of any message is itself escalated.</div>
@@ -791,30 +792,30 @@ NOTE: [TRIALMON] run complete - status=RED rc=0
       <tr><td><b>Alert storm / fatigue</b> &mdash; a mis-set threshold, a units mismatch (mg/dL vs &micro;mol/L), a duplicate record, or one ongoing event fires the same RED dozens of times. The cover mutes the thread; the next real signal is buried.</td><td><b>De-duplication.</b> A persistent seen-flags table keyed by participant+test+event alerts once on first detection; rate-limit and escalate-on-change only.</td></tr>
       <tr><td><b>Human single-point-of-failure</b> &mdash; the one covering colleague is also on PTO/sick/offline, and the lead is asleep in a European timezone when a 06:07 RED fires. The alert lands in a void.</td><td><b>Primary + backup + role alias</b>, committed pre-departure, with an <b>acknowledgement SLA</b> (reply within 30 min) and a re-page / next-recipient rule if it isn&rsquo;t acknowledged.</td></tr>
     </table>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="gov" aria-label="Governance  limits">
     <h1>Governance, validation &amp; honest limits</h1>
-    <h2>Why it is the lowest-risk pipeline</h2>
+    <h2>Requirements for a study deployment</h2>
     <ul>
-      <li><b>No new validation surface.</b> The DLT tabulations, exposure summaries, lab-shift tables and counts it surfaces are produced by the <b>same validated programs</b> already qualified for the study. The lead is automating the <em>delivery/cadence</em> of validated outputs, not creating a new method.</li>
-      <li><b>Deterministic &amp; reproducible.</b> Same data &rarr; byte-identical result, every run. No sampling, no temperature, no model drift &mdash; nothing to &ldquo;explain.&rdquo; An LLM summary is plausible but not auditable line-by-line; a SAS/R alert is both.</li>
-      <li><b>Zero PHI egress.</b> Everything runs where the data already lives &mdash; no external API, no cloud model, no new vendor. No client data leaves the client&rsquo;s systems.</li>
-      <li><b>The automation itself is validated</b> like any study program: the thin scheduling wrapper and the threshold logic get the team&rsquo;s normal risk-based SDLC &mdash; spec, independent review, documented testing, change control.</li>
-      <li><b>Double-programming preserved.</b> Anything formally <em>reported</em> (submission, SRC/DSMB pack, sponsor deliverable) is still independently double-programmed. Classify every output as <b>REPORTABLE</b> (QC&rsquo;d before it goes out) or <b>SIGNAL-ONLY</b> (single-program, human-confirmed).</li>
+      <li><b>Qualify the programs and their inputs.</b> A team can automate delivery of outputs from programs already qualified for its study, or validate an adapted implementation. This public toolkit does not establish that qualification.</li>
+      <li><b>Deterministic computations.</b> Retain the same input cut, settings, program versions and runtime to reproduce the checks. Export metadata and timestamps may differ. Review source logic and diagnostic evidence; deterministic software can still contain errors.</li>
+      <li><b>Review data handling.</b> Browser analysis processes inputs in the tab. For a deployed service, hosting, connected feeds, report storage and email settings determine where data travel; configure them to the study&rsquo;s requirements.</li>
+      <li><b>Validate the automation</b> like any study program: specify and independently review the scheduling wrapper, threshold logic and failure handling, with documented testing and change control.</li>
+      <li><b>Apply required independent QC.</b> Formal submissions, SRC/DSMB packs and other deliverables need the study&rsquo;s specified review and verification. Classify each output as <b>REPORTABLE</b> or <b>SIGNAL-ONLY</b> only after the required checks; toolkit execution assigns no approval.</li>
     </ul>
     <h2>The honest limit</h2>
-    <div class="callout warn"><b>Deterministic checks only &mdash; no triage, no narrative, no judgment.</b> SAS/R answers well-posed, pre-specified questions and emails the answer reliably. It does not weigh a borderline signal, summarize across signals in plain language, or brief the covering colleague on what a cluster <em>means</em>. That judgment stays with people. This guarantees pre-specified signals reach a human reliably and reproducibly; it does not replace the human, the medical monitor, or the DSMB/SRC.</div>
-    <h2>For the client, in one line</h2>
-    <p>Because there is no AI, no new vendor, and no PHI egress, there is <b>nothing new to approve before it runs</b> &mdash; only the normal program validation and change control you already run before any study output ships.</p>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+    <div class="callout warn"><b>Deterministic checks only &mdash; no triage, no narrative, no judgment.</b> SAS/R computes pre-specified checks. Email delivery requires a configured and tested service. It does not weigh a borderline signal, summarize across signals in plain language, or brief the covering colleague on what a cluster <em>means</em>. That judgment stays with people. Monitor delivery and acknowledgement separately; a successful computation does not prove a person received or reviewed the result.</div>
+    <h2>For a study team, in one line</h2>
+    <p>These open-source checks provide a starting point. The study team owns implementation-specific validation, data handling, scientific interpretation and any release approval.</p>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 <section id="faq" aria-label="FAQ">
     <h1>FAQ</h1>
-    <p><b>How is this different from AI-based monitoring?</b> It is deliberately the opposite: deterministic, validated, no AI, no new vendor, no PHI egress &mdash; the layer you can run <em>today</em>.</p>
+    <p><b>How is this different from AI-based monitoring?</b> It computes documented rules without a language model. The browser workspace is runnable now; use for a particular study still requires appropriate validation and review.</p>
     <p><b>Does it make clinical decisions?</b> No. It detects pre-specified threshold crossings, pages the right people, and packages the evidence. The medical monitor and the covering biostatistician make every call. A flag is a prompt for a human, never a finding.</p>
     <p><b>What if a job fails while the lead is away?</b> The heartbeat / dead-man&rsquo;s-switch and the data-freshness gate are designed so a dead job or a frozen feed <em>announces itself</em> &mdash; see <a href="#safeguards">Won&rsquo;t fail silently</a>. &ldquo;No news&rdquo; is never &ldquo;good news.&rdquo;</p>
-    <p><b>Do we need new software?</b> No &mdash; use the SAS/R and the scheduler already validated in your environment. Introducing a new orchestrator just for this would re-add the governance cost you are avoiding.</p>
+    <p><b>Do we need new software?</b> Browser analysis needs no local installation. Optional scheduled services require a configured execution environment; a team may use infrastructure it already has.</p>
     <p><b>Is the on-leave example the only use?</b> No &mdash; that is the anchoring scenario, but this is the standing monitoring backbone for any study, any time. Coverage during leave is just where its value is most obvious.</p>
-  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic, validated, no PHI egress &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
+  <div class="footer">SAS/R Trial-Monitoring Automation &middot; the no-AI companion &middot; deterministic examples; deployment-specific validation required &middot; the medical monitor &amp; humans decide &middot; built June 2026 (illustrative).</div></section>
 </main></div>
 <script>
 const secs=[...document.querySelectorAll('section')];

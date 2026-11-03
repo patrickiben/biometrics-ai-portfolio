@@ -1,57 +1,299 @@
 {
   "source": "lifecycle_dashboard/shiny",
   "title": "Study Lifecycle Monitor",
-  "summary": "An operational health console for a synthetic portfolio of eight early-phase studies, from protocol to clinical study report. Each study is scored from 0 to 100 on timeline, data, TLF production and resourcing, and the console shows the portfolio heatmap, ranked early-warning signals, and the selected study's score breakdown, milestone track, TLF funnel, deliverables register and open-query trend. The scoring is transparent, so a what-if on one study's open queries or double programming moves its risk where you can see it. Study-level operations data only, with no participant data.",
+  "summary": "Review your study portfolio with timeline, data, deliverables and resourcing scores, ranked operational signals and study-specific detail. Upload four study-operation CSVs, map the columns and review their shared snapshot date. What-if controls update the selected study, and complete workspace export retains every input and computed summary.",
   "try": [
-    "Click a study in the heatmap, the signals or the table, for example CP-107, to open its score breakdown, milestones, TLF funnel and deliverables: its TLFs and CSR are overdue with 44% of TLFs final.",
-    "Pick CP-103 and drag Open queries to 120: its Data score rises, it turns amber and On watch goes from 3 to 4, its query-backlog signal turns red, and the trend marks the what-if with an open circle.",
-    "For CP-108, raise Double-programmed % to 80: its Resource score falls, its double-programming lag signal goes and At risk drops to 0. Reset to data undoes every what-if."
+    "Download the blank CSV templates or select your studies, milestones, deliverables and query trend files.",
+    "Map and validate the feeds, inspect the heatmap and select a study for detail.",
+    "Load the fictional example to try the existing guided scenarios. Save the complete workspace to retain edits."
   ],
-  "screenshot": {"src": "screenshot.webp", "src_light": "screenshot-light.webp", "width": 1280, "height": 800,
-                 "alt": "The Study Lifecycle Monitor scrolled past its Start here card: KPI boxes reading 8 active studies, 1 at risk (CP-108), 3 on watch, 135 open queries, 46% of deliverables done and the next DB lock in 8 days (CP-105); the portfolio risk heatmap with CP-108 selected; and the ranked early-warning signals, red first.",
-                 "caption": "The app scrolled past its Start here card: the KPIs, the risk heatmap with CP-108 selected and the ranked signals. It follows the site's light or dark theme. Synthetic data."},
+  "screenshot": {
+    "src": "screenshot.webp",
+    "src_light": "screenshot-light.webp",
+    "width": 1280,
+    "height": 800,
+    "alt": "The Study Lifecycle Monitor scrolled past its Start here card: KPI boxes reading 8 active studies, 1 at risk (CP-108), 3 on watch, 135 open queries, 46% of deliverables done and the next DB lock in 8 days (CP-105); the portfolio risk heatmap with CP-108 selected; and the ranked early-warning signals, red first.",
+    "caption": "The explicitly loaded fictional example. Your own study starts from the blank data setup; the app follows the site\u2019s light or dark theme."
+  },
   "links": [
-    {"t": "guide", "label": "Guide", "href": "../../lifecycle_dashboard/quarto/lifecycle-guide.html"},
-    {"t": "snapshot", "label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
+    {
+      "t": "guide",
+      "label": "Guide",
+      "href": "../../lifecycle_dashboard/quarto/lifecycle-guide.html"
+    },
+    {
+      "t": "snapshot",
+      "label": "Read-only snapshot",
+      "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"
+    }
   ],
-  "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
-  "status": {"text": "{#k_risk} at risk, {#k_watch} on watch", "whatif": "#whatif_state .lc-whatif.on",
-             "tones": [["^0 at risk, 0 on", "GREEN"], ["^0 at risk", "AMBER"], ["at risk", "RED"]]},
+  "first_load": {
+    "download_mb": 65,
+    "first_s": "10 to 20",
+    "revisit_s": "8 to 12"
+  },
+  "status": {
+    "text": "{#k_risk} at risk, {#k_watch} on watch",
+    "whatif": "#whatif_state .lc-whatif.on",
+    "tones": [
+      [
+        "^0 at risk, 0 on",
+        "GREEN"
+      ],
+      [
+        "^0 at risk",
+        "AMBER"
+      ],
+      [
+        "at risk",
+        "RED"
+      ]
+    ]
+  },
   "smoke": {
     "timeout_s": 150,
-    "status": {"text": "1 at risk, 3 on watch", "tone": "RED"},
-    "outputs": ["k_n", "k_n_sub", "k_risk", "k_risk_sub", "k_watch", "k_watch_sub", "k_q", "k_q_sub", "k_del", "k_del_sub",
-                "k_dbl", "k_dbl_sub", "heat", "signals_hdr", "signals", "detail_hdr", "breakdown", "milestones", "funnel",
-                "deliv", "trend", "trend_note", "inputs", "whatif_state"],
-    "expect": {"k_n": "8", "k_risk": "1", "k_watch": "3", "k_q": "135", "k_del": "46%", "k_dbl": "8 days",
-               "k_risk_sub": "CP-108", "k_dbl_sub": "CP-105 on 29 Jun 2026"},
-    "fit": [{"selector": ".lc-heat", "width": 390}, {"selector": ".lc-heat", "width": 1280},
-            {"selector": "#inputs table", "width": 1280}],
+    "status": {
+      "text": "1 at risk, 3 on watch",
+      "tone": "RED"
+    },
+    "outputs": [
+      "k_n",
+      "k_n_sub",
+      "k_risk",
+      "k_risk_sub",
+      "k_watch",
+      "k_watch_sub",
+      "k_q",
+      "k_q_sub",
+      "k_del",
+      "k_del_sub",
+      "k_dbl",
+      "k_dbl_sub",
+      "heat",
+      "signals_hdr",
+      "signals",
+      "detail_hdr",
+      "breakdown",
+      "milestones",
+      "funnel",
+      "deliv",
+      "trend",
+      "trend_note",
+      "inputs",
+      "whatif_state"
+    ],
+    "expect": {
+      "k_n": "8",
+      "k_risk": "1",
+      "k_watch": "3",
+      "k_q": "135",
+      "k_del": "46%",
+      "k_dbl": "8 days",
+      "k_risk_sub": "CP-108",
+      "k_dbl_sub": "CP-105 on 29 Jun 2026"
+    },
+    "fit": [
+      {
+        "selector": ".lc-heat",
+        "width": 390
+      },
+      {
+        "selector": ".lc-heat",
+        "width": 1280
+      },
+      {
+        "selector": "#inputs table",
+        "width": 1280
+      }
+    ],
     "tabs": [],
     "interactions": [
-      {"name": "tabbing onto the what-if sliders changes no value, and the focused slider is named and ringed",
-       "steps": [{"focus": "#study"}, {"key": "Tab"}, {"wait": 800}, {"key": "Tab"}, {"wait": 800}],
-       "expect": [{"focused": ".shiny-input-container:has(#dblprog) .irs-line"},
-                  {"attr": [".shiny-input-container:has(#dblprog) .irs-line", "role", "slider"]},
-                  {"attr": [".shiny-input-container:has(#dblprog) .irs-line", "aria-labelledby", "dblprog-label"]},
-                  {"attr": [".shiny-input-container:has(#dblprog) .irs-line", "aria-valuenow", "25"]},
-                  {"attr": [".shiny-input-container:has(#openq) .irs-line", "aria-valuenow", "0"]},
-                  {"style": [".shiny-input-container:has(#dblprog) .irs-handle", "boxShadow", "0px 0px 0px 4px"]},
-                  {"text": ["#whatif_state", "No what-if: every panel shows the data as loaded."]},
-                  {"text": ["#k_q", "135"]}]},
-      {"name": "an arrow key then moves Double-programmed % one step from the data, and Reset to data undoes it",
-       "steps": [{"key": "ArrowRight"}, {"wait": 800}],
-       "expect": [{"text": ["#whatif_state", "What-if in effect CP-108 double-programmed 25% \u2192 26%"]},
-                  {"attr": [".shiny-input-container:has(#dblprog) .irs-line", "aria-valuenow", "26"]}],
-       "after": [{"click": "#reset"}, {"wait": 800}]},
-      {"name": "after Reset to data, no what-if is left",
-       "steps": [],
-       "expect": [{"text": ["#whatif_state", "No what-if: every panel shows the data as loaded."]}, {"text": ["#k_q", "135"]}]},
-      {"name": "a what-if that clears CP-108's risk leaves the top bar on the data as loaded",
-       "steps": [{"focus": ".shiny-input-container:has(#dblprog) .irs-line"}, {"key": "ArrowRight", "repeat": 55}, {"wait": 800}],
-       "expect": [{"text": ["#k_risk", "0"]}, {"visible": "#whatif_state .lc-whatif.on"}],
-       "bar": {"text": "1 at risk, 3 on watch", "tone": "RED"},
-       "after": [{"click": "#reset"}, {"wait": 800}]}
+      {
+        "name": "tabbing onto the what-if sliders changes no value, and the focused slider is named and ringed",
+        "steps": [
+          {
+            "focus": "#study"
+          },
+          {
+            "key": "Tab"
+          },
+          {
+            "wait": 800
+          },
+          {
+            "key": "Tab"
+          },
+          {
+            "wait": 800
+          }
+        ],
+        "expect": [
+          {
+            "focused": ".shiny-input-container:has(#dblprog) .irs-line"
+          },
+          {
+            "attr": [
+              ".shiny-input-container:has(#dblprog) .irs-line",
+              "role",
+              "slider"
+            ]
+          },
+          {
+            "attr": [
+              ".shiny-input-container:has(#dblprog) .irs-line",
+              "aria-labelledby",
+              "dblprog-label"
+            ]
+          },
+          {
+            "attr": [
+              ".shiny-input-container:has(#dblprog) .irs-line",
+              "aria-valuenow",
+              "25"
+            ]
+          },
+          {
+            "attr": [
+              ".shiny-input-container:has(#openq) .irs-line",
+              "aria-valuenow",
+              "0"
+            ]
+          },
+          {
+            "style": [
+              ".shiny-input-container:has(#dblprog) .irs-handle",
+              "boxShadow",
+              "0px 0px 0px 4px"
+            ]
+          },
+          {
+            "text": [
+              "#whatif_state",
+              "No what-if: every panel shows the data as loaded."
+            ]
+          },
+          {
+            "text": [
+              "#k_q",
+              "135"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "an arrow key then moves Double-programmed % one step from the data, and Reset to data undoes it",
+        "steps": [
+          {
+            "key": "ArrowRight"
+          },
+          {
+            "wait": 800
+          }
+        ],
+        "expect": [
+          {
+            "text": [
+              "#whatif_state",
+              "What-if in effect CP-108 double-programmed 25% \u2192 26%"
+            ]
+          },
+          {
+            "attr": [
+              ".shiny-input-container:has(#dblprog) .irs-line",
+              "aria-valuenow",
+              "26"
+            ]
+          }
+        ],
+        "after": [
+          {
+            "click": "#reset"
+          },
+          {
+            "wait": 800
+          }
+        ]
+      },
+      {
+        "name": "after Reset to data, no what-if is left",
+        "steps": [],
+        "expect": [
+          {
+            "text": [
+              "#whatif_state",
+              "No what-if: every panel shows the data as loaded."
+            ]
+          },
+          {
+            "text": [
+              "#k_q",
+              "135"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "a what-if that clears CP-108's risk leaves the top bar on the data as loaded",
+        "steps": [
+          {
+            "focus": ".shiny-input-container:has(#dblprog) .irs-line"
+          },
+          {
+            "key": "ArrowRight",
+            "repeat": 55
+          },
+          {
+            "wait": 800
+          }
+        ],
+        "expect": [
+          {
+            "text": [
+              "#k_risk",
+              "0"
+            ]
+          },
+          {
+            "visible": "#whatif_state .lc-whatif.on"
+          }
+        ],
+        "bar": {
+          "text": "1 at risk, 3 on watch",
+          "tone": "RED"
+        },
+        "after": [
+          {
+            "click": "#reset"
+          },
+          {
+            "wait": 800
+          }
+        ]
+      }
+    ],
+    "setup": [
+      {
+        "click": "#bw_example"
+      },
+      {
+        "wait": 1200
+      }
     ]
-  }
+  },
+  "extra_files": [
+    {
+      "from": "browser_modules/shared/browser_workspace.R",
+      "to": "browser_workspace.R"
+    },
+    {
+      "from": "browser_modules/shared/browser_workspace.js",
+      "to": "browser_workspace.js"
+    },
+    {
+      "from": "browser_modules/shared/browser_workspace.css",
+      "to": "browser_workspace.css"
+    }
+  ],
+  "data_scope": "Your study inputs \u00b7 optional fictional example",
+  "data_note": "No client is preconfigured. Uploaded inputs stay in this browser session; closing or reloading clears them. Save the complete workspace to retain inputs, edits, settings and outputs."
 }

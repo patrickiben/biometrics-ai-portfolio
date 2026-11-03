@@ -1,0 +1,34 @@
+{
+  "assets_version": "0.10.12",
+  "upstream": "https://github.com/posit-dev/shinylive/releases/download/v0.10.12/shinylive-0.10.12.tar.gz",
+  "files": {
+    "shinylive/webr/R.js": {
+      "sha256": "2161887e3a050baf75ef0fea088142356f8e173b46ea9b2f19f80a773fb5d9ca",
+      "bytes": 785856
+    },
+    "shinylive/webr/R.wasm": {
+      "sha256": "5df459fb222d332e358cf08e4019c0e114398579ed8c62242bfcceeda81222ba",
+      "bytes": 18062845
+    },
+    "shinylive/webr/webr.js": {
+      "sha256": "4c04d3240de6cd3e7f59e081756168faa8566f8a8b97251400770939815c344a",
+      "bytes": 66672
+    },
+    "shinylive/webr/webr-worker.js": {
+      "sha256": "c64282f5e15b51ef473e26548203313f868208c8988b2c7bdfc22c5730de418b",
+      "bytes": 134029
+    },
+    "shinylive/webr/library.data.gz": {
+      "sha256": "d99bdbb98dbd2d450059b3768c2c24ccff5c2d46caf94f13ee445660fd9e5ac1",
+      "bytes": 15057328
+    },
+    "shinylive/webr/library.js.metadata": {
+      "sha256": "b7864d6f390d3ee454a0127e5f6b3b01690f7c6cbca45921f868ea05fdb885ca",
+      "bytes": 181616
+    },
+    "shinylive/shinylive.js": {
+      "sha256": "3c0f0352fa7dcdb190b30b49b640a68520efc6f4b7468b6dd26ec19bc1de6ed4",
+      "bytes": 1612664
+    }
+  }
+}

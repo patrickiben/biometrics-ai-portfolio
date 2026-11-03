@@ -113,6 +113,7 @@ L <- function(href, text, d) sprintf('<a href="%s">%s</a><span class="d">%s</spa
 P <- DES$planning
 body_idx <- paste0(
   md("One synthetic early-phase bioequivalence study, taken from sample size to clinical study report text. Every number on this page and on the pages it links to comes from one script, `study/run_all.R`, run on synthetic data. The study builds on the [`sim_lifecycle/` sandbox](../sim_lifecycle/index.html) (same priors and model, a 2x2 crossover, N = 40, seed 2026)."),
+  '<div class="note"><p><a class="btn" href="../apps/methods/?module=study">Run all six study stages in your browser</a></p><p>Reproduce the fixed synthetic SIMBE01 study in the browser, including transport files, TLFs, the QC ledger and CSR text. HTML replaces Quarto presentation; the study and SAP assumptions remain fixed. No local R, command line, account or toolkit download is required. Save results before reloading.</p></div>',
   '<ol class="flow">',
   sprintf('<li><a href="#stage1">Design</a><span class="v">%s enrolled; %s evaluable for 90%% power</span></li>', P$n_enrolled, P$n_evaluable_90),
   sprintf('<li><a href="#stage2">SAP and shells</a><span class="v">%d table shells</span></li>', n_shells),
@@ -188,7 +189,7 @@ body_idx <- paste0(
       L("06_csr/csr_section11.txt", "csr_section11.txt", "plain text"),
       L("06_csr/csr_check.json", "csr_check.json", "validator output")),
     "The validator checks that numbers exist in the outputs, not that statements are correct. No language model runs in this pipeline; the text is filled into fixed sentence templates (written with an AI coding assistant) and still needs a statistician's review."),
-  '<h2>Rerun it</h2>',
+  '<h2>Optional native reproduction</h2>',
   md("```sh",
      "Rscript -e 'install.packages(\"renv\"); renv::restore(project = \"study\", prompt = FALSE)'  # packages pinned in study/renv.lock",
      "Rscript study/run_all.R        # from the repository root; regenerates every output above",

@@ -472,6 +472,7 @@ async function checkApp(spec) {
       res.events = st && st.events;
     } else {
       say(`${spec.name}: ready at ${st.times.ready} s (served ${res.served_mb} MB)`);
+      if (smoke.setup?.length) await doSteps(page, appFrame(page), smoke.setup);
       const r = await waitOutputs(page, smoke.outputs, 30);
       res.outputs = r.outputs;
       if (r.evalError) fail(`cannot read the app page: ${r.evalError}`);
@@ -599,6 +600,7 @@ async function checkApp(spec) {
         res.timings.reload_ready_s = s2 && s2.times && s2.times.ready;
         if (!s2 || !s2.ready) fail(`after a reload: not ready (stage ${s2 && s2.stage}, problem ${s2 && s2.problem})`);
         else {
+          if (smoke.setup?.length) await doSteps(page, appFrame(page), smoke.setup);
           const r2 = await waitOutputs(page, smoke.outputs, 30);
           const bad = (r2.outputs || []).filter((o) => !o.content);
           if (bad.length || (r2.errors || []).length) fail(`after a reload: ${bad.map((o) => o.id).join(", ")} empty, ${(r2.errors || []).length} errors`);

@@ -106,10 +106,10 @@ hyslaw_load <- function(dir = NULL) {
 
 # the grid shown in the app: CP-101 participants with any aminotransferase >= 3x ULN or TBL > 2x ULN
 # after baseline, plus every planted case
-hyslaw_app_grid <- function(tm, hl) {
-  s <- hyslaw_grid(tm$adlb, "CP-101 data")
+hyslaw_app_grid <- function(tm, hl, study_label = "CP-101 data", comparison_label = "planted case") {
+  s <- hyslaw_grid(tm$adlb, study_label)
   s <- s[.ge(s$PEAK_AT, 3) | .gt(s$PEAK_TBL, 2) | s$USUBJID %in% hl$flags$USUBJID, ]
-  out <- rbind(s, hyslaw_grid(hl$labs_long, "planted case"))
+  out <- rbind(s, hyslaw_grid(hl$labs_long, comparison_label))
   rownames(out) <- NULL
   out
 }

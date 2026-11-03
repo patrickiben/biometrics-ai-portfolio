@@ -163,6 +163,11 @@
   function appStatus() {   // {text, level}, 'whatif', 'updating', or null when there is no whole status
     var doc;
     try { doc = attachedTo.document; if (!doc || !doc.body) return null; } catch (e) { return null; }   // not readable yet
+    var workspace = doc.querySelector('#bw_status .bw-status');
+    if (workspace && workspace.getAttribute('data-active') !== 'true') {
+      asLoaded = null; updatingSince = null;
+      return { text: (workspace.textContent || 'No study data loaded').trim(), level: 'pending' };
+    }
     var whole = true, recalc = false;
     var text = cfg.status.text.replace(/\{([^}]+)\}/g, function (m, sel) {
       var e = doc.querySelector(sel), v = e && !e.closest('.shiny-output-error') ? (e.textContent || '').trim() : '';

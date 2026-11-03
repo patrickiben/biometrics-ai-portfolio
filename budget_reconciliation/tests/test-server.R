@@ -2,6 +2,10 @@
 # Fractional-hour edits render; invalid edits cannot fabricate available hours.
 app <- normalizePath("budget_reconciliation/shiny")
 shiny::testServer(app, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(need = 0, contingency = 40) # acknowledge the loaded settings
   session$setInputs(need = 59.5, contingency = 40)
   stopifnot(fh()$shortfall == .5, grepl("0.5 h", paste(output$verdict$html, collapse = ""), fixed = TRUE))
   before <- rv$ledger

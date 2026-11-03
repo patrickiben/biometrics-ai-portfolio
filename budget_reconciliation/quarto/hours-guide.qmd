@@ -35,6 +35,10 @@ f90 <- find_hours(90, d$ledger, d$contingency)
 ```
 
 ```{=html}
+<div class="callout callout-style-simple callout-note"><div class="callout-body-container"><p><a href="../../apps/hours/"><strong>Open Find Hours in your browser</strong></a></p><p>Start blank, upload the effort ledger and reserve files, map their fields and reconcile your own hours. The synthetic example loads only when you choose it. No local R or toolkit installation is needed. Export the complete workspace before closing or reloading.</p></div></div>
+```
+
+```{=html}
 <style>
 svg[id^="mermaid"]{ width:100% !important; max-width:940px; height:auto; display:block; margin:8px auto; }
 svg[id^="mermaid"] .nodeLabel, svg[id^="mermaid"] .edgeLabel { font-size:16px !important; }
