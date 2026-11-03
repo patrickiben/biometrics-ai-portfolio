@@ -13,6 +13,9 @@ has   <- function(x, pattern) grepl(pattern, html(x), fixed = TRUE)
 plain <- function(x) gsub("\\s+", " ", trimws(gsub("<[^>]+>", "", html(x))))
 
 shiny::testServer(normalizePath(app), {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
   status <- function(id) rv$defects$Status[rv$defects$DefectID == id]
   mark   <- function(id, st) session$setInputs(test_set = list(id = id, status = st))
 
@@ -26,7 +29,7 @@ shiny::testServer(normalizePath(app), {
                                            c("7 not passing yet", "92% of the 24 executed", "RAND-04 and SUP-03",
                                              "2 critical or major", "29 of 30 have a test; 24 tested")),
     "failing IDs never break"  = has(output$v_fail_note, "uat-nw"),
-    "seed state is named"      = identical(output$changes, "Seed data, no changes yet"),
+    "seed state is named"      = identical(output$changes, "Loaded data, no changes yet"),
     "RAND-04 selected"         = rv$tests$TestID[selected()] == "RAND-04",
     "detail shows it"          = has(output$detail, "RAND-04") && has(output$detail, "Close DEF-01"),
     "DEF-01 waits for a retest" = has(output$detail, "disabled") && has(output$detail, "Close it once RAND-04 passes its retest"),
@@ -53,7 +56,7 @@ shiny::testServer(normalizePath(app), {
   # a defect closes only after its test passes a retest: DEF-01 stays Open while RAND-04 fails
   session$setInputs(defect_set = list(id = "DEF-01", to = "Closed"))
   stopifnot("DEF-01 refused before the retest" = status("DEF-01") == "Open",
-            "and nothing counts as changed"    = identical(output$changes, "Seed data, no changes yet"))
+            "and nothing counts as changed"    = identical(output$changes, "Loaded data, no changes yet"))
 
   # marking a failing critical test as Pass (the buttons carry the test ID) lowers the count,
   # the next download carries the new status, the change counter moves, and its defect can close
@@ -61,14 +64,14 @@ shiny::testServer(normalizePath(app), {
   before <- gate()$crit_fail
   mark(rv$tests$TestID[i], "Pass")
   stopifnot("one fewer critical test not passing" = gate()$crit_fail == before - 1,
-            "one change since the seed" = identical(output$changes, "1 change since the seed"),
+            "one change since the seed" = identical(output$changes, "1 change since loading"),
             "DEF-01 can now be closed"  = !has(output$detail, "disabled"))
   session$setInputs(dl_tests = 2)
   back <- utils::read.csv(text = dl_payload()$content, stringsAsFactors = FALSE)
   stopifnot("download reflects the edit" = back$Status[i] == "Pass")
   mark("NOPE-99", "Pass")
   mark("RAND-01", "Sideways")
-  stopifnot("unknown tests and statuses change nothing" = identical(output$changes, "1 change since the seed"))
+  stopifnot("unknown tests and statuses change nothing" = identical(output$changes, "1 change since loading"))
 
   # closing a defect from the Selected test card, and from the defect log (typed in any case)
   session$setInputs(defect_set = list(id = "DEF-01", to = "Closed"))
@@ -144,7 +147,7 @@ shiny::testServer(normalizePath(app), {
   # reset restores the seed
   session$setInputs(reset = 1)
   stopifnot("reset restores the seed" = gate()$crit_fail == before && gate()$open_cm == 2 && gate()$trace_gap == 1,
-            "and the change counter" = identical(output$changes, "Seed data, no changes yet"),
+            "and the change counter" = identical(output$changes, "Loaded data, no changes yet"),
             "and the 29 seed tests" = nrow(rv$tests) == 29)
 })
 

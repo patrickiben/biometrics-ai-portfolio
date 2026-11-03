@@ -11,7 +11,20 @@ source("sim_lifecycle/simulate_adam.R")
 ## --- 1. sample a design (a bioequivalence crossover, the dominant archetype) and simulate.
 ## simulate_study() sets the seed first and then draws the design, so this one call regenerates
 ## the committed out/*.csv byte for byte; validation_harness/run_harness.sh (G1) checks the same call.
-adam <- simulate_study(sample_design(archetype = "BE", N = 40), seed = 2026)
+## Optional browser/native configuration. Absent options preserve the published baseline.
+run_config <- modifyList(list(n = 40L, seed = 2026L, true_gmr = 1, within_cv = 0.15),
+                         getOption("toolkit.sandbox.config", list()))
+stopifnot(is.numeric(run_config$n), length(run_config$n) == 1L, is.finite(run_config$n),
+          run_config$n >= 12, run_config$n <= 300, run_config$n %% 2 == 0,
+          is.numeric(run_config$seed), length(run_config$seed) == 1L, is.finite(run_config$seed),
+          run_config$seed >= 0, run_config$seed <= .Machine$integer.max, run_config$seed %% 1 == 0,
+          is.numeric(run_config$true_gmr), length(run_config$true_gmr) == 1L,
+          is.finite(run_config$true_gmr), run_config$true_gmr >= 0.5, run_config$true_gmr <= 2,
+          is.numeric(run_config$within_cv), length(run_config$within_cv) == 1L,
+          is.finite(run_config$within_cv), run_config$within_cv >= 0.01, run_config$within_cv <= 0.8)
+PK$be_gmr_true <- run_config$true_gmr
+PK$be_intra_cv <- run_config$within_cv
+adam <- simulate_study(sample_design(archetype = "BE", N = as.integer(run_config$n)), seed = as.integer(run_config$seed))
 design <- adam$design
 cat(sprintf("\n================ SIMULATED STUDY (calibrated design) ================\n"))
 cat(sprintf("Archetype: %s | model: %s | N=%d | site: %s | healthy: %s\n",
@@ -103,6 +116,8 @@ cal <- simulate_study(sample_design(archetype = "BE", N = 400), seed = 99)
 cvsim <- function(p){ v<-cal$adpp$AVAL[cal$adpp$PARAMCD==p]; v<-v[v>0]; round(100*sqrt(exp(var(log(v)))-1),1) }
 tmed <- function(p) round(median(cal$adpp$AVAL[cal$adpp$PARAMCD==p]),1)
 cat("\n[CALIBRATION CHECK] Monte-Carlo N=400 vs fitted-from-42-studies\n")
+if (run_config$true_gmr != 1 || run_config$within_cv != 0.15)
+  cat("Selected simulation parameters are used here. The reference targets below describe the original calibration; they were not refitted for these settings.\n")
 cat(sprintf(" Cmax CV%% %5.1f vs 36\n", cvsim("CMAX")))
 cat(sprintf(" AUClast CV%% %5.1f vs 33\n", cvsim("AUCLST")))
 cat(sprintf(" Tmax median %5.1f h vs 1.0 h\n", tmed("TMAX")))

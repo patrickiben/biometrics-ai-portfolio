@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "package": "cubature",
+  "version": "2.1.4-1",
+  "license": "GPL-3; bundled Cuba LGPL-3; bundled cubature library GPL-2-or-later",
+  "source": {
+    "file": "cubature_2.1.4-1_source.tar.gz",
+    "url": "https://codeload.github.com/cran/cubature/tar.gz/37d942bc38c96384380252412e9ca60f22ac186d",
+    "commit": "37d942bc38c96384380252412e9ca60f22ac186d",
+    "sha256": "3e7c0d3f197b129686a2053ab19002e53b4c08d263fabf2adfd63e0939eb4ed4",
+    "file_count": 145,
+    "makevars_sha256": "aa8b495ecf141f58f01234f744613818dce3d6a9af55de8523082866e8b2e3cf"
+  },
+  "binary": {
+    "file": "cubature_2.1.4-1.tgz",
+    "sha256": "f4873fa806cee58b82ff69bbddd8ecdc859ad36845ded65cfa945ac143217838",
+    "bytes": 2002667,
+    "shared_library_sha256": "ecbfb52f6645d6415324de6e9bb1eb1e50fb0a8d44d72a2fc0d090bc16f333e2"
+  },
+  "toolchain": {
+    "image": "ghcr.io/r-wasm/webr@sha256:3fbf3dc3537c5b31bca94dd797dc25364693b18d71b1d0975f318fbfd6269d86",
+    "tag": "v0.6.0",
+    "platform": "linux/amd64",
+    "webr_commit": "f116a5e60e220182d09ac015837c88c454c663c5",
+    "R": "4.6.0",
+    "Emscripten": "5.0.7",
+    "Rcpp": "1.1.2"
+  },
+  "patch": {
+    "file": "Makevars.webr.patch",
+    "sha256": "97e735e2ce1f44ab97e4840bbf3d6ae2e8cee3945781686ae217548e3af3b613",
+    "changed_files": [
+      "src/Makevars.webr"
+    ],
+    "patched_makevars_sha256": "1297fe9fc957f12abc35829dc221086929fa363e9c602f4713c1c1aa111cff6f",
+    "scope": "Build flags and local make-variable name only; every other upstream file is byte-identical."
+  },
+  "abi": {
+    "required_import": "__wasm_longjmp",
+    "forbidden_import": "emscripten_longjmp"
+  },
+  "build_date_utc": "2026-11-03"
+}

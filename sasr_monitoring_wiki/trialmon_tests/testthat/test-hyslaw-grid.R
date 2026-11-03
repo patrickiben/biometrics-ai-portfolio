@@ -117,6 +117,9 @@ test_that("the console's Convention grid card renders the matrix, the reference 
   expect_match(html, "potential Hy&#39;s Law|potential Hy's Law")
   expect_equal(nrow(e$GRID0), 10)
   shiny::testServer(APP_DIR, {
+    session$flushReact()
+    session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+    session$setInputs(ae_ctcae = "6.0")
     session$setInputs(ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1", pid = "CP101-014")
     tbl <- output$grid_tbl
     expect_match(tbl, "screening display, not a grid cell", fixed = TRUE)

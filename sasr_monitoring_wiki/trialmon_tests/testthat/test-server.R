@@ -27,6 +27,10 @@ test_that("the study-tier radio starts on the selected indicator's level (no fli
 test_that("opening the app with its initial inputs changes no indicator", {
   e <- app_env(); first <- e$KRI0; init <- initial_radio(e)
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     session$setInputs(kri = first, kri_level = init, ctcae = "6.0", window = 30, alp = FALSE,
                       meddra = "29.1", pid = "CP101-014")
     expect_identical(study(), S0)
@@ -38,12 +42,16 @@ test_that("opening the app with its initial inputs changes no indicator", {
 
 test_that("what-if: setting an indicator re-rolls the tiers worst-of, and reset restores the feed", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     session$setInputs(kri = "SF-RATE", kri_level = "AMBER")
     session$setInputs(kri_level = "RED")
     expect_equal(study()$LEVEL[study()$ID == "SF-RATE"], "RED")
     expect_equal(roll()$study, "RED")
     expect_equal(sum(study()$LEVEL != S0$LEVEL), 1)           # only that indicator moved
-    for (k in S0$ID) { session$setInputs(kri = k); session$setInputs(kri_level = "GREEN") }
+    for (k in S0$ID) { session$setInputs(kri = k); session$setInputs(kri_level = study()$LEVEL[study()$ID == k]); session$setInputs(kri_level = "GREEN") }
     expect_equal(roll()$study, "GREEN")
     expect_equal(roll()$overall, "RED")                       # the participant tier still carries RED
     session$setInputs(kri_reset = 1)
@@ -53,6 +61,10 @@ test_that("what-if: setting an indicator re-rolls the tiers worst-of, and reset 
 
 test_that("SAP settings flow through: CTCAE version, Hy's Law window, ALP convention", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     session$setInputs(ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     expect_false(any(roll()$worklist$id == "CP101-013"))
     session$setInputs(ctcae = "5.0")
@@ -64,13 +76,17 @@ test_that("SAP settings flow through: CTCAE version, Hy's Law window, ALP conven
     session$setInputs(window = 30, alp = TRUE)
     expect_true(liver()$hys[liver()$USUBJID == "CP101-014"])
     expect_match(roll()$worklist$rule[roll()$worklist$check == "Potential Hy's Law"], "ALP < 2x ULN \\(SAP convention\\)")
-    session$setInputs(window = NA)                            # a cleared box falls back to 30
-    expect_equal(settings()$hys_window, 30)
+    session$setInputs(window = NA) # invalid settings must not silently use a study default
+    expect_error(settings(), "between 1 and 90")
   })
 })
 
 test_that("CP101-009 is AMBER in the running app", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     session$setInputs(ctcae = "6.0", window = 30, alp = FALSE, pid = "CP101-009")
     expect_equal(pstat()[["CP101-009"]], "AMBER")
     expect_match(output$packet$html, "confirm \\(repeat within 48 to 72 h\\)")
@@ -79,6 +95,10 @@ test_that("CP101-009 is AMBER in the running app", {
 
 test_that("the participant packet never prints NA", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     session$setInputs(ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     for (id in TM$adsl$USUBJID) {
       session$setInputs(pid = id)
@@ -93,6 +113,10 @@ test_that("the participant packet never prints NA", {
 
 test_that("footnotes name the CTCAE version: lab grades follow the setting, recorded AE grades do not", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     session$setInputs(ctcae = "5.0", window = 30, alp = FALSE, meddra = "29.1")
     expect_match(output$shift_note$html, "Lab grades: NCI CTCAE v5.0")
     expect_match(output$ae_note$html, "AE grades as recorded by the investigator \\(NCI CTCAE v6.0\\)")
@@ -103,6 +127,10 @@ test_that("footnotes name the CTCAE version: lab grades follow the setting, reco
 
 test_that("the download is built in the browser from a CSV string (no downloadHandler), labeled synthetic", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     session$setInputs(ctcae = "6.0", window = 30, alp = FALSE)
     expect_null(dl_payload())
     session$setInputs(dl = 1)
@@ -111,7 +139,7 @@ test_that("the download is built in the browser from a CSV string (no downloadHa
     expect_equal(p$type, "text/csv")
     back <- utils::read.csv(text = p$content, stringsAsFactors = FALSE)
     expect_equal(names(back)[1], "data_source")
-    expect_true(all(back$data_source == "SYNTHETIC (study CP-101 does not exist)"))
+    expect_true(all(back$data_source == "Fictional example"))
     expect_equal(back$id, roll()$worklist$id)
   })
 })
@@ -127,8 +155,29 @@ test_that("Shinylive readiness: allowed packages only, data inside the app folde
   # nothing outside the app folder, except the local fallback path of the shared helper: the Pages
   # build copies apps/_shared/portfolio_app.R next to app.R before the Shinylive export
   outside <- grep("\\.\\./", readLines(file.path(APP_DIR, "app.R")), value = TRUE)
-  expect_true(all(grepl('"../../apps/_shared/portfolio_app.R"', outside, fixed = TRUE)),
+  expect_true(all(grepl('"../../apps/_shared/portfolio_app.R"', outside, fixed = TRUE) | grepl('"../../browser_modules/shared/browser_workspace.R"', outside, fixed = TRUE)),
               info = paste(outside, collapse = "\n"))
   needed <- c("adsl.csv", "adlb.csv", "adeg.csv", "adae.csv", "cohorts.csv", "study_kri.csv", "notes.csv")
   expect_true(all(file.exists(file.path(APP_DIR, "data", needed))))
+})
+
+
+test_that("uploaded cohort labels remain inert text in AE table headers", {
+  e <- app_env()
+  shiny::testServer(APP_DIR, {
+    session$flushReact()
+    session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+    session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
+    frames <- lapply(e$BW_TEMPLATES, `[[`, "data")
+    payload <- '<img src=x onerror="window.headerInjected=1">'
+    original <- frames[["cohorts.csv"]]$COHORT[[1]]
+    for (file in c("adsl.csv", "cohorts.csv"))
+      frames[[file]]$COHORT[frames[[file]]$COHORT == original] <- payload
+    apply_data(e$bw_tm_validate(frames, e$BW_TM_EXAMPLE_SETTINGS))
+    session$flushReact()
+    html <- output$ae_tbl
+    expect_false(grepl("<img ", html, fixed = TRUE))
+    expect_true(grepl("&lt;img src=x", html, fixed = TRUE))
+    expect_true(grepl('<span class="tm-soc">', html, fixed = TRUE))
+  })
 })

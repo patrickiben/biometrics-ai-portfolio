@@ -49,11 +49,15 @@ output_text <- function(x) {
 }
 
 test_that("every output the UI declares has content on first load, with no error", {
-  ids <- output_ids(app_ui_html()$html)
+  ids <- setdiff(output_ids(app_ui_html()$html), "bw_mapping")
   expect_true(length(ids) >= 24)
   expect_true(all(unlist(LAUNCH$smoke$outputs) %in% ids))
   for (t in LAUNCH$smoke$tabs) expect_true(all(unlist(t$outputs) %in% ids), info = t$tab)
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     do.call(session$setInputs, START)
     for (id in ids) {
       v <- tryCatch(output[[id]], error = function(e) e)
@@ -65,6 +69,10 @@ test_that("every output the UI declares has content on first load, with no error
 
 test_that("the launch page's smoke-test values are what the server computes on first load", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     do.call(session$setInputs, START)
     got <- list(v_overall = roll()$overall, v_part = roll()$participant, v_study = roll()$study,
                 v_red = as.character(roll()$red), v_amber = as.character(roll()$amber),
@@ -76,19 +84,19 @@ test_that("the launch page's smoke-test values are what the server computes on f
 })
 
 test_that("the Start here card says what the console shows, what each color means and what to try", {
-  h <- app_ui_html()$html
+  e <- view_env(); h <- as.character(e$start_here_ui(18, "4 cohorts, 10 to 120 mg", example = TRUE))
   expect_match(h, 'class="tm-start" open', fixed = TRUE)
   expect_match(h, "Start here", fixed = TRUE)
   for (l in c("RED", "AMBER", "watch", "GREEN")) expect_match(h, sprintf('class="sev sev-%s">%s<', l, l), fixed = TRUE)
-  expect_match(h, "18 dosed participants in 4 cohorts, 10 to 120 mg", fixed = TRUE)
+  expect_match(h, "18 dosed safety participants in 4 cohorts, 10 to 120 mg", fixed = TRUE)
   card <- sub("</details>.*", "", sub('.*class="tm-start"', "", h))
   steps <- sub(".*Try this", "", card)
   try_items <- regmatches(steps, gregexpr("<li>.*?</li>", steps))[[1]]
   # the card's steps are the launch page's steps: as many, naming the same participants and numbers
-  expect_length(try_items, length(LAUNCH$try))
-  expect_match(card, sprintf("%s things to try", c("one", "two", "three", "four", "five")[length(LAUNCH$try)]), fixed = TRUE)
+  expect_length(try_items, length(e$TM_TRY))
+  expect_match(card, sprintf("%s things to try", c("one", "two", "three", "four", "five")[length(e$TM_TRY)]), fixed = TRUE)
   key <- function(x) sort(unique(unlist(regmatches(x, gregexpr("CP101-[0-9]{3}|v5\\.0|\\b[0-9]+ to [0-9]+\\b|Study tier|Liver \\(eDISH\\)", x)))))
-  for (i in seq_along(try_items)) expect_equal(key(strip(try_items[i])), key(LAUNCH$try[[i]]), info = LAUNCH$try[[i]])
+  for (i in seq_along(try_items)) expect_equal(key(strip(try_items[i])), key(e$TM_TRY[[i]]), info = as.character(e$TM_TRY[[i]]))
   # the legend lists every rule that can put a row on the worklist, under its level
   for (i in seq_len(nrow(WORKLIST_RULES)))
     expect_match(card, htmltools::htmlEscape(WORKLIST_RULES$phrase[i]), fixed = TRUE, info = WORKLIST_RULES$phrase[i])
@@ -116,6 +124,10 @@ test_that("every worklist row, under any setting or what-if, matches a legend en
 
 test_that("the Try this steps each change what they say they change", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     do.call(session$setInputs, START)
     wl <- roll()$worklist
     # first load: CP101-014's first row is the highlighted one, and the status line says so
@@ -170,6 +182,10 @@ test_that("the Try this steps each change what they say they change", {
 
 test_that("the table selecting the open participant's own row is not a tap: nothing opens, nothing is announced", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     do.call(session$setInputs, START)
     expect_equal(pid_row(), 1L)
     session$setInputs(worklist_rows_selected = pid_row())                    # what DT reports after its first draw
@@ -180,6 +196,10 @@ test_that("the table selecting the open participant's own row is not a tap: noth
 
 test_that("every click says what it did: the open participant, a missed point, a cohort or study row", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     do.call(session$setInputs, START)
     cm <- output$edish$coordmap
     session$setInputs(edish_click = click_at(cm, 5.6, 3.1))                  # CP101-014, already open
@@ -213,10 +233,14 @@ test_that("every click says what it did: the open participant, a missed point, a
 
 test_that("empty and invalid states explain themselves instead of leaving a panel blank", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     do.call(session$setInputs, START)
     session$setInputs(window = 200)
-    expect_equal(settings()$hys_window, 30)
-    expect_match(output$window_note, "from 1 to 90; until then the default of 30 days is used")
+    expect_error(settings(), "between 1 and 90")
+    expect_match(output$window_note, "Analysis paused")
     session$setInputs(window = 14)
     expect_match(output$window_note, "In use: TBL within 14 days")
     session$setInputs(pid = "")
@@ -344,6 +368,10 @@ test_that("every word in the plots fits the device and covers no other label: ph
 
 test_that("small formats: the liver table shows one decimal; count columns do not wrap", {
   shiny::testServer(APP_DIR, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
+  session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
     do.call(session$setInputs, START)
     d <- liver_view()
     expect_equal(d$`R ratio`[d$Participant == "CP101-014"], "4.0")             # as the packet and the worklist write it

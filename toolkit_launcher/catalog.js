@@ -1,9 +1,9 @@
 window.TOOLKIT_CATALOG = {
   "schema": 1,
-  "updated": "2026-10-28",
+  "updated": "2026-11-03",
   "title": "Trial biostatistics toolkit",
   "project_label": "Create private project from examples",
-  "description": "One private copy includes all local modules and their fictional starter data. The external eCRF apps remain a separate repository.",
+  "description": "Open every module from the browser catalog. Core analyses and guided setup require no local R, Python or toolkit installation. Shared accounts, schedules and email are optional service connections; references and external public demos retain their stated scope.",
   "modules": [
     {
       "id": "open-tracker",
@@ -11,11 +11,11 @@ window.TOOLKIT_CATALOG = {
       "summary": "Track deliverables, stable IDs, owners, dates, status and change history. Choose an offline workspace or the guided shared tracker.",
       "category": "Operations",
       "kind": "browser",
-      "runtime": "Browser; Python 3.10+ for shared setup",
+      "runtime": "Browser · optional service connections",
       "docs": [
         {
-          "label": "Open offline workspace",
-          "path": "open_tracker/index.html"
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/open_tracker/index.html"
         },
         {
           "label": "Shared setup guide",
@@ -50,7 +50,10 @@ window.TOOLKIT_CATALOG = {
       "outputs": [],
       "persistence": "Offline edits stay in this browser until exported as JSON/CSV. Shared mode stores its database and settings outside the toolkit workspace ZIP; preserve them through the tracker’s separate backup controls.",
       "customization": "Create your own task records in the browser. For shared use, the existing wizard configures accounts, access and optional email.",
-      "limits": "Operational records only. Offline imports use the last supplied values; shared editing checks row versions. SMTP delivery and shared hosting need your own settings."
+      "limits": "Operational records only. Offline imports use the last supplied values; shared editing checks row versions. SMTP delivery and shared hosting need your own settings.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/open_tracker/index.html",
+      "browser_path": "open_tracker/index.html",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "continuity",
@@ -61,8 +64,8 @@ window.TOOLKIT_CATALOG = {
       "runtime": "Browser only",
       "docs": [
         {
-          "label": "Open workspace",
-          "path": "sasr_onleave_wiki/Continuity_Toolkit.html"
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/sasr_onleave_wiki/Continuity_Toolkit.html"
         },
         {
           "label": "CSV template",
@@ -84,7 +87,10 @@ window.TOOLKIT_CATALOG = {
       "outputs": [],
       "persistence": "Uses browser localStorage. Export JSON or CSV before changing browser, machine or project; browser storage is not a project backup.",
       "customization": "Enter or import your job inventory, choose the coverage scenario, and print or download the handoff packet.",
-      "limits": "The page makes no network requests. Browser storage is tied to the browser and origin; use exports to keep projects separate."
+      "limits": "The page makes no network requests. Browser storage is tied to the browser and origin; use exports to keep projects separate.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/sasr_onleave_wiki/Continuity_Toolkit.html",
+      "browser_path": "sasr_onleave_wiki/Continuity_Toolkit.html",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "trialmon",
@@ -92,8 +98,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Explore synthetic safety screens, participant worklists and the Safety Review Committee example.",
       "category": "Interactive apps",
       "kind": "shiny",
-      "runtime": "R 4.1+ and app packages",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/trialmon/"
+        },
         {
           "label": "Guide",
           "path": "sasr_monitoring_wiki/index.html"
@@ -281,11 +291,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Selections and settings last for the running session. Download the worklist CSV; input files remain in the private project.",
-      "customization": "Replace the listed CSVs in your private project, preserving their input contract. Review thresholds and verify known cases before study use.",
-      "limits": "A review aid with synthetic thresholds. It does not diagnose liver injury, adjudicate DLTs or decide escalation. Planted teaching cases are separate from the dosed participants.",
+      "persistence": "Browser inputs and edits remain in session memory. Export the complete workspace ZIP/JSON before closing or reloading; reimport it to resume. Optional desktop project workflows remain available.",
+      "customization": "Open a blank browser workspace, map your CSV columns, review the study settings and activate a validated complete input set. Synthetic examples load only by explicit choice.",
+      "limits": "A review aid with explicit study conventions and reviewed thresholds. It does not diagnose liver injury, adjudicate DLTs or decide escalation. Planted teaching cases are separate from study participants.",
       "app_id": "trialmon",
-      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/trialmon/"
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/trialmon/",
+      "browser_path": "apps/trialmon/",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "lifecycle",
@@ -293,8 +305,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Review a study portfolio, milestones, delivery progress and transparent operational scores.",
       "category": "Interactive apps",
       "kind": "shiny",
-      "runtime": "R 4.1+ and app packages",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/lifecycle_dashboard/"
+        },
         {
           "label": "Guide",
           "path": "lifecycle_dashboard/quarto/lifecycle-guide.html"
@@ -395,11 +411,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "What-if sliders do not write back to the input CSVs. Preserve revised source inputs in the private project.",
-      "customization": "Replace the listed CSVs in your private project, preserving their input contract. Review thresholds and verify known cases before study use.",
+      "persistence": "Browser inputs and edits remain in session memory. Export the complete workspace ZIP/JSON before closing or reloading; reimport it to resume. Optional desktop project workflows remain available.",
+      "customization": "Open a blank browser workspace, map your CSV columns, review the study settings and activate a validated complete input set. Synthetic examples load only by explicit choice.",
       "limits": "Operational signals only. Source-system connectors are not included. Read-only CSV exports must follow the documented schema.",
       "app_id": "lifecycle",
-      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/lifecycle_dashboard/"
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/lifecycle_dashboard/",
+      "browser_path": "apps/lifecycle_dashboard/",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "uat",
@@ -407,8 +425,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Review test scripts, trace requirements, record test results and inspect the sign-off gate.",
       "category": "Interactive apps",
       "kind": "shiny",
-      "runtime": "R 4.1+ and app packages",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/uat_irt/"
+        },
         {
           "label": "Guide",
           "path": "uat_irt/quarto/uat-guide.html"
@@ -497,11 +519,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Edits last for the session. The CSV download saves test results only; preserve defect and traceability changes separately.",
-      "customization": "Use the listed parent templates for local R. A browser rebuild also needs matching copies in uat_irt/shiny/templates; local project uploads target the parent templates.",
+      "persistence": "Browser inputs and edits remain in session memory. Export the complete workspace ZIP/JSON before closing or reloading; reimport it to resume. Optional desktop project workflows remain available.",
+      "customization": "Open a blank browser workspace, map your CSV columns, review the study settings and activate a validated complete input set. Synthetic examples load only by explicit choice.",
       "limits": "The gate packages evidence for a named human reviewer; it does not approve an IRT system. The workbook and Shiny checks are separate.",
       "app_id": "uat",
-      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/uat_irt/"
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/uat_irt/",
+      "browser_path": "apps/uat_irt/",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "risk",
@@ -509,8 +533,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Inspect weighted participant and study signal tiers and try what-if changes.",
       "category": "Interactive apps",
       "kind": "shiny",
-      "runtime": "R 4.1+ and app packages",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/risk/"
+        },
         {
           "label": "Guide",
           "path": "risk_monitor/quarto/risk-guide.html"
@@ -569,10 +597,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "What-if changes are session-only and do not update signals.csv. There is no complete session-state export.",
-      "customization": "Replace the listed CSVs in your private project, preserving their input contract. Review thresholds and verify known cases before study use.",
-      "limits": "This is a synthetic operational illustration. Signal values, weights and thresholds need review for the intended study. No Shinylive build is included.",
-      "app_id": "risk"
+      "persistence": "Browser inputs and edits remain in session memory. Export the complete workspace ZIP/JSON before closing or reloading; reimport it to resume. Optional desktop project workflows remain available.",
+      "customization": "Open a blank browser workspace, map your CSV columns, review the study settings and activate a validated complete input set. Synthetic examples load only by explicit choice.",
+      "limits": "Operational signals, weights and thresholds require review for the intended study. Browser execution and editable what-if controls do not validate a risk model.",
+      "app_id": "risk",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/risk/",
+      "browser_path": "apps/risk/",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "hours",
@@ -580,8 +611,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Compare planned, actual and forecast effort, then allocate an out-of-scope ask against slack and contingency.",
       "category": "Interactive apps",
       "kind": "shiny",
-      "runtime": "R 4.1+ and app packages",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/hours/"
+        },
         {
           "label": "Guide",
           "path": "budget_reconciliation/quarto/hours-guide.html"
@@ -643,10 +678,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Edits last for the session. Download the ledger CSV and change-order text before closing. Upload a saved ledger to the private project for a later run.",
-      "customization": "Replace the listed CSVs in your private project, preserving their input contract. Review thresholds and verify known cases before study use.",
-      "limits": "Hours and effort only: no prices, rates or headcount. No connection to budgets or timesheets; no Shinylive build is included.",
-      "app_id": "hours"
+      "persistence": "Browser inputs and edits remain in session memory. Export the complete workspace ZIP/JSON before closing or reloading; reimport it to resume. Optional desktop project workflows remain available.",
+      "customization": "Open a blank browser workspace, map your CSV columns, review the study settings and activate a validated complete input set. Synthetic examples load only by explicit choice.",
+      "limits": "Hours and effort only: no prices, rates or headcount. Browser CSV imports do not create a connection to budgets or timesheets.",
+      "app_id": "hours",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/hours/",
+      "browser_path": "apps/hours/",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "study",
@@ -654,8 +692,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Reproduce six stages of a synthetic 2x2 crossover: design, SAP, ADaM, analysis, QC and number-checked CSR text.",
       "category": "Analyses and methods",
       "kind": "job",
-      "runtime": "R, study package lockfile and Quarto",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=study"
+        },
         {
           "label": "Worked study",
           "path": "study/index.html"
@@ -723,10 +765,13 @@ window.TOOLKIT_CATALOG = {
           "path": "study/06_csr/csr_section11.html"
         }
       ],
-      "persistence": "Stage output files and run logs stay in your private project; export the project to retain the input, code and results together.",
-      "customization": "Start with reproduction. The SAP settings JSON is generated and overwritten by run_all.R; use Open folder or Open in editor to review and adapt the source R code before implementing a new design or source-data mapping.",
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Fixed synthetic six-stage worked-study reproduction; choose Run in the browser. The example does not adapt its scientific analysis plan to uploaded study data.",
       "limits": "The study is synthetic and always regenerates its example data. QC is same-author re-derivation. No conformant SDTM, define.xml, ADRG or submission package is produced.",
-      "runner_id": "study"
+      "runner_id": "study",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=study",
+      "browser_path": "apps/methods/?module=study",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "sandbox",
@@ -734,8 +779,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Generate eight ADaM-shaped domains and calculate PK, NCA, bioequivalence and safety summaries on a seeded example.",
       "category": "Analyses and methods",
       "kind": "job",
-      "runtime": "Base R",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=sandbox"
+        },
         {
           "label": "Sandbox",
           "path": "sim_lifecycle/index.html"
@@ -770,10 +819,13 @@ window.TOOLKIT_CATALOG = {
           "path": "sim_lifecycle/out"
         }
       ],
-      "persistence": "Generated CSVs and the job log stay in the private project.",
-      "customization": "Open the project code to review priors and the simulation design. The run button regenerates the documented example; it is not a general source-data analysis form.",
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Guided N, seed, GMR and CV settings; canonical simulated PK, monitoring, ECG and numerical QC outputs.",
       "limits": "Synthetic ADaM-shaped data with home-grown checks. NCA conventions and the simple model have stated limits; this is not CDISC conformance or a validated analysis.",
-      "runner_id": "sandbox"
+      "runner_id": "sandbox",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=sandbox",
+      "browser_path": "apps/methods/?module=sandbox",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "carryover",
@@ -781,8 +833,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Reproduce the synthetic operating-characteristics grid for washout and the ICH M13A 5% predose rule.",
       "category": "Analyses and methods",
       "kind": "job",
-      "runtime": "Base R; optional PKNCA cross-check",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=carryover"
+        },
         {
           "label": "Methods and results",
           "path": "sim_lifecycle/carryover_oc/index.html"
@@ -829,10 +885,13 @@ window.TOOLKIT_CATALOG = {
           "path": "sim_lifecycle/carryover_oc/index.html"
         }
       ],
-      "persistence": "CSV results, figures and regenerated page stay in the private project.",
-      "customization": "Inspect the source configuration and Monte Carlo precision through Open folder before changing scenarios. Retain the original example as the baseline.",
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Configure the canonical carryover simulations and retain operating characteristics, Monte Carlo uncertainty and all scenario results.",
       "limits": "Exploratory synthetic method study. Residual subtraction is a sensitivity analysis, not a regulatory recommendation.",
-      "runner_id": "carryover"
+      "runner_id": "carryover",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=carryover",
+      "browser_path": "apps/methods/?module=carryover",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "cqtc",
@@ -840,8 +899,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Reproduce the synthetic scenarios and operating characteristics for a prespecified concentration–QTc hysteresis check.",
       "category": "Analyses and methods",
       "kind": "job",
-      "runtime": "Base R; nlme for a test cross-check",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=cqtc"
+        },
         {
           "label": "Method and results",
           "path": "cqtc_hysteresis/index.html"
@@ -880,10 +943,13 @@ window.TOOLKIT_CATALOG = {
           "path": "cqtc_hysteresis/index.html"
         }
       ],
-      "persistence": "Results and the regenerated method page stay in the private project.",
-      "customization": "Review scenarios and model assumptions in the project source. The button reproduces the existing synthetic study.",
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Select reviewed concentration–QTc scenarios, simulation counts and inference settings. Outputs include operating characteristics and uncertainty; simulations do not approve a study model.",
       "limits": "An exploratory synthetic method study. It does not replace a prespecified clinical C-QTc analysis or regulatory review.",
-      "runner_id": "cqtc"
+      "runner_id": "cqtc",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=cqtc",
+      "browser_path": "apps/methods/?module=cqtc",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "vaccine",
@@ -891,8 +957,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Run all six descriptive vaccine analyses directly in your browser: upload CSVs, map columns, review study rules and download complete results and SAS references.",
       "category": "Interactive apps",
       "kind": "browser",
-      "runtime": "Browser R with no installation; optional local R workflow",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/vaccine/"
+        },
         {
           "label": "Vaccine analysis guide",
           "path": "vaccine/index.html"
@@ -915,12 +985,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Browser inputs and results stay in session memory. Download results and the setup profile to retain them; reload or reset clears the session. The optional local toolkit retains private project revisions.",
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
       "customization": "Start blank or deliberately load the fictional example. Choose outputs, map uploaded CSVs and configure assay, response and diary rules in guided forms.",
       "limits": "Review assay handling, populations, response definitions, observation windows and missing data for each study. Software execution and QC do not establish protection, clinical safety or study approval. Native SAS reference exports are unexecuted.",
       "runner_id": "vaccine",
       "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/apps/vaccine/",
-      "browser_label": "Run in browser"
+      "browser_label": "Open browser workspace",
+      "browser_path": "apps/vaccine/"
     },
     {
       "id": "tlf-libraries",
@@ -928,8 +999,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Configure and run 221 R table, listing and figure programs across five study designs, with SAS reference exports.",
       "category": "Templates and references",
       "kind": "templates",
-      "runtime": "R 4.4+; packages installed through the local toolkit",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=r_tlf"
+        },
         {
           "label": "SAS library",
           "path": "sas_tlf_pseudocode/index.html"
@@ -986,10 +1061,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Inputs, profiles and immutable setup packages stay in the private project. Every run has a separate HTML report, complete CSV/RDS tables, PDF/PNG figures, QC record, software versions and ZIP download.",
-      "customization": "Choose design, outputs, populations, parameters, dose values, comparison labels and analysis windows; map CSV columns, preview, generate, check packages and run. Save profiles to reuse settings.",
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Select any of the 221 R outputs across five designs, map analysis-ready CSVs, review definitions and run in the browser. The SAS route runs the R twin and exports configured SAS reference code.",
       "limits": "Software QC uses synthetic fixtures and known answers. Review methods, exclusions, units and model assumptions for each study. Native SAS reference code has not been executed; execution success is separate from study approval.",
-      "runner_id": "r_tlf"
+      "runner_id": "r_tlf",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=r_tlf",
+      "browser_path": "browser_modules/workbench/?module=r_tlf",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "harness",
@@ -997,8 +1075,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Run the repository’s automatic structural and numerical checks and inspect its evidence ledger.",
       "category": "QC and reporting",
       "kind": "job",
-      "runtime": "R and Python",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=harness"
+        },
         {
           "label": "Harness and ledger",
           "path": "validation_harness/index.html"
@@ -1034,10 +1116,13 @@ window.TOOLKIT_CATALOG = {
           "path": "validation_harness/ledger.json"
         }
       ],
-      "persistence": "The evidence ledger and logs stay in the private project.",
-      "customization": "Run the original example first. After adaptation, review which gates and reference outputs remain applicable.",
-      "limits": "A passing example does not validate a new study. Manual QC and AI-use sign-off remain separate; SAS/R parity is structural, not independently reconciled execution.",
-      "runner_id": "harness"
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Run all ten original gates against the reviewed public toolkit reference snapshot. Manual, unsigned and stale-evidence states remain explicit; arbitrary uploaded code is not executed.",
+      "limits": "Run all ten original gates against the reviewed public toolkit reference snapshot. Manual, unsigned and stale-evidence states remain explicit; arbitrary uploaded code is not executed. Computation does not grant independent review, signature or study approval.",
+      "runner_id": "harness",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=harness",
+      "browser_path": "browser_modules/workbench/?module=harness",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "teeth",
@@ -1045,8 +1130,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Measure what the QC harness catches by planting registered defects in throwaway copies of the example.",
       "category": "QC and reporting",
       "kind": "job",
-      "runtime": "R and Python; test packages for seeded defects",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=teeth"
+        },
         {
           "label": "What it catches",
           "path": "validation_harness/index.html#teeth"
@@ -1095,10 +1184,13 @@ window.TOOLKIT_CATALOG = {
           "path": "validation_harness/teeth/results/summary.json"
         }
       ],
-      "persistence": "Results and logs stay in the private project; the registered defects are applied to temporary copies.",
-      "customization": "Inspect the registered list and known scope before running. Changes to the registry require its documented freeze and review process.",
-      "limits": "Counts describe a hand-picked list, not an estimated defect-detection rate. A change with no effect on shipped data may be classified equivalent.",
-      "runner_id": "teeth"
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Run all eighteen frozen defect cases or a clearly labeled subset against the toolkit reference. Full browser execution can take many minutes; partial evidence is not a completed suite.",
+      "limits": "Run all eighteen frozen defect cases or a clearly labeled subset against the toolkit reference. Full browser execution can take many minutes; partial evidence is not a completed suite. Computation does not grant independent review, signature or study approval.",
+      "runner_id": "teeth",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=teeth",
+      "browser_path": "browser_modules/workbench/?module=teeth",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "interpretation",
@@ -1106,8 +1198,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Map AE-overview or PK-summary results, preview deterministic facts and review a draft without configuring a model.",
       "category": "QC and reporting",
       "kind": "job",
-      "runtime": "Browser and local toolkit for guided previews; R/Quarto for optional report regeneration",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=interpretation"
+        },
         {
           "label": "Validator and skeleton",
           "path": "tlf_interpret/index.html"
@@ -1138,10 +1234,13 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Inputs, profiles, draft reports and audit evidence stay in the private project; export the package to retain a reviewed version.",
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
       "customization": "Choose AE overview or PK summary, upload aggregate results and map columns. Preview the extracted facts, edit draft text, inspect number/claim checks and generate a report package.",
       "limits": "Supports the documented AE-overview and PK-summary contracts. Number checks do not establish that a number supports the right clinical claim. Generated drafts remain unapproved and require human review.",
-      "runner_id": "interpretation"
+      "runner_id": "interpretation",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=interpretation",
+      "browser_path": "browser_modules/workbench/?module=interpretation",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "sas_monitor",
@@ -1149,8 +1248,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Select monitoring checks, map study feeds and set thresholds through a guided form.",
       "category": "Templates and references",
       "kind": "templates",
-      "runtime": "R and jsonlite for local checks; scheduler and SMTP configured separately",
+      "runtime": "Browser only; optional desktop reproduction",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=sas_monitor"
+        },
         {
           "label": "Monitoring guide",
           "path": "sas_r_automation/SAS_R_Trial_Monitoring_Automation.html"
@@ -1182,9 +1285,12 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Inputs and settings remain in the private project. Each run retains separate outputs, diagnostics, software versions and a ZIP download.",
-      "customization": "Select checks, map CSV columns, set thresholds and a visit analysis date, then preview and generate. Check packages and run from the revision card. Save reusable profiles.",
-      "limits": "Eight mapped-CSV checks run locally through the generated revision. Native SAS exports remain unexecuted; scheduling, live feed connections and monitoring emails remain separate."
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Select any of eight monitoring checks, map CSV feeds, confirm the data cut and thresholds, and run R in the browser. Export configured SAS references. Schedules, feeds and email remain optional service integrations.",
+      "limits": "Eight mapped-CSV checks run in browser R. Native SAS exports remain unexecuted; scheduling, live feed connections and monitoring email are optional service integrations.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=sas_monitor",
+      "browser_path": "browser_modules/workbench/?module=sas_monitor",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "monitoring-wiki",
@@ -1192,11 +1298,11 @@ window.TOOLKIT_CATALOG = {
       "summary": "Read the monitoring coverage reference and its worked examples alongside the runnable TRIALMON card.",
       "category": "Templates and references",
       "kind": "reference",
-      "runtime": "Browser or PDF reader",
+      "runtime": "Browser only",
       "docs": [
         {
-          "label": "Coverage wiki",
-          "path": "sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html"
+          "label": "Read browser reference",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html"
         }
       ],
       "workspace_paths": [
@@ -1214,7 +1320,10 @@ window.TOOLKIT_CATALOG = {
       "outputs": [],
       "persistence": "The reference and supporting files are included in the private project.",
       "customization": "Use the reference to write a study-specific monitoring and coverage plan; use TRIALMON for the synthetic interactive example.",
-      "limits": "Reference material and examples do not configure feeds or authorize clinical decisions."
+      "limits": "Reference material and examples do not configure feeds or authorize clinical decisions.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html",
+      "browser_path": "sasr_monitoring_wiki/SASR_Monitoring_Coverage_Wiki.html",
+      "browser_label": "Read browser reference"
     },
     {
       "id": "playbook",
@@ -1222,11 +1331,11 @@ window.TOOLKIT_CATALOG = {
       "summary": "Plan planned leave, unplanned absence, role handoff, taking over and single-owner exposure.",
       "category": "Templates and references",
       "kind": "reference",
-      "runtime": "Browser or PDF reader",
+      "runtime": "Browser only",
       "docs": [
         {
-          "label": "Playbook",
-          "path": "sasr_onleave_wiki/On_Leave_Coverage_Playbook.html"
+          "label": "Read browser reference",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/sasr_onleave_wiki/On_Leave_Coverage_Playbook.html"
         },
         {
           "label": "Printable runbook",
@@ -1248,7 +1357,10 @@ window.TOOLKIT_CATALOG = {
       "outputs": [],
       "persistence": "Save your completed handoff through the separate continuity workspace’s JSON/CSV/print controls.",
       "customization": "Choose a scenario and populate your named owners, backups, schedules and escalation contacts in the continuity workspace.",
-      "limits": "The playbook is a reference. It does not automatically provide cover, schedule jobs or send messages."
+      "limits": "The playbook is a reference. It does not automatically provide cover, schedule jobs or send messages.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/sasr_onleave_wiki/On_Leave_Coverage_Playbook.html",
+      "browser_path": "sasr_onleave_wiki/On_Leave_Coverage_Playbook.html",
+      "browser_label": "Read browser reference"
     },
     {
       "id": "localmind",
@@ -1256,8 +1368,12 @@ window.TOOLKIT_CATALOG = {
       "summary": "Map findings and prepare controlled language-review inputs with explicit human approval.",
       "category": "Templates and references",
       "kind": "templates",
-      "runtime": "Licensed SAS or R with httr2/jsonlite; separately installed local model service",
+      "runtime": "Browser with optional WebGPU model",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=localmind"
+        },
         {
           "label": "Library and setup",
           "path": "slm_wiki/macro_library/README.md"
@@ -1281,18 +1397,25 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Inputs, saved profiles and generated review packages stay in the private project. Keep model identity and reviewed outputs with any later evaluation.",
-      "customization": "Upload findings, map identifiers/rules/text, choose allowed labels and enter local-model settings. Generate an unapproved review queue plus configured SAS/R helpers. Generation never contacts a model.",
-      "limits": "All generated findings start unapproved. Installing a model service and evaluating its outputs remain separate. A configured helper is not evidence of model quality."
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Prepare and edit an unapproved findings worklist in the browser. Optional WebGPU model loading and inference are separate clicks; controlled suggestions are never applied or approved automatically.",
+      "limits": "Optional browser inference needs WebGPU, roughly 1.1 GB graphics memory and a separate public model download. Labels are unvalidated suggestions; manual review remains fully usable without a model. No data is sent to an inference service.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/workbench/?module=localmind",
+      "browser_path": "browser_modules/workbench/?module=localmind",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "pipeline",
       "title": "Biostatistics deliverables register",
       "summary": "Explore 132 early-phase deliverables, their owners, inputs, outputs, standards and QC methods.",
       "category": "Templates and references",
-      "kind": "reference",
-      "runtime": "Browser, PDF reader or spreadsheet application",
+      "kind": "browser",
+      "runtime": "Browser only",
       "docs": [
+        {
+          "label": "Open browser workspace",
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/register/"
+        },
         {
           "label": "Pipeline document",
           "path": "biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf"
@@ -1325,9 +1448,12 @@ window.TOOLKIT_CATALOG = {
         }
       ],
       "outputs": [],
-      "persistence": "Save edited workbook/document copies within the private project and export it.",
-      "customization": "Open the register in your spreadsheet application and adapt deliverables, ownership and evidence for the intended study.",
-      "limits": "A reference map, not a record of completed study work or a generated submission package."
+      "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
+      "customization": "Start blank or deliberately load the complete 132-deliverable reference. Edit every field, add or remove rows, and retain the full register as JSON, CSV or a printable page.",
+      "limits": "The starter reference does not establish completed study work. User edits remain a planning record; no source-system synchronization, scientific approval or submission package is generated.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/register/",
+      "browser_path": "browser_modules/register/",
+      "browser_label": "Open browser workspace"
     },
     {
       "id": "ecrf",
@@ -1335,7 +1461,7 @@ window.TOOLKIT_CATALOG = {
       "summary": "Open four separately hosted Python demos: coding QC, de-identification review, participant risk and central monitoring.",
       "category": "External browser demos",
       "kind": "external",
-      "runtime": "Browser; separately hosted Python runtime downloads on first use",
+      "runtime": "External browser project",
       "docs": [
         {
           "label": "Apps and setup",
@@ -1359,8 +1485,9 @@ window.TOOLKIT_CATALOG = {
       "outputs": [],
       "persistence": "Separate demo site; its code and runtime are not included in this toolkit project ZIP.",
       "customization": "Use the synthetic public demos. For local adaptation, download that separate repository and follow its own setup guide.",
-      "limits": "Uploads are disabled in the public demos. Placeholder coding is not MedDRA. The host/CDN sees your IP address; this is not a validated or Part 11 system.",
-      "demo_url": "https://patrickiben.github.io/ecrf-pipeline-apps/"
+      "limits": "Uploads are disabled in the public demos. Placeholder coding is not MedDRA. The host/CDN sees your IP address; this is not a validated or Part 11 system. This link opens a separately maintained public project; upload availability and validation scope are governed by that app.",
+      "demo_url": "https://patrickiben.github.io/ecrf-pipeline-apps/",
+      "browser_label": "Open external browser app"
     },
     {
       "id": "sibling",
@@ -1368,7 +1495,7 @@ window.TOOLKIT_CATALOG = {
       "summary": "Read the separate eCRF coding-assist evaluation, including its within-sibling comparison and observed failures.",
       "category": "External browser demos",
       "kind": "external",
-      "runtime": "Browser",
+      "runtime": "External browser project",
       "docs": [
         {
           "label": "Evaluation",
@@ -1388,8 +1515,9 @@ window.TOOLKIT_CATALOG = {
       "outputs": [],
       "persistence": "Read-only external evidence; reproduction belongs to the separately downloaded eCRF repository.",
       "customization": "Read the evaluation before adapting the coding-assist example. Retain its human review and test assumptions in any new work.",
-      "limits": "Synthetic evaluation results do not establish performance on a new study or coding dictionary.",
-      "demo_url": "https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination"
+      "limits": "Synthetic evaluation results do not establish performance on a new study or coding dictionary. This link opens a separately maintained public project; upload availability and validation scope are governed by that app.",
+      "demo_url": "https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination",
+      "browser_label": "Open external browser app"
     }
   ]
 };

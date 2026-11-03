@@ -1,0 +1,70 @@
+{
+  "source": "budget_reconciliation/shiny",
+  "title": "Hours budget reconciliation",
+  "summary": "Upload an effort ledger, adjust forecast hours and contingency, enter an additional request and inspect the available-hour allocation and change-order gap. This tool uses hours only and does not assume a client, currency or staffing model.",
+  "try": [
+    "Download blank CSV templates or select your source CSV and map its columns.",
+    "Validate the inputs, explore the editable controls and save the complete workspace to retain results.",
+    "Load the fictional example only when you want a guided demonstration."
+  ],
+  "links": [
+    {
+      "t": "guide",
+      "label": "Module guide",
+      "href": "../../budget_reconciliation/README.md"
+    }
+  ],
+  "first_load": {
+    "download_mb": 220,
+    "first_s": "30 to 90",
+    "revisit_s": "10 to 30"
+  },
+  "extra_files": [
+    {
+      "from": "browser_modules/shared/browser_workspace.R",
+      "to": "browser_workspace.R"
+    },
+    {
+      "from": "browser_modules/shared/browser_workspace.js",
+      "to": "browser_workspace.js"
+    },
+    {
+      "from": "browser_modules/shared/browser_workspace.css",
+      "to": "browser_workspace.css"
+    },
+    {
+      "from": "budget_reconciliation/templates/project_hours_ledger.csv",
+      "to": "templates/project_hours_ledger.csv"
+    }
+  ],
+  "data_scope": "Your study inputs \u00b7 optional fictional example",
+  "data_note": "No client is preconfigured. Files remain in browser memory; save the complete workspace before closing or reloading.",
+  "smoke": {
+    "timeout_s": 150,
+    "setup": [
+      {
+        "click": "#bw_example"
+      },
+      {
+        "wait": 1200
+      }
+    ],
+    "outputs": [
+      "v_planned",
+      "v_actual",
+      "v_eac",
+      "v_cont",
+      "v_find",
+      "ledger",
+      "verdict",
+      "plot"
+    ],
+    "expect": {
+      "v_planned": "850 h",
+      "v_eac": "831 h",
+      "v_find": "59 h"
+    },
+    "tabs": [],
+    "interactions": []
+  }
+}

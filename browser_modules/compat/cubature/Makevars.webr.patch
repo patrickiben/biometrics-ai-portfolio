@@ -1,0 +1,34 @@
+--- a/src/Makevars.webr
++++ b/src/Makevars.webr
+@@ -11,7 +11,7 @@
+ WASM_AR      = emar
+ WASM_RANLIB  = emranlib
+ WASM_ARFLAGS = -rv
+-WASM_CFLAGS  = $(CPPFLAGS) $(PKG_CPPFLAGS) $(R_INC_FLAG) $(CFLAGS) $(CPICFLAGS)
++CUBATURE_WASM_CFLAGS  = $(CPPFLAGS) $(PKG_CPPFLAGS) $(R_INC_FLAG) $(CFLAGS) $(CPICFLAGS) -fwasm-exceptions -sSUPPORT_LONGJMP=wasm
+ 
+ $(SHLIB): Rcpp-cubature.o Rcpp-Cuba.o RcppExports.o cubature_init.o
+ 
+@@ -23,18 +23,18 @@
+ ## Force cubature_init.o to be built with the emscripten tools and flags above
+ cubature_init.o: cubature_init.c
+ 	CC=$(WASM_CC) CXX=$(WASM_CXX) AR=$(WASM_AR) RANLIB=$(WASM_RANLIB) \
+-	  CFLAGS="$(WASM_CFLAGS)" ARFLAGS="$(WASM_ARFLAGS)" \
+-	  $(WASM_CC) $(WASM_CFLAGS) -c $< -o $@
++	  CFLAGS="$(CUBATURE_WASM_CFLAGS)" ARFLAGS="$(WASM_ARFLAGS)" \
++	  $(WASM_CC) $(CUBATURE_WASM_CFLAGS) -c $< -o $@
+ 
+ cubature.ts:
+ 	((cd $(CUBATURE_DIR) && \
+-	($(MAKE) libcubature.a CC="emcc" CXX="em++" AR="emar" RANLIB="emranlib" CFLAGS="$(CPPFLAGS) $(PKG_CPPFLAGS) $(R_INC_FLAG) $(CFLAGS) $(CPICFLAGS)"  ARFLAGS="-rv")) && \
++	($(MAKE) libcubature.a CC="emcc" CXX="em++" AR="emar" RANLIB="emranlib" CFLAGS="$(CPPFLAGS) $(PKG_CPPFLAGS) $(R_INC_FLAG) $(CFLAGS) $(CPICFLAGS) -fwasm-exceptions -sSUPPORT_LONGJMP=wasm"  ARFLAGS="-rv")) && \
+ 	touch $@)
+ 
+ cuba.ts:
+ 	((cd $(CUBA_DIR) && \
+ 	./configure $(R_CONFIGURE_FLAGS) && \
+-	$(MAKE) libcuba.a CC="emcc" CXX="em++" AR="emar" RANLIB="emranlib" CFLAGS="$(CPPFLAGS) $(PKG_CPPFLAGS) $(R_INC_FLAG) $(CFLAGS) $(CPICFLAGS)"  ARFLAGS="-rv") && \
++	$(MAKE) libcuba.a CC="emcc" CXX="em++" AR="emar" RANLIB="emranlib" CFLAGS="$(CPPFLAGS) $(PKG_CPPFLAGS) $(R_INC_FLAG) $(CFLAGS) $(CPICFLAGS) -fwasm-exceptions -sSUPPORT_LONGJMP=wasm"  ARFLAGS="-rv") && \
+ 	touch $@)
+ 
+ clean:

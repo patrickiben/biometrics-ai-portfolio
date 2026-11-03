@@ -19,6 +19,8 @@ warm_up_graphics()   # in the browser, load the plot fonts while the launch page
 source("R/logic.R")
 if (!file.exists("data/studies.csv")) { source("R/gen_data.R"); gen_portfolio("data") }
 seed <- lifecycle_load("data")
+source(if (file.exists("browser_workspace.R")) "browser_workspace.R" else "../../browser_modules/shared/browser_workspace.R")
+source("browser_setup.R", local = TRUE)
 # the study selected when the app opens: CP-108 (the planted at-risk study), or the first study
 # when the data have no CP-108, for example a CTMS export
 OPEN_ID <- if ("CP-108" %in% seed$studies$id) "CP-108" else sort(seed$studies$id)[1]
@@ -250,7 +252,7 @@ start_here <- accordion(
     layout_columns(
       col_widths = breakpoints(sm = 12, lg = c(4, 4, 4)), gap = "1.25rem",
       div(tags$h2("What it shows"),
-          p("Operational health of eight synthetic early-phase studies, from protocol to clinical study report.",
+          p("Operational health of the loaded study portfolio, from protocol to clinical study report.",
             "Each study gets four risk scores from 0 to 100 (higher is riskier), blended into an overall score.",
             "Click any study to open its detail below the heatmap.")),
       div(tags$h2("How to read the colors"),
@@ -263,14 +265,14 @@ start_here <- accordion(
           tags$ol(
             tags$li("Click CP-107: its TLFs and CSR are overdue with 44% of TLFs final."),
             tags$li("Pick CP-103 and drag Open queries to 120: it turns amber, On watch goes to 4 and its backlog signal turns red."),
-            tags$li("For CP-108, raise Double-programmed % to 80: At risk drops to 0. Reset to data undoes it.")),
+            tags$li("In the fictional example, raise CP-108 Double-programmed % to 80: At risk drops to 0. Reset to data undoes it.")),
           p(class = "lc-phone-only", "On a narrow screen, the arrow button at the top left opens the study picker and the what-if sliders.")))))
 
 ui <- page_sidebar(
   title = tags$header(class = "lc-title",   # the page's banner landmark
               tags$h1("Study Lifecycle Monitor"),
               span(class = "bp-chip synthetic", "Synthetic data"),
-              span(class = "lc-asof", if (is.na(AS_OF)) "Snapshot date not in the data" else paste("Snapshot", day_fmt(AS_OF))),
+              span(class = "lc-asof", textOutput("snapshot_label", inline = TRUE)),
               div(class = "lc-mode", bp_theme_toggle())),
   window_title = "Study Lifecycle Monitor",
   theme = bp_theme(),   # precompiled; the site's tokens come from bp_theme_head() (in app_status_ui())
@@ -414,7 +416,7 @@ server <- function(input, output, session) {
 
   data_now <- reactive(list(studies = rv$studies, milestones = seed$milestones,
                             deliverables = seed$deliverables, query_trend = seed$query_trend))
-  st  <- reactive(score_portfolio(data_now()))
+  st  <- reactive({ req(bw$active()); score_portfolio(data_now()) })
   kpi <- reactive(lifecycle_kpis(st(), data_now()))
   sg  <- reactive(lifecycle_signals(st(), data_now()))
   # the studies and fields a what-if has changed: list(id = c("open_queries", ...))
@@ -698,6 +700,25 @@ server <- function(input, output, session) {
     }))
     div(class = "lc-whatif on", tags$b("What-if in effect"), tags$ul(lapply(items, tags$li)))
   })
+  baseline_example <- seed
+  source_data <- reactiveVal(NULL)
+  bw <- bw_server(input, output, session, "lifecycle", BW_TEMPLATES,
+    example = function() lapply(BW_TEMPLATES, `[[`, "data"), validate = bw_lifecycle_validate,
+    apply = function(value, settings) {
+      source_data(value); rv$studies <- value$studies
+      selected <- if (!is.null(settings$selected_study)) settings$selected_study else if ("CP-108" %in% value$studies$id) "CP-108" else value$studies$id[[1]]
+      choices <- setNames(value$studies$id, vapply(seq_len(nrow(value$studies)), function(i) study_label(value$studies[i, ]), ""))
+      updateSelectInput(session, "study", choices = choices, selected = selected)
+      move_sliders(value$studies[value$studies$id == selected, ], max_q = max(150, value$studies$open_queries))
+    }, clear = function() { source_data(NULL); rv$studies <- bw_empty(baseline_example$studies) },
+    export = function() list(inputs = setNames(data_now(), names(BW_TEMPLATES)), settings = list(selected_study = input$study),
+      outputs = list(portfolio_scores = st(), ranked_signals = sg(), portfolio_metrics = bw_scalar_table(kpi())),
+      notes = "Operational heuristic scores, not probabilities or scientific approval. Saved study rows include current what-if edits; importing them establishes that snapshot as the new baseline."))
+  bw_binding("seed", function() { value <- source_data(); req(value); value }, environment())
+  bw_binding("AS_OF", function() { value <- source_data(); req(value); lifecycle_as_of(value) }, environment())
+  output$snapshot_label <- renderText({ req(bw$active()); if (is.na(AS_OF)) "Snapshot date not in the data" else paste("Snapshot", day_fmt(AS_OF)) })
+  rv$studies <- bw_empty(baseline_example$studies)
 }
 
+ui <- bw_ui(ui, "Study lifecycle workspace", BW_TEMPLATES, note = "Phases: Startup, Conduct, DB Lock or Reporting. clean_pct and sdv_pct are proportions from 0 to 1; dbl_prog_pct is a percentage from 0 to 100. Milestones: Protocol, SAP, FPFV, LPLV, DBL, TLFs or CSR; status done, wip, risk or todo. Dates use YYYY-MM-DD. Every study needs all four feeds and a DBL date consistent with the shared snapshot.")
 shinyApp(ui, server)

@@ -1,6 +1,6 @@
 # PK, NCA and bioequivalence sandbox (synthetic)
 
-Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to create a private project and run the synthetic sandbox; its generated CSVs and log stay in that project. Open the R source in your editor to adapt the simulation or analysis.
+[Run the PK/BE sandbox in your browser](https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=sandbox). Configure the synthetic participant count, seed, true ratio and within-participant variability in guided browser forms. The full canonical workflow includes its N=400 calibration diagnostic and may take about two minutes on a desktop browser. No local R, command-line steps, account or toolkit download is needed. Download the complete review ZIP before leaving; the browser session is not saved. The optional native reproduction instructions remain below.
 
 One synthetic early-phase clinical pharmacology study, taken through the analysis steps:
 **synthetic ADaM, PK and NCA, then summary computations.** Base R, seeded, runs offline.

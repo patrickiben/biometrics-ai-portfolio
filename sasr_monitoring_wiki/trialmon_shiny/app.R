@@ -32,6 +32,8 @@ source("R/hyslaw_grid.R")
 source("R/app_view.R")
 if (!file.exists("data/adsl.csv") || !file.exists("data/labs_long.csv")) { source("R/gen_data.R"); gen_trialmon("data") }
 tm <- trialmon_load("data")
+source(if (file.exists("browser_workspace.R")) "browser_workspace.R" else "../../browser_modules/shared/browser_workspace.R")
+source("browser_setup.R", local = TRUE)
 HL <- hyslaw_load("data")                               # planted grid cases + narrative assertions
 GRID0 <- hyslaw_app_grid(tm, HL)
 GRID_CHECK <- hyslaw_check_narrative(GRID0, HL$flags)
@@ -62,7 +64,7 @@ ui <- page_sidebar(
               tags$h1(class = "tm-title", "TRIALMON: safety review console"),   # the page's one h1
               span(class = "bp-chip synthetic", "Synthetic data"),
               div(class = "ms-auto", bp_theme_toggle())),
-  window_title = "TRIALMON safety review console (synthetic data)",   # else the title's markup, toggle included
+  window_title = "TRIALMON safety review console",   # else the title's markup, toggle included
   theme = bp_theme(),                                   # precompiled; the site's tokens come from bp_theme_head()
   lang = "en",
   fillable = FALSE,
@@ -74,8 +76,8 @@ ui <- page_sidebar(
     tags$h2(class = "h6", "SAP settings"),   # a second-level heading drawn at the h6 size
     radioButtons("ctcae", "Lab grading (derived from the lab values)", choices = c("NCI CTCAE v6.0" = "6.0", "v5.0 (per protocol)" = "5.0"),
                  selected = "6.0"),
-    p(class = "foot", sprintf(paste("This setting re-derives lab grades only. AE grades stay as the investigator",
-                                    "recorded them (NCI CTCAE v%s in these data)."), trialmon_settings()$ae_ctcae)),
+    selectInput("ae_ctcae", "Recorded AE grading version (label only)", c("CTCAE 6.0" = "6.0", "CTCAE 5.0" = "5.0"), selected = "6.0"),
+    p(class = "foot", "Lab grades are derived; recorded AE grades are never recalculated."),
     numericInput("window", "Potential Hy's Law: days after the AT elevation", value = WINDOW_DEFAULT, min = 1, max = 90),
     p(class = "foot", textOutput("window_note", inline = TRUE)),
     checkboxInput("alp", "Also require ALP < 2x ULN (an SAP convention)", value = FALSE),
@@ -84,7 +86,7 @@ ui <- page_sidebar(
   tags$head(tags$link(rel = "icon", href = "data:,"), tags$script(HTML(DOWNLOAD_JS)), tags$script(HTML(TM_JS)),
             tags$style(HTML(tm_css()))),
   app_status_ui("the worst-of safety roll-up, the ranked worklist and the participant packet"),
-  start_here_ui(nrow(tm$adsl), COHORT_TEXT),
+  uiOutput("start_here"),
   div(class = "tm-kpis-wrap", div(class = "tm-kpis",         # 7 in a row when wide, 3 + 4, or 1 + 2 + 2 + 2 on a phone
     kpi(tagList("Overall ", span(class = "nw", "(worst-of)")), uiOutput("v_overall", inline = TRUE), "worst of both tiers", tier = TRUE),
     kpi("Participants and cohorts", uiOutput("v_part", inline = TRUE), "worst participant or cohort", tier = TRUE),
@@ -92,7 +94,7 @@ ui <- page_sidebar(
     kpi("RED flags", textOutput("v_red", inline = TRUE), "worklist rows", "RED"),
     kpi("AMBER flags", textOutput("v_amber", inline = TRUE), "worklist rows", "AMBER"),
     kpi("Watch", textOutput("v_watch", inline = TRUE), "worklist rows", "watch"),
-    kpi("Dosed participants", textOutput("v_n", inline = TRUE), COHORT_TEXT)
+    kpi("Dosed participants", textOutput("v_n", inline = TRUE), textOutput("cohort_text", inline = TRUE))
   )),
   navset_card_tab(
     id = "tabs",
@@ -102,7 +104,7 @@ ui <- page_sidebar(
           actionButton("dl", "Download the worklist (CSV)", class = "btn-sm btn-outline-primary")),
       tm_wide(tm_xscroll(DTOutput("worklist", fill = FALSE))),
       p(class = "foot mt-2", "Ranked RED, then AMBER, then watch. The CSV file is built in your browser; its first",
-        "column labels every row synthetic.")),
+        "column identifies the selected data source.")),
     nav_panel("Liver (eDISH)",
       layout_columns(
         col_widths = breakpoints(sm = 12, lg = c(7, 5)),
@@ -142,7 +144,7 @@ ui <- page_sidebar(
         "1 of 3 means expand to 6, and 2 or more DLTs mean the dose exceeds the MTD (which needs 6 treated). ",
         "A cohort with a DLT pending adjudication takes the worse of its two possible outcomes. ",
         "Model-assisted designs such as BOIN (FDA fit-for-purpose determination, December 2021) are the current ",
-        "alternative; this demo does not implement them. The committee adjudicates DLTs and decides.")),
+        "alternative; this console does not implement them. The committee adjudicates DLTs and decides.")),
     nav_panel("Study tier",
       p(class = "small", "Study-level indicators from the operational feed, plus two computed from the data. ",
         "Exceeding a pre-specified range triggers evaluation, not an automatic stop (ICH E6(R3) section 3.10.1.3). ",
@@ -156,22 +158,31 @@ ui <- page_sidebar(
       tm_wide(DTOutput("study_tbl", fill = FALSE)),
       p(class = "foot mt-2", paste0("Guidance: ", E6R3, ".")))
   ),
-  p(class = "tm-footer", "Synthetic data only: study CP-101 and every participant in it are invented. TRIALMON flags ",
-    "positions for a human reviewer; in a real study the numbers a committee relies on come from validated programs.")
+  p(class = "tm-footer", "TRIALMON flags positions for a human reviewer. Review the study conventions and data completeness before use; ",
+    "this console does not adjudicate cases or make dose-escalation decisions.")
 )
 
 server <- function(input, output, session) {
-  win <- reactive({
-    w <- input$window
-    ok <- !is.null(w) && length(w) == 1 && !is.na(w) && w >= 1 && w <= 90
-    list(value = if (ok) as.numeric(w) else WINDOW_DEFAULT, ok = ok)
+  pending_settings <- reactiveVal(NULL)
+  current_settings <- reactive({
+    req(bw$active()); value <- pending_settings()
+    if (!is.null(value)) return(value)
+    cfg <- source_data()$config
+    cfg$ctcae <- input$ctcae; cfg$hys_window <- input$window; cfg$alp_convention <- isTRUE(input$alp)
+    cfg$meddra <- input$meddra; cfg$ae_ctcae <- input$ae_ctcae
+    tryCatch(bw_tm_settings(cfg), error = function(e) validate(need(FALSE, conditionMessage(e))))
   })
+  observe({
+    p <- pending_settings(); if (is.null(p)) return()
+    if (identical(input$ctcae, p$ctcae) && identical(input$ae_ctcae, p$ae_ctcae) &&
+        identical(input$meddra, p$meddra) && isTRUE(input$window == p$hys_window) && identical(isTRUE(input$alp), p$alp_convention)) pending_settings(NULL)
+  })
+  win <- reactive({ req(bw$active()); tryCatch(list(value = current_settings()$hys_window, ok = TRUE), error = function(e) list(ok = FALSE, message = conditionMessage(e))) })
   settings <- reactive({
-    trialmon_settings(if (is.null(input$ctcae)) "6.0" else input$ctcae, win()$value, isTRUE(input$alp),
-                      if (is.null(input$meddra) || !nzchar(input$meddra)) "29.1" else input$meddra)
+    s <- current_settings(); trialmon_settings(s$ctcae, s$hys_window, s$alp_convention, s$meddra, s$ae_ctcae)
   })
   study <- reactiveVal(STUDY0)
-  roll <- reactive(trialmon_rollup(tm, settings(), study()))
+  roll <- reactive({ req(bw$active()); trialmon_rollup(tm, settings(), study()) })
   liver <- reactive(hys_screen(tm$adlb, settings()$hys_window, settings()$alp_convention))
   pstat <- reactive({
     wl <- roll()$worklist
@@ -184,7 +195,7 @@ server <- function(input, output, session) {
 
   output$window_note <- renderText({
     if (win()$ok) sprintf("In use: TBL within %g days of the AT elevation.", win()$value)
-    else sprintf("Enter a number of days from 1 to 90; until then the default of %d days is used.", WINDOW_DEFAULT)
+    else paste("Analysis paused:", win()$message)
   })
 
   output$v_overall <- renderUI(guard("the overall level", sev_span(roll()$overall)))
@@ -283,8 +294,8 @@ server <- function(input, output, session) {
   # client-side download: R builds the CSV text, the browser saves it (works under Shinylive)
   dl_payload <- reactiveVal(NULL)
   observeEvent(input$dl, {
-    p <- list(filename = sprintf("SYNTHETIC_trialmon_worklist_CTCAEv%s.csv", settings()$ctcae),
-              type = "text/csv", content = as_csv_text(cbind(data_source = SYNTHETIC_LABEL, roll()$worklist)))
+    p <- list(filename = sprintf("%strialmon_worklist_CTCAEv%s.csv", if (bw$state$origin == "Fictional example") "SYNTHETIC_" else "", settings()$ctcae),
+              type = "text/csv", content = bw_csv_safe(cbind(data_source = bw$state$origin, roll()$worklist)))
     dl_payload(p)
     session$sendCustomMessage("trialmon-download", p)
   })
@@ -385,9 +396,8 @@ server <- function(input, output, session) {
       "Verdicts: Robust (12 of 12 cells); Convention-dependent (names each factor for which two cells that differ ",
       "only in that factor disagree); Not flagged; Peak-only artifact (0 of 12, but in the upper-right eDISH ",
       "quadrant on peak values). The peak-versus-peak column is the eDISH screen and is not part of the verdict. ",
-      "CP101-901 to -907 are planted known-answer cases from data/labs_long.csv: they are not among the 18 dosed ",
-      "participants and enter no other tab. The statuses the narratives imply are in data/narrative_flags.csv; ",
-      "the tests fail if any disagrees with the computed verdict."))
+      "Optional comparison cases enter this grid only; they never enter study denominators or other tabs. ",
+      "Narrative assertions are compared with the computed verdict in the final columns. Review any disagreement."))
   })
 
   output$qtc_cat <- renderTable(guard("the QTcF categories", {
@@ -431,7 +441,8 @@ server <- function(input, output, session) {
     out <- data.frame(`SOC / Preferred term` = lab, check.names = FALSE)
     for (g in names(N)) out[[sprintf("%s (N=%d)", g, N[[g]])]] <- sprintf("%d (%.0f%%)", a[[g]], 100 * a[[g]] / N[[g]])
     out
-  }), striped = TRUE, hover = TRUE, spacing = "s", sanitize.text.function = function(x) x)
+  }), striped = TRUE, hover = TRUE, spacing = "s", sanitize.text.function = function(x) x,
+     sanitize.colnames.function = tm_esc)
   output$ae_note <- renderUI(p(class = "foot", sprintf(paste0(
     "Treatment-emergent AEs, participants counted once per row; N = dosed participants. Coded with MedDRA v%s ",
     "(primary SOC). AE grades as recorded by the investigator (NCI CTCAE v%s); the lab-grade setting ",
@@ -454,10 +465,15 @@ server <- function(input, output, session) {
 
   # study tier what-if. The radio starts on the selected indicator's level and its observer
   # ignores the initial value, so opening the app never rewrites an indicator (no flicker).
+  pending_kri <- reactiveVal(NULL)
+  observe({ wanted <- pending_kri(); if (!is.null(wanted) && identical(input$kri, wanted$id) && identical(input$kri_level, wanted$level)) pending_kri(NULL) })
   observeEvent(input$kri, {
+    req(bw$active()); requested <- list(id = input$kri, level = study()$LEVEL[study()$ID == input$kri]); pending_kri(requested)
     updateRadioButtons(session, "kri_level", selected = study()$LEVEL[study()$ID == input$kri])
   }, ignoreInit = TRUE)
   observeEvent(input$kri_level, {
+    req(bw$active()); pending <- pending_kri()
+    if (!is.null(pending)) { if (identical(input$kri, pending$id) && identical(input$kri_level, pending$level)) pending_kri(NULL); return() }
     s <- study(); i <- which(s$ID == input$kri)
     if (length(i) == 1 && s$LEVEL[i] != input$kri_level) { s$LEVEL[i] <- input$kri_level; study(s) }
   }, ignoreInit = TRUE)
@@ -503,9 +519,76 @@ server <- function(input, output, session) {
         tags$dt(sprintf("Adverse events (%d)", nrow(ae))),
         tags$dd(if (nrow(ae)) paste(sprintf("%s G%d%s", ae$AEDECOD, ae$AETOXGR, ifelse(ae$AESER == "Y", " (serious)", "")),
                                     collapse = "; ") else "none")),
-      if (length(nt)) p(class = "note", "Synthetic teaching note: ", nt)
+      if (length(nt)) p(class = "note", "Source note: ", nt)
     )
   }))
+  source_data <- reactiveVal(NULL)
+  prepared <- reactive({ value <- source_data(); req(value); value })
+  baseline <- reactive(study_signals(prepared()$tm, prepared()$config$schedule, prepared()$config$sae_limits, prepared()$config$missing_limits))
+  grid <- reactive(hyslaw_app_grid(tm, HL, "Study inputs", "Comparison inputs"))
+  qtc <- reactive(qtc_screen(tm$adeg)); dlt <- reactive(dlt_state(tm)); ae <- reactive(ae_soc_pt(tm))
+  apply_data <- function(value, ignored = NULL) {
+    source_data(value); cfg <- value$config; pending_settings(cfg)
+    st <- study_signals(value$tm, cfg$schedule, cfg$sae_limits, cfg$missing_limits)
+    if (!is.null(cfg$study_levels)) {
+      levels <- unlist(cfg$study_levels); bw_need(setequal(names(levels), st$ID) && all(levels %in% LEVELS), "Saved study what-if levels are invalid.")
+      st$LEVEL <- unname(levels[st$ID])
+    }
+    study(st)
+    chosen <- if ("CP101-014" %in% value$tm$adsl$USUBJID) "CP101-014" else value$tm$adsl$USUBJID[[1]]
+    updateSelectInput(session, "pid", choices = value$tm$adsl$USUBJID, selected = chosen)
+    kri <- st$ID[st$LEVEL != "GREEN"][1]; if (is.na(kri)) kri <- st$ID[[1]]
+    pending_kri(list(id = kri, level = st$LEVEL[st$ID == kri]))
+    updateSelectInput(session, "kri", choices = setNames(st$ID, paste(st$ID, st$INDICATOR, sep = ": ")), selected = kri)
+    updateRadioButtons(session, "kri_level", selected = st$LEVEL[st$ID == kri])
+    updateRadioButtons(session, "ctcae", selected = cfg$ctcae); updateSelectInput(session, "ae_ctcae", selected = cfg$ae_ctcae)
+    updateNumericInput(session, "window", value = cfg$hys_window); updateCheckboxInput(session, "alp", value = cfg$alp_convention); updateTextInput(session, "meddra", value = cfg$meddra)
+    updateTextAreaInput(session, "bw_schedule", value = paste(names(cfg$schedule), cfg$schedule, sep = " = ", collapse = "\n"))
+    updateNumericInput(session, "bw_sae_amber", value = cfg$sae_limits[1]); updateNumericInput(session, "bw_sae_red", value = cfg$sae_limits[2])
+    updateNumericInput(session, "bw_missing_amber", value = cfg$missing_limits[1]); updateNumericInput(session, "bw_missing_red", value = cfg$missing_limits[2])
+    updateSelectInput(session, "bw_lab_ctcae", selected = cfg$ctcae); updateSelectInput(session, "bw_ae_ctcae", selected = cfg$ae_ctcae)
+    updateNumericInput(session, "bw_window", value = cfg$hys_window); updateCheckboxInput(session, "bw_alp", value = cfg$alp_convention); updateTextInput(session, "bw_meddra", value = cfg$meddra)
+    wl_pick(NULL); edish_last(NULL)
+  }
+  bw <- bw_server(input, output, session, "trialmon", BW_TEMPLATES,
+    example = function() lapply(BW_TEMPLATES, `[[`, "data"), example_settings = BW_TM_EXAMPLE_SETTINGS,
+    settings = function() bw_tm_settings_input(input), validate = bw_tm_validate, apply = apply_data,
+    clear = function() {
+      source_data(NULL); study(NULL); pending_settings(NULL); pending_kri(NULL)
+      updateTextAreaInput(session, "bw_schedule", value = ""); updateTextInput(session, "bw_meddra", value = "")
+      for (name in c("bw_sae_amber", "bw_sae_red", "bw_missing_amber", "bw_missing_red", "bw_window")) updateNumericInput(session, name, value = NA)
+      for (name in c("bw_lab_ctcae", "bw_ae_ctcae")) updateSelectInput(session, name, selected = "")
+      updateCheckboxInput(session, "bw_alp", value = FALSE)
+    },
+    export = function() {
+      cfg <- current_settings(); cfg$schedule <- as.list(cfg$schedule); cfg$study_levels <- as.list(setNames(study()$LEVEL, study()$ID))
+      ae_table <- AE; denominators <- data.frame(Cohort = names(attr(ae_table, "N")), N = as.numeric(attr(ae_table, "N")))
+      list(inputs = prepared()$inputs, settings = cfg,
+        outputs = list(worklist = roll()$worklist, rollup = bw_scalar_table(roll()), participant_status = participant_status(tm, settings()), liver = liver(), convention_grid = GRID0,
+          narrative_checks = GRID_CHECK, qtc = QTC, dlt = DLT, adverse_events = ae_table, ae_denominators = denominators,
+          lab_shifts = lab_shift(tm$adlb, settings()$ctcae), study_indicators = study(), population_audit = prepared()$population_audit),
+        notes = c("Screening flags require medical review; no case or dose-escalation decision is adjudicated.", "The DLT rule reference is illustrative 3+3; it is not a general dose-finding engine.",
+          "SAFFL=Y defines the included safety population. Lab screening requires supported units and complete baseline/post-baseline measurements.",
+          "Study-indicator level overrides are labeled what-if and are saved explicitly; raw inputs retain the original values.",
+          paste("Data source:", bw$state$origin)))
+    }, sources = c("R/logic.R", "R/hyslaw_grid.R", "browser_setup.R", "browser_workspace.R"))
+  for (name in c("tm", "HL", "STUDY0", "GRID0", "GRID_CHECK", "QTC", "DLT", "AE", "COHORT_TEXT")) {
+    getter <- switch(name, tm = function() prepared()$tm, HL = function() prepared()$hl, STUDY0 = baseline, GRID0 = grid,
+      GRID_CHECK = function() hyslaw_check_narrative(GRID0, HL$flags), QTC = qtc, DLT = dlt, AE = ae,
+      COHORT_TEXT = function() { d <- DLT[DLT$N > 0, ]; sprintf("%d cohorts, %g to %g mg", nrow(d), min(d$DOSEMG), max(d$DOSEMG)) })
+    bw_binding(name, getter, environment())
+  }
+  output$cohort_text <- renderText(COHORT_TEXT)
+  output$start_here <- renderUI(start_here_ui(nrow(tm$adsl), COHORT_TEXT, example = bw$state$origin == "Fictional example"))
+  observeEvent(input$bw_settings_apply, {
+    req(bw$active())
+    old_inputs <- prepared()$inputs
+    tryCatch({ value <- bw_tm_validate(old_inputs, bw_tm_settings_input(input)); apply_data(value); showNotification("Study settings revalidated.", type = "message") },
+      error = function(e) { bw$invalidate("error", paste("Settings were rejected; reload the study before continuing:", conditionMessage(e))) })
+  })
+  study(NULL)
+
 }
 
+ui <- bw_ui(ui, "TRIALMON safety review", BW_TEMPLATES, setup_controls = bw_tm_controls())
 shinyApp(ui, server)

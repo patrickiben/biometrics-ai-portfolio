@@ -1,5 +1,5 @@
 # ===========================================================================
-# app.R - Trial-Termination Early-Warning console (Shiny), 2 tiers.
+# app.R - Operational risk signals console (Shiny), 2 tiers.
 #
 # Participant and study signals roll up to a tier RAG and an overall
 # termination-risk index. Select a signal and change its level to watch the
@@ -13,12 +13,14 @@ library(shiny); library(bslib); library(DT)
 source(if (file.exists("portfolio_app.R")) "portfolio_app.R" else "../../apps/_shared/portfolio_app.R")
 source("R/logic.R")
 seed <- risk_load("data")
+source(if (file.exists("browser_workspace.R")) "browser_workspace.R" else "../../browser_modules/shared/browser_workspace.R")
+source("browser_setup.R", local = TRUE)
 RAG_THEME <- c(green = "success", amber = "warning", red = "danger")
 
 ui <- page_sidebar(
-  title = div(class = "d-flex flex-wrap align-items-center gap-3", "Trial-Termination Early-Warning", bp_theme_toggle()),
+  title = div(class = "d-flex flex-wrap align-items-center gap-3", "Operational risk signals", bp_theme_toggle()),
   theme = bp_theme(),
-  bp_theme_head(),
+  app_status_ui("the operational signal scores and ranked feed"),
   tags$style(HTML(".bslib-page-sidebar>.navbar{background:var(--surface);border-bottom:1px solid var(--line-2)}
     .bslib-sidebar-layout{--_sidebar-bg:var(--surface);--bslib-sidebar-bg:var(--surface)}
     html .bslib-value-box{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line-2)}
@@ -27,7 +29,7 @@ ui <- page_sidebar(
     width = 320,
     div(class = "small text-muted",
         "Two tiers of early-warning risk, participant and study. The console flags and drafts; ",
-        "the SRC, the DSMB and the medical monitor decide. Synthetic, no PHI, no participant records."),
+        "the SRC, the DSMB and the medical monitor decide. Operational signal summaries; no prediction of trial termination is supplied."),
     selectInput("tier", "Show tier", choices = c("All", TIERS), selected = "All"),
     hr(),
     div(class = "small fw-bold text-muted", "Set a signal's level (what-if)"),
@@ -50,12 +52,19 @@ ui <- page_sidebar(
 
 server <- function(input, output, session) {
   rv <- reactiveValues(signals = seed)
+  pending_signal <- reactiveVal(NULL)
+  observe({ wanted <- pending_signal(); if (!is.null(wanted) && identical(input$sig, wanted$id) && identical(input$level, wanted$level)) pending_signal(NULL) })
 
   observeEvent(input$sig, {
     lvl <- as.character(rv$signals$level[rv$signals$id == input$sig])
     if (length(lvl) == 1) updateRadioButtons(session, "level", selected = lvl)
   })
   observeEvent(input$level, {
+    wanted <- pending_signal()
+    if (!is.null(wanted)) {
+      if (!identical(input$sig, wanted$id) || !identical(input$level, wanted$level)) return()
+      pending_signal(NULL)
+    }
     i <- which(rv$signals$id == input$sig)
     if (length(i) == 1 && length(input$level) == 1 && input$level %in% names(SEVERITY) && as.character(rv$signals$level[i]) != input$level)
       rv$signals$level[i] <- factor(input$level, levels = c("green","amber","red"))
@@ -70,7 +79,7 @@ server <- function(input, output, session) {
     updateRadioButtons(session, "level",
       selected = as.character(seed$level[seed$id == input$sig])) })
 
-  ov <- reactive(risk_overall(rv$signals))
+  ov <- reactive({ req(bw$active()); risk_overall(rv$signals) })
 
   vb <- function(id, tier) {
     o <- ov(); ts <- if (tier == "overall") list(score=o$score, rag=o$rag) else o$tiers[[tier]]
@@ -93,7 +102,7 @@ server <- function(input, output, session) {
   }, server = TRUE)
 
   output$feed <- renderUI({
-    f <- risk_feed(rv$signals)
+    req(bw$active()); f <- risk_feed(rv$signals)
     if (!nrow(f)) return(div(class="text-muted small","No signals firing - all within limits."))
     tagList(lapply(seq_len(nrow(f)), function(j) {
       r <- f[j, ]; col <- if (r$level == "red") "var(--red)" else "var(--amber)"
@@ -104,6 +113,22 @@ server <- function(input, output, session) {
             div(class="small text-muted", r$detail)))
     }))
   })
+  baseline_example <- seed
+  source_data <- reactiveVal(NULL)
+  bw <- bw_server(input, output, session, "risk", BW_TEMPLATES,
+    example = function() lapply(BW_TEMPLATES, `[[`, "data"), validate = bw_risk_validate,
+    apply = function(value, settings) {
+      source_data(value); rv$signals <- value
+      pending_signal(list(id = value$id[[1]], level = as.character(value$level[[1]])))
+      updateSelectInput(session, "sig", choices = setNames(value$id, paste0(value$id, " - ", value$signal)), selected = value$id[[1]])
+      updateRadioButtons(session, "level", selected = as.character(value$level[[1]]))
+    }, clear = function() { source_data(NULL); rv$signals <- bw_empty(baseline_example) },
+    export = function() list(inputs = list("signals.csv" = rv$signals), settings = list(),
+      outputs = list(overall = bw_scalar_table(ov()), tiers = do.call(rbind, lapply(names(ov()$tiers), function(tier) cbind(tier = tier, bw_scalar_table(ov()$tiers[[tier]])))), signals = rv$signals, firing = risk_feed(rv$signals)),
+      notes = "Operational heuristic scores; these are not probabilities of trial termination or clinical decisions."))
+  bw_binding("seed", function() { value <- source_data(); req(value); value }, environment())
+  rv$signals <- bw_empty(baseline_example)
 }
 
+ui <- bw_ui(ui, "Operational risk signals", BW_TEMPLATES, note = "Use tier Participant or Study; level green, amber or red; positive numeric weights; and TRUE/FALSE for advanced. Include both tiers. Scores are transparent operational heuristics, not calibrated outcome probabilities.")
 shinyApp(ui, server)

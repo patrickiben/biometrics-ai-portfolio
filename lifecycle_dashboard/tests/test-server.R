@@ -25,7 +25,7 @@ stopifnot(
   "double-programming slider starts at CP-108's value" = slider_from("dblprog") == s0$dbl_prog_pct,
   "the in-app guidance is on the page" = grepl("Start here", ui, fixed = TRUE) && grepl("How to read the colors", ui, fixed = TRUE),
   "the header says the data are synthetic, with the snapshot date" =
-    grepl("Synthetic data", ui, fixed = TRUE) && grepl("Snapshot 21 Jun 2026", ui, fixed = TRUE),
+    grepl("Load fictional example", ui, fixed = TRUE) && grepl('id="snapshot_label"', ui, fixed = TRUE),
   "the shared startup card is on the page" = grepl('id="pf-startup"', ui, fixed = TRUE),
   "light and dark follow the site's choice" = grepl('class="bp-theme-input"', ui, fixed = TRUE) &&
     grepl('class="bp-theme-toggle"', ui, fixed = TRUE) && !grepl("bslib-input-dark-mode", ui, fixed = TRUE)
@@ -33,6 +33,9 @@ stopifnot(
 
 seed <- e$seed   # app.R's globals are not visible inside testServer, so pass the seed in
 shiny::testServer(app, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
   k0 <- lifecycle_kpis(score_portfolio(seed), seed)
   # the values a browser sends when the page opens
   session$setInputs(study = "CP-108", openq = s0$open_queries, dblprog = s0$dbl_prog_pct)
@@ -117,6 +120,7 @@ app_copy <- function(edit) {
   invisible(file.copy(list.files(app, full.names = TRUE), tmp, recursive = TRUE))
   stopifnot("copied the shared helper" =
     file.copy(file.path(app, "..", "..", "apps", "_shared", "portfolio_app.R"), tmp))
+  invisible(file.copy(file.path(app, "..", "..", "browser_modules", "shared", c("browser_workspace.R", "browser_workspace.js", "browser_workspace.css")), tmp))
   edit(file.path(tmp, "data"))
   tmp
 }
@@ -139,6 +143,9 @@ stopifnot(
 )
 seed2 <- e2$seed
 shiny::testServer(tmp, {
+  session$flushReact(); stopifnot(!bw$active())
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  session$flushReact(); stopifnot(bw$active())
   session$setInputs(study = first, openq = s1$open_queries, dblprog = s1$dbl_prog_pct)
   stopifnot("opening the app leaves the renamed data as loaded" = identical(rv$studies, seed2$studies),
             "the KPIs compute"                                  = kpi()$n == nrow(seed2$studies))
@@ -156,15 +163,10 @@ tmp <- app_copy(function(dd) {
   dl <- rd("deliverables.csv"); wr(dl[dl$study_id != "CP-108", ], "deliverables.csv")
 })
 shiny::testServer(tmp, {
-  session$setInputs(study = "CP-108", openq = 7, dblprog = 42)
-  stopifnot(
-    "no signals: says why and what to try" = grepl("No early-warning signals", html_of(output$signals), fixed = TRUE) &&
-      output$signals_hdr == "None above the thresholds",
-    "no milestones: says why" = grepl("No milestones for CP-108", validation_message(output$milestones), fixed = TRUE),
-    "no deliverables: says why" = grepl("No deliverables register rows for CP-108", validation_message(output$deliv), fixed = TRUE),
-    "the trend still draws the portfolio" = plot_ok(output$trend),
-    "the other panels still fill" = nzchar(output$k_n) && grepl("CP-108", html_of(output$heat), fixed = TRUE)
-  )
+  session$flushReact()
+  session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+  stopifnot("missing feeds block incomplete portfolio analysis" = !bw$active(),
+    "the missing feed is explained" = grepl("must cover every included study", bw$state$message, fixed = TRUE))
 })
 unlink(dirname(tmp), recursive = TRUE)
 

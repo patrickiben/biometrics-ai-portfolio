@@ -1,0 +1,256 @@
+{
+  "source": "browser_modules/methods",
+  "title": "Methods workspace",
+  "summary": "Run the canonical R PK/BE sandbox, residual-carryover and C-QTc operating-characteristic simulations, or all six stages of the fixed worked bioequivalence study directly in this browser. No local R installation, account or toolkit download is needed.",
+  "data_scope": "Synthetic methods and fixed worked study",
+  "data_note": "All data generated here are synthetic. The worked study deliberately reproduces its fixed educational assumptions; it is not an arbitrary client-study generator.",
+  "usage_note": "Select a module, review its assumptions and confirm before running. Save the complete review ZIP before reloading. Larger simulation grids may take several minutes. The complete PK/BE sandbox includes an N=400 calibration diagnostic and may take about two minutes on a desktop browser.",
+  "try": [
+    "Choose the PK/BE sandbox, review the simulation settings, confirm and run. Inspect the data, results, figures and retained warnings.",
+    "Choose carryover or C-QTc to select scenarios and simulation precision. The complete outputs retain Monte Carlo uncertainty and method diagnostics.",
+    "Choose the worked bioequivalence study to run all six canonical R stages, including data/specification exports, same-author QC and number-checked CSR text.",
+    "Download the review ZIP with source, inputs, results, actual versions and logs. Changing a setting clears previous results."
+  ],
+  "links": [
+    {
+      "t": "guide",
+      "label": "Simulation guide",
+      "href": "../../sim_lifecycle/index.html"
+    },
+    {
+      "t": "study",
+      "label": "Worked study",
+      "href": "../../study/index.html"
+    },
+    {
+      "t": "method",
+      "label": "C-QTc guide",
+      "href": "../../cqtc_hysteresis/index.html"
+    }
+  ],
+  "first_load": {
+    "download_mb": 220,
+    "first_s": "30 to 90",
+    "revisit_s": "10 to 30"
+  },
+  "extra_files": [
+    {
+      "from": "assets/toolkit.css",
+      "to": "assets/toolkit.css"
+    },
+    {
+      "from": "assets/ui.js",
+      "to": "assets/ui.js"
+    },
+    {
+      "from": "assets/theme/tokens.css",
+      "to": "assets/theme/tokens.css"
+    },
+    {
+      "from": "browser_modules/methods/methods.R",
+      "to": "browser_modules/methods/methods.R"
+    },
+    {
+      "from": "sim_lifecycle/priors.R",
+      "to": "sim_lifecycle/priors.R"
+    },
+    {
+      "from": "sim_lifecycle/simulate_adam.R",
+      "to": "sim_lifecycle/simulate_adam.R"
+    },
+    {
+      "from": "sim_lifecycle/run_lifecycle.R",
+      "to": "sim_lifecycle/run_lifecycle.R"
+    },
+    {
+      "from": "tlf_interpret/R/slm_client.R",
+      "to": "tlf_interpret/R/slm_client.R"
+    },
+    {
+      "from": "tlf_interpret/R/extract_facts.R",
+      "to": "tlf_interpret/R/extract_facts.R"
+    },
+    {
+      "from": "tlf_interpret/R/validate_interpretation.R",
+      "to": "tlf_interpret/R/validate_interpretation.R"
+    },
+    {
+      "from": "tlf_interpret/R/interpret.R",
+      "to": "tlf_interpret/R/interpret.R"
+    },
+    {
+      "from": "sim_lifecycle/carryover_oc/R/dgm.R",
+      "to": "sim_lifecycle/carryover_oc/R/dgm.R"
+    },
+    {
+      "from": "sim_lifecycle/carryover_oc/R/nca_m13a.R",
+      "to": "sim_lifecycle/carryover_oc/R/nca_m13a.R"
+    },
+    {
+      "from": "sim_lifecycle/carryover_oc/R/analyze.R",
+      "to": "sim_lifecycle/carryover_oc/R/analyze.R"
+    },
+    {
+      "from": "cqtc_hysteresis/R/sim.R",
+      "to": "cqtc_hysteresis/R/sim.R"
+    },
+    {
+      "from": "cqtc_hysteresis/R/area.R",
+      "to": "cqtc_hysteresis/R/area.R"
+    },
+    {
+      "from": "cqtc_hysteresis/R/oc_core.R",
+      "to": "cqtc_hysteresis/R/oc_core.R"
+    },
+    {
+      "from": "study/renv.lock",
+      "to": "study/renv.lock"
+    },
+    {
+      "from": "study/study.css",
+      "to": "study/study.css"
+    },
+    {
+      "from": "study/run_all.R",
+      "to": "study/run_all.R"
+    },
+    {
+      "from": "study/04_analysis/03_tlf.R",
+      "to": "study/04_analysis/03_tlf.R"
+    },
+    {
+      "from": "study/04_analysis/01_nca.R",
+      "to": "study/04_analysis/01_nca.R"
+    },
+    {
+      "from": "study/04_analysis/02_be.R",
+      "to": "study/04_analysis/02_be.R"
+    },
+    {
+      "from": "study/05_qc/qc.R",
+      "to": "study/05_qc/qc.R"
+    },
+    {
+      "from": "study/R/pages.R",
+      "to": "study/R/pages.R"
+    },
+    {
+      "from": "study/R/snapshot_lock.R",
+      "to": "study/R/snapshot_lock.R"
+    },
+    {
+      "from": "study/R/common.R",
+      "to": "study/R/common.R"
+    },
+    {
+      "from": "study/06_csr/csr.R",
+      "to": "study/06_csr/csr.R"
+    },
+    {
+      "from": "study/03_adam/06_checks_xpt.R",
+      "to": "study/03_adam/06_checks_xpt.R"
+    },
+    {
+      "from": "study/03_adam/05_adpp.R",
+      "to": "study/03_adam/05_adpp.R"
+    },
+    {
+      "from": "study/03_adam/02_adsl.R",
+      "to": "study/03_adam/02_adsl.R"
+    },
+    {
+      "from": "study/03_adam/04_adae.R",
+      "to": "study/03_adam/04_adae.R"
+    },
+    {
+      "from": "study/03_adam/03_adpc.R",
+      "to": "study/03_adam/03_adpc.R"
+    },
+    {
+      "from": "study/03_adam/01_sdtm.R",
+      "to": "study/03_adam/01_sdtm.R"
+    },
+    {
+      "from": "study/02_sap/sap.R",
+      "to": "study/02_sap/sap.R"
+    },
+    {
+      "from": "study/01_design/design.R",
+      "to": "study/01_design/design.R"
+    },
+    {
+      "from": "study/03_adam/spec/build_spec.R",
+      "to": "study/03_adam/spec/build_spec.R"
+    },
+    {
+      "from": "_partials/_head-d1.html",
+      "to": "_partials/_head-d1.html"
+    },
+    {
+      "from": "_partials/_head-d2.html",
+      "to": "_partials/_head-d2.html"
+    },
+    {
+      "from": "_partials/_head-d3.html",
+      "to": "_partials/_head-d3.html"
+    },
+    {
+      "from": "_partials/_topbar-example-d1.html",
+      "to": "_partials/_topbar-example-d1.html"
+    },
+    {
+      "from": "_partials/_topbar-example-d2.html",
+      "to": "_partials/_topbar-example-d2.html"
+    },
+    {
+      "from": "_partials/_topbar-example-d3.html",
+      "to": "_partials/_topbar-example-d3.html"
+    }
+  ],
+  "smoke": {
+    "timeout_s": 300,
+    "outputs": [
+      "state"
+    ],
+    "expect": {},
+    "tabs": [],
+    "interactions": [
+      {
+        "name": "Synthetic methods require explicit setup",
+        "steps": [],
+        "expect": [
+          {
+            "visible": "#method_state[data-state=\"empty\"]"
+          }
+        ]
+      },
+      {
+        "name": "Canonical PK/BE sandbox executes in browser",
+        "steps": [
+          {
+            "select": "#method",
+            "value": "sandbox"
+          },
+          {
+            "click": "#confirmed"
+          },
+          {
+            "click": "#run"
+          }
+        ],
+        "expect": [
+          {
+            "visible": "#method_state[data-state=\"succeeded\"]"
+          },
+          {
+            "visible": "#method_result[data-module=\"sandbox\"]"
+          },
+          {
+            "visible": "#table table"
+          }
+        ],
+        "timeout_s": 240
+      }
+    ]
+  }
+}

@@ -27,7 +27,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 180
     permissions:
       contents: read
       pages: read          # to read the Pages source below
@@ -51,8 +51,7 @@ jobs:
       - name: Install shinylive (pinned) and the apps' packages
         shell: Rscript {0}
         run: |
-          install.packages("pak")
-          pak::pkg_install(c("shinylive@0.5.0", "shiny", "bslib", "DT", "ggplot2", "testthat"))
+          source(".github/pages/install_browser_dependencies.R")
       - name: App tests
         run: |
           Rscript uat_irt/tests/test-logic.R
@@ -63,6 +62,11 @@ jobs:
           Rscript vaccine/tests/test_browser_core.R
           Rscript vaccine/tests/test_shiny.R
           Rscript tests/test_analysis_renderer_dependencies.R
+          Rscript browser_modules/tests/test-stub-profile.R
+          Rscript browser_modules/tests/test-operational.R
+          Rscript browser_modules/tests/methods.R
+          python -m unittest discover -s browser_modules/tests -p "test_*.py" -v
+          python -m unittest discover -s browser_modules/validation/tests -p "test_*.py" -v
       - name: Build the site (static pages, then shinylive::export for each app)
         # Copies the tracked files into _site/, exports each app listed by apps/<name>/launch.json
         # into _site/apps/<name>/ with shinylive 0.5.0 (assets 0.10.12), with the shared R helper
@@ -96,6 +100,25 @@ jobs:
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
           QA_OUTPUT_DIR: ${{ runner.temp }}/vaccine-webassembly-qc
         run: node vaccine/tests/browser_app_qc.cjs _site
+      - name: Verify all browser analysis and operational workflows
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/all-browser-qc
+        run: |
+          node browser_modules/tests/navigation-browser.cjs _site "${RUNNER_TEMP}/all-browser-qc/navigation"
+          node browser_modules/tests/workbench-browser.cjs _site
+          python browser_modules/tests/workbench-parity.py "${RUNNER_TEMP}/all-browser-qc"
+          node browser_modules/tests/methods-browser.cjs _site
+          node browser_modules/tests/operational-browser.mjs _site "${RUNNER_TEMP}/all-browser-qc/operational"
+          node --test browser_modules/register/tests/core.test.mjs
+          node browser_modules/tests/reference-browser.cjs _site "${RUNNER_TEMP}/all-browser-qc" full
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: all-browser-qc
+          path: ${{ runner.temp }}/all-browser-qc
+          retention-days: 14
       - uses: actions/upload-artifact@v7
         if: always()
         with:

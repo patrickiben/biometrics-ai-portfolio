@@ -1,6 +1,6 @@
 # Residual carryover and the ICH M13A 5% pre-dose rule (synthetic)
 
-Use the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html) to create a private project, run the known-answer checks and reproduce the carryover study. Scenario changes require review of the source and its assumptions.
+[Run carryover scenarios in your browser](https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=carryover). Choose the synthetic scenario grid and Monte Carlo precision in browser forms. All six analysis arms, three endpoints and Monte Carlo uncertainty are retained. No local R, command-line steps, account or toolkit download is needed. Download the complete review ZIP before leaving; the browser session is not saved. The optional native reproduction instructions remain below.
 
 Tools built: runs. Exploratory operating-characteristics study on synthetic data. The carryover
 algebra and the 5% pre-dose rule are established (Grizzle 1965; Senn, D'Angelo and Potvin 2004;
@@ -23,7 +23,7 @@ Replicates are sized from a target MCSE of 0.005 at a rate of 0.05 (2,000 per ce
 numbers: L'Ecuyer-CMRG, seed 20261025, one stream per (true GMR, disposition) cell, and the same
 participants reused across washouts, arms and configurations within a cell.
 
-## Run
+## Optional native reproduction
 
 ```sh
 Rscript sim_lifecycle/carryover_oc/R/run_oc.R            # grid (about 10 s on 4 cores) and ADaM demonstration

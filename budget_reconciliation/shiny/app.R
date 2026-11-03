@@ -21,11 +21,13 @@ source("R/logic.R")
 `%||%` <- function(a, b) if (is.null(a) || length(a) == 0 || is.na(a)) b else a
 
 seed <- hours_load()
+source(if (file.exists("browser_workspace.R")) "browser_workspace.R" else "../../browser_modules/shared/browser_workspace.R")
+source("browser_setup.R", local = TRUE)
 
 ui <- page_sidebar(
   title = div(class = "d-flex flex-wrap align-items-center gap-3", "Find Hours: Hours Budget Reconciliation", bp_theme_toggle()),
   theme = bp_theme(),
-  bp_theme_head(),
+  app_status_ui("the effort ledger, forecast and allocation"),
   tags$style(HTML(".bslib-page-sidebar>.navbar{background:var(--surface);border-bottom:1px solid var(--line-2)}
     .bslib-sidebar-layout{--_sidebar-bg:var(--surface);--bslib-sidebar-bg:var(--surface)}
     html .bslib-value-box{background:var(--surface)!important;color:var(--ink)!important;border:1px solid var(--line-2)}
@@ -43,8 +45,8 @@ ui <- page_sidebar(
                  value = seed$contingency, min = 0, step = 5),
     hr(),
     actionButton("reset", "Reset ledger", class = "btn-sm btn-outline-warning"),
-    downloadButton("dl_ledger", "Download ledger (CSV)", class = "btn-sm"),
-    downloadButton("dl_co", "Download change order", class = "btn-sm"),
+    actionButton("dl_ledger", "Download ledger (CSV)", class = "btn-sm"),
+    actionButton("dl_co", "Download change order", class = "btn-sm"),
     hr(),
     div(class = "small text-muted",
         "Edit any blue-editable cell in the ledger (Planned, Actual, % done, EAC). ",
@@ -87,6 +89,16 @@ server <- function(input, output, session) {
   withVar <- function(l) { l$variance <- l$planned - l$eac; l }
   rv <- reactiveValues(ledger = withVar(seed$ledger))
 
+  pending_settings <- reactiveVal(NULL)
+  hours_settings <- reactive({
+    req(bw$active()); wanted <- pending_settings()
+    if (!is.null(wanted)) return(wanted)
+    list(need = input$need %||% 0, contingency = input$contingency %||% seed$contingency)
+  })
+  observe({
+    wanted <- pending_settings()
+    if (!is.null(wanted) && identical(as.numeric(input$need), as.numeric(wanted$need)) && identical(as.numeric(input$contingency), as.numeric(wanted$contingency))) pending_settings(NULL)
+  })
   # quick-pick buttons
   observeEvent(input$q20,  updateNumericInput(session, "need", value = 20))
   observeEvent(input$q45,  updateNumericInput(session, "need", value = 45))
@@ -94,10 +106,10 @@ server <- function(input, output, session) {
   observeEvent(input$q150, updateNumericInput(session, "need", value = 150))
   observeEvent(input$reset, rv$ledger <- withVar(seed$ledger))
 
-  metrics <- reactive(tryCatch(hours_metrics(rv$ledger, input$contingency %||% seed$contingency),
-    error = function(e) validate(need(FALSE, conditionMessage(e)))))
-  fh <- reactive(tryCatch(find_hours(input$need %||% 0, rv$ledger, input$contingency %||% seed$contingency),
-    error = function(e) validate(need(FALSE, conditionMessage(e)))))
+  metrics <- reactive({ req(bw$active()); tryCatch(hours_metrics(rv$ledger, hours_settings()$contingency),
+    error = function(e) validate(need(FALSE, conditionMessage(e)))) })
+  fh <- reactive({ req(bw$active()); tryCatch(find_hours(hours_settings()$need, rv$ledger, hours_settings()$contingency),
+    error = function(e) validate(need(FALSE, conditionMessage(e)))) })
 
   output$v_planned <- renderText(hours_sprintf("%d h", metrics()$planned))
   output$v_actual  <- renderText(hours_sprintf("%d h", metrics()$actual))
@@ -185,15 +197,26 @@ server <- function(input, output, session) {
             panel.grid.major.y = element_blank())
   })
 
-  output$dl_ledger <- downloadHandler(
-    filename = function() "effort_ledger.csv",
-    content = function(file) {
-      d <- hours_export(rv$ledger, input$contingency %||% seed$contingency)
-      utils::write.csv(d, file, row.names = FALSE)
-    })
-  output$dl_co <- downloadHandler(
-    filename = function() "change_order.md",
-    content = function(file) writeLines(change_order_text(fh()), file))
+  observeEvent(input$dl_ledger, {
+    req(bw$active()); bw$file(bw_csv_safe(hours_export(rv$ledger, hours_settings()$contingency)), "effort_ledger.csv", "text/csv")
+  })
+  observeEvent(input$dl_co, { req(bw$active()); bw$file(change_order_text(fh(), study = "Study configured by user", deliverable = "User-defined additional scope"), "change_order.md", "text/markdown") })
+  baseline_example <- seed
+  source_data <- reactiveVal(NULL)
+  bw <- bw_server(input, output, session, "hours", BW_TEMPLATES,
+    example = function() lapply(BW_TEMPLATES, `[[`, "data"), validate = bw_hours_validate,
+    apply = function(value, settings) {
+      source_data(value); rv$ledger <- withVar(value$ledger)
+      pending_settings(list(need = if (is.null(settings$need)) 0 else settings$need, contingency = value$contingency))
+      updateNumericInput(session, "contingency", value = value$contingency)
+      updateNumericInput(session, "need", value = if (is.null(settings$need)) 0 else settings$need)
+    }, clear = function() { source_data(NULL); rv$ledger <- withVar(bw_empty(baseline_example$ledger)) },
+    export = function() list(inputs = list("project_hours_ledger.csv" = hours_export(rv$ledger, hours_settings()$contingency)),
+      settings = list(need = hours_settings()$need), outputs = list(metrics = bw_scalar_table(metrics()), allocation = bw_scalar_table(fh())),
+      notes = change_order_text(fh(), study = "Study configured by user", deliverable = "User-defined additional scope")))
+  bw_binding("seed", function() { value <- source_data(); req(value); value }, environment())
+  rv$ledger <- withVar(bw_empty(baseline_example$ledger))
 }
 
+ui <- bw_ui(ui, "Hours reconciliation", BW_TEMPLATES, note = "Use one row per deliverable, nonnegative planned/actual/forecast hours, and PctComplete from 0 to 100. EAC cannot be below ActualToDate. An optional CONTINGENCY row supplies reserve hours in PlannedHours; no reserve is invented when it is absent. TOTAL-prefixed summary rows are excluded.")
 shinyApp(ui, server)

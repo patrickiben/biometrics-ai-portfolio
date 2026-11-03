@@ -226,7 +226,7 @@ TM_JS <- "
 # the Start here card opens on a visitor's first visit (folded on a phone) and starts folded after
 # that, unless they opened it last time; the choice is kept in this browser only (localStorage)
 TM_START_JS <- paste0(
-  "(function(){var d=document.currentScript.parentNode,k='trialmon-start-here',v=null;",
+  "(function(){var d=document.querySelector('.tm-start'),k='trialmon-start-here',v=null;if(!d||d.dataset.tmBound)return;d.dataset.tmBound='true';",
   "try{v=localStorage.getItem(k)}catch(e){}",
   "if(window.innerWidth<576||v==='closed'||v==='seen')d.removeAttribute('open');",
   "try{if(v===null)localStorage.setItem(k,'seen')}catch(e){}",
@@ -264,7 +264,8 @@ TM_TRY <- list(
   HTML("Set <strong>Lab grading</strong> to v5.0: CP101-013's neutrophils become grade 3 and AMBER goes from 7 to 8."),
   HTML("On <strong>Study tier</strong>, set an indicator to RED: the study tier turns RED; Reset to the feed undoes it."))
 
-start_here_ui <- function(n_dosed, cohort_text) {
+start_here_ui <- function(n_dosed, cohort_text, example = TRUE) {
+  tries <- if (example) TM_TRY else list("Choose a participant or a worklist row to inspect the underlying evidence.", "Compare liver trajectories and the convention grid before reviewing a potential flag.", "Review the lab and recorded-AE grading versions against the study specification.", "Study-tier level overrides are explicitly marked what-if; Reset restores the loaded feed.")
   tags$details(
     class = "tm-start", open = NA,
     tags$summary(span(class = "t", "Start here"),
@@ -274,15 +275,14 @@ start_here_ui <- function(n_dosed, cohort_text) {
     tags$script(HTML(TM_START_JS)),
     div(class = "tm-start-grid",
       div(tags$h2("What it shows"),
-          p(sprintf(paste("Synthetic first-in-human multiple ascending dose study CP-101 at its Cohort 4 (120 mg)",
-                          "data cut: %d dosed participants in %s."), n_dosed, cohort_text),
+          p(sprintf("%s: %d dosed safety participants in %s.", if (example) "Fictional CP-101 example" else "Loaded study", n_dosed, cohort_text),
             "Flags roll up worst-of into the boxes below and the ranked worklist; the tabs show the evidence.",
             "The console flags; the Safety Review Committee decides.")),
       div(tags$h2("What the colors mean"),
           tags$ul(class = "tm-legend", lapply(TM_LEVELS, function(l)
             tags$li(sev_span(l), span(span(class = "h", paste0(TM_LEVEL_HEAD[[l]], ":")), " ", tm_level_text(l))))),
           p(class = "mt-1 mb-0", "Worst-of: one RED makes its tier and the overall level RED.")),
-      div(tags$h2("Try this"), tags$ol(lapply(TM_TRY, tags$li)))))
+      div(tags$h2("Try this"), tags$ol(lapply(tries, tags$li)))))
 }
 
 # an HTML table that turns into one small card per row on a phone (each cell labeled with its

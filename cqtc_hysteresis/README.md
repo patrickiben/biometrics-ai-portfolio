@@ -1,5 +1,5 @@
 # C-QTc hysteresis study
 
-Create a private project with the [point-and-click toolkit setup](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html), then use the C-QTc card to run known-answer checks and reproduce the full synthetic operating-characteristics study. Results stay in the private project.
+[Run C-QTc scenarios in your browser](https://patrickiben.github.io/biometrics-ai-portfolio/apps/methods/?module=cqtc). Select canonical scenarios and simulation precision in browser forms. Original scenario seeds, exact intervals and optional known-answer controls are retained. No local R, command-line steps, account or toolkit download is needed. Download the complete review ZIP before leaving; the browser session is not saved. Optional native reproduction remains available in the source.
 
-[Method, assumptions and results](index.html). The full run uses base R and may take several minutes. Use Open folder to review the source before changing scenarios; this is an exploratory synthetic example, not a ready-made clinical analysis.
+[Method, assumptions and results](index.html). The full run uses base R and may take several minutes. Choose canonical scenarios in the browser. Changes to the underlying models require separate scientific and software review; this is an exploratory synthetic example.

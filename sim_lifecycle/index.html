@@ -291,6 +291,7 @@ html[data-theme] .top b{white-space:normal}
     <p class="sub">One synthetic early-phase clinical-pharmacology study, taken end-to-end through the analysis tools &mdash; synthetic ADaM &rarr; PK/NCA &rarr; TLF computations &mdash; to exercise the whole pipeline on realistically-shaped data. Base R; deterministic; runs offline.</p>
   </header>
 
+<div class="note"><p><a class="btn" href="../apps/methods/?module=sandbox">Run the PK/BE sandbox in your browser</a></p><p>Configure the synthetic participant count, seed, true ratio and within-participant variability in guided browser forms. The full canonical workflow includes its N=400 calibration diagnostic and may take about two minutes on a desktop browser. No local R, command line, account or toolkit download is required. Save results before reloading.</p></div>
   <h2>What it is</h2>
   <div class="panel">
     A self-contained generator (<code>simulate_adam.R</code>) emits eight ADaM-shaped domains &mdash;
@@ -312,7 +313,7 @@ html[data-theme] .top b{white-space:normal}
     generator runs standalone.
   </div>
 
-  <h2>Run it</h2>
+  <h2>Optional native reproduction</h2>
   <pre><code>Rscript sim_lifecycle/run_lifecycle.R</code></pre>
 
   <h2>Source &amp; output</h2>

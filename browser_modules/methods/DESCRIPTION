@@ -1,0 +1,5 @@
+Package: toolkitMethodsBrowser
+Version: 1.0.0
+Title: Browser Methods Workspace
+Description: Canonical synthetic methods executed in browser R.
+Imports: shiny, bslib, DT, ggplot2, jsonlite, PowerTOST, blockrand, PKNCA, admiral, metacore, metatools, xportr, datasetjson, rtables, tern, formatters, r2rtf, NonCompart, diffdf, dplyr, tidyr, lubridate, haven, openxlsx, readxl, commonmark, knitr, rmarkdown, renv, nlme

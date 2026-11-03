@@ -30,6 +30,8 @@ warm_up_graphics()   # in the browser, load the plot fonts while the launch page
 source("R/logic.R")
 
 seed <- uat_load()   # ../templates in local R; the bundled templates/ in the browser
+source(if (file.exists("browser_workspace.R")) "browser_workspace.R" else "../../browser_modules/shared/browser_workspace.R")
+source("browser_setup.R", local = TRUE)
 
 DEFAULT_TEST <- "RAND-04"   # selected on first load: failing, critical, with an open critical defect
 # Status comes right after ID, so a phone shows the two that matter without scrolling sideways
@@ -291,7 +293,7 @@ DT_PRELOAD <- htmltools::attachDependencies(
   tags$span(hidden = NA), DT::datatable(data.frame(x = 1), style = "bootstrap5")$dependencies)
 
 ui <- page_fluid(
-  title = "IRT/RTSM UAT tracker (synthetic data)",
+  title = "IRT/RTSM UAT tracker",
   theme = bp_theme(),   # precompiled Bootstrap; the site's tokens come from bp_theme_head()
   lang = "en",
   class = "uat-page",
@@ -309,8 +311,8 @@ ui <- page_fluid(
           # on phones the labels shorten (the .uat-wide words hide) so the three controls share a row
           actionButton("dl_tests", tagList("Download", span(class = "uat-wide", " results"), " (CSV)"),
                        icon = deco_icon("download"), class = "btn-sm uat-btn", title = "Download the test results as a CSV file"),
-          actionButton("reset", tagList("Reset", span(class = "uat-wide", " to seed")),
-                       icon = deco_icon("rotate-left"), class = "btn-sm uat-btn", title = "Reset to the seed data"),
+          actionButton("reset", tagList("Reset", span(class = "uat-wide", " to loaded data")),
+                       icon = deco_icon("rotate-left"), class = "btn-sm uat-btn", title = "Reset to the loaded data"),
           bp_theme_toggle())),
 
   tags$main(   # the page's main landmark: everything below the top bar
@@ -322,9 +324,9 @@ ui <- page_fluid(
         col_widths = breakpoints(sm = 12, lg = c(4, 4, 4)), fill = FALSE,
         div(h2("What this shows"),
             p("User acceptance testing (UAT) of an interactive response technology (IRT) system, the software that",
-              "randomizes participants and manages trial supply: 29 test scripts traced to 30 requirements, 4 defects,",
+              "randomizes participants and manages trial supply. Review the loaded test scripts, requirements and defects,",
               "and a go-live gate that says whether the build is ready for a named person to sign off.",
-              "All of it is invented.")),
+              "The optional fictional example contains 29 tests, 30 requirements and 4 defects.")),
         div(h2("How to read the colors"),
             tags$dl(class = "uat-legend",
                     tags$dt("Tests"), tags$dd(lapply(STATUSES, pill)),
@@ -335,13 +337,13 @@ ui <- page_fluid(
                     tags$dt("Table"), tags$dd("The highlighted row is the selected test."))),
         div(h2("Try this"),
             tags$ol(
-              tags$li("RAND-04 failed and its critical defect DEF-01 is open. In the", tags$b("Selected test"),
+              tags$li("In the fictional example, RAND-04 failed and critical defect DEF-01 is open. In the", tags$b("Selected test"),
                       "card, record the retest as Pass, then close DEF-01. A defect closes only after its",
                       "test passes."),
               tags$li("Work down the gate: each ID opens that test. Retest SUP-03 before closing DEF-03, run",
                       "the five tests not run yet, then add a draft test for URS-SUP-005 and run it too.",
                       "With every blocker cleared, the gate turns READY."),
-              tags$li("Download the results as a CSV, or Reset to seed.")))))),
+              tags$li("Download the results as a CSV, or Reset to loaded data.")))))),
 
   div(class = "uat-kpis",
       value_box("Test scripts", textOutput("v_total", inline = TRUE),
@@ -385,9 +387,9 @@ server <- function(input, output, session) {
   tproxy <- dataTableProxy("tests")
   dproxy <- dataTableProxy("defects")
 
-  gate     <- reactive(uat_gate(rv$tests, rv$defects, rv$trace))
-  summ     <- reactive(uat_summary(rv$tests, rv$defects, rv$trace))
-  blockers <- reactive(uat_blockers(rv$tests, rv$defects, rv$trace))
+  gate     <- reactive({ req(bw$active()); uat_gate(rv$tests, rv$defects, rv$trace) })
+  summ     <- reactive({ req(bw$active()); uat_summary(rv$tests, rv$defects, rv$trace) })
+  blockers <- reactive({ req(bw$active()); uat_blockers(rv$tests, rv$defects, rv$trace) })
   dark     <- reactive(identical(input$bp_theme, "dark"))
 
   # the selected test: the table's selection once the table is drawn; before that (and in the
@@ -478,14 +480,14 @@ server <- function(input, output, session) {
     rows_changed <- nrow(rv$tests) != nrow(seed$tests)
     rv$tests <- seed$tests; rv$defects <- seed$defects; rv$trace <- seed$trace
     show_tests(); show_defects(); select_test(DEFAULT_TEST, rows_changed = rows_changed)
-    note(sprintf("Back to the seed data: %s and %s. %s", n_of(nrow(seed$tests), "test script"),
+    note(sprintf("Back to the loaded data: %s and %s. %s", n_of(nrow(seed$tests), "test script"),
                  n_of(nrow(seed$defects), "defect"), gate_text(gate())))
   })
 
   # ---- header and KPIs ----
   output$changes <- renderText({
     n <- uat_changes(rv$tests, rv$defects, seed)
-    if (n == 0) "Seed data, no changes yet" else paste(n_of(n, "change"), "since the seed")
+    if (n == 0) "Loaded data, no changes yet" else paste(n_of(n, "change"), "since loading")
   })
   output$v_total <- renderText(as.character(summ()$total))
   output$v_pass  <- renderText(as.character(summ()$pass))
@@ -534,7 +536,7 @@ server <- function(input, output, session) {
           language = list(
             search = "", searchPlaceholder = "Search tests (ID, status, title, area)",
             zeroRecords = "No test script matches this search. Clear the search box to see all of them.",
-            emptyTable = "No test scripts are loaded. Reset to seed to load the 29 seed scripts.",
+            emptyTable = "No test scripts are loaded. Reset to loaded data to restore the loaded scripts.",
             info = "Test scripts _START_ to _END_ of _TOTAL_", infoEmpty = "No test scripts",
             infoFiltered = "(searched in _MAX_)"),
           columnDefs = list(   # ID, Status, Title, Priority, Area, Requirement, Defect
@@ -627,7 +629,7 @@ server <- function(input, output, session) {
         colnames = c("ID", "Severity", "Status", "Found in", "Description"),
         options = list(
           dom = "t", paging = FALSE, ordering = FALSE, scrollX = TRUE,
-          language = list(emptyTable = "No defects are logged. Reset to seed to load the 4 seed defects."),
+          language = list(emptyTable = "No defects are logged. Reset to loaded data to restore the loaded defects."),
           columnDefs = list(
             list(targets = 0, className = "uat-id"),
             list(targets = 1, render = PILL_JS, className = "dt-nowrap"),
@@ -708,7 +710,7 @@ server <- function(input, output, session) {
   # ---- area plot ----
   output$plot <- renderPlot(guard("the execution-by-area plot", {
     t <- rv$tests
-    explain_empty(nrow(t) > 0, "No test scripts are loaded, so there is nothing to plot. Reset to seed to load them.")
+    explain_empty(nrow(t) > 0, "No test scripts are loaded, so there is nothing to plot. Reset to loaded data to load them.")
     mode <- if (dark()) "dark" else "light"
     pal <- status_fill(mode)
     col <- bp_palette(mode)
@@ -752,15 +754,33 @@ server <- function(input, output, session) {
   # works under Shinylive (a downloadHandler request there can miss the service worker)
   dl_payload <- reactiveVal(NULL)
   observeEvent(input$dl_tests, {
+    req(bw$active())
     con <- textConnection(NULL, "w", local = TRUE)
-    utils::write.csv(rv$tests, con, row.names = FALSE)
+    writeLines(bw_csv_safe(rv$tests), con)
     csv <- textConnectionValue(con); close(con)
-    p <- list(filename = "SYNTHETIC_uat_test_results.csv", type = "text/csv",
+    p <- list(filename = if (identical(bw$state$origin, "Fictional example")) "SYNTHETIC_uat_test_results.csv" else "uat_test_results.csv", type = "text/csv",
               content = paste0(paste(csv, collapse = "\n"), "\n"))
     dl_payload(p)
     session$sendCustomMessage("uat-download", p)
-    note(sprintf("Saved SYNTHETIC_uat_test_results.csv: %s with their current status.", n_of(nrow(rv$tests), "test script")))
+    note(sprintf("Saved %s: %s with their current status.", p$filename, n_of(nrow(rv$tests), "test script")))
   })
+  baseline_example <- seed
+  source_data <- reactiveVal(NULL)
+  bw <- bw_server(input, output, session, "uat", BW_TEMPLATES,
+    example = function() lapply(BW_TEMPLATES, `[[`, "data"), validate = bw_uat_validate,
+    apply = function(value, settings) {
+      source_data(value); rv$tests <- value$tests; rv$defects <- value$defects; rv$trace <- value$trace
+      show_tests(); show_defects()
+      select_test(if ("RAND-04" %in% value$tests$TestID) "RAND-04" else value$tests$TestID[[1]], rows_changed = TRUE)
+    }, clear = function() {
+      source_data(NULL); rv$tests <- bw_empty(baseline_example$tests); rv$defects <- bw_empty(baseline_example$defects); rv$trace <- bw_empty(baseline_example$trace)
+    }, export = function() list(inputs = list("test_scripts.csv" = rv$tests, "defect_log.csv" = rv$defects, "traceability_matrix.csv" = rv$trace),
+      settings = list(), outputs = c(list(summary = bw_scalar_table(summ()), gate = bw_scalar_table(gate())), blockers()[vapply(blockers(), is.data.frame, TRUE)]),
+      notes = "Readiness indicators package evidence for named human review; they do not approve an IRT/RTSM system. All three editable registers are included."))
+  bw_binding("seed", function() { value <- source_data(); req(value); value }, environment())
+  bw_binding("DEFAULT_TEST", function() { value <- source_data(); req(value); if ("RAND-04" %in% value$tests$TestID) "RAND-04" else value$tests$TestID[[1]] }, environment())
+  rv$tests <- bw_empty(baseline_example$tests); rv$defects <- bw_empty(baseline_example$defects); rv$trace <- bw_empty(baseline_example$trace)
 }
 
+ui <- bw_ui(ui, "IRT/RTSM UAT workspace", BW_TEMPLATES, note = "Test Status: Pass, Fail, Blocked, In Progress or Not Run. Priority: Critical, High, Medium or Low. Defect Severity: Critical, Major or Minor; defect Status: Open or Closed. Covered: Y, N or N (GAP). Separate multiple CoveringTests with semicolons. Every referenced requirement, test and defect must exist in the supplied registers.")
 shinyApp(ui, server)

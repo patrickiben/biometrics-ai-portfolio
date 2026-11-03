@@ -383,20 +383,31 @@ kri_level <- function(value, amber, red, worse = "higher") {
   ifelse(!hi & .lt(value, red), "RED", ifelse(!hi & .lt(value, amber), "AMBER", "GREEN"))))
 }
 
-study_signals <- function(tm) {
+# The default schedule/thresholds preserve the published fictional example. Browser
+# intake requires explicit study choices; no client schedule is inferred from observations.
+trialmon_schedule <- function() c("Screening" = -14, "Day 1" = 1, "Day 4" = 4, "Day 8" = 8,
+  "Day 15" = 15, "Day 22" = 22, "Day 29" = 29, "Day 43" = 43)
+study_signals <- function(tm, schedule = trialmon_schedule(), sae_limits = c(10, 20), missing_limits = c(2, 5)) {
+  if (!is.numeric(schedule) || !length(schedule) || any(!is.finite(schedule)) || is.null(names(schedule)) ||
+      anyNA(names(schedule)) || any(!nzchar(trimws(names(schedule)))) || anyDuplicated(names(schedule)))
+    stop("Planned visits need unique nonblank labels and finite study days.")
+  for (limits in list(sae_limits, missing_limits)) if (!is.numeric(limits) || length(limits) != 2L ||
+      any(!is.finite(limits)) || any(limits < 0 | limits > 100) || limits[1] >= limits[2])
+    stop("Operational amber/red thresholds require 0 <= amber < red <= 100.")
   k <- tm$kri
   op <- data.frame(ID = k$ID, INDICATOR = k$INDICATOR, CATEGORY = k$CATEGORY, VALUE = k$VALUE, UNIT = k$UNIT,
                    LEVEL = kri_level(k$VALUE, k$AMBER, k$RED, k$WORSE),
                    RULE = ifelse(k$WORSE == "higher", sprintf("AMBER > %s, RED > %s", k$AMBER, k$RED),
                                  sprintf("AMBER < %s, RED < %s", k$AMBER, k$RED)),
-                   DETAIL = k$DETAIL, SOURCE = "operational feed (synthetic)", stringsAsFactors = FALSE)
+                   DETAIL = k$DETAIL, SOURCE = "operational input feed", stringsAsFactors = FALSE)
   s <- tm$adsl; ae <- tm$adae
   nsae <- length(unique(ae$USUBJID[ae$AESER == "Y" & ae$TRTEMFL == "Y"]))
   sae_pct <- round(100 * nsae / nrow(s), 1)
-  sched <- c("Screening" = -14, "Day 1" = 1, "Day 4" = 4, "Day 8" = 8, "Day 15" = 15, "Day 22" = 22,
-             "Day 29" = 29, "Day 43" = 43)
+  sched <- schedule
   exp_n <- sum(sapply(s$LSTVISDY, function(d) sum(sched <= d)))
   seen <- unique(tm$adlb[tm$adlb$AVISIT %in% names(sched), c("USUBJID", "AVISIT")])
+  if (!is.finite(exp_n) || exp_n <= 0) stop("No planned lab visits are due at this data cut; missing-visit incidence is not estimable.")
+  seen <- seen[unname(sched[seen$AVISIT]) <= s$LSTVISDY[match(seen$USUBJID, s$USUBJID)], , drop = FALSE]
   miss <- exp_n - nrow(seen)
   miss_pct <- round(100 * miss / exp_n, 1)
   calc <- data.frame(
@@ -404,8 +415,8 @@ study_signals <- function(tm) {
     INDICATOR = c("Participants with a treatment-emergent SAE (trial-level acceptable range)",
                   "Scheduled safety-lab visits with no labs"),
     CATEGORY = c("Safety", "Data"), VALUE = c(sae_pct, miss_pct), UNIT = c("% of dosed", "% of visits"),
-    LEVEL = c(kri_level(sae_pct, 10, 20), kri_level(miss_pct, 2, 5)),
-    RULE = c("AMBER > 10, RED > 20", "AMBER > 2, RED > 5"),
+    LEVEL = c(kri_level(sae_pct, sae_limits[1], sae_limits[2]), kri_level(miss_pct, missing_limits[1], missing_limits[2])),
+    RULE = c(sprintf("AMBER > %s, RED > %s", sae_limits[1], sae_limits[2]), sprintf("AMBER > %s, RED > %s", missing_limits[1], missing_limits[2])),
     DETAIL = c(sprintf("%d of %d dosed participants", nsae, nrow(s)),
                sprintf("%d of %d scheduled visits", miss, exp_n)),
     SOURCE = "computed from ADAE / ADLB", stringsAsFactors = FALSE)
