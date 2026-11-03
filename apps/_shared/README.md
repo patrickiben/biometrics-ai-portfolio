@@ -23,7 +23,11 @@ breadcrumbs and footer, in the site's light or dark theme. The page text shows a
 loads: the title, what the app shows, links to its guide and snapshot, a "Try this" list, an
 optional screenshot (`"screenshot"` in `launch.json`, files in `apps/<name>/`, with a light-theme
 twin that follows the theme), the synthetic data note, and the expected first-load size and time.
-Below it, the live app area has a status line with the elapsed time, and a step list that each real
+On a phone (720 px or narrower) the "Try this", "Before you start" and screenshot panels follow the
+app instead, so the app comes right after the title, the summary and the links: `launch.js` moves
+them below the app before they show (`launch.css` hides them at that width until then), and back
+when the window widens; the app's frame never moves, so R does not restart.
+Below the text, the live app area has a status line with the elapsed time, and a step list that each real
 signal ticks off:
 
 1. This page and its instructions.

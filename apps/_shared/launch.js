@@ -110,6 +110,8 @@
   var DOWNLOAD_RX = /Emscripten filesystem|download|NetworkError|Failed to fetch|Failed to load|Load failed|fetching/i;
 
   // ---- rendering ------------------------------------------------------------------------
+  // the help panels sit below the app on a phone (moved by the code before render() at the end)
+  function helpBelow() { var g = document.querySelector('.launch-grid'); return !!(g && g.closest('.launch-after')); }
   function tone() {
     if (L.problem) return (PROBLEMS[L.problem] || {}).tone || 'error';
     if (L.ready && !L.busy) return L.outputs && L.outputs.failed ? 'warn' : 'ok';
@@ -126,7 +128,8 @@
     if (L.ready) {
       if (L.busy) { title = 'Working'; detail = 'R is computing' + (k && k.recalc ? ': ' + k.recalc + ' panel' + (k.recalc > 1 ? 's' : '') + ' updating.' : '.'); }
       else if (k && k.failed) { title = 'Ready, with ' + k.failed + ' failed panel' + (k.failed > 1 ? 's' : ''); detail = 'The failed panel says what went wrong; that is a bug in the app. The other panels work.'; }
-      else { title = 'Ready'; detail = 'Loaded in ' + secs(L.times.ready) + '; everything runs in your browser. "Try this", above the app, suggests where to start.'; }
+      else { title = 'Ready'; detail = 'Loaded in ' + secs(L.times.ready) + '; everything runs in your browser. "Try this", ' +
+                                       (helpBelow() ? 'below' : 'above') + ' the app, suggests where to start.'; }
     }
     if (L.problem) {
       var p = PROBLEMS[L.problem]; title = p.title; detail = p.text;
@@ -722,6 +725,19 @@
     else if (a === 'full') setFull(!app.classList.contains('is-full'));
     else if (a === 'dismiss' && L.problem) { dismissed[L.problem] = true; clearProblem(); }
   });
+
+  // on a phone the help panels (Try this, Before you start, the screenshot) move below the app, so the
+  // app comes right after the title and its links; launch.css hides them in the intro at that width
+  // until they have moved. Only the panels move: moving the app's frame would restart R.
+  (function () {
+    var grid = document.querySelector('.launch-grid'), home = document.querySelector('.launch-go'),
+        below = document.querySelector('.launch-after');
+    if (!grid || !home || !below || !window.matchMedia) return;
+    var phone = window.matchMedia('(max-width: 720px)');
+    function place() { if (phone.matches) below.appendChild(grid); else home.insertAdjacentElement('afterend', grid); }
+    place();
+    if (phone.addEventListener) phone.addEventListener('change', place);
+  })();
 
   render();
   startServiceWorker();
