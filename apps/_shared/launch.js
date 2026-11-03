@@ -22,7 +22,8 @@
    loads (bp_theme_head() in portfolio_app.R) and hears later changes; this page also sets the
    theme on the app's page directly, so the two never disagree.
    The top bar's status readout (assets/ui.js) states what the app computed, read from the same frame;
-   "status" in launch.json says which outputs. An app without one keeps the site's default line.
+   "status" in launch.json says which outputs, and which element marks a what-if (the bar then keeps
+   the status of the data as loaded). An app without one keeps the site's default line.
    State for tests and bug reports: window.launchStatus, and data-state on #app. */
 (function () {
   'use strict';
@@ -146,26 +147,40 @@
     renderBarStatus(t);
   }
   // the app's own status in the site's top bar: {selector} in cfg.status.text takes that output's text.
-  // Pending until the app has computed it; unavailable once the app has stopped or that output failed.
+  // Pending until the app has computed it, and again once R has spent 2 s updating it (a slow or stuck
+  // update would otherwise leave the old status up); unavailable once the app has stopped, or that output
+  // failed or is empty. While a what-if is in effect (cfg.status.whatif matches in the app's page), the
+  // bar keeps the status of the data as loaded. Computed text that no tone names shows as AMBER.
   var barStatus = cfg.status ? document.querySelector('.top .mc-status') : null;
-  function appStatus() {
-    try {
-      var doc = attachedTo.document, whole = true;
-      var text = cfg.status.text.replace(/\{([^}]+)\}/g, function (m, sel) {
-        var e = doc.querySelector(sel), v = e && !e.closest('.shiny-output-error') ? (e.textContent || '').trim() : '';
-        if (!v) whole = false;
-        return v;
-      });
-      return whole ? text : null;
-    } catch (e) { return null; }   // the app's page is not readable yet
+  var asLoaded = null, updatingSince = null;   // the last status without a what-if; when R began updating it
+  function appStatus() {   // {text, level}, 'whatif', 'updating', or null when there is no whole status
+    var doc;
+    try { doc = attachedTo.document; if (!doc || !doc.body) return null; } catch (e) { return null; }   // not readable yet
+    var whole = true, recalc = false;
+    var text = cfg.status.text.replace(/\{([^}]+)\}/g, function (m, sel) {
+      var e = doc.querySelector(sel), v = e && !e.closest('.shiny-output-error') ? (e.textContent || '').trim() : '';
+      if (e && e.closest('.recalculating')) recalc = true;
+      if (!v) whole = false;
+      return v;
+    });
+    updatingSince = recalc ? (updatingSince || now()) : null;
+    if (cfg.status.whatif && doc.querySelector(cfg.status.whatif)) return 'whatif';
+    if (recalc && now() - updatingSince >= 2) return 'updating';
+    if (!whole) return null;
+    var level = 'AMBER';
+    cfg.status.tones.some(function (x) { if (!new RegExp(x[0]).test(text)) return false; level = x[1]; text = x[2] || text; return true; });
+    var s = { text: text, level: level };
+    if (!recalc && !L.busy) asLoaded = s;
+    return s;
   }
   function renderBarStatus(t) {
     if (!barStatus) return;
-    var text = t === 'error' ? null : appStatus(), level = 'pending';
-    if (text) cfg.status.tones.some(function (x) { if (!new RegExp(x[0]).test(text)) return false; level = x[1]; text = x[2] || text; return true; });
-    else text = t === 'error' || L.ready ? 'Status unavailable' : 'Status pending';
-    if (barStatus.lastChild.nodeValue !== text) barStatus.lastChild.nodeValue = text;
-    barStatus.className = 'mc-status ' + level;
+    var s = t === 'error' ? null : appStatus();
+    if (s === 'whatif') s = asLoaded || 'updating';
+    if (s === 'updating') s = { text: 'Status pending', level: 'pending' };
+    if (!s) s = { text: t === 'error' || L.ready ? 'Status unavailable' : 'Status pending', level: 'pending' };
+    if (barStatus.lastChild.nodeValue !== s.text) barStatus.lastChild.nodeValue = s.text;
+    barStatus.className = 'mc-status ' + s.level;
   }
   function setStage(name) {
     if (ORDER.indexOf(name) <= ORDER.indexOf(L.stage) && name !== 'page') { render(); return; }

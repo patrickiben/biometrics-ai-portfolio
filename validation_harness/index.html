@@ -203,6 +203,7 @@ html:not(.js) .theme-toggle { display: none; }
 .top .mc-status .dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; animation: mc-pulse 2.4s infinite; }
 .top .mc-status.RED { color: var(--red); }
 .top .mc-status.AMBER { color: var(--amber); }
+.top .mc-status.watch { color: var(--blue); }
 .top .mc-status.pending { color: var(--muted); }
 .top .mc-clock { font: 400 10.5px/1 var(--mono); letter-spacing: .08em; color: var(--muted); white-space: nowrap; }
 @keyframes mc-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
@@ -752,9 +753,11 @@ main .stage > .kicker, main section > .kicker { color: var(--amber); }
     fetch("teeth/results/summary.json").then(function(r){return r.ok?r.json():null;}).then(function(j){if(j)teeth(j);}).catch(function(){});
   }
   function render(L){
-    // the top bar states this ledger's own count; assets/ui.js reads the attributes when it runs below
-    var auto=L.total-(L.manual||0)-(L.unsigned||0), bar=document.querySelector(".top .mc-status"), line=L.green+" of "+auto+" gates green";
-    var tone=L.green===auto?"GREEN":L.gates.some(function(g){return !/^(green|manual|stale|not signed)$/.test(g.status);})?"RED":"AMBER";
+    // the top bar states this ledger's count over all its gates: GREEN only when every gate is green, RED
+    // when one has failed, AMBER otherwise (a manual record, an unsigned or a stale gate is not green);
+    // assets/ui.js reads the attributes when it runs below
+    var bar=document.querySelector(".top .mc-status"), line=L.green+" of "+L.total+" gates green";
+    var tone=L.green===L.total?"GREEN":L.gates.some(function(g){return !/^(green|manual|stale|not signed)$/.test(g.status);})?"RED":"AMBER";
     document.body.setAttribute("data-mc-status",line); document.body.setAttribute("data-mc-tone",tone);
     if(bar){bar.className="mc-status "+tone;bar.lastChild.nodeValue=line;}
     document.getElementById("meta").innerHTML =

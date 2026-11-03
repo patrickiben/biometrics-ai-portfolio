@@ -15,7 +15,8 @@
     {"t": "snapshot", "label": "Read-only snapshot", "href": "../../lifecycle_dashboard/quarto/lifecycle-dashboard.html"}
   ],
   "first_load": {"download_mb": 65, "first_s": "10 to 20", "revisit_s": "8 to 12"},
-  "status": {"text": "{#k_risk} at risk, {#k_watch} on watch", "tones": [["^0 at risk, 0 on", "GREEN"], ["^0 at risk", "AMBER"], ["at risk", "RED"]]},
+  "status": {"text": "{#k_risk} at risk, {#k_watch} on watch", "whatif": "#whatif_state .lc-whatif.on",
+             "tones": [["^0 at risk, 0 on", "GREEN"], ["^0 at risk", "AMBER"], ["at risk", "RED"]]},
   "smoke": {
     "timeout_s": 150,
     "status": {"text": "1 at risk, 3 on watch", "tone": "RED"},
@@ -45,7 +46,12 @@
        "after": [{"click": "#reset"}, {"wait": 800}]},
       {"name": "after Reset to data, no what-if is left",
        "steps": [],
-       "expect": [{"text": ["#whatif_state", "No what-if: every panel shows the data as loaded."]}, {"text": ["#k_q", "135"]}]}
+       "expect": [{"text": ["#whatif_state", "No what-if: every panel shows the data as loaded."]}, {"text": ["#k_q", "135"]}]},
+      {"name": "a what-if that clears CP-108's risk leaves the top bar on the data as loaded",
+       "steps": [{"focus": ".shiny-input-container:has(#dblprog) .irs-line"}, {"key": "ArrowRight", "repeat": 55}, {"wait": 800}],
+       "expect": [{"text": ["#k_risk", "0"]}, {"visible": "#whatif_state .lc-whatif.on"}],
+       "bar": {"text": "1 at risk, 3 on watch", "tone": "RED"},
+       "after": [{"click": "#reset"}, {"wait": 800}]}
     ]
   }
 }

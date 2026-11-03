@@ -20,8 +20,11 @@
 //     another window size), ends with every expectation met (an element visible, its exact text,
 //     an attribute or a computed style, inside the app's viewport, or focused) and leaves no
 //     output anywhere in an error;
-//   - the top bar's status (smoke.status) never reads the site's default line above a monitoring app,
-//     and once the app is ready reads what the app computed, as do the static pages that quote it;
+//   - the top bar's status (smoke.status) reads "Status pending" while a monitoring app starts, then
+//     what the app computed (again after the theme and tab checks, during an interaction that names
+//     it, and after a reload), as do the static pages that quote it, shown at 1440 px; with
+//     --expect-problem it reads "Status unavailable" ("Status pending" while the start may still
+//     finish); and the validation harness ledger's bar agrees with the gates that page lists;
 //   - after all of that the launch page reports no problem and no failed panel, and R is idle;
 //   - nothing the visit asked the site for answered 404 (webR, for one, falls back to downloading a
 //     missing package from elsewhere, so an app could still start without a file it should ship),
@@ -159,6 +162,19 @@ const OUTPUTS = (ids) => {
   return { outputs: ids.map(one), errors };
 };
 const appFrame = (page) => page.frames().find((f) => /\/app_[^/]+\/?/.test(f.url()));
+// the site's top-bar readout on a page: its text, its tone class, and whether it is shown
+const barOf = (p) => p.evaluate(() => {
+  const s = document.querySelector("header.top .mc-status");
+  return s ? { text: s.textContent.trim(), tone: s.className.replace("mc-status", "").trim(), shown: getComputedStyle(s).display !== "none" } : null;
+});
+const sameBar = (b, want) => !!(b && b.text === want.text && b.tone === want.tone);
+const showBar = (b) => b ? `"${b.text}" (${b.tone || "no tone"}${b.shown ? "" : ", hidden"})` : "nothing";
+async function waitBar(page, want, ms = 10000) {   // the bar follows the app within a second
+  const end = Date.now() + ms;
+  let b = await barOf(page).catch(() => null);
+  while (!sameBar(b, want) && Date.now() < end) { await sleep(250); b = await barOf(page).catch(() => null); }
+  return b;
+}
 
 async function waitReady(page, timeoutS, label) {
   const end = Date.now() + timeoutS * 1000;
@@ -174,10 +190,11 @@ async function waitReady(page, timeoutS, label) {
 }
 // ---- interactions: real mouse and keyboard events in the app's frame --------------------------
 //   {"name": "...", "viewport": [390, 844], "steps": [{"click": "css"}, {"dblclick": "css"},
-//    {"focus": "css"}, {"key": "Escape"}, {"type": "text"}, {"wait": 300}],
+//    {"focus": "css"}, {"key": "Escape"}, {"key": "ArrowRight", "repeat": 5}, {"type": "text"}, {"wait": 300}],
 //    "expect": [{"visible": "css"}, {"text": ["css", "exact text"]}, {"inViewport": "css"},
 //    {"focused": "css"} (the focused element matches), {"attr": ["css", "name", "value"]},
 //    {"style": ["css", "computed property", "regex"]} (for example a focus ring)],
+//    "bar": {"text": "...", "tone": "RED"} (the site's top bar, once the steps are done),
 //    "after": [steps], "timeout_s": 15}. A wait, a key and a click are each followed by waiting
 //    (up to 10 s) for R to finish what they started.
 const EXPECT = (list) => list.map((x) => {
@@ -216,7 +233,7 @@ async function doSteps(page, fr, steps) {
       if (!ok) throw new Error(`no element matches ${st.focus}`);
       await sleep(150); continue;
     }
-    if (st.key) { await page.keyboard.press(st.key); await settle(fr); continue; }
+    if (st.key) { for (let i = 0; i < (st.repeat || 1); i++) await page.keyboard.press(st.key); await settle(fr); continue; }
     if (st.type) { await page.keyboard.type(st.type, { delay: 20 }); await settle(fr); continue; }
     const sel = st.click || st.dblclick;
     const h = await fr.$(sel);
@@ -242,6 +259,10 @@ async function runInteraction(page, it, size, shot) {
     const seen = {};   // the last observation of each element while it existed (a toast expires)
     while (Date.now() < end) {
       r = await fr.evaluate(EXPECT, it.expect || []);
+      if (it.bar) {
+        const b = await barOf(page).catch(() => null);
+        r.push({ sel: "the top bar", ok: sameBar(b, it.bar), got: b ? `${b.text} (${b.tone})` : "missing", want: `${it.bar.text} (${it.bar.tone})` });
+      }
       r.forEach((x, k) => { if (x.got !== "missing") seen[k] = x.got; });
       if (r.every((x) => x.ok)) break;
       await sleep(250);
@@ -412,12 +433,10 @@ async function checkApp(spec) {
     if (!intro.fcp || intro.fcp > MAX_FCP) fail(`launch page first contentful paint ${intro.fcp ? Math.round(intro.fcp) + " ms" : "missing"} (limit ${MAX_FCP} ms)`);
     if (!intro.status.trim()) fail("the status line is empty");
     if (!intro.bar || intro.current !== "Operations") fail(`the launch page lacks the site's top bar with Operations current and the theme toggle (current: "${intro.current}")`);
-    const barOf = (p) => p.evaluate(() => {
-      const s = document.querySelector("header.top .mc-status");
-      return s ? { text: s.textContent.trim(), tone: s.className.replace("mc-status", "").trim() } : null;
-    });
+    // (with --expect-problem the start may already have failed here; the bar is checked once it has)
     const bar0 = await barOf(page);
-    if (smoke.status && (!bar0 || /nominal/i.test(bar0.text))) fail(`the top bar reads ${JSON.stringify(bar0)} while the app starts`);
+    if (smoke.status && !EXPECT_PROBLEM && !(sameBar(bar0, { text: "Status pending", tone: "pending" }) || sameBar(bar0, smoke.status)))
+      fail(`the top bar reads ${showBar(bar0)} while the app starts, expected "Status pending" (pending)`);
     if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${spec.name}-launch.png`) });
 
     // the app: ready, with content, without errors
@@ -434,6 +453,14 @@ async function checkApp(spec) {
       });
       res.problem_text = text;
       if (!text) fail("the problem panel is not shown");
+      if (smoke.status) {
+        // a hard failure makes the status unavailable; a start that may still finish keeps it pending
+        const tone = await page.evaluate(() => document.querySelector(".app-status").getAttribute("data-tone"));
+        const want = { text: tone === "error" ? "Status unavailable" : "Status pending", tone: "pending" };
+        const b = await barOf(page);
+        if (!sameBar(b, want)) fail(`with problem "${EXPECT_PROBLEM}" the top bar reads ${showBar(b)}, expected "${want.text}" (pending)`);
+        else say(`${spec.name}: the top bar reads "${b.text}"`);
+      }
       if (SHOTS) {
         await page.evaluate(() => document.getElementById("app").scrollIntoView());
         await page.screenshot({ path: path.join(SHOTS, `${spec.name}-problem-${EXPECT_PROBLEM}.png`) });
@@ -461,15 +488,15 @@ async function checkApp(spec) {
         else if (o.detail.trim() !== String(want)) fail(`output ${id} reads "${o.detail}", expected "${want}"`);
       }
       if (smoke.status) {
-        const same = (b) => b && b.text === smoke.status.text && b.tone === smoke.status.tone;
-        const bar = await barOf(page);
-        if (!same(bar)) fail(`the top bar reads ${JSON.stringify(bar)}, expected "${smoke.status.text}" (${smoke.status.tone})`);
+        const bar = await waitBar(page, smoke.status);
+        if (!sameBar(bar, smoke.status) || !bar.shown) fail(`the top bar reads ${showBar(bar)}, expected "${smoke.status.text}" (${smoke.status.tone})`);
         for (const p of smoke.status.pages || []) {
           const other = await browser.newPage();
+          await other.setViewport({ width: 1440, height: 900 });
           await other.goto(`${BASE}/${p}`, { waitUntil: "load", timeout: 30000 });
           const quoted = await barOf(other);
           await other.close();
-          if (!same(quoted)) fail(`${p}: the top bar reads ${JSON.stringify(quoted)}, but the app computes "${smoke.status.text}" (${smoke.status.tone})`);
+          if (!sameBar(quoted, smoke.status) || !quoted.shown) fail(`${p}: the top bar reads ${showBar(quoted)}, but the app computes "${smoke.status.text}" (${smoke.status.tone})`);
         }
         await page.bringToFront();
       }
@@ -540,6 +567,11 @@ async function checkApp(spec) {
           if (stage) await stage.screenshot({ path: path.join(SHOTS, `${spec.name}-tab-${tab.tab.replace(/[^A-Za-z0-9]+/g, "_")}.png`) });
         }
       }
+      // the theme and tab checks leave the status as the app computed it
+      if (smoke.status) {
+        const b = await waitBar(page, smoke.status);
+        if (!sameBar(b, smoke.status)) fail(`after the theme and tab checks the top bar reads ${showBar(b)}, expected "${smoke.status.text}" (${smoke.status.tone})`);
+      }
       // the interactions: real mouse and keyboard events, in order, on the same page
       for (const it of smoke.interactions || []) {
         const tt = Date.now();
@@ -571,6 +603,10 @@ async function checkApp(spec) {
           const bad = (r2.outputs || []).filter((o) => !o.content);
           if (bad.length || (r2.errors || []).length) fail(`after a reload: ${bad.map((o) => o.id).join(", ")} empty, ${(r2.errors || []).length} errors`);
           else say(`${spec.name}: reload ready at ${s2.times.ready} s`);
+          if (smoke.status) {
+            const b = await waitBar(page, smoke.status);
+            if (!sameBar(b, smoke.status)) fail(`after a reload the top bar reads ${showBar(b)}, expected "${smoke.status.text}" (${smoke.status.tone})`);
+          }
         }
       }
     }
@@ -593,8 +629,39 @@ async function checkApp(spec) {
   return res;
 }
 
+// ---- the validation harness ledger states its own status: the bar must agree with its gates -------
+async function checkLedger() {
+  const res = { app: "validation_harness bar", page: true, failures: [], warnings: [], timings: {} };
+  const profile = fs.mkdtempSync(path.join(os.tmpdir(), "smoke-profile-"));
+  const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, userDataDir: profile,
+    args: ["--no-first-run", "--no-default-browser-check", ...(process.env.CI ? ["--no-sandbox"] : [])] });
+  try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1440, height: 900 });
+    await page.goto(`${BASE}/validation_harness/index.html`, { waitUntil: "load", timeout: 30000 });
+    // counted here from the gate list the page draws: "<green> of <all> gates green", GREEN only when
+    // every gate is green, RED when one has failed, AMBER otherwise
+    const st = await page.evaluate(() => [...document.querySelectorAll("#gate-sum .st")].map((e) => e.textContent.trim()));
+    const green = st.filter((x) => x === "green").length;
+    const want = { text: `${green} of ${st.length} gates green`,
+                   tone: green === st.length ? "GREEN" : st.some((x) => !/^(green|manual|stale|not signed)$/.test(x)) ? "RED" : "AMBER" };
+    const b = await barOf(page);
+    if (!st.length) res.failures.push("the ledger lists no gates");
+    else if (!sameBar(b, want) || !b.shown) res.failures.push(`the top bar reads ${showBar(b)}, but the page lists ${want.text} (${want.tone})`);
+    else say(`validation harness: the top bar reads "${b.text}" (${b.tone}), as its gate list says`);
+  } catch (e) {
+    res.failures.push(`driver error: ${e && e.stack || e}`);
+  } finally {
+    await browser.close().catch(() => {});
+    fs.rmSync(profile, { recursive: true, force: true });
+  }
+  for (const f of res.failures) say(`validation harness: FAIL ${f}`);
+  return res;
+}
+
 const results = [];
 for (const spec of apps) results.push(await checkApp(spec));
+if (!ONLY.length && !EXPECT_PROBLEM) results.push(await checkLedger());
 server.close();
 if (served.notFound.length) say(`404s: ${[...new Set(served.notFound)].slice(0, 20).join(", ")}`);
 if (LOG_REQUESTS) fs.writeFileSync(LOG_REQUESTS, requestLog.join("\n") + "\n");
@@ -602,11 +669,11 @@ if (REPORT) fs.writeFileSync(REPORT, JSON.stringify({ base: BASE, fault: FAULT |
 console.log("\nSmoke test summary");
 for (const r of results) {
   const t = r.timings || {};
-  console.log(`  ${r.failures.length ? "FAIL" : "ok  "} ${r.app.padEnd(22)} launch paint ${t.fcp_ms ?? "-"} ms, ready ${t.ready_s ?? "-"} s` +
-              `${t.reload_ready_s ? `, reload ready ${t.reload_ready_s} s` : ""}, served ${r.served_mb ?? "-"} MB`);
+  console.log(`  ${r.failures.length ? "FAIL" : "ok  "} ${r.app.padEnd(22)}` + (r.page ? "" : ` launch paint ${t.fcp_ms ?? "-"} ms, ready ${t.ready_s ?? "-"} s` +
+              `${t.reload_ready_s ? `, reload ready ${t.reload_ready_s} s` : ""}, served ${r.served_mb ?? "-"} MB`));
   for (const f of r.failures) console.log(`       - ${f}`);
   for (const w of r.warnings) console.log(`       warning: ${w}`);
 }
 const failed = results.filter((r) => r.failures.length).length;
-console.log(failed ? `\n${failed} of ${results.length} apps failed` : `\nAll ${results.length} apps passed`);
+console.log(failed ? `\n${failed} of ${results.length} checks failed` : `\nAll ${results.length} checks passed`);
 process.exit(failed ? 1 : 0);
