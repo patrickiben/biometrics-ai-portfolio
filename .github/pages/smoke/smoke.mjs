@@ -433,8 +433,9 @@ async function checkApp(spec) {
     if (!intro.fcp || intro.fcp > MAX_FCP) fail(`launch page first contentful paint ${intro.fcp ? Math.round(intro.fcp) + " ms" : "missing"} (limit ${MAX_FCP} ms)`);
     if (!intro.status.trim()) fail("the status line is empty");
     if (!intro.bar || intro.current !== "Operations") fail(`the launch page lacks the site's top bar with Operations current and the theme toggle (current: "${intro.current}")`);
+    // (with --expect-problem the start may already have failed here; the bar is checked once it has)
     const bar0 = await barOf(page);
-    if (smoke.status && !(sameBar(bar0, { text: "Status pending", tone: "pending" }) || sameBar(bar0, smoke.status)))
+    if (smoke.status && !EXPECT_PROBLEM && !(sameBar(bar0, { text: "Status pending", tone: "pending" }) || sameBar(bar0, smoke.status)))
       fail(`the top bar reads ${showBar(bar0)} while the app starts, expected "Status pending" (pending)`);
     if (SHOTS) await page.screenshot({ path: path.join(SHOTS, `${spec.name}-launch.png`) });
 
