@@ -12,6 +12,7 @@
 <meta name="description" content="{{summary}}">
 {{{site_head}}}
 <link rel="stylesheet" href="{{REL_PATH}}apps/_shared/launch.css">
+<noscript><style>.launch-intro .launch-grid { display: grid !important; }</style></noscript>
 <script src="{{REL_PATH}}apps/_shared/launch.js" defer></script>
 </head>
 <body class="launch"{{#status}} data-mc-status="Status pending" data-mc-tone="pending"{{/status}}>
@@ -103,6 +104,7 @@
     </div>
     <p class="launch-note">Built with Shiny, Shinylive and webR. The app is the same R code that runs locally; this page reports each step of starting it, so a slow or failed start says what happened instead of staying blank. It follows the theme toggle in the top bar.</p>
   </section>
+  <div class="wrap launch-after"></div><!-- on a phone, launch.js moves the help panels here, below the app -->
 </main>
 {{{site_footer}}}
 <script type="application/json" id="launch-config">{{{launch_config}}}</script>

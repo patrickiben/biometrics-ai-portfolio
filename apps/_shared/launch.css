@@ -24,6 +24,9 @@
 .launch-shot picture { display: block; }
 .launch-shot img { display: block; width: 100%; height: auto; border-radius: var(--r-md); border: 1px solid var(--line); }
 .launch-shot figcaption { margin-top: 8px; color: var(--muted); font-size: 13px; line-height: 1.4; }
+/* on a phone the help panels follow the app: launch.js moves them into .launch-after, and they stay
+   hidden in the intro at that width until then, so nothing above the app shifts */
+.launch-after:empty { display: none; }
 
 /* status, used in the intro pill and the app bar */
 .dot { display: inline-block; flex: 0 0 auto; width: .7rem; height: .7rem; border-radius: 50%; background: var(--accent); }
@@ -110,6 +113,8 @@ body.launch-full { overflow: hidden; }
 
 @media (max-width: 720px) {
   .launch-intro { padding-top: 8px; }
+  .launch-intro .launch-grid { display: none; }
+  .launch-after { margin-top: 24px; }
   .launch-app { margin-top: 24px; padding: 0 8px; }
   .app-bar { padding: 8px 10px; }
   .status-clock { margin-left: 0; }
