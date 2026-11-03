@@ -22,7 +22,14 @@ def provider(module):
 
 
 def schema(module):
-    return provider(module).schema(module, ROOT)
+    spec = provider(module).schema(module, ROOT)
+    if module == 'localmind':
+        spec['intro'] = 'Prepare an unapproved review worklist, edit findings in the browser, and optionally request browser-model suggestions for individual findings.'
+        for step in spec['steps']:
+            if step['id'] == 'model':
+                step['title'] = 'Optional browser model'
+                step['description'] = 'Load the optional browser model from the review worklist when wanted. WebGPU and a first download of public model files are required; manual review remains available.'
+    return spec
 
 
 def check_profile(module, values):
@@ -147,6 +154,43 @@ def validate(module, values):
     return report
 
 
+def localmind_browser_guidance(normalized, summary):
+    sections = [
+        ('Review in the browser',
+         'Open the LOCALMIND browser workspace, upload and map your findings, choose controlled labels, and review the setup. '
+         'Use Validate setup, then Run selected analyses to prepare the editable review worklist. '
+         'Edit owner, severity, novelty, reviewer and review notes in the browser. '
+         'All findings, labels and suggestions remain unapproved; labels do not route work or establish clinical findings.'),
+        ('Optional browser model',
+         'Choose Load optional browser model only if you want suggestions. This requires WebGPU and a substantial first download of public model files, which may remain in the browser cache. '
+         'Finding text is processed on your device. Then choose Suggest labels for this finding for each finding you want reviewed by the model. '
+         'Review every suggestion and apply any chosen labels manually using the controls. Suggestions are never applied or approved automatically. '
+         'Manual review is available without loading the model.'),
+        ('Save the current review',
+         'Choose Download current review CSV for the latest editable worklist. '
+         'To save its JSON version, select review_UNAPPROVED.json under Report or file and choose Download selected file. '
+         'Choose Download complete ZIP to retain the current review_UNAPPROVED.json, review_UNAPPROVED.csv, model_audit_UNAPPROVED.json, inputs, configuration and source references. '
+         'Save before resetting, reloading or closing the workspace. review.csv is the initial blank-label reference; current browser edits are in the review_UNAPPROVED files.'),
+        ('Configuration and audit scope',
+         'This document provides configuration and review instructions; it does not report current inference status or completed numerical analyses. '
+         'Inspect the browser worklist and model_audit_UNAPPROVED.json for recorded model requests and suggestions. '
+         'audit.json is the original setup/reference audit: execution=not_run and its desktop warnings describe package generation, not the current browser review session. '
+         'Human review remains separate from scientific approval.'),
+        ('Optional desktop references',
+         'DESKTOP_REFERENCE_START_HERE.txt retains the original desktop instructions. '
+         'study.Rproj, run_local_model.R, R/slm_companion.R and open_review.sas are optional desktop reference files; they are not required for browser review. '
+         'Configure desktop model execution separately in the desktop toolkit if choosing that workflow; browser setup keeps it disabled. Native SAS references are unexecuted.')
+    ]
+    instructions = '\n\n'.join(title + '\n' + text for title, text in sections) + '\n'
+    configuration = list(summary)
+    if normalized.get('study_title'):
+        configuration.append('Study / project title: ' + normalized['study_title'])
+    document = guided_modules._report('LOCALMIND browser review guide',
+        'Unapproved configuration · ' + normalized['study_id'],
+        [('Configuration summary', '\n'.join(configuration)), *sections], ROOT)
+    return instructions, document
+
+
 def build(module, values):
     checked = validate(module, values)
     if checked['errors']:
@@ -159,9 +203,21 @@ def build(module, values):
         files[relative] = (ROOT / relative).read_text(encoding='utf-8')
     for slot, meta in active_inputs.items():
         files['uploads/' + slot + '.csv'] = Path(meta['absolute_path']).read_text(encoding='utf-8-sig')
-    files['BROWSER_START_HERE.txt'] = 'These results were computed inside the browser. Open analysis_report.html after extracting the complete ZIP. The configuration folder retains original source and optional desktop reproduction instructions. Review numerical results, assumptions, diagnostics and input fingerprints. No scientific approval or native SAS execution is implied.\n'
+    files['BROWSER_START_HERE.txt'] = ('This is a browser setup package; it does not establish whether an analysis completed. '
+        'Validate the current configuration, then use Run selected analyses in the browser workspace. '
+        'After running, inspect execution_status.csv and analysis_report.html in the current result set or at the root of its complete ZIP. '
+        'If execution fails, review the available diagnostics before using any output. '
+        'The configuration folder retains original source and optional desktop reproduction instructions. '
+        'Review numerical results, assumptions, diagnostics and input fingerprints. No scientific approval or native SAS execution is implied.\n')
+    if module == 'localmind':
+        files['DESKTOP_REFERENCE_START_HERE.txt'] = ('Optional desktop reference only. For browser review, use START_HERE.txt or setup_review.html.\n\n'
+            + files['START_HERE.txt'])
+        instructions, document = localmind_browser_guidance(checked['normalized'], checked['summary'])
+        files['START_HERE.txt'] = files['BROWSER_START_HERE.txt'] = instructions
+        files['setup_review.html'] = document
+
     files['browser_input_inventory.json'] = json.dumps({'inputs': active_inputs, 'approved': False}, indent=2)
-    answer = {'ok': True, 'files': files, 'validation': checked, 'summary': built['summary'], 'limitations': built['limitations']}
+    answer = {'ok': True, 'files': files, 'validation': checked, 'summary': built['summary'], 'limitations': checked['warnings'] if module == 'localmind' else built['limitations']}
     if module == 'localmind': answer['review'] = {'rows': list(csv.DictReader(io.StringIO(files['inputs/findings.csv']))), 'labels': {key: checked['normalized'][key+'_labels'].splitlines() for key in ['owner','severity','novelty']}}
     return answer
 
