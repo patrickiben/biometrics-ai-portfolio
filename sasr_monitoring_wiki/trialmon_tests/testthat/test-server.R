@@ -160,3 +160,24 @@ test_that("Shinylive readiness: allowed packages only, data inside the app folde
   needed <- c("adsl.csv", "adlb.csv", "adeg.csv", "adae.csv", "cohorts.csv", "study_kri.csv", "notes.csv")
   expect_true(all(file.exists(file.path(APP_DIR, "data", needed))))
 })
+
+
+test_that("uploaded cohort labels remain inert text in AE table headers", {
+  e <- app_env()
+  shiny::testServer(APP_DIR, {
+    session$flushReact()
+    session$setInputs(bw_action = list(action = "example", generation = 1, nonce = 1))
+    session$setInputs(ctcae = "6.0", ae_ctcae = "6.0", window = 30, alp = FALSE, meddra = "29.1")
+    frames <- lapply(e$BW_TEMPLATES, `[[`, "data")
+    payload <- '<img src=x onerror="window.headerInjected=1">'
+    original <- frames[["cohorts.csv"]]$COHORT[[1]]
+    for (file in c("adsl.csv", "cohorts.csv"))
+      frames[[file]]$COHORT[frames[[file]]$COHORT == original] <- payload
+    apply_data(e$bw_tm_validate(frames, e$BW_TM_EXAMPLE_SETTINGS))
+    session$flushReact()
+    html <- output$ae_tbl
+    expect_false(grepl("<img ", html, fixed = TRUE))
+    expect_true(grepl("&lt;img src=x", html, fixed = TRUE))
+    expect_true(grepl('<span class="tm-soc">', html, fixed = TRUE))
+  })
+})

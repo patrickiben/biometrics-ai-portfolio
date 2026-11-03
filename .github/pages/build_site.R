@@ -150,6 +150,8 @@ if (!length(selected_apps)) {
   shinylive::export("browser_modules/engine", out,
     subdir = "browser-runtime/engine-build", assets_version = ASSETS, quiet = FALSE)
   unlink(file.path(out, "browser-runtime/engine-build"), recursive = TRUE)
+  source(".github/pages/check_browser_probes.R")
+  check_browser_probes(out)
   if (system2("python3", c(".github/pages/browser_assets.py", shQuote(normalizePath(out)))) != 0L)
     fail("browser workspace assets failed integrity checks")
 }

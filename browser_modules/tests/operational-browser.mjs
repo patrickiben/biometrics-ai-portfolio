@@ -28,6 +28,8 @@ for(const app of selection.split(',')){
   assert(Object.keys(initial).some(n=>n.startsWith('outputs/')));assert(Object.keys(initial).some(n=>n.startsWith('source/')));
   // Use different identifiers from every bundled CP/RAND scenario; preserve cross-table references.
   const custom={...saved,inputs:Object.fromEntries(Object.entries(saved.inputs).map(([name,csv])=>[name,(app==='hours'?csv.replaceAll('SAP','QC SAP'):csv).replaceAll('CP','STUDY').replaceAll('RAND-04','CHECK-04').replaceAll('S-1042','CASE-0042')]))};
+  const headerPayload='<img src=x onerror=window.headerInjected=1>';
+  if(app==='trialmon')for(const name of ['adsl.csv','cohorts.csv'])custom.inputs[name]=custom.inputs[name].replaceAll('"C1"','"'+headerPayload+'"');
   const files=Object.entries(custom.inputs).map(([name,csv])=>{const file=path.join(folder,name);fs.writeFileSync(file,csv);return file;});
   // Supply CSVs through the actual browser file picker. Also exercise noncanonical column names on the first feed.
   let first=fs.readFileSync(files[0],'utf8'),header=first.slice(0,first.indexOf('\n'));const firstName=/^"([^"]+)"/.exec(header)?.[1]||header.split(',')[0];first=first.replace(/^"?[A-Za-z_][A-Za-z0-9_]*"?/, 'source_field');fs.writeFileSync(files[0],first);
@@ -39,6 +41,13 @@ for(const app of selection.split(',')){
     },saved.settings);
   }
   await apply();
+  if(app==='trialmon'){
+    await frame.evaluate(()=>[...document.querySelectorAll('[data-bs-toggle="tab"]')].find(e=>e.textContent.trim()==='Adverse events').click());
+    await frame.waitForFunction(payload=>document.querySelector('#ae_tbl')?.textContent.includes(payload),{timeout:30000},headerPayload);
+    assert.equal(await frame.evaluate(()=>window.headerInjected),undefined);
+    assert.equal(await frame.$$eval('#ae_tbl img',nodes=>nodes.length),0);
+    assert(await frame.$eval('#ae_tbl th',()=>[...document.querySelectorAll('#ae_tbl th')].some(e=>e.textContent.includes('<img src=x'))));
+  }
   const customExport=await download(),back=JSON.parse(customExport[jsonName]);for(const name of Object.keys(custom.inputs))assert.equal(back.inputs[name],custom.inputs[name],`${app}: mapped input ${name}`);
   // Real edit controls, then all editable state is preserved on JSON restore.
   if(app==='hours'){await frame.click('#need',{clickCount:3});await page.keyboard.press('Backspace');await page.keyboard.type('59.5');await page.keyboard.press('Tab');await wait(900);}
@@ -52,7 +61,7 @@ for(const app of selection.split(',')){
   await frame.click('#bw_example');await ready();await frame.click('#bw_reset');await frame.waitForSelector('#bw_status .bw-status[data-active="false"]');assert(await frame.$eval('#bw_export',e=>e.disabled));
   // Blank setup remains operable at phone width and follows both themes.
   await page.setViewport({width:390,height:844});await wait(300);assert(await frame.$eval('#bw_workspace',e=>e.getBoundingClientRect().right<=innerWidth+1));await page.screenshot({path:path.join(folder,'phone-blank.png'),fullPage:true});assert.deepEqual(errors,[]);
-  report.push({app,passed:true,inputs:Object.keys(saved.inputs).length,outputs:Object.keys(initial).filter(n=>n.startsWith('outputs/')).length,checks:['blank','CSV mapping','custom identifiers','ZIP inputs/results/source','editable settings','JSON restore','malformed replacement','export disabled','status cleared','reset','phone setup']});console.log(app,'PASS',report.at(-1));
+  report.push({app,passed:true,inputs:Object.keys(saved.inputs).length,outputs:Object.keys(initial).filter(n=>n.startsWith('outputs/')).length,checks:[...(app==='trialmon'?['uploaded HTML header stays inert text']:[]),'blank','CSV mapping','custom identifiers','ZIP inputs/results/source','editable settings','JSON restore','malformed replacement','export disabled','status cleared','reset','phone setup']});console.log(app,'PASS',report.at(-1));
  }catch(error){report.push({app,passed:false,error:String(error.stack||error)});console.error(app,error);}
  finally{await browser.close();fs.writeFileSync(path.join(evidence,'report.json'),JSON.stringify(report,null,2));}
 }

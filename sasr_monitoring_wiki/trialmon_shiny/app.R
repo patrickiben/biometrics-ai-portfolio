@@ -441,7 +441,8 @@ server <- function(input, output, session) {
     out <- data.frame(`SOC / Preferred term` = lab, check.names = FALSE)
     for (g in names(N)) out[[sprintf("%s (N=%d)", g, N[[g]])]] <- sprintf("%d (%.0f%%)", a[[g]], 100 * a[[g]] / N[[g]])
     out
-  }), striped = TRUE, hover = TRUE, spacing = "s", sanitize.text.function = function(x) x)
+  }), striped = TRUE, hover = TRUE, spacing = "s", sanitize.text.function = function(x) x,
+     sanitize.colnames.function = tm_esc)
   output$ae_note <- renderUI(p(class = "foot", sprintf(paste0(
     "Treatment-emergent AEs, participants counted once per row; N = dosed participants. Coded with MedDRA v%s ",
     "(primary SOC). AE grades as recorded by the investigator (NCI CTCAE v%s); the lab-grade setting ",

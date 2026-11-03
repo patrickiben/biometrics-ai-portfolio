@@ -36,10 +36,20 @@ async function configure(kind){await frame.locator('#method').selectOption(kind)
 async function field(id,value){const control=frame.locator('#'+id);if(await control.getAttribute('type')==='checkbox')await control.setChecked(!!value);else{await control.fill(String(value));await control.dispatchEvent('change');}await settle();}
 async function run(kind,label=kind){
  await settle();await frame.locator('#confirmed').check();await settle();assert(await frame.locator('#confirmed').isChecked());assert.equal(await frame.locator('#run').isDisabled(),false);
+ const previousRunId=await frame.evaluate(()=>document.querySelector('#method_result')?.dataset.runId||null);
  const start=Date.now();await frame.locator('#run').click();
- await frame.waitForFunction(()=>['succeeded','error'].includes(document.querySelector('#method_state')?.dataset.state),null,{timeout:900000});
+ // Synchronous R can leave the previous succeeded DOM visible during a repeat.
+ // A new run ID, matching module and idle R prove this invocation completed;
+ // the short UI settle budget must never become the analysis deadline.
+ const afterClick=await frame.evaluate(()=>({state:document.querySelector('#method_state')?.dataset.state,run_id:document.querySelector('#method_result')?.dataset.runId,busy:document.documentElement.classList.contains('shiny-busy'),result_visible:!!document.querySelector('#method_result')?.getClientRects().length,download_disabled:document.querySelector('#download_all')?.disabled,progress:[...document.querySelectorAll('.shiny-progress-notification')].map(x=>x.innerText)}));
+ report.current_run={kind,case:label,previous_run_id:previousRunId,after_click:afterClick};
+ await frame.waitForFunction(({kind,previousRunId})=>{
+  const state=document.querySelector('#method_state')?.dataset.state,result=document.querySelector('#method_result');
+  if(document.documentElement.classList.contains('shiny-busy'))return false;
+  return state==='error'||(state==='succeeded'&&result?.dataset.module===kind&&!!result.dataset.runId&&result.dataset.runId!==previousRunId);
+ },{kind,previousRunId},{timeout:900000});
  assert.equal(await frame.locator('#method_state').getAttribute('data-state'),'succeeded',await frame.locator('#method_state').innerText());
- await frame.locator('#method_result[data-module="'+kind+'"]').waitFor();await settle();
+ const runId=await frame.locator('#method_result[data-module="'+kind+'"]').getAttribute('data-run-id');assert(runId&&runId!==previousRunId,'A distinct completed run must replace the previous result');await settle();
  const pending=page.waitForEvent('download',{timeout:60000});await frame.locator('#download_all').click();const item=await pending,file=path.join(evidence,label+'.zip');await item.saveAs(file);assert.equal(await item.failure(),null);const browserElapsed=Date.now()-start;
  const directory=path.join(evidence,'extracted',label);
  cp.execFileSync(process.env.TOOLKIT_PYTHON||'python3',['-c',`import sys,zipfile,pathlib,csv,hashlib,re
@@ -65,7 +75,7 @@ for p in root.rglob('*'):
  const native=path.join(evidence,'native',label);fs.mkdirSync(path.dirname(native),{recursive:true});assert(!fs.existsSync(native),'Use a fresh evidence directory');
  const output=cp.execFileSync(process.env.RSCRIPT||'Rscript',[path.join(repo,'browser_modules/tests/methods-browser-parity.R'),repo,directory,native],{cwd:repo,encoding:'utf8',timeout:300000,maxBuffer:16*1024*1024});
  fs.writeFileSync(path.join(evidence,label+'-native.log'),output);const parity=JSON.parse(output.trim().split('\n').at(-1));report.native_parity.push({...parity,case:label});
- report.cases.push({kind,case:label,passed:true,browser_compute_download_ms:browserElapsed,zip_bytes:fs.statSync(file).size});console.log('PASS '+label+' actual browser execution, ZIP integrity and native parity');
+ report.cases.push({kind,case:label,passed:true,run_id:runId,previous_run_id:previousRunId,after_click:afterClick,browser_compute_download_ms:browserElapsed,zip_bytes:fs.statSync(file).size});delete report.current_run;console.log('PASS '+label+' actual browser execution, ZIP integrity and native parity');
 }
 async function themesAndPhone(kind){
  for(const theme of ['light','dark']){

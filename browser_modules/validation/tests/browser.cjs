@@ -19,7 +19,7 @@ const base=process.argv[2]||'http://127.0.0.1:8874',output=process.argv[3]||'/tm
   if(mode==='full'||mode.startsWith('D')){
    const teeth=await page.evaluate(only=>QC.python('validation-teeth',{only}),mode==='full'?'':mode);await save('teeth',teeth);assert.equal(teeth.ok,true,teeth.error);report.teeth=teeth.summary;
    if(mode==='full'){
-    assert.equal(teeth.summary.n_run,18);assert.equal(teeth.summary.partial,false);assert.deepEqual(teeth.summary.counts,{CAUGHT:15,SURVIVED:0,EQUIVALENT:1,'NOT APPLICABLE':2});
+    assert.equal(teeth.summary.n_run,18);assert.equal(teeth.summary.partial,false);assert.deepEqual(teeth.summary.counts,{CAUGHT:15,SURVIVED:0,EQUIVALENT:1,'NOT APPLICABLE':2});assert.equal(teeth.summary.as_predicted,18,'Every case must match its predicted class and all predicted catching layers.');
     const final=await page.evaluate(()=>QC.python('validation-harness',{}));await save('final-harness',final);assert.equal(final.ledger.gates.at(-1).status,'green');report.final_gates=final.ledger.gates;
    }else assert.equal(teeth.summary.partial,true);
   }

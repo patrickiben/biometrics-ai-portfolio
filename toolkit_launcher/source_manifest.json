@@ -5,6 +5,7 @@
     ".gitattributes",
     ".github/pages/browser_assets.py",
     ".github/pages/build_site.R",
+    ".github/pages/check_browser_probes.R",
     ".github/pages/install_browser_dependencies.R",
     ".github/pages/smoke/package-lock.json",
     ".github/pages/smoke/package.json",
