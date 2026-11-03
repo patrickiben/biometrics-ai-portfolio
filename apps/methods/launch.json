@@ -29,7 +29,7 @@
     }
   ],
   "first_load": {
-    "download_mb": 100,
+    "download_mb": 220,
     "first_s": "30 to 90",
     "revisit_s": "10 to 30"
   },
@@ -228,16 +228,8 @@
         "name": "Canonical PK/BE sandbox executes in browser",
         "steps": [
           {
-            "focus": "#method"
-          },
-          {
-            "key": "Home"
-          },
-          {
-            "key": "ArrowDown"
-          },
-          {
-            "key": "Enter"
+            "select": "#method",
+            "value": "sandbox"
           },
           {
             "click": "#confirmed"

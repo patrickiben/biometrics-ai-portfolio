@@ -28,9 +28,9 @@
     }
   ],
   "first_load": {
-    "download_mb": 65,
-    "first_s": "10 to 20",
-    "revisit_s": "8 to 12"
+    "download_mb": 220,
+    "first_s": "30 to 90",
+    "revisit_s": "10 to 30"
   },
   "status": {
     "text": "{#gate .uat-verdict-title}",

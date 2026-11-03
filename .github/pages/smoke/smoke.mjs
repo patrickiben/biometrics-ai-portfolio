@@ -190,7 +190,7 @@ async function waitReady(page, timeoutS, label) {
 }
 // ---- interactions: real mouse and keyboard events in the app's frame --------------------------
 //   {"name": "...", "viewport": [390, 844], "steps": [{"click": "css"}, {"dblclick": "css"},
-//    {"focus": "css"}, {"key": "Escape"}, {"key": "ArrowRight", "repeat": 5}, {"type": "text"}, {"wait": 300}],
+//    {"focus": "css"}, {"select": "css", "value": "option-value"}, {"key": "Escape"}, {"key": "ArrowRight", "repeat": 5}, {"type": "text"}, {"wait": 300}],
 //    "expect": [{"visible": "css"}, {"text": ["css", "exact text"]}, {"inViewport": "css"},
 //    {"focused": "css"} (the focused element matches), {"attr": ["css", "name", "value"]},
 //    {"style": ["css", "computed property", "regex"]} (for example a focus ring)],
@@ -235,6 +235,7 @@ async function doSteps(page, fr, steps) {
     }
     if (st.key) { for (let i = 0; i < (st.repeat || 1); i++) await page.keyboard.press(st.key); await settle(fr); continue; }
     if (st.type) { await page.keyboard.type(st.type, { delay: 20 }); await settle(fr); continue; }
+    if (st.select) { await fr.select(st.select, st.value); await settle(fr); continue; }
     const sel = st.click || st.dblclick;
     const h = await fr.$(sel);
     if (!h) throw new Error(`no element matches ${sel}`);

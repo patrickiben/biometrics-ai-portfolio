@@ -32,7 +32,7 @@
   var cfg = {};
   try { cfg = JSON.parse(document.getElementById('launch-config').textContent) || {}; } catch (e) { cfg = {}; }
   var REL = cfg.relPath || '../../';
-  var MB = cfg.download_mb || 55;
+  var MB = cfg.download_mb || 220;
   var TIMEOUT_S = cfg.timeout_s || 60;                         // nothing ready, before R has started
   var STARTED_S = cfg.timeout_started_s || 2 * TIMEOUT_S;       // once R has started (packages download)
   var COMPUTE_S = cfg.compute_timeout_s || 45;                  // the first results, after the app's page loaded
@@ -73,7 +73,7 @@
     page: ['Starting', 'The page is ready; the app starts here.'],
     sw: ['Step 2 of 5: preparing the in-page server', 'Registering the service worker that lets R serve the app inside this page.'],
     engine: ['Step 3 of 5: starting R in your browser', 'Downloading R for the browser (webR) and starting it. ' +
-      'Together with the app\'s packages, a first visit downloads about ' + MB + ' MB; this is the longest step.'],
+      'Together with the app\'s packages, a first visit loads about ' + MB + ' MB of runtime files before host compression; this is the longest step.'],
     frame: ['Step 4 of 5: loading the app', 'R is serving the app\'s page.'],
     compute: ['Step 5 of 5: computing the first results', 'R is computing.'],
     ready: ['Ready', '']
@@ -81,7 +81,7 @@
 
   // what to say when something goes wrong; tone "warn" = may still recover, offers Keep waiting
   var LOAD_REASONS = [
-    'A download was interrupted or is very slow. A first visit downloads about ' + MB + ' MB.',
+    'A download was interrupted or is very slow. A first visit loads about ' + MB + ' MB of runtime files before host compression.',
     'The browser blocks service workers, for example some private windows, blocked cookies or site data for this site, or a managed browser policy.',
     'A browser extension blocks scripts or WebAssembly on this site.'
   ];
