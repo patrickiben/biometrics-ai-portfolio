@@ -388,6 +388,11 @@ jobs:
         run: node vaccine/tests/browser_app_qc.cjs "${RUNNER_TEMP}/vaccine-site"
       - name: Install operational-app browser driver
         run: npm ci --prefix .github/pages/smoke --no-audit --no-fund
+      - name: Verify bounded launch watchdog policies
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          QA_OUTPUT_DIR: ${{ runner.temp }}/all-browser-qc/launch-policy
+        run: node .github/pages/smoke/launch-policy.test.mjs "${RUNNER_TEMP}/vaccine-site"
       - name: Execute complete browser analysis and operational workflows
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}

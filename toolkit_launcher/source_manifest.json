@@ -7,6 +7,7 @@
     ".github/pages/build_site.R",
     ".github/pages/check_browser_probes.R",
     ".github/pages/install_browser_dependencies.R",
+    ".github/pages/smoke/launch-policy.test.mjs",
     ".github/pages/smoke/package-lock.json",
     ".github/pages/smoke/package.json",
     ".github/pages/smoke/site_qc.cjs",
