@@ -13,7 +13,8 @@
    Failures it reports instead of staying blank: no service worker support, a failed registration,
    a page the service worker does not control (reloads once, guarded against loops), the
    "ServiceWorker controller was not found" viewer error (reloads once), a loader or app.json that
-   did not download, an R error while starting the app, the webR worker stopping, a lost connection,
+   did not download, an R error while starting the app, the webR worker stopping, R running out of
+   stack in a browser built on WebKit, such as Safari ("Maximum call stack size exceeded"), a lost connection,
    no result after 60 s of visible time (120 s once R has started, because a first visit on a slow
    connection spends most of its time loading packages; 45 s after the app's page loaded for the
    first results), a file that does not answer, and R busy for more than 45 s after the app was ready.
@@ -99,6 +100,9 @@
     'stalled-compute': { title: 'The first results have not arrived after ' + COMPUTE_S + ' seconds', text: 'The app\'s layout is drawn, but R has not filled it. R has probably stopped, usually because a file it loads on demand failed to download.', reasons: LOAD_REASONS.slice(0, 1), tone: 'warn', said: true },
     'no-answer': { title: 'A file R needs is not answering', text: 'R may be waiting for a file that the site does not answer for. On a very slow connection it may still finish; if nothing changes, reload the page.', reasons: LOAD_REASONS.slice(0, 1), tone: 'warn', said: true },
     disconnected: { title: 'The app lost its connection to R', text: 'R stopped responding. Reload the page to start the app again; changes made in this visit are not kept.' },
+    // WebKit gives the web worker R runs in a smaller stack than Chrome, Edge or Firefox (webR issue #17)
+    stack: { title: 'This browser gives R too little room to run the app', text: 'R stopped with "Maximum call stack size exceeded". Browsers built on WebKit, such as Safari, give R a smaller stack than Chrome, Edge or Firefox, and this app needs more. Reloading will not help in this browser.',
+             try: 'open this page in Chrome, Edge or Firefox, or use the read-only snapshot, which shows the same content without R.', fatal: true, noReload: true },
     'busy-long': { title: 'R has been computing for ' + BUSY_S + ' seconds', text: 'An update is taking much longer than usual. R may have stopped.', tone: 'warn' },
     updated: { title: 'The site was updated while the app was open', text: 'Reload the page to keep using the app.', tone: 'warn' }
   };
@@ -140,7 +144,7 @@
     // the clock stops at a hard problem: a count beside "did not start" would read as still loading
     if (!(L.problem && (PROBLEMS[L.problem].fatal || t === 'error'))) clock.textContent = L.ready && !L.problem ? '' : Math.round(now()) + ' s';
     document.title = (L.problem ? 'Problem: ' : L.ready ? '' : 'Loading: ') + baseTitle;
-    barReload.hidden = !L.problem;
+    barReload.hidden = !L.problem || !!PROBLEMS[L.problem].noReload;
     barReload.classList.toggle('btn--primary', t !== 'warn');   // while it may still finish, waiting comes first
     app.setAttribute('data-state', L.stage);
     if (L.problem) app.setAttribute('data-problem', L.problem); else app.removeAttribute('data-problem');
@@ -230,12 +234,13 @@
     ul.hidden = !reasons.length;
     problemBox.querySelector('.problem-reasons-head').hidden = !reasons.length;
     var tryText = problemBox.querySelector('.problem-try');
-    tryText.textContent = 'What to try: ' + (kind === 'r-start'
+    tryText.textContent = 'What to try: ' + (p.try || (kind === 'r-start'
       ? 'reload the page. If the error comes back, the read-only snapshot shows the same content without R.'
       : (p.tone === 'warn' ? 'wait a little longer, or reload the page (a second visit is usually faster). '
-                           : 'reload the page; a second visit is usually faster. ') + TRY_MORE);
+                           : 'reload the page; a second visit is usually faster. ') + TRY_MORE));
     var keep = problemBox.querySelector('[data-action="dismiss"]'), again = problemBox.querySelector('[data-action="reload"]');
     keep.hidden = p.tone !== 'warn';
+    again.hidden = !!p.noReload;
     keep.classList.toggle('btn--primary', p.tone === 'warn');      // still loading: waiting is the first choice
     again.classList.toggle('btn--primary', p.tone !== 'warn');
     var cur = cover.querySelector('[data-step].active');
@@ -649,10 +654,13 @@
     render();
   }, 1000);
 
+  var STACK_RX = /Maximum call stack size exceeded/i;
   function onPageError(msg) {
     msg = String(msg || 'error');
     log('page-error', msg);
-    if (/Unexpected response type/i.test(msg) && L.stage === 'frame' && L.rError) {
+    if (STACK_RX.test(msg)) {
+      showProblem('stack', msg);
+    } else if (/Unexpected response type/i.test(msg) && L.stage === 'frame' && L.rError) {
       showProblem(DOWNLOAD_RX.test(L.rError) ? 'engine-died' : 'r-start', L.rError);
     } else if (/ServiceWorker controller was not found/i.test(msg)) {
       if (!autoReload('the app viewer found no service worker controller')) showProblem('no-controller', msg);
@@ -675,6 +683,7 @@
         var pk = /Downloading webR package: ([A-Za-z0-9.]+)/.exec(m);
         var rerr = /^(?:preload error:)?(Error(?: in [^\n]*?)?: [\s\S]*)$/.exec(m);
         if (pk) { L.pkg = pk[1]; log('webr-package', pk[1]); render(); }
+        else if (STACK_RX.test(m)) { log('webr-' + level, m); showProblem('stack', m.replace(/^preload error:/, '')); }
         else if (rerr && !L.ready) {
           // R's own error output (webR forwards R's stderr here): keep the first, the root cause
           log('r-error', rerr[1]);

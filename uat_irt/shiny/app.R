@@ -93,7 +93,7 @@ UAT_CSS <- paste0("html{", paste(vapply(names(STATUS_TONE), function(s) {
 .uat-guide .accordion-button{font-weight:600;padding:.65rem 1rem}
 .uat-guide .accordion-body{padding:.2rem 1rem .8rem}
 .uat-guide .bslib-grid{margin-bottom:0;row-gap:.4rem}
-.uat-guide h3{font-size:.95rem;font-weight:700;margin:.4rem 0 .35rem}
+.uat-guide h2{font-size:.95rem;font-weight:700;margin:.4rem 0 .35rem}
 .uat-guide p,.uat-guide li{font-size:.9rem;line-height:1.45;margin-bottom:0}
 .uat-guide ol{padding-left:1.2em;margin:0}
 .uat-guide li{margin-bottom:.2rem}
@@ -299,7 +299,7 @@ ui <- page_fluid(
   DT_PRELOAD,
   app_status_ui("the KPIs, the test-script table, the sign-off gate, the selected test, the area plot and the defect log"),
 
-  div(class = "uat-top",
+  tags$header(class = "uat-top",   # the page's banner landmark
       div(class = "uat-brand",
           h1(class = "uat-title", "IRT / RTSM UAT tracker"),
           span(class = "bp-chip synthetic", "Synthetic data"),
@@ -313,18 +313,19 @@ ui <- page_fluid(
                        icon = deco_icon("rotate-left"), class = "btn-sm uat-btn", title = "Reset to the seed data"),
           bp_theme_toggle())),
 
+  tags$main(   # the page's main landmark: everything below the top bar
   accordion(
     id = "guide", open = "start", class = "uat-guide",
     accordion_panel(
       "Start here: what this shows and what to try", value = "start", icon = deco_icon("circle-info"),
       layout_columns(
         col_widths = breakpoints(sm = 12, lg = c(4, 4, 4)), fill = FALSE,
-        div(h3("What this shows"),
+        div(h2("What this shows"),
             p("User acceptance testing (UAT) of an interactive response technology (IRT) system, the software that",
               "randomizes participants and manages trial supply: 29 test scripts traced to 30 requirements, 4 defects,",
               "and a go-live gate that says whether the build is ready for a named person to sign off.",
               "All of it is invented.")),
-        div(h3("How to read the colors"),
+        div(h2("How to read the colors"),
             tags$dl(class = "uat-legend",
                     tags$dt("Tests"), tags$dd(lapply(STATUSES, pill)),
                     tags$dt("Defects"), tags$dd(pill("Open"), pill("Closed"), span(class = "uat-sub", "severity"),
@@ -332,7 +333,7 @@ ui <- page_fluid(
                     tags$dt("Gate"), tags$dd(span(class = "uat-mark-ok", "\u2713"), "met",
                                              span(class = "uat-mark-no", "\u2715"), "blocking"),
                     tags$dt("Table"), tags$dd("The highlighted row is the selected test."))),
-        div(h3("Try this"),
+        div(h2("Try this"),
             tags$ol(
               tags$li("RAND-04 failed and its critical defect DEF-01 is open. In the", tags$b("Selected test"),
                       "card, record the retest as Pass, then close DEF-01. A defect closes only after its",
@@ -376,7 +377,7 @@ ui <- page_fluid(
        DTOutput("defects", fill = FALSE),
        card_footer("Type Open or Closed, then press Enter or click elsewhere; or use the button in the Selected test card.",
                    "A defect closes only after the test it was found in passes a retest. Open critical and major",
-                   "defects block the gate; a test ID opens that test."))
+                   "defects block the gate; a test ID opens that test.")))
 )
 
 server <- function(input, output, session) {

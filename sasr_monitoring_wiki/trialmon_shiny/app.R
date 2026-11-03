@@ -58,7 +58,7 @@ Shiny.addCustomMessageHandler('trialmon-download', function(m) {
 });"
 
 ui <- page_sidebar(
-  title = div(class = "d-flex flex-wrap align-items-center gap-2 w-100",
+  title = tags$header(class = "d-flex flex-wrap align-items-center gap-2 w-100",   # the page's banner landmark
               tags$h1(class = "tm-title", "TRIALMON: safety review console"),   # the page's one h1
               span(class = "bp-chip synthetic", "Synthetic data"),
               div(class = "ms-auto", bp_theme_toggle())),
@@ -71,7 +71,7 @@ ui <- page_sidebar(
     selectInput("pid", "Participant", choices = tm$adsl$USUBJID, selected = "CP101-014"),
     uiOutput("packet"),
     hr(),
-    h6("SAP settings"),
+    tags$h2(class = "h6", "SAP settings"),   # a second-level heading drawn at the h6 size
     radioButtons("ctcae", "Lab grading (derived from the lab values)", choices = c("NCI CTCAE v6.0" = "6.0", "v5.0 (per protocol)" = "5.0"),
                  selected = "6.0"),
     p(class = "foot", sprintf(paste("This setting re-derives lab grades only. AE grades stay as the investigator",
