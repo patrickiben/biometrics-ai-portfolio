@@ -4,7 +4,8 @@
   "summary": "Run the canonical R PK/BE sandbox, residual-carryover and C-QTc operating-characteristic simulations, or all six stages of the fixed worked bioequivalence study directly in this browser. No local R installation, account or toolkit download is needed.",
   "data_scope": "Synthetic methods and fixed worked study",
   "data_note": "All data generated here are synthetic. The worked study deliberately reproduces its fixed educational assumptions; it is not an arbitrary client-study generator.",
-  "usage_note": "Select a module, review its assumptions and confirm before running. Save the complete review ZIP before reloading. Larger simulation grids may take several minutes. The complete PK/BE sandbox includes an N=400 calibration diagnostic and may take about two minutes on a desktop browser.",
+  "usage_note": "Select a module, review its assumptions and confirm before running. Save the complete review ZIP before reloading. The complete PK/BE sandbox includes an N=400 calibration diagnostic and may take several minutes depending on your device. Larger simulation grids take longer.",
+  "busy_timeout_s": 900,
   "try": [
     "Choose the PK/BE sandbox, review the simulation settings, confirm and run. Inspect the data, results, figures and retained warnings.",
     "Choose carryover or C-QTc to select scenarios and simulation precision. The complete outputs retain Monte Carlo uncertainty and method diagnostics.",
@@ -249,7 +250,7 @@
             "visible": "#table table"
           }
         ],
-        "timeout_s": 240
+        "timeout_s": 900
       }
     ]
   }
