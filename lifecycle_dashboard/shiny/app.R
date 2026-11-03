@@ -267,7 +267,7 @@ start_here <- accordion(
           p(class = "lc-phone-only", "On a narrow screen, the arrow button at the top left opens the study picker and the what-if sliders.")))))
 
 ui <- page_sidebar(
-  title = div(class = "lc-title",
+  title = tags$header(class = "lc-title",   # the page's banner landmark
               tags$h1("Study Lifecycle Monitor"),
               span(class = "bp-chip synthetic", "Synthetic data"),
               span(class = "lc-asof", if (is.na(AS_OF)) "Snapshot date not in the data" else paste("Snapshot", day_fmt(AS_OF))),

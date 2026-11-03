@@ -47,7 +47,11 @@ lost; nothing is ready after 60 seconds of visible time, or 120 seconds once R h
 visit on a slow connection spends most of its time loading the packages), or the first results
 have not arrived 45 seconds after the app's page loaded (it says which step it is on and why that
 step usually stalls, and if one of the app's files then gets no answer within 20 seconds, it names
-that file); or one update keeps R busy for 45 seconds. Each problem has a Reload button (Keep
+that file); one update keeps R busy for 45 seconds; or R runs out of stack ("Maximum call stack
+size exceeded"). That last one happens in browsers built on WebKit, such as Safari: they give the
+web worker R runs in a smaller stack than Chrome, Edge or Firefox (webR issue #17), and the three
+monitoring apps need more. The page says so at once, without the reload button, and points to
+another browser or the read-only snapshot. Every other problem has a Reload button (Keep
 waiting comes first while the start may still finish), links to the guide and the read-only
 snapshot, and technical details for a bug report; the clock stops at a hard failure.
 `window.launchStatus` and `data-state` on `#app` expose the same state to tests. The top bar's status

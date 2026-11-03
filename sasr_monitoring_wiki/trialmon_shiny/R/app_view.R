@@ -75,7 +75,7 @@ table.dataTable td.dt-right,table.dataTable th.dt-right,.tm-table .tm-num{text-a
 #worklist table.dataTable tbody tr{cursor:pointer}
 #study_tbl td:first-child,#qtc_tbl td:first-child,#liver_tbl td:first-child,#worklist td:nth-child(2){white-space:nowrap}
 .tm-check{display:block;font-weight:600}.tm-rule{display:block;font-size:.8rem;color:var(--tm-muted);line-height:1.3}
-.bslib-sidebar-layout>.sidebar hr{margin:.9rem 0 .6rem}.bslib-sidebar-layout>.sidebar h6{font-weight:700;margin-bottom:.4rem}
+.bslib-sidebar-layout>.sidebar hr{margin:.9rem 0 .6rem}.bslib-sidebar-layout>.sidebar .h6{font-weight:700;margin-bottom:.4rem}
 .dataTables_wrapper .dataTables_paginate{font-size:.85rem}
 .sev{display:inline-block;font-weight:700;font-size:.78rem;letter-spacing:.02em;line-height:1.3;padding:.08rem .5rem;
  border-radius:999px;border:1px solid;white-space:nowrap;vertical-align:baseline}
@@ -115,7 +115,7 @@ table.dataTable td.dt-right,table.dataTable th.dt-right,.tm-table .tm-num{text-a
 @media (max-width:575.98px){.tm-start .s{order:4;flex-basis:100%;font-size:.84rem;line-height:1.4}}
 .tm-start-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:.2rem 1.3rem;padding:0 .95rem .55rem}
 @media (min-width:1100px){.tm-start-grid{grid-template-columns:minmax(0,.74fr) minmax(0,1.3fr) minmax(0,1.04fr)}}
-.tm-start h3{font:600 .72rem/1.3 var(--tm-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--tm-muted);margin:.3rem 0 .3rem}
+.tm-start h2{font:600 .72rem/1.3 var(--tm-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--tm-muted);margin:.3rem 0 .3rem}
 .tm-start p,.tm-start li{font-size:.83rem;line-height:1.38}
 .tm-start p{margin:0 0 .35rem}
 .tm-start ol{margin:0;padding-left:1.15rem}.tm-start ol li{margin:0 0 .25rem}
@@ -273,16 +273,16 @@ start_here_ui <- function(n_dosed, cohort_text) {
                  span(class = "tog", `aria-hidden` = "true")),
     tags$script(HTML(TM_START_JS)),
     div(class = "tm-start-grid",
-      div(tags$h3("What it shows"),
+      div(tags$h2("What it shows"),
           p(sprintf(paste("Synthetic first-in-human multiple ascending dose study CP-101 at its Cohort 4 (120 mg)",
                           "data cut: %d dosed participants in %s."), n_dosed, cohort_text),
             "Flags roll up worst-of into the boxes below and the ranked worklist; the tabs show the evidence.",
             "The console flags; the Safety Review Committee decides.")),
-      div(tags$h3("What the colors mean"),
+      div(tags$h2("What the colors mean"),
           tags$ul(class = "tm-legend", lapply(TM_LEVELS, function(l)
             tags$li(sev_span(l), span(span(class = "h", paste0(TM_LEVEL_HEAD[[l]], ":")), " ", tm_level_text(l))))),
           p(class = "mt-1 mb-0", "Worst-of: one RED makes its tier and the overall level RED.")),
-      div(tags$h3("Try this"), tags$ol(lapply(TM_TRY, tags$li)))))
+      div(tags$h2("Try this"), tags$ol(lapply(TM_TRY, tags$li)))))
 }
 
 # an HTML table that turns into one small card per row on a phone (each cell labeled with its
