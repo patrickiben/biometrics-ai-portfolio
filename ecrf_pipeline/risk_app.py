@@ -55,7 +55,10 @@
 #        exactly what it uses, matching phi_app.py's discipline.)
 #   real path (flips banner to [RM]):  a validated survival/risk model replacing Tier 3
 
-import json, os, re, sys, tempfile, time
+import csv, hashlib, io, json, math, os, re, sys, tempfile, time, zipfile
+from html import escape
+
+BROWSER_ENABLED = sys.platform == "emscripten" and os.environ.get("ECRF_BROWSER") == "1"
 import pandas as pd, streamlit as st
 
 # --------------------------------------------------------------------------- #
@@ -68,7 +71,7 @@ import pandas as pd, streamlit as st
 def _have(m):
     try: __import__(m); return True
     except Exception: return False
-HAVE = {m: _have(m) for m in ("xgboost","pyreadstat")}
+HAVE = {m: (False if BROWSER_ENABLED else _have(m)) for m in ("xgboost","pyreadstat")}
 
 # Reviewer-set starting values; the effective thresholds are written to the audit.
 # These are the BUILT-IN [SI] CRITERIA this transparent engine always uses -- there is no
@@ -571,14 +574,423 @@ def _guard_artifacts(models_dir):
         st.error(f"risk_model.json found, but this build has no trained-risk-model path: the labeled "
                  f"[SI] engine is the only scorer. Remove the file to run."); st.stop()
 
+# Browser adapter: deliberately independent of the sibling programs. Native UI below
+# is unchanged. Only the explicit WebAssembly flag enables these upload workflows.
+BROWSER_FILE_LIMIT = 2 * 1024 * 1024
+BROWSER_TOTAL_LIMIT = 8 * 1024 * 1024
+
+
+def browser_read_csv(name, data):
+    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_. -]{0,95}\.csv", name, re.I):
+        raise ValueError("Use a simple CSV filename, at most 100 characters, without folders or special characters.")
+    if not isinstance(data, bytes) or not data or len(data) > BROWSER_FILE_LIMIT:
+        raise ValueError("Each CSV must contain data and be at most 2 MiB.")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError as error:
+        raise ValueError("Save CSV files as UTF-8; this file could not be decoded.") from error
+    if "\x00" in text:
+        raise ValueError("CSV contains a NUL byte.")
+    try:
+        rows = list(csv.reader(io.StringIO(text, newline=""), strict=True))
+    except csv.Error as error:
+        raise ValueError("Malformed CSV: " + str(error)) from error
+    if len(rows) < 2 or len(rows) > 5001 or not rows[0] or len(rows[0]) > 100:
+        raise ValueError("Use a header and 1–5,000 rows, with at most 100 columns per file.")
+    headers = rows[0]
+    if any(not x.strip() or x != x.strip() or any(ord(c) < 32 for c in x) for x in headers):
+        raise ValueError("Column names must be nonempty, trimmed, and free of control characters.")
+    if len({x.casefold() for x in headers}) != len(headers):
+        raise ValueError("Duplicate column names are not allowed, including case-only differences.")
+    if any(len(row) != len(headers) for row in rows[1:]):
+        raise ValueError("Every CSV row must have exactly the same number of fields as its header.")
+    if any(len(cell) > 20000 for row in rows for cell in row):
+        raise ValueError("A CSV cell exceeds 20,000 characters.")
+    return pd.DataFrame(rows[1:], columns=headers, dtype=str)
+
+
+def _browser_sources(sources):
+    if not isinstance(sources, dict) or not 1 <= len(sources) <= 8:
+        raise ValueError("Select 1–8 CSV files.")
+    if any(not isinstance(x, str) or not isinstance(v, bytes) for x, v in sources.items()):
+        raise ValueError("CSV inputs require filenames and byte contents.")
+    if len({x.casefold() for x in sources}) != len(sources):
+        raise ValueError("Use distinct filenames; two files cannot differ only by case.")
+    if sum(len(v) for v in sources.values()) > BROWSER_TOTAL_LIMIT:
+        raise ValueError("The complete input is limited to 8 MiB.")
+    return {name: browser_read_csv(name, raw) for name, raw in sources.items()}
+
+
+def _browser_numeric(series, label, positive=False):
+    if series.astype(str).str.strip().eq("").any():
+        raise ValueError(label + ": blank numeric values are not treated as normal. Resolve them before screening.")
+    try:
+        value = pd.to_numeric(series, errors="raise")
+    except (ValueError, TypeError) as error:
+        raise ValueError(label + ": every selected value must be numeric.") from error
+    if any(abs(float(x)) > 1e100 for x in value):
+        raise ValueError(label + ": numeric magnitude exceeds the browser arithmetic limit of 1e100.")
+    if not all(math.isfinite(float(x)) for x in value) or (positive and (value <= 0).any()):
+        raise ValueError(label + (": values must be finite and positive." if positive else ": NaN and infinite values are not allowed."))
+    return value
+
+
+def _browser_ids(series):
+    ids = series.astype(str)
+    if ids.str.strip().eq("").any() or (ids != ids.str.strip()).any():
+        raise ValueError("Participant IDs cannot be missing or have surrounding whitespace. Leading zeros are preserved.")
+    return ids
+
+
+def _browser_studies(frames, specs):
+    studies = set()
+    for name, frame in frames.items():
+        column = specs[name].get("study") or _col(frame, "studyid", "study_id")
+        if column:
+            if column not in frame or frame[column].str.strip().eq("").any():
+                raise ValueError("Mapped study identifiers must be present on every row.")
+            studies.update(frame[column].str.strip())
+    if len(studies) > 1:
+        raise ValueError("Screen one study at a time. Split different study IDs before aligning participants.")
+    return sorted(studies)
+
+
+def _browser_thresholds(config):
+    given = config.get("thresholds")
+    if not isinstance(given, dict) or set(given) != set(DEFAULT_THR):
+        raise ValueError("Review and supply every threshold shown in the setup form.")
+    thr = {}
+    for key, value in given.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+            raise ValueError(key + " must be a finite positive number.")
+        thr[key] = float(value)
+    return thr
+
+
+def _browser_cuts(thr, keys, maximum=None):
+    values = [thr[k] for k in keys]
+    if values != sorted(set(values)) or (maximum is not None and values[-1] > maximum):
+        raise ValueError("Category cuts must increase strictly" + (" and be at most " + str(maximum) if maximum else "") + ": " + ", ".join(keys))
+
+
+def _browser_fingerprint(sources, config):
+    return hashlib.sha256(json.dumps({"inputs": {n: hashlib.sha256(b).hexdigest() for n, b in sorted(sources.items())}, "config": config}, sort_keys=True, allow_nan=False).encode()).hexdigest()
+
+
+def _browser_safe_csv(frame):
+    safe = frame.copy()
+    for col in safe:
+        safe[col] = safe[col].map(lambda x: "'" + x if isinstance(x, str) and re.match(r"^\s*[=+@-]", x) else x)
+    safe.columns = ["'" + c if isinstance(c, str) and re.match(r"^\s*[=+@-]", c) else c for c in safe.columns]
+    return safe.to_csv(index=False).encode("utf-8")
+
+
+def browser_package(result, sources):
+    if result["fingerprint"] != _browser_fingerprint(sources, result["config"]):
+        raise ValueError("Inputs or settings changed; compute a fresh result before exporting.")
+    files = {"settings.json": json.dumps(result["config"], indent=2, allow_nan=False).encode(),
+             "audit_log.csv": _browser_safe_csv(result["audit"]),
+             "input_audit.csv": _browser_safe_csv(result["input_audit"])}
+    for name, data in sources.items():
+        files["inputs/" + name] = data
+    for name, frame in result["normalized"].items():
+        files["normalized/" + name] = _browser_safe_csv(frame)
+        files["normalized/" + name + ".json"] = frame.to_json(orient="table", index=False, force_ascii=False).encode()
+    for name, frame in result["tables"].items():
+        files[name + ".csv"] = _browser_safe_csv(frame)
+    title = "Browser screening review package"
+    body = "<h1>" + title + "</h1><p>Computed from the supplied inputs and declared settings. Scores are screening indices, not probabilities or clinical determinations. Review input coverage and audit_log.csv.</p>"
+    for name, frame in result["tables"].items():
+        body += "<h2>" + escape(name) + "</h2><p>" + str(len(frame)) + " rows; <a href='" + name + ".csv'>complete CSV</a>. Preview limited to 500 rows.</p>" + frame.head(500).to_html(index=False, escape=True)
+    files["report.html"] = ("<!doctype html><html lang='en'><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>" + title + "</title><style>body{font:16px system-ui;margin:2rem;line-height:1.5}table{border-collapse:collapse;font-size:13px;display:block;overflow:auto}td,th{border:1px solid #888;padding:.4rem}button{padding:.5rem}a{color:inherit}:root{color-scheme:light dark}body[data-theme=light]{color-scheme:light;background:#fff;color:#15202b}body[data-theme=dark]{color-scheme:dark;background:#111821;color:#e4edf5}</style><button onclick=\"document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark'\">Light / dark</button>" + body + "</html>").encode()
+    files["START_HERE.txt"] = ("Open report.html after extracting this complete ZIP. Every result table, including empty flagged-only tables, is supplied as CSV.\nInputs retain exact uploaded bytes; import original inputs as data, not spreadsheet formulas. All derived CSVs prefix formula-like text with an apostrophe. Normalized JSON preserves exact mapped string values; original input bytes remain unchanged.\nsettings.json and audit_log.csv record mappings, criteria, method scope and input hashes. Scores are not probabilities or trained model predictions. Review missing domains and units before interpreting a screen. No clinical or regulatory approval is implied.\n").encode()
+    source = globals().get("__file__")
+    if source and os.path.isfile(source):
+        with open(source, "rb") as stream:
+            files["source/" + os.path.basename(source)] = stream.read()
+    files["file_inventory.json"] = json.dumps({n: hashlib.sha256(v).hexdigest() for n, v in files.items()}, indent=2).encode()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name, data in files.items():
+            archive.writestr(name, data)
+    return buffer.getvalue()
+
+
+def _browser_choice(label, columns, key, guess=None, required=False):
+    choices = [""] + list(columns)
+    return st.selectbox(label + (" (required)" if required else " (optional)"), choices,
+                        index=choices.index(guess) if guess in choices else 0, key=key)
+
+
+def _browser_reset(example=False):
+    generation = st.session_state.get("br_generation", 0) + 1
+    for key in list(st.session_state):
+        if str(key).startswith("br_"):
+            del st.session_state[key]
+    st.session_state["br_generation"] = generation
+    st.session_state["br_example"] = example
+    st.rerun()
+
+
+def _browser_inputs(example):
+    if st.button("Reset workspace", key="br_reset"):
+        _browser_reset()
+    if st.button("Load synthetic example", key="br_example_load"):
+        _browser_reset(example=True)
+    uploads = st.file_uploader("Study CSV files (UTF-8; 2 MiB each, 8 MiB total)", type=["csv"], accept_multiple_files=True, key="br_uploads_" + str(st.session_state.get("br_generation", 0)))
+    if uploads:
+        st.session_state["br_example"] = False
+        names = [u.name for u in uploads]
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate uploaded filenames are not allowed.")
+        return {u.name: u.getvalue() for u in uploads}
+    return example() if st.session_state.get("br_example") else {}
+
+
+def _browser_controls(sources, config):
+    fingerprint = _browser_fingerprint(sources, config)
+    old = st.session_state.get("br_result")
+    if old and old["fingerprint"] != fingerprint:
+        st.session_state.pop("br_result", None)
+        st.info("Inputs or settings changed. Previous results and downloads were cleared.")
+    confirmed = st.checkbox("I reviewed mappings, units, criteria and screening scope for this single study.", key="br_confirm_" + str(st.session_state.get("br_generation", 0)) + "_" + fingerprint[:16])
+    if st.button("Run screening", disabled=not confirmed, type="primary", key="br_run"):
+        config = dict(config, confirmed=True)
+        with st.spinner("Computing the reviewed screening methods…"):
+            result = browser_compute(sources, config)
+            # Confirmation is a run authorization, not part of the editable settings identity.
+            result["config"] = dict(result["config"], confirmed=False)
+            result["fingerprint"] = _browser_fingerprint(sources, result["config"])
+            st.session_state["br_result"] = result
+    result = st.session_state.get("br_result")
+    if result:
+        st.success("Screening completed. Review all tables and input coverage before reuse.")
+        for name, table in result["tables"].items():
+            st.subheader(name.replace("_", " ").capitalize())
+            st.caption(str(len(table)) + " result rows; downloads retain every row.")
+            st.dataframe(table.head(1000), hide_index=True)
+        st.dataframe(result["input_audit"], hide_index=True)
+        st.download_button("Download complete review package (.zip)", browser_package(result, sources), "screening-review.zip", "application/zip", on_click="ignore")
+
+BROWSER_FIELDS = {"ae": ["USUBJID", "AESEV", "AESER", "AELIFE", "AEOUTCOME", "AEREL", "AETERM"],
+                  "lb": ["USUBJID", "LBTESTCD", "LBSTRESN", "LBNRHI", "CLINSIG"],
+                  "eg": ["USUBJID", "EGQTC", "CLINSIG"],
+                  "vs": ["USUBJID", "VSPAR", "VSSTRESN", "CLINSIG"],
+                  "pe": ["USUBJID", "PEDECOD", "PEFIND"]}
+BROWSER_REQUIRED = {"ae": ["USUBJID", "AESEV"], "lb": ["USUBJID", "LBTESTCD", "LBSTRESN", "LBNRHI"],
+                    "eg": ["USUBJID", "EGQTC"], "vs": ["USUBJID", "VSPAR", "VSSTRESN"], "pe": ["USUBJID", "PEDECOD", "PEFIND"]}
+BROWSER_VALUES = {"AESEV": ["MILD", "MODERATE", "SEVERE", "LIFETHREATENING"],
+                  "AESER": ["Y", "N"], "AELIFE": ["Y", "N"], "CLINSIG": ["Y", "N"],
+                  "AEREL": ["PROBABLE", "POSSIBLE", "UNLIKELY", "UNKNOWN", "NOT RELATED"],
+                  "PEFIND": ["PRESENT", "ABSENT"], "VSPAR": ["SYSBP", "DIASTP", "TEMPC"]}
+
+
+def browser_prepare(sources, config):
+    frames = _browser_sources(sources)
+    specs = config.get("files", {})
+    if set(specs) != set(frames):
+        raise ValueError("Map every uploaded file to its safety domain.")
+    _browser_studies(frames, specs)
+    thr = _browser_thresholds(config)
+    _browser_cuts(thr, ["SAFETY_CAT_MODERATE", "SAFETY_CAT_HIGH", "SAFETY_CAT_CRITICAL"], 100)
+    _browser_cuts(thr, ["DISC_CAT_MODERATE", "DISC_CAT_HIGH"], 1)
+    normalized, audit = {}, []
+    for name, df in frames.items():
+        spec = specs[name]; domain = spec.get("domain")
+        if domain not in BROWSER_FIELDS:
+            raise ValueError(name + ": choose AE, LB, EG, VS or PE explicitly.")
+        columns = spec.get("columns", {})
+        if any(not columns.get(k) or columns[k] not in df for k in BROWSER_REQUIRED[domain]):
+            raise ValueError(name + ": map required fields: " + ", ".join(BROWSER_REQUIRED[domain]))
+        selected = {k: v for k, v in columns.items() if v}
+        if set(selected) - set(BROWSER_FIELDS[domain]) or len(set(selected.values())) != len(selected):
+            raise ValueError(name + ": each source column can map to only one supported field.")
+        out = pd.DataFrame({k: df[v].copy() for k, v in selected.items()})
+        out["USUBJID"] = _browser_ids(out["USUBJID"])
+        record = spec.get("record_id")
+        if record:
+            if record not in df or df[record].str.strip().eq("").any():
+                raise ValueError(name + ": record IDs must be present on every row.")
+            out["_RECORD_ID"] = df[record]
+            if out.duplicated(["USUBJID", "_RECORD_ID"]).any():
+                raise ValueError(name + ": duplicate participant/record IDs are not allowed.")
+        if out.duplicated().any():
+            raise ValueError(name + ": duplicate mapped records would inflate the score; map a unique event/record ID for legitimate repeated events, or resolve duplicates.")
+        for field, choices in BROWSER_VALUES.items():
+            if field not in out:
+                continue
+            value_map = spec.get("values", {}).get(field, {})
+            raw_values = set(out[field])
+            if not raw_values <= set(value_map) or any(value_map[x] not in choices for x in raw_values):
+                raise ValueError(name + ": map every " + field + " source value to a declared category.")
+            out[field] = out[field].map(value_map)
+        for field in ("LBSTRESN", "LBNRHI", "EGQTC", "VSSTRESN"):
+            if field in out:
+                out[field] = _browser_numeric(out[field], name + " / " + field, field in ("LBNRHI", "EGQTC"))
+        if domain == "lb":
+            if out["LBTESTCD"].str.strip().eq("").any():
+                raise ValueError("Every laboratory record needs an analyte code.")
+            limits = config.get("lab_limits", {})
+            for code in out["LBTESTCD"].unique():
+                value = limits.get(code)
+                if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+                    raise ValueError("Declare a positive ULN-multiple screening threshold for analyte " + str(code))
+                thr[str(code) + "_ULN_MULT"] = value
+            ratios = out["LBSTRESN"] / out["LBNRHI"]
+            if not all(math.isfinite(float(x)) and abs(float(x)) <= 1e100 for x in ratios):
+                raise ValueError("Laboratory value/ULN ratios exceed the browser arithmetic limit.")
+        if domain in ("lb", "eg", "vs") and spec.get("units_confirmed") is not True:
+            raise ValueError(name + ": confirm lab values and ULNs share units, QTc uses milliseconds, and mapped BP/temperature use mmHg/°C.")
+        # Validate any explicitly selected unit column; a declaration never converts units.
+        for unit_column, expected in spec.get("unit_checks", {}).items():
+            if domain == "eg" and str(expected).strip().lower() not in ("ms", "millisecond", "milliseconds"):
+                raise ValueError(name + ": QTc requires milliseconds, not converted units.")
+            if unit_column not in df or not isinstance(expected, str) or not expected.strip() or set(df[unit_column].str.strip()) != {expected.strip()}:
+                raise ValueError(name + ": mapped units differ from the declared unit. Harmonize units before screening.")
+        unit_column = spec.get("unit_column")
+        uln_unit = spec.get("uln_unit_column")
+        if unit_column:
+            if unit_column not in df or df[unit_column].str.strip().eq("").any():
+                raise ValueError(name + ": the selected unit column must be populated.")
+            units = df[unit_column].str.strip().str.upper()
+            if domain == "eg" and not units.isin(["MS", "MILLISECOND", "MILLISECONDS"]).all():
+                raise ValueError(name + ": QTc must use milliseconds.")
+            if domain == "vs":
+                accepted = {"SYSBP": {"MMHG"}, "DIASTP": {"MMHG"}, "TEMPC": {"C", "°C", "CELSIUS"}}
+                if any(unit not in accepted[param] for unit, param in zip(units, out["VSPAR"])):
+                    raise ValueError(name + ": BP requires mmHg and temperature requires Celsius. Harmonize units first.")
+            if domain == "lb" and uln_unit:
+                if uln_unit not in df or not units.equals(df[uln_unit].str.strip().str.upper()):
+                    raise ValueError(name + ": result and ULN units must match on every row.")
+        elif uln_unit:
+            raise ValueError(name + ": map the result unit column alongside the ULN unit column.")
+        normalized[name] = out
+        audit.append({"file": name, "domain": domain, "rows": len(out), "participants": out.USUBJID.nunique(),
+                      "mapped_fields": ", ".join(out.columns), "unmapped_fields": ", ".join(k for k in BROWSER_FIELDS[domain] if k not in out),
+                      "sha256": hashlib.sha256(sources[name]).hexdigest()})
+    seen_records, seen_rows = set(), {}
+    for name, frame in normalized.items():
+        domain = specs[name]["domain"]
+        columns = sorted(c for c in frame if c != "_RECORD_ID")
+        for _, row in frame.iterrows():
+            if "_RECORD_ID" in frame:
+                key = (domain, str(row["USUBJID"]), str(row["_RECORD_ID"]))
+                if key in seen_records:
+                    raise ValueError("Duplicate participant/record ID across files in domain " + domain + ". Resolve overlapping extracts before screening.")
+                seen_records.add(key)
+            # Without an explicit record key, an identical mapped row in a second
+            # extract cannot safely be counted as another event.
+            key = (domain, tuple((c, str(row[c])) for c in columns))
+            if key in seen_rows and ("_RECORD_ID" not in frame or seen_rows[key]):
+                raise ValueError("Duplicate mapped record across files in domain " + domain + ". Map distinct record IDs for separate events or remove overlapping extracts.")
+            seen_rows[key] = "_RECORD_ID" not in frame
+    views = tier1_align(normalized)
+    if not views:
+        raise ValueError("No usable mapped safety records.")
+    # Canonical engine uses one QTc value. Explicitly choose the participant maximum,
+    # preserving all input rows and the selection rule in the audit.
+    if "eg" in views:
+        eg = views["eg"].reset_index()
+        selected = eg.loc[eg.groupby("USUBJID")["EGQTC"].idxmax()].copy()
+        if "CLINSIG" in eg:
+            selected["CLINSIG"] = selected.USUBJID.map(eg.groupby("USUBJID").CLINSIG.agg(lambda x: "Y" if (x == "Y").any() else "N"))
+        views["eg"] = selected.set_index("USUBJID")
+    return views, thr, normalized, pd.DataFrame(audit)
+
+
+def browser_compute(sources, config):
+    if config.get("confirmed") is not True:
+        raise ValueError("Confirm study mappings, units and criteria before running.")
+    views, thr, normalized, intake = browser_prepare(sources, config)
+    signals = tier2_signals(views, thr)
+    scores = tier3_scores(signals, views, thr)
+    result = tier4_categorize(scores, thr).sort_values(["_fatal", "safety_risk_score"], ascending=False).drop(columns="_fatal")
+    audit = pd.DataFrame([{"program": "participant_rule_screening", "execution": "browser" if BROWSER_ENABLED else "native_browser_adapter_QC",
+        "criteria_source": "user-confirmed configurable screening criteria", "thresholds": json.dumps(thr, sort_keys=True),
+        "method": "existing weighted rule engine; no trained model; neither score is a probability",
+        "coverage": "Only uploaded mapped domains contribute; absent domains/fields are not assessed. Repeated AE/lab/vital records contribute repeatedly under the documented caps.",
+        "qtc_selection": "Maximum observed QTc per participant; any CLINSIG=Y retained", "fatal_mapping": "Explicit actual fatal-outcome flag only; life-threatening severity is not death",
+        "weights": json.dumps({"severity": SEV_WEIGHT, "serious_multiplier": SERIOUS_MULT, "fatal_adder": FATAL_ADDER, "AE_cap": AE_CAP, "lab_cap": LAB_CAP, "ECG": [ECG_BASE, ECG_SLOPE, ECG_CAP], "vitals": [VIT_BASE, VIT_SLOPE, VIT_PER, VIT_CAP], "discontinuation": [DISC_SERIOUS_EACH, DISC_SERIOUS_CAP, DISC_RELATED_FRAC, DISC_FATAL, DISC_LAB_EACH, DISC_LAB_CAP, DISC_QTC, DISC_VITAL, DISC_CLINSIG_EACH, DISC_CLINSIG_CAP], "maximum_severity_discontinuation": DISC_MAXSEV}),
+        "settings": json.dumps(config, sort_keys=True), "pandas_version": pd.__version__, "python_version": sys.version.split()[0]}])
+    return {"tables": {"risk_scores": result, "signals": signals, "score_components": scores}, "normalized": normalized,
+            "input_audit": intake, "audit": audit, "config": config, "fingerprint": _browser_fingerprint(sources, config)}
+
+
+def browser_example():
+    return {"events.csv": b"participant,severity,serious,fatal,term\n001,MILD,N,N,Headache\n002,SEVERE,Y,N,Nausea\n003,LIFETHREATENING,Y,N,Allergic reaction\n004,MODERATE,N,N,Fatigue\n",
+            "ecg.csv": b"participant,qtc,unit\n001,440,ms\n002,510,ms\n003,490,ms\n004,460,ms\n"}
+
+
+def browser_main():
+    st.title("Participant risk screening")
+    st.info("Rule-based screening indices, not probabilities, trained predictions or clinical determinations. Choose one study, map its fields and confirm its criteria. Data and results stay in this browser session; download before reloading.")
+    st.caption("Only high-threshold lab/QTc/BP/temperature screens are supported. Missing domains are not assessed. Repeated observations contribute under the canonical caps. QTc uses each participant's maximum. Life-threatening severity does not mean a fatal outcome.")
+    try:
+        sources = _browser_inputs(browser_example)
+        if not sources:
+            st.info("Upload study CSVs or deliberately load the synthetic example to begin.")
+            st.session_state.pop("br_result", None)
+            return
+        frames = _browser_sources(sources)
+        config = {"files": {}, "thresholds": {}, "lab_limits": {}, "confirmed": False}
+        st.header("Map input fields")
+        for name, df in frames.items():
+            prefix = "br_" + str(st.session_state.get("br_generation", 0)) + "_" + hashlib.sha256((name + hashlib.sha256(sources[name]).hexdigest()).encode()).hexdigest()[:12]
+            with st.expander(name, expanded=True):
+                detected = classify_domain(df)
+                domain = st.selectbox("Safety domain for " + name, [""] + list(BROWSER_FIELDS), index=([""] + list(BROWSER_FIELDS)).index(detected) if detected else 0, key=prefix + "_domain")
+                spec = {"domain": domain, "columns": {}, "values": {}, "unit_checks": {}}
+                config["files"][name] = spec
+                spec["study"] = _browser_choice("Study ID column", df.columns, prefix + "_study", _col(df, "studyid", "study_id"))
+                spec["record_id"] = _browser_choice("Event/record ID column", df.columns, prefix + "_record", _col(df, "aeseq", "lbseq", "egseq", "vsseq", "peseq", "record_id"))
+                if not domain:
+                    continue
+                for field in BROWSER_FIELDS[domain]:
+                    guess = _col(df, *SYN[field]) if field != "AELIFE" else _col(df, "fatal", "fatal_outcome", "death_flag", "aesdth")
+                    if field == "USUBJID" and guess is None: guess = _col(df, "participant")
+                    label = "Actual fatal outcome flag (NOT life-threatening)" if field == "AELIFE" else field
+                    column = _browser_choice(label, df.columns, prefix + "_" + field, guess, field in BROWSER_REQUIRED[domain])
+                    spec["columns"][field] = column
+                    if column and field in BROWSER_VALUES:
+                        values = list(dict.fromkeys(df[column]))
+                        if len(values) > 30: raise ValueError(field + " has more than 30 distinct values; use coded categories.")
+                        spec["values"][field] = {}
+                        for j, raw in enumerate(values):
+                            options = [""] + BROWSER_VALUES[field]; guess_value = raw.strip().upper()
+                            spec["values"][field][raw] = st.selectbox(label + " value " + repr(raw), options, index=options.index(guess_value) if guess_value in options else 0, key=prefix + "_" + field + "_v" + str(j))
+                if domain in ("lb", "eg", "vs"):
+                    spec["units_confirmed"] = st.checkbox("Confirm units for " + name + ": laboratory result and ULN match; QTc in ms; BP in mmHg; temperature in °C.", key=prefix + "_units")
+                    spec["unit_column"] = _browser_choice("Result unit column", df.columns, prefix + "_unitcol", _col(df, "unit", "units", "egstresu", "vsstresu", "lbstresu"))
+                    if domain == "lb":
+                        spec["uln_unit_column"] = _browser_choice("ULN unit column (if separate)", df.columns, prefix + "_ulnunit", _col(df, "uln_unit", "reference_unit"))
+                if domain == "lb" and spec["columns"].get("LBTESTCD"):
+                    for code in df[spec["columns"]["LBTESTCD"]].unique():
+                        if code in config["lab_limits"]: continue
+                        config["lab_limits"][code] = st.number_input("ULN-multiple threshold for " + str(code), min_value=0.01, value=float(DEFAULT_THR.get(str(code) + "_ULN_MULT", 3.0)), key="br_lab_" + str(st.session_state.get("br_generation", 0)) + "_" + hashlib.sha256(str(code).encode()).hexdigest()[:16])
+                st.dataframe(df.head(5), hide_index=True)
+        with st.expander("Screening thresholds and category cuts", expanded=False):
+            st.caption("Starting values are illustrative screening criteria, not a client's protocol. Every selected value is retained in the audit. Fixed rule weights remain the declared source coefficients.")
+            for key, value in DEFAULT_THR.items():
+                if key.endswith("_ULN_MULT"):
+                    config["thresholds"][key] = config["lab_limits"].get(key[:-9], float(value))
+                    continue
+                config["thresholds"][key] = st.number_input(key, min_value=0.001, value=float(value), key="br_thr_" + str(st.session_state.get("br_generation", 0)) + "_" + key)
+        _browser_controls(sources, config)
+    except (ValueError, KeyError, TypeError) as error:
+        st.session_state.pop("br_result", None)
+        st.error(str(error))
+
 # ============================ UI ============================
 # Layout order is deliberate (mirrors the siblings): gather WHERE the data is (1), set the
 # outputs + optional models dir (2), LOAD so the pre-flight panel can show what was actually
 # read and how each file classified, then the banner, then the pre-flight CONTRACT panel, then
 # Run. The operator confirms the input contract BEFORE any compute, so a mis-pointed folder or
 # an unrecognized domain is caught on screen, not after a silent wrong answer.
-st.set_page_config(page_title="Participant risk screening" + (": in-browser demo" if IN_BROWSER else ""), layout="wide")
+st.set_page_config(page_title="Participant risk screening" + (": browser workspace" if BROWSER_ENABLED else ": in-browser demo" if IN_BROWSER else ""), layout="wide")
 HOSTED = _hosted()   # after set_page_config: no Streamlit call may precede it
+if BROWSER_ENABLED and not HOSTED:
+    browser_main()
+    st.stop()
 # Hosted: an uncaught exception shows a generic message, not a traceback with server
 # paths (a crafted widget value can raise one). Process-wide, like the switch itself.
 if HOSTED: st.set_option("client.showErrorDetails", "none")

@@ -13,7 +13,7 @@
 | Validation | Original ten gates and eighteen frozen seeded defects, run against a reviewed toolkit snapshot. Manual, unsigned, stale and partial-evidence states remain distinct. Arbitrary uploaded code is not executed. |
 | LOCALMIND | Editable manual findings worklist; optional browser-local WebGPU inference returns controlled suggestions that are neither applied nor approved automatically. |
 | Deliverables register | Blank workspace or full 132-row reference; every field editable, JSON/CSV/print, complete exports even when filtering. |
-| Existing browser tools/references | Tracker, continuity, coverage wiki, playbook and vaccine learning companion retain their browser workflows. External eCRF/evaluation links remain separately maintained public demos with their stated upload restrictions. |
+| Existing browser tools/references | Tracker, continuity, coverage wiki, playbook and vaccine learning companion retain their browser workflows. The integrated eCRF apps accept user CSVs with guided mappings and session-local downloads. Their original evaluation remains a read-only reference. |
 
 Shared accounts, schedules, connected feeds and email are optional service connections. They need a chosen host or provider; opening this toolkit does not provision a client deployment or send messages. The desktop toolkit remains an optional reproduction path.
 

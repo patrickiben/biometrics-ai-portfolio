@@ -1,19 +1,6 @@
 /* Page frame for the in-browser apps (docs/app/*.html): a slim header with the privacy note, then the
    Streamlit app filling the rest of the viewport. Colors match docs/index.html, light and dark. */
-:root {
-  --bg: #F6F7F8; --surface: #FFFFFF; --text: #18212B; --muted: #4F5B67; --line: #D5DBE1;
-  --accent: #0757BF; --error-bg: #FBECEA; --error-line: #B3261E;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #12171D; --surface: #1A2129; --text: #E6EAEE; --muted: #A9B3BD; --line: #323C47;
-    --accent: #7DB5FF; --error-bg: #3A1F1D; --error-line: #F2B8B5;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #12171D; --surface: #1A2129; --text: #E6EAEE; --muted: #A9B3BD; --line: #323C47;
-  --accent: #7DB5FF; --error-bg: #3A1F1D; --error-line: #F2B8B5;
-}
+/* Color and typography tokens come from assets/theme/tokens.css. */
 
 html, body { height: 100%; }
 body {
@@ -76,6 +63,8 @@ main#stage { flex: 1 1 auto; position: relative; min-height: 0; }
 /* Streamlit writes a slider's value in the primary color. In dark mode no primary gives both that text and the
    Execute button's white text 4.5:1 (launch.js picks the button), so draw the value in the text color instead. */
 #root [data-testid="stSliderThumbValue"] { color: inherit; }
+/* The toolkit header supplies the theme control; no duplicate Streamlit settings menu. */
+#root #MainMenu { display: none; }
 
 /* Start-up notice and screenshot, over the app until its first render. */
 #boot { position: absolute; inset: 0; z-index: 10; overflow: auto; background: var(--bg); }

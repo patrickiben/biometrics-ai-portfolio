@@ -1,0 +1,12 @@
+/* Uses the toolkit's canonical tokens; legacy case studies retain their layout. */
+:root { --code-bg: var(--surface-2); --error-bg: var(--red-soft); --error-line: var(--red);
+  --fail-bg: var(--red-soft); --fail-line: var(--red); --ok-bg: var(--green-soft); --ok-line: var(--green); }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); }
+h1, h2, h3, strong { color: var(--ink); }
+.toolkit-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+.theme-toggle { margin-left: auto; min-height: 40px; padding: 6px 12px; border: 1px solid var(--control); border-radius: var(--r-sm); font: inherit; color: var(--ink); background: var(--surface); cursor: pointer; white-space: nowrap; }
+.theme-toggle:hover { border-color: var(--accent); }
+.theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+header.bar .toolkit-nav { margin-bottom: 2px; }
+header.bar .crumbs { flex: 1 1 260px; }
+.card { border-radius: var(--r-lg); box-shadow: var(--shadow-1); }

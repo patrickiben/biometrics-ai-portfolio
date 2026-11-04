@@ -88,6 +88,11 @@ if (length(selected_apps)) {
 miss <- PARTIALS[!file.exists(PARTIALS)]
 if (length(miss)) fail("missing ", paste(miss, collapse = ", "), "; run python3 build_pages.py")
 
+# The independent eCRF programs are copied as static stlite workspaces. A stale
+# generated program/page must never enter either a full or reused publication.
+if (system2("python3", c("ecrf_pipeline/tools/sync_browser_apps.py", "--check")) != 0L)
+  fail("eCRF browser sources/pages differ from their reviewed programs")
+
 # Refresh portable theme adapters after any local Quarto render, before copying files.
 # Generated source stays deterministic and is also checked in the Pages workflow.
 if (system2("python3", "build_pages.py") != 0L) fail("shared-page/theme generation failed")

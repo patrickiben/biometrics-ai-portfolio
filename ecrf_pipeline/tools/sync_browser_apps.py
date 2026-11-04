@@ -60,51 +60,32 @@ WHEELS = [
 # numpy and pandas are what the apps import (both come from the Pyodide distribution on the CDN); toml as above.
 REQUIREMENTS = ["numpy", "pandas", "toml"]
 
-# What each page must say about its own limits, next to the privacy note, so a visitor reads the measured
-# shortfall before the results (docs/evaluation.html has the numbers; they are synthetic-data results). Risk
-# screening and monitoring have no labeled evaluation, so their lines say so, give the known-answer results the
-# QC suite pins (checks R9b, R10 to R16, A8c and A14), and link the evaluation's "What this does not show" section.
-# Every link is relative, so it stays on the site and the --check pass verifies the page exists.
+# Page guidance describes the current browser workflow; evaluation links retain historical evidence.
 EVALUATION = "../evaluation.html"
 APPS = {
     "meddra": dict(entry="meddra_app.py", data="sample_data", title="Coding QC assist",
-        description="A coding QC assist running in your browser on synthetic adverse-event data: the top three candidate terms per verbatim from a demo dictionary with placeholder codes (not MedDRA), and a gate that sends each verbatim to a coder or auto-commits it.",
+        description="Upload adverse-event text and your dictionary, map columns, and review ranked coding candidates in your browser.",
         img="meddra_results.png",
-        limits="The demo dictionary uses 99-prefixed placeholder codes, not MedDRA. Measured on held-out synthetic verbatims, this lexical stand-in ranked the right preferred term first "
-               "for 54% (the real model path: 78%) and auto-coded 7 of 96 negated verbatims at the default gate; every "
-               "code needs a coder's review.", limits_link=EVALUATION + "#coding",
-        alt="Coding QC assist results table: each adverse-event verbatim with its top three candidate terms, ranks and 99-prefixed placeholder codes, followed by the success message and download buttons."),
+        limits="Lexical candidates always require a coder’s decision. Your data require your own dictionary; the optional example uses placeholder codes, not MedDRA.",
+        limits_link=EVALUATION + "#coding", alt="Earlier synthetic coding example with ranked candidate dictionary terms."),
     "phi": dict(entry="phi_app.py", data="sample_data", title="De-identification review assist",
-        description="A de-identification review assist running in your browser on synthetic eCRF text: flagged identifier spans and sanitized copies of each table, for a person to review.",
-        img="phi_results.png",
-        limits="On held-out synthetic text this stand-in left 108 of 308 identifiers readable (the real model path: "
-               "91 of 308); every output needs human review.", limits_link=EVALUATION + "#deid",
-        alt="De-identification review assist results: a table of flagged spans such as invented phone numbers, names, a ZIP code and initials, each with its entity type, offsets, redaction probability and action, above the sanitized domain rows."),
+        description="Upload CSV text, select fields to screen and redact, and download separate redacted and sensitive review packages.",
+        img="phi_results.png", limits="Pattern matching can miss identifiers. Review the redacted output and any unselected columns before sharing it; it is not a guarantee of anonymity.",
+        limits_link=EVALUATION + "#deid", alt="Earlier synthetic de-identification example with flagged text spans."),
     "risk": dict(entry="risk_app.py", data="sample_data", title="Participant risk screening",
-        description="Participant risk screening running in your browser on synthetic safety domains: a safety listing that ranks participants against built-in criteria standing in for a protocol's, with the reasons for each flag.",
-        img="risk_results.png",
-        limits="Both scores are capped, weighted sums of built-in [SI] rules, not probabilities or a validated model. No "
-               "accuracy was measured: there is no labeled evaluation, and the QC suite checks 5 of the 6 test-case "
-               "participants planted in the 52-participant synthetic cut; all 5 get the category or reason they were "
-               "built for. Every flag needs clinical review.", limits_link=EVALUATION + "#notshown",
-        limits_link_text="What this does not show",
-        alt="Participant risk screening results: per-participant safety and discontinuation scores and categories with contributing factors, the fatal participant pinned to the top, and a category summary."),
+        description="Map safety CSV columns and configure screening criteria to produce a participant review listing in your browser.",
+        img="risk_results.png", limits="Scores summarize configured screening rules; they are not event probabilities or treatment recommendations. Review criteria, units and flags against your study.",
+        limits_link=EVALUATION + "#notshown", alt="Earlier synthetic participant screening example with rule scores and reasons."),
     "anomaly": dict(entry="anomaly_app.py", data="anomaly_data", title="Central statistical monitoring",
-        description="Central statistical monitoring checks running in your browser on a synthetic longitudinal lab cut: numeric outliers, cohort drift, per-lab drift and unusual free-text notes.",
-        img="anomaly_results.png",
-        limits="Here every detector runs its [SI] stand-in (robust z, 1-D Wasserstein drift, bag-of-words text "
-               "isolation) with built-in thresholds. On the 150-participant synthetic demo it flagged all 3 injected "
-               "outliers plus 1 participant with no injected outlier, and exactly the 3 injected unusual notes; with no "
-               "labeled evaluation, no accuracy was measured. Every flag needs human review.",
-        limits_link=EVALUATION + "#notshown", limits_link_text="What this does not show",
-        alt="Central statistical monitoring results: flagged per-participant numeric outliers with their extreme columns, a cohort-wide drift table per column, and the start of the per-lab drift table."),
+        description="Upload longitudinal CSV data, map participants and visits, and check numeric outliers, cohort and lab drift, and unusual notes.",
+        img="anomaly_results.png", limits="Outlier and drift flags are exploratory screening results. Select comparable visits and consistent units; small groups and missing data limit comparisons.",
+        limits_link=EVALUATION + "#notshown", alt="Earlier synthetic monitoring example with numeric outliers and drift results."),
 }
-HAND_EDITED = ["launch.js", "app.css"]          # live in docs/app/ only; must exist
-LOADING_NOTICE = "Starting Python in your browser; first visit downloads about 30 MB."
-PRIVACY_NOTE = ("Runs in your browser; files are processed on your device and not uploaded by the app; the page is "
-                "downloaded from GitHub Pages and the CDN, which see your IP address; synthetic data only; not a "
-                "validated or Part 11 system.")
-RUN_LOCALLY = "https://github.com/patrickiben/ecrf-pipeline-apps#run-locally"
+HAND_EDITED = ["launch.js", "app.css"]
+LOADING_NOTICE = "Starting the app in your browser; the first visit downloads about 30 MB."
+PRIVACY_NOTE = ("Your selected files are processed in this tab and are not sent to a server. Download results before "
+                "resetting or closing it. GitHub Pages and the runtime CDN receive ordinary page requests, including your IP address.")
+RUN_LOCALLY = "https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/ecrf_pipeline#optional-localnative-use"
 
 
 def _read(p):
@@ -142,6 +123,7 @@ def render_page(key):
     ])
     config = {
         "app": key, "entry": a["entry"], "data": _data_files(a["data"]),
+        "maxUploadMB": 10 if key in ("meddra", "phi") else 2,
         "stlite": f"{STLITE_BUILD}/stlite.js", "pyodide": PYODIDE_URL,
         "requirements": REQUIREMENTS, "wheels": [f"wheels/{w[0]}" for w in WHEELS],
     }
@@ -152,7 +134,7 @@ def render_page(key):
         "CDN": CDN, "IMPORTMAP": importmap, "CONFIG": cfg, "IMG": a["img"], "ALT": html.escape(a["alt"]),
         "LOADING_NOTICE": html.escape(LOADING_NOTICE), "PRIVACY_NOTE": html.escape(PRIVACY_NOTE),
         "LIMITS": html.escape(a["limits"]) + f' <a href="{a["limits_link"]}">'
-                  + html.escape(a.get("limits_link_text", "How this was measured")) + "</a>.",
+                  + html.escape(a.get("limits_link_text", "Evaluation context")) + "</a>.",
         "RUN_LOCALLY": RUN_LOCALLY, "STLITE_VERSION": STLITE_VERSION,
     }
     out = _read(TEMPLATE).decode("utf-8")

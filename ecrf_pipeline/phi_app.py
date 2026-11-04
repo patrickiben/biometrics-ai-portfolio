@@ -555,14 +555,315 @@ def _contract_error(R):
     return None
 
 # ============================ UI ============================
+# Browser intake/export controls sit below the registered scientific scorer boundary.
+BROWSER_REQUESTED = sys.platform == "emscripten" and os.environ.get("ECRF_BROWSER") == "1"
+
+# ======================== BROWSER WORKSPACE ========================
+# Kept in each independent app: no cross-program coupling or server upload path.
+_BROWSER_MAX_FILE = 10 * 1024 * 1024
+_BROWSER_MAX_TOTAL = 20 * 1024 * 1024
+_BROWSER_MAX_COLUMNS = 200
+_BROWSER_MAX_CELL = 20000
+
+def _browser_csv(name, data, max_rows=50000):
+    """Strict, lossless string intake. No paths, dtype inference or silent row repair."""
+    import csv, io
+    if not isinstance(name, str) or not name.lower().endswith('.csv') or len(name) > 160:
+        raise ValueError('Use a CSV filename of at most 160 characters.')
+    if name in ('.csv', '..csv') or any(c in name for c in '/\\:') or any(ord(c) < 32 for c in name):
+        raise ValueError('CSV filenames must not contain paths or control characters.')
+    if not isinstance(data, bytes) or not data or len(data) > _BROWSER_MAX_FILE:
+        raise ValueError('Each CSV must be nonempty and no larger than 10 MiB.')
+    try: text = data.decode('utf-8-sig', errors='strict')
+    except UnicodeDecodeError as exc: raise ValueError('Save the CSV as UTF-8; another encoding was detected.') from exc
+    if '\x00' in text: raise ValueError('CSV contains a NUL byte.')
+    csv.field_size_limit(_BROWSER_MAX_CELL)
+    try:
+        reader = csv.reader(io.StringIO(text, newline=''), strict=True)
+        header = next(reader)
+        if not header or len(header) > _BROWSER_MAX_COLUMNS or any(not c.strip() for c in header):
+            raise ValueError('CSV needs 1–200 nonempty column names.')
+        if len(set(c.casefold().strip() for c in header)) != len(header):
+            raise ValueError('CSV column names must be unique (ignoring case and surrounding spaces).')
+        if any(any(ord(v) < 32 for v in c) for c in header):
+            raise ValueError('Column names must not contain control characters.')
+        rows = []
+        for row in reader:
+            if not row: continue
+            if len(row) != len(header): raise ValueError('A CSV row has a different number of fields from its header.')
+            rows.append(row)
+            if len(rows) > max_rows: raise ValueError(f'CSV exceeds the {max_rows:,}-row limit for this input.')
+    except (csv.Error, StopIteration) as exc:
+        raise ValueError('Malformed or empty CSV; check quoting and field lengths (maximum 20,000 characters).') from exc
+    if not rows: raise ValueError('CSV needs at least one data row.')
+    return pd.DataFrame(rows, columns=header, dtype=str)
+
+def _browser_uploads(uploads):
+    uploads = list(uploads or [])
+    if len(uploads) > 10: raise ValueError('Use at most 10 study CSV files per workspace.')
+    items = [(f.name, bytes(f.getvalue())) for f in uploads]
+    if sum(len(data) for _, data in items) > _BROWSER_MAX_TOTAL:
+        raise ValueError('The study CSV files together must be no larger than 20 MiB.')
+    if len({name.casefold() for name, _ in items}) != len(items):
+        raise ValueError('Each uploaded study filename must be unique.')
+    return items
+
+def _browser_export_csv(df):
+    """Prevent spreadsheet formula execution; numerical values retain their values."""
+    def safe(value):
+        if not isinstance(value, str): return value
+        probe = value.lstrip(' \t\r\n\ufeff')
+        numeric = re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?', probe)
+        return "'" + value if probe[:1] in ('=', '+', '-', '@') and not numeric else value
+    escaped = df.map(safe)
+    escaped.columns = [safe(column) for column in df.columns]
+    return escaped.to_csv(index=False).encode('utf-8')
+
+def _browser_zip(files):
+    import io, zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as z:
+        for name, data in files.items():
+            if name.startswith('/') or '..' in name.split('/') or '\\' in name:
+                raise ValueError('Invalid export path.')
+            z.writestr(name, data)
+    return buf.getvalue()
+
+def _browser_json(value):
+    return (json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode('utf-8')
+
+def _browser_clear():
+    import shutil
+    for key in ('bw_result', 'bw_fingerprint'):
+        st.session_state.pop(key, None)
+    tmp = st.session_state.get('bw_tmp')
+    if tmp:
+        for name in os.listdir(tmp.name):
+            p = os.path.join(tmp.name, name)
+            if os.path.isdir(p): shutil.rmtree(p)
+            else: os.remove(p)
+
+def _browser_reset(example=False):
+    epoch = st.session_state.get('bw_epoch', 0) + 1
+    tmp = st.session_state.get('bw_tmp')
+    if tmp: tmp.cleanup()
+    for key in list(st.session_state):
+        if key.startswith('bw_'): del st.session_state[key]
+    st.session_state['bw_epoch'] = epoch
+    st.session_state['bw_example'] = example
+
+def _browser_user_upload():
+    st.session_state['bw_example'] = False
+    _browser_clear()
+
+def _browser_key(name):
+    return f'bw_{st.session_state.get("bw_epoch", 0)}_{name}'
+
+def _browser_select(label, columns, name, synonyms=(), optional=False):
+    options = (['(none)'] if optional else []) + list(columns)
+    norm = {re.sub(r'[^a-z0-9]', '', c.casefold()): c for c in columns}
+    guessed = next((norm[re.sub(r'[^a-z0-9]', '', s.casefold())] for s in synonyms
+                    if re.sub(r'[^a-z0-9]', '', s.casefold()) in norm), None)
+    selected = st.selectbox(label, options, index=options.index(guessed) if guessed else 0,
+                            key=_browser_key(name), on_change=_browser_clear)
+    return None if selected == '(none)' else selected
+
+def _browser_start(title, description):
+    st.title(title)
+    st.caption(description)
+    st.caption('Files are processed in this browser tab. Save downloads before closing or reloading. '
+               'First use downloads app software; your study files are not sent to a server by this app.')
+    a, b = st.columns(2)
+    a.button('Load synthetic example', on_click=_browser_reset, args=(True,), key='bw_example_button')
+    b.button('Reset workspace', on_click=_browser_reset, args=(False,), key='bw_reset_button')
+    if st.session_state.get('bw_example'):
+        st.info('Synthetic example selected. Uploading a file switches to your own study inputs.')
+    return st.file_uploader('Upload study CSV files', type=['csv'], accept_multiple_files=True,
+                            key=_browser_key('data'), on_change=_browser_user_upload,
+                            help='UTF-8 CSV; maximum 10 files, 10 MiB per file, 20 MiB total, 50,000 rows per file.')
+
+def _browser_input_meta(items):
+    return [{'name': name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()} for name, data in items]
+
+def _browser_example_bytes(name):
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data', name)
+    with open(p, 'rb') as f: return f.read()
+
+def _browser_publish(result, fingerprint):
+    # Only generated, controlled filenames are written; uploads never name a filesystem path.
+    if 'bw_tmp' not in st.session_state:
+        st.session_state['bw_tmp'] = tempfile.TemporaryDirectory(prefix='ecrf_browser_', ignore_cleanup_errors=True)
+    for name, data in result['files'].items():
+        p = os.path.join(st.session_state['bw_tmp'].name, name)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, 'wb') as f: f.write(data)
+    st.session_state['bw_result'] = result
+    st.session_state['bw_fingerprint'] = fingerprint
+
+
+def _browser_custom_terms(value):
+    terms=list(dict.fromkeys(x.strip() for x in value.splitlines() if x.strip()))
+    if len(terms)>100 or any(len(x)>200 for x in terms):
+        raise ValueError('Use at most 100 literal terms, each no longer than 200 characters.')
+    return terms
+
+def _browser_phi_text(text, categories, custom_terms, gate):
+    # Preserve the reviewed pattern/mosaic/gate algorithm; user exclusions are explicit.
+    spans=[sp for sp in t2_phi(text) if sp[1] in categories]
+    context=t3_phi(text,spans)
+    sanitized,flags,_=t4_phi(text,spans,context,gate)
+    if not custom_terms:
+        return sanitized,flags
+    # Match literals against original text, not inserted tags. Otherwise a literal
+    # spanning a pattern mask can be missed, or a term like REDACTED can alter tags.
+    intervals=[]
+    for flag in flags:
+        # Canonical t4 uses str.replace, so preserve all identical occurrences too.
+        for match in re.finditer(re.escape(flag['SPAN']),text):
+            intervals.append([match.start(),match.end(),TAG.get(flag['ENTITY'],'[REDACTED]')])
+    for term in sorted(custom_terms,key=len,reverse=True):
+        for match in re.finditer(re.escape(term),text,re.IGNORECASE):
+            intervals.append([match.start(),match.end(),'[REDACTED_CUSTOM_TERM]'])
+            if any(f['START']<=match.start() and f['END']>=match.end() for f in flags):continue
+            flags.append(dict(SPAN=match.group(),ENTITY='CUSTOM_TERM',START=match.start(),END=match.end(),
+                              P_REDACT=1.0,DIGIT_RATIO=None,CAPITALIZED=None,ACTION='USER_LITERAL_MASK'))
+    merged=[]
+    for start,end,tag in sorted(intervals,key=lambda x:(x[0],-x[1])):
+        if merged and start<merged[-1][1]:
+            merged[-1][1]=max(merged[-1][1],end)
+            if tag=='[REDACTED_CUSTOM_TERM]':merged[-1][2]=tag
+        else:merged.append([start,end,tag])
+    chunks=[];cursor=0
+    for start,end,tag in merged:
+        chunks.extend([text[cursor:start],tag]);cursor=end
+    sanitized=''.join(chunks)+text[cursor:]
+    return sanitized,flags
+
+def _browser_phi_result(frames,selections,exports,categories,custom_terms,gate,input_meta):
+    if REAL_T2 or REAL_T3 or REAL_T4:raise ValueError('Browser review uses the documented pattern algorithm only.')
+    if not categories and not custom_terms:raise ValueError('Select identifier patterns or enter literal terms.')
+    if not any(selections.values()):raise ValueError('Select at least one field to scan.')
+    if not any(exports.values()):raise ValueError('Select at least one field for the redacted export.')
+    if sum(len(df)*len(selections[name]) for name,df in frames)>100000:
+        raise ValueError('Run at most 100,000 selected cells per browser batch.')
+    memo={};flags=[];clean={};originals={};counts=[]
+    for n,(name,df) in enumerate(frames,1):
+        selected=selections[name];kept=exports[name];alias=f'input_{n:02d}'
+        if not set(selected).issubset(df.columns) or not set(kept).issubset(selected):
+            raise ValueError('Export fields must be selected scan fields in the same input.')
+        if not selected:continue
+        originals[alias]=df[selected].to_dict(orient='records')
+        sanitized={}
+        for col in selected:
+            values=[]
+            for i,text in enumerate(df[col]):
+                if text not in memo:
+                    if len(memo)>=10000:raise ValueError('Run at most 10,000 distinct selected values per browser batch.')
+                    memo[text]=_browser_phi_text(text,categories,custom_terms,gate) if text else ('',[])
+                replacement,found=memo[text];values.append(replacement)
+                for flag in found:
+                    f=dict(flag);f['RULE_SCORE']=f.pop('P_REDACT')
+                    flags.append(dict(INPUT=alias,SOURCE_ROW=i+1,FIELD=col,**f))
+            if col in kept:sanitized[col]=values
+        if kept:clean[alias]=pd.DataFrame(sanitized)
+        counts.append(dict(input=alias,rows=len(df),fields_scanned=len(selected),fields_exported=len(kept)))
+    flag_columns=['INPUT','SOURCE_ROW','FIELD','SPAN','ENTITY','START','END','RULE_SCORE','DIGIT_RATIO','CAPITALIZED','ACTION']
+    flag_frame=pd.DataFrame(flags,columns=flag_columns)
+    # The clean package never contains originals, span text or the user's literal term list.
+    audit=pd.DataFrame([dict(program='phi_review_browser',runtime='browser',algorithm='existing guarded patterns and mosaic rules',
+        input_hashes=json.dumps([{'input':f'input_{n:02d}','sha256':m['sha256'],'bytes':m['bytes']} for n,m in enumerate(input_meta,1)]),
+        selected_fields=json.dumps({f'input_{n:02d}':selections[name] for n,(name,_) in enumerate(frames,1)}),
+        exported_fields=json.dumps({f'input_{n:02d}':exports[name] for n,(name,_) in enumerate(frames,1)}),
+        categories=json.dumps(categories),redaction_gate=gate,custom_term_count=len(custom_terms),
+        custom_terms_sha256=hashlib.sha256(_browser_json(custom_terms)).hexdigest(),
+        masked_spans=len(flags),timestamp=pd.Timestamp.now().isoformat(),
+        scope='Selected tabular fields only; incomplete detection is possible; review before use; not an anonymization certification',
+        output_policy='Selected fields replaced in place; originals and flag text excluded; CSV formulas escaped')])
+    clean_files={f'redacted/{alias}.csv':_browser_export_csv(df) for alias,df in clean.items()}
+    clean_files.update({'audit_log.csv':_browser_export_csv(audit),
+        'README.txt':('Redacted copies of the selected export fields only. No original field copies, flagged spans or custom literal terms '
+                      'are included. Headers and any undetected identifiers remain; review the files before use or disclosure. '
+                      'Pattern/rule matching can miss identifiers and can over-redact. It does not certify complete anonymization. '
+                      'The separate sensitive-review download contains source text and should be handled as sensitive data.\n').encode()})
+    review_files={'flagged_spans.csv':_browser_export_csv(flag_frame),
+        'selected_original_fields.json':_browser_json(originals),
+        'review_setup.json':_browser_json({'selections':selections,'exports':exports,'categories':categories,
+                                         'literal_terms':custom_terms,'gate':gate,'inputs':input_meta}),
+        'README.txt':b'SENSITIVE REVIEW MATERIAL: contains original selected fields, matched identifier text and configured literal terms.\n'}
+    return {'files':clean_files,'tables':clean,'summary':pd.DataFrame(counts),'flags':flag_frame,
+            'zip':_browser_zip(clean_files),'sensitive_zip':_browser_zip(review_files)}
+
+def _browser_ui():
+    uploads=_browser_start('De-identification review assist','Review and redact selected CSV fields using explicit patterns and your literal terms.')
+    try:
+        items=_browser_uploads(uploads)
+        if st.session_state.get('bw_example'):items=[('ae.csv',_browser_example_bytes('ae.csv'))]
+        frames=[(name,_browser_csv(name,data)) for name,data in items]
+    except (ValueError,OSError) as exc:_browser_clear();st.error(str(exc));return
+    if not frames:
+        _browser_clear();st.info('Upload study CSVs to start, or explicitly load the synthetic example.');return
+    st.subheader('Choose fields to review and export')
+    st.caption('Every column is available, including numeric-looking identifiers. Exported fields are replaced in place; '
+               'original copies are confined to the separate sensitive-review download. Detection is incomplete: review outputs before sharing.')
+    selections={};exports={}
+    for n,(name,df) in enumerate(frames):
+        with st.expander(f'{name} · {len(df):,} rows',expanded=True):
+            selected=st.multiselect('Fields to scan',list(df.columns),default=list(df.columns),
+                key=_browser_key(f'scan_{n}'),on_change=_browser_clear)
+            selections[name]=selected
+            exports[name]=st.multiselect('Fields to include in redacted export',selected,default=selected,
+                key=_browser_key(f'export_{n}'),on_change=_browser_clear)
+    categories=st.multiselect('Identifier patterns',sorted(TAG),default=sorted(TAG),
+        key=_browser_key('patterns'),on_change=_browser_clear)
+    literal=st.text_area('Additional literal terms to redact (one per line)',key=_browser_key('literal_terms'),
+        on_change=_browser_clear,max_chars=20100,
+        help='Case-insensitive literal matches, including names or identifiers the patterns do not recognize. No regular expressions.')
+    gate=st.slider('Redaction gate',0.50,0.99,DEF_REDACT_GATE,0.01,key=_browser_key('threshold'),on_change=_browser_clear,
+        help='The existing rule score gates detected spans; it is not a calibrated probability. Your literal terms are always masked.')
+    try:custom_terms=_browser_custom_terms(literal)
+    except ValueError as exc:_browser_clear();st.error(str(exc));return
+    config={'selections':selections,'exports':exports,'patterns':categories,'literal_terms':custom_terms,'gate':gate,
+            'example':bool(st.session_state.get('bw_example'))}
+    input_meta=_browser_input_meta(items)
+    fingerprint=hashlib.sha256(_browser_json([config,input_meta])).hexdigest()
+    if st.session_state.get('bw_fingerprint') not in (None,fingerprint):_browser_clear()
+    ready=bool(any(selections.values()) and any(exports.values()) and (categories or custom_terms))
+    if st.button('Run de-identification review',type='primary',disabled=not ready,key=_browser_key('run')):
+        _browser_clear()
+        try:
+            with st.spinner('Reviewing the selected fields…'):
+                result=_browser_phi_result(frames,selections,exports,categories,custom_terms,gate,input_meta)
+            _browser_publish(result,fingerprint)
+        except (ValueError,MemoryError) as exc:st.error(str(exc) or 'This batch exceeds available browser memory; use a smaller batch.');return
+    result=st.session_state.get('bw_result')
+    if result:
+        st.subheader('Redacted field copies');st.dataframe(result['summary'],width='stretch')
+        for alias,df in result['tables'].items():
+            st.write(alias);st.dataframe(df,width='stretch')
+            st.download_button(f'Download {alias} redacted CSV',result['files'][f'redacted/{alias}.csv'],
+                               f'{alias}_redacted.csv','text/csv',key='bw_download_'+alias,on_click='ignore')
+        st.caption(f"{len(result['flags']):,} masked spans. Absence of a flag does not establish absence of identifiers. "
+                   'Changing inputs or settings clears these results.')
+        st.download_button('Download redacted package',result['zip'],'redacted-fields-package.zip','application/zip',on_click='ignore')
+        st.download_button('Download audit CSV',result['files']['audit_log.csv'],'audit_log.csv','text/csv',on_click='ignore')
+        with st.expander('Sensitive review details'):
+            st.warning('This separate package contains original selected text, matched identifier spans and your literal terms. '
+                       'It is not part of the redacted package.')
+            st.download_button('Download sensitive review package',result['sensitive_zip'],'sensitive-review-package.zip','application/zip',on_click='ignore')
+
+
+# ========================= UI EXECUTION =========================
 # Same deliberate order as meddra_app.py: locate data (1), explain how columns are
 # discovered by content (2), operating point + outputs (3), LOAD, then the scan-
 # column multi-select (4) populated FROM the load, then the banner, then the pre-flight CONTRACT
 # panel, then Run. The operator confirms which columns will be scanned/scrubbed
 # BEFORE compute, so a column that should not be touched (or one the operator wants
 # excluded) is caught on screen and deselected there.
-st.set_page_config(page_title="De-identification review assist" + (": in-browser demo" if IN_BROWSER else ""), layout="wide")
+st.set_page_config(page_title="De-identification review assist" + (": browser workspace" if BROWSER_REQUESTED else ": in-browser demo" if IN_BROWSER else ""), layout="wide")
 HOSTED = _hosted()   # after set_page_config: no Streamlit call may precede it
+if BROWSER_REQUESTED and not HOSTED:
+    _browser_ui()
+    st.stop()
 # Hosted: an uncaught exception shows a generic message, not a traceback with server
 # paths (a crafted widget value can raise one). Process-wide, like the switch itself.
 if HOSTED: st.set_option("client.showErrorDetails", "none")

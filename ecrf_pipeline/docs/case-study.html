@@ -7,8 +7,7 @@
 <meta name="description" content="Case study of the Coding QC assist and the De-identification review assist: the four-tier design, two worked examples on synthetic eCRF data, what ran on the stand-in path and on the real model path, and the limits.">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:,">
-<!-- Self-contained page for GitHub Pages (main branch, /docs). Inline CSS only: no external scripts,
-     stylesheets, fonts or images (QC check D2). It replaces the two retired decks (Deck A, the four-tier
+<!-- Static toolkit documentation with local shared theme assets. It replaces the two retired decks (Deck A, the four-tier
      pipeline; Deck B, the implementation walkthrough); their old URLs redirect here. -->
 <style>
 :root {
@@ -76,11 +75,16 @@ footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--l
   a { color:#000000; }
 }
 </style>
+<link rel="stylesheet" href="../../assets/theme/tokens.css">
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+
 </head>
 <body>
 <div class="wrap">
 
 <header class="site">
+  <nav class="toolkit-nav" aria-label="Toolkit navigation"><a href="../../TOOLKIT_SETUP.html">Trial Biostatistics Toolkit</a><a href="index.html">eCRF workspace</a><button class="theme-toggle" type="button" aria-label="Switch color mode">Light / dark</button></nav>
   <p class="crumbs"><a href="./">eCRF pipeline apps</a> / Case study: four-tier coding and de-identification, traced</p>
   <p class="kicker">Synthetic data only</p>
   <h1>Case study: four-tier coding and de-identification, traced</h1>
@@ -89,6 +93,7 @@ footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--l
     final decision is a rule over numbers a reviewer can inspect and a threshold a reviewer can move. This page explains
     the design, walks two worked examples through it on the bundled synthetic cut, and says for every number whether it
     came from the rule-based stand-in or from the real model path, and where it was recorded.</p>
+  <div class="label" role="note"><p><strong>Historical synthetic/native evidence.</strong> The measurements and output examples below document the original implementation. They do not certify the current own-data browser workflow or a user study. The integrated tools now start blank, accept guided CSV uploads, keep all coding suggestions unreviewed and separate redacted PHI exports from sensitive originals. <a href="index.html">Open the current eCRF workspace and guide.</a></p></div>
   <div class="label" role="note">
     <p><strong>Evidence label: Tools built (synthetic data only).</strong> The two apps, their stand-ins, the real-path
       wiring and the measurements are working artifacts in this repository. It merges and corrects the two earlier decks
@@ -147,11 +152,11 @@ footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--l
   <div class="tbl" role="region" tabindex="0" aria-label="Stand-in and real model path compared (table)"><table>
     <thead><tr><th><span class="vh">Aspect</span></th><th>Stand-in <span class="tag">[SI]</span></th><th>Real model path <span class="tag">[RM]</span></th></tr></thead>
     <tbody>
-      <tr><td>Where it runs</td><td>Anywhere: a local run, and the in-browser pages on GitHub Pages (numpy and pandas only)</td><td>Locally only, with the pinned runtimes and a models dir (<a href="https://github.com/patrickiben/ecrf-pipeline-apps/blob/main/eval/README.md">eval/README.md</a>). Not in the browser as built: Needle3 loads a native engine library, Laya needs torch, hnswlib has no Pyodide build, and Pyodide's xgboost (2.1.4) is older than the 3.4.1 the gates were trained with.</td></tr>
+      <tr><td>Where it runs</td><td>Original local and locked synthetic browser runs (numpy and pandas). The current browser reuses the algorithms with guided intake and a different review/export contract</td><td>Locally only, with the pinned runtimes and a models dir (<a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/ecrf_pipeline/eval/README.md">eval/README.md</a>). Not in the browser as built: Needle3 loads a native engine library, Laya needs torch, hnswlib has no Pyodide build, and Pyodide's xgboost (2.1.4) is older than the 3.4.1 the gates were trained with.</td></tr>
       <tr><td>Coding, Tier 2</td><td>Hashed bag-of-words, cosine over the dictionary</td><td>Cactus Needle3 embeddings (3072-dim) and an hnswlib inner-product index</td></tr>
       <tr><td>Tier 3</td><td>Coding: none. De-identification: a direct-span rule and a mosaic rule</td><td>Laya, with temperatures fitted on a synthetic calibration split</td></tr>
       <tr><td>Tier 4</td><td>Coding: a fixed weighted sum and the gate. De-identification: P(redact) 0.99 inside a span, else 0.01</td><td>XGBoost re-ranker (coding) and span gate (de-identification), trained on synthetic data</td></tr>
-      <tr><td>Numbers on this page</td><td>Re-run on 2026-10-25 against <code>sample_data/</code> with the shipped apps (local run, stand-in path); the same values the in-browser pages and <code>tests/qc_test.py</code> produce</td><td>Recorded on 2026-10-22 in <code>eval/results/deck_b_worked.json</code> on a 4-vCPU cloud CPU (Intel Xeon @ 2.80GHz, no GPU). Not re-run for this page; the RM checks in <code>tests/qc_test.py</code> reproduce them when a models dir is given</td></tr>
+      <tr><td>Numbers on this page</td><td>Re-run on 2026-10-25 against <code>sample_data/</code> with the shipped apps (local run, stand-in path); the original native values checked by <code>tests/qc_test.py</code>; the current browser uses review-only labels and separate PHI exports</td><td>Recorded on 2026-10-22 in <code>eval/results/deck_b_worked.json</code> on a 4-vCPU cloud CPU (Intel Xeon @ 2.80GHz, no GPU). Not re-run for this page; the RM checks in <code>tests/qc_test.py</code> reproduce them when a models dir is given</td></tr>
     </tbody>
   </table></div>
   <p>Untagged numbers are configuration (the coding gate, default 0.88 and set to 0.90 in the worked run; the redaction
@@ -159,7 +164,7 @@ footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--l
 </section>
 
 <section aria-labelledby="design">
-  <h2 id="design">The design: four tiers, numbers between them</h2>
+  <h2 id="design">The original native design: four tiers, numbers between them</h2>
   <p>A single text-to-code model folds "the dictionary match was close" and "this token is a drug name, not a patient
     name" into one set of weights, leaving nothing in between to read or to set a limit on. Here the work is split so
     each tier writes named columns the next tier reads, and the decision tier receives only numbers derived from the
@@ -301,8 +306,7 @@ footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--l
     <li><strong>Stays off the network on the real path.</strong> The apps set <code>HF_HUB_OFFLINE=1</code>,
       <code>NEEDLE_TELEMETRY=0</code> and <code>DO_NOT_TRACK=1</code> before any model loads and read only the models
       dir.</li>
-    <li><strong>Locks the public demo.</strong> The in-browser pages run in hosted mode: synthetic data only, every
-      upload and path input disabled, and <code>hosted_mode=true</code> in the audit.</li>
+    <li><strong>Retains a locked server demo option.</strong> The original hosted demo disabled uploads and paths with <code>ECRF_HOSTED=1</code>. That server policy remains available. The integrated browser workspace instead accepts user CSVs and guided mappings; examples are optional.</li>
   </ul>
   <h3>Does not</h3>
   <ul>
@@ -344,16 +348,13 @@ footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--l
 <section aria-labelledby="verify">
   <h2 id="verify">Check it yourself</h2>
   <ul>
-    <li><strong>Stand-in values:</strong> open the <a href="app/meddra.html">Coding QC assist</a> or the
-      <a href="app/phi.html">De-identification review assist</a> in the browser and click Execute, or run either app
-      locally against <code>sample_data/</code>. The span offsets, scores and sanitized text above are what they
-      produce.</li>
+    <li><strong>Explore the browser algorithms:</strong> open <a href="app/meddra.html">Coding QC assist</a> or <a href="app/phi.html">De-identification review assist</a>, choose <strong>Load synthetic example</strong>, review its mapped fields and click its Run button. Coding suggestions now remain unreviewed; PHI downloads separate redacted output from original details. To reproduce the original output contract shown above, run the native app against <code>sample_data/</code> or use <code>tests/qc_test.py</code>.</li>
     <li><strong>Real-path values:</strong> build a models dir as in
-      <a href="https://github.com/patrickiben/ecrf-pipeline-apps/blob/main/eval/README.md">eval/README.md</a>, set it as
+      <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/ecrf_pipeline/eval/README.md">eval/README.md</a>, set it as
       the Models dir and run again; <code>ECRF_MODELS_DIR=&lt;models dir&gt; python tests/qc_test.py</code> checks the run
       against <code>eval/results/deck_b_worked.json</code>.</li>
     <li><strong>What was tested and fixed:</strong>
-      <a href="https://github.com/patrickiben/ecrf-pipeline-apps/blob/main/QC_REPORT.md">QC_REPORT.md</a>.</li>
+      <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/ecrf_pipeline/QC_REPORT.md">QC_REPORT.md</a>.</li>
   </ul>
 </section>
 
@@ -362,7 +363,7 @@ footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--l
 <footer class="site">
   <p>Patrick Iben &middot; Apache-2.0 &middot; <a href="./">eCRF pipeline apps</a> &middot;
     <a href="evaluation.html">Evaluation</a> &middot;
-    <a href="https://github.com/patrickiben/ecrf-pipeline-apps">Source on GitHub</a></p>
+    <a href="https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/ecrf_pipeline">Source on GitHub</a></p>
 </footer>
 
 </div>

@@ -6,7 +6,7 @@ Open-source tools, templates and worked examples for **biostatistics consultants
 
 **[Point-and-click setup for the whole toolkit](https://patrickiben.github.io/biometrics-ai-portfolio/TOOLKIT_SETUP.html)** · [Control panel and module catalog](https://patrickiben.github.io/biometrics-ai-portfolio/toolkit_launcher/index.html) · [Download the complete ZIP](https://github.com/patrickiben/biometrics-ai-portfolio/archive/refs/heads/main.zip)
 
-**[Open the browser catalog](https://patrickiben.github.io/biometrics-ai-portfolio/toolkit_launcher/index.html).** All 23 modules have browser entry points. Core study setup and analyses require no local R, Python, account or toolkit download. Operational apps accept mapped CSVs; the analysis workspace covers the 221 R TLF programs, eight monitoring checks, aggregate AE/PK interpretation and LOCALMIND review. Vaccine analyses and learning, method simulations, the fixed worked study, validation gates, seeded defects and an editable deliverables register are also available through browser controls. Reference pages and separate external demos keep their documented scope.
+**[Open the browser catalog](https://patrickiben.github.io/biometrics-ai-portfolio/toolkit_launcher/index.html).** All 23 modules have browser entry points. Core study setup and analyses require no local R, Python, account or toolkit download. Operational apps accept mapped CSVs; the analysis workspace covers the 221 R TLF programs, eight monitoring checks, aggregate AE/PK interpretation and LOCALMIND review. Vaccine analyses and learning, method simulations, the fixed worked study, validation gates, seeded defects and an editable deliverables register are also available through browser controls. Reference pages keep their documented scope.
 
 **R is the runnable default.** Configure study choices, map analysis-ready CSVs, confirm assumptions, validate, run and download complete outputs. SAS reference exports remain available where a SAS twin exists and are unexecuted. Input/settings changes invalidate analysis results; save session work before resetting, reloading or closing. Optional LOCALMIND browser inference requires WebGPU and an explicit model download; suggestions remain unapproved and unapplied.
 
@@ -59,13 +59,13 @@ The R launcher finds the complete checkout from another working directory. Packa
 - **Protocol→CSR deliverables pipeline** and a **TLF-interpretation drafter** (a small-model skeleton that
   never sources a number; the model step is a stub and the number validator runs).
   → [`biostat_pipeline/`](biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf) · [`tlf_interpret/`](tlf_interpret/index.html)
-- **eCRF pipeline apps** (separate repo): four independent Python (Streamlit) apps for clinical eCRF extracts:
-  MedDRA-style auto-coding, PII/PHI redaction, participant risk scoring, and anomaly and drift detection. They
-  run in the browser (stlite), so nothing is sent to a server; the demos use synthetic data and placeholder
-  codes, not MedDRA.
-  → [overview](https://patrickiben.github.io/ecrf-pipeline-apps/) · [coding](https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html) ·
-  [PHI](https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html) · [risk](https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html) ·
-  [anomaly](https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html) · [source](https://github.com/patrickiben/ecrf-pipeline-apps)
+- **eCRF pipeline apps:** four integrated browser tools for your own CSV files: dictionary-based coding
+  candidates, de-identification review, configurable participant screening, and anomaly and drift checks.
+  Map columns in guided forms, run on your device, and download results and audit records. Optional examples
+  use synthetic data and placeholder codes. This module retains its [Apache-2.0 license](ecrf_pipeline/LICENSE).
+  → [overview](https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/) · [coding](https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/app/meddra.html) ·
+  [PHI](https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/app/phi.html) · [risk](https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/app/risk.html) ·
+  [anomaly](https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/app/anomaly.html) · [source](https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/ecrf_pipeline)
 
 **Operational tooling (no AI required)**
 - **Deterministic SAS/R monitoring + coverage for leave and handoffs:** configuration templates for scheduled

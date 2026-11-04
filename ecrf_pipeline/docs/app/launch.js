@@ -7,13 +7,32 @@
 // there; there is no server, and the page's Content-Security-Policy only lets it connect to this site and
 // the CDN.
 //
-// ECRF_HOSTED=1 turns on the apps' own public-demo lock: the bundled synthetic cut is forced, every upload
-// and path input is disabled, a banner says so, and the audit records hosted_mode=true.
+// ECRF_BROWSER is accepted only on the actual WebAssembly platform. ECRF_HOSTED remains a separate,
+// fail-closed server-demo setting; it is deliberately not enabled in this browser-only launch.
 
 const $ = (id) => document.getElementById(id);
 const absolute = (path) => new URL(path, document.baseURI).href;
-const RUN_LOCALLY = "Reloading the page usually helps after a network error. To use your own files, run the app locally (see the README on GitHub).";
+const RETRY_NOTICE = "Check your connection and reload this page. Uploads and results are held only in this tab, so download results before reloading.";
 let settled = false;
+
+// stlite 1.12.0 exposes Streamlit's host messaging through mount({hostConfig}). The pinned
+// frontend accepts SET_CUSTOM_THEME_CONFIG v1 only from a trusted allowed origin. Update
+// its React theme, including tables/charts, without remounting Python or losing uploaded data.
+// See upstream streamlit 9c524f4, HostCommunicationManager and App.handleThemeMessage.
+function syncAppTheme() {
+  if (!document.body.classList.contains('app-ready')) return;
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const tokens = getComputedStyle(document.documentElement);
+  const color = name => tokens.getPropertyValue(name).trim();
+  window.postMessage({ stCommVersion: 1, type: 'SET_CUSTOM_THEME_CONFIG', themeInfo: {
+    base: dark ? 1 : 0,
+    primaryColor: dark ? '#147d74' : '#0b7268',
+    backgroundColor: color('--bg'), secondaryBackgroundColor: color('--surface'),
+    textColor: color('--ink'), borderColor: color('--control'), linkColor: color('--accent'),
+    yellowTextColor: color('--amber'), redTextColor: color('--red'), greenTextColor: color('--green'), blueTextColor: color('--blue'),
+  } }, location.origin);
+}
+window.addEventListener('ecrf-theme', syncAppTheme);
 
 function setStep(text) {
   if (!settled && text) $("boot-step").textContent = text;
@@ -24,6 +43,7 @@ function ready() {
   settled = true;
   $("boot").hidden = true;
   document.body.classList.add("app-ready");
+  syncAppTheme();
   fitNotes();
   checkStyles();
 }
@@ -123,7 +143,7 @@ function fail(reason) {
   $("boot-text").textContent = "The app could not start in this browser.";
   $("boot-step").textContent = "The screenshot below shows its results on the bundled synthetic data.";
   const box = $("boot-error");
-  box.textContent = `${reason} ${RUN_LOCALLY}`;
+  box.textContent = `${reason} ${RETRY_NOTICE}`;
   box.hidden = false;
 }
 
@@ -180,21 +200,24 @@ async function main() {
       // is fetched from PyPI.
       prebuiltPackageNames: cfg.wheels.map(absolute),
       pyodideUrl: cfg.pyodide,
-      env: { ECRF_HOSTED: "1" },
+      env: { ECRF_BROWSER: "1" },
+      hostConfig: { allowedOrigins: [location.origin] },
+      disableDocumentStyles: true,
       streamlitConfig: {
         "browser.gatherUsageStats": false,
+        "server.maxUploadSize": cfg.maxUploadMB,
         "client.toolbarMode": "viewer",
         // The same theme as .streamlit/config.toml (keep the two in step): colors that meet WCAG AA contrast
         // (4.5:1 for text) where Streamlit's defaults do not. The app still follows the visitor's light or dark
         // setting. Light: the primary color (white text on the Execute button), captions (drawn at 60% opacity of
         // the text color), and the warning, error and success text. Dark: the primary color, for the Execute
         // button's white text. app.css draws a slider's value in the text color, which the theme cannot do.
-        "theme.light.primaryColor": "#0757BF",
+        "theme.light.primaryColor": "#0b7268",
         "theme.light.textColor": "#101218",
         "theme.light.yellowTextColor": "#7A5A00",
         "theme.light.redTextColor": "#A3262A",
         "theme.light.greenTextColor": "#11752F",
-        "theme.dark.primaryColor": "#1F6FEB",
+        "theme.dark.primaryColor": "#147d74",
       },
       disableProgressToasts: true,   // progress shows in the notice above the app instead
     },

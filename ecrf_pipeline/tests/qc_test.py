@@ -489,7 +489,8 @@ if anomm is not None:
 #   20    the per-session temp folder is deleted once the session is discarded (no /tmp growth).
 #   21    source order (read from the file, since a misplaced line has no runtime symptom on 1.66.1):
 #         set_page_config, then HOSTED = _hosted() on the next line, then the main banner, then the sidebar
-#         banner as the first sidebar call right before the "📂 1." header, all above every st.stop().
+#         banner as the first sidebar call right before the "📂 1." header, all above every HOSTED-reachable
+#         st.stop(). The separate browser workspace has one early stop guarded by `not HOSTED`.
 # The switch itself (fail closed: see _hosted() in each app): HS1-HS32 inject secret values through
 # AppTest (bool and string forms, and a secrets file with an unrelated key only); HE1-HE8 try other
 # ECRF_HOSTED spellings; HF1-HF20 run Streamlit's REAL secrets loader on scratch secrets.toml files,
@@ -628,10 +629,17 @@ def _order(path):
     sb=first('if HOSTED: st.sidebar.warning(HOSTED_BANNER, icon="🔒")'); s1=first("st.sidebar.", max(cfg,0))
     guard=first("_guard_artifacts(models_dir)", max(cfg,0)+1)          # the call (the def sits above the UI)
     stops=[i for i in range(max(cfg,0), len(L)) if "st.stop()" in L[i]]
+    browser_branch=next((i for i in range(max(cfg,0),len(L)) if L[i].strip() in
+                        ("if BROWSER_ENABLED and not HOSTED:", "if BROWSER_REQUESTED and not HOSTED:")), -1)
+    browser_call=L[browser_branch+1].strip() if browser_branch >= 0 else ""
+    browser_stop=browser_branch+2
+    browser_ok=(browser_branch==h+1 and browser_call in ("browser_main()", "_browser_ui()")
+                and browser_stop in stops and L[browser_stop].strip()=="st.stop()")
+    hosted_stops=[s for s in stops if not (browser_ok and s==browser_stop)]
     nxt=next((L[i].strip() for i in range(sb+1, len(L)) if L[i].strip()), "") if sb >= 0 else ""
     ok=(cfg >= 0 and h==cfg+1 and cfg < mb < sb < guard and s1==sb and nxt.startswith('st.sidebar.header("📂 1.')
-        and len(stops) >= 1 and all(sb < s for s in stops))
-    return ok, dict(set_page_config=cfg, HOSTED=h, main_banner=mb, sidebar_banner=sb, first_sidebar=s1, guard=guard, stops=stops, after_sidebar_banner=nxt[:40])
+        and browser_ok and len(hosted_stops) >= 1 and all(sb < s for s in hosted_stops))
+    return ok, dict(set_page_config=cfg, HOSTED=h, main_banner=mb, sidebar_banner=sb, first_sidebar=s1, guard=guard, stops=stops, browser_stop_excluded_only_when_not_HOSTED=browser_ok, after_sidebar_banner=nxt[:40])
 def _real_secrets(body, sp, host_env=None):
     """Point Streamlit's REAL secrets loader at secrets file `sp` holding `body`, the way a fresh server sees
     it: a new secrets store (file watchers off), the host's ECRF_HOSTED (None: unset), and the server's own
@@ -810,7 +818,7 @@ try:
         finally:
             os.chdir(cwd0); os.environ.pop("ECRF_HOSTED", None); _stcfg.set_option("client.showErrorDetails", _ERR0)
         ok,det=_order(path)
-        check(f"{P}21 source order: HOSTED right after set_page_config, both banners above every st.stop(), sidebar banner first", ok, det)
+        check(f"{P}21 source order: HOSTED right after set_page_config, both banners above every HOSTED-reachable st.stop(), browser excluded only by not HOSTED, sidebar banner first", ok, det)
 
     # ---- HS1-HS32: the Streamlit-secret switch, values injected through AppTest (env var unset) ----
     # (value, tag, hosted expected); None = the secrets file holds only an unrelated key (AppTest swaps
@@ -886,8 +894,8 @@ finally:
 #   D3  every LOCAL reference resolves on disk, against its file's folder: in README.md every Markdown link
 #       and image (inline and reference-style) and <img src>; in each docs page every href, src, srcset
 #       entry, poster, data, refresh target and CSS url(). Remote URLs (the CI badge), #anchors and
-#       mailto:/data: are skipped. A site-absolute reference under /ecrf-pipeline-apps/ (the project site's
-#       base path) resolves against docs/. 404.html must use only such site-absolute local links, because
+#       mailto:/data: are skipped. A site-absolute reference under /biometrics-ai-portfolio/ (the toolkit's
+#       base path) resolves against the toolkit root. 404.html must use only such site-absolute local links, because
 #       GitHub Pages serves it for a missing address at any depth, where a relative link would point to the
 #       wrong folder. README.md and each published page must hold at least one local reference,
 #       and every docs/img/ file must be used by at least one of them, so the check cannot pass with nothing
@@ -900,7 +908,8 @@ from html.parser import HTMLParser
 from urllib.parse import unquote
 DOCS = os.path.join(APP_DIR,"docs")
 DOC_PAGES = ["index.html", "evaluation.html", "case-study.html", "404.html"]     # published pages
-SITE_BASE = "/ecrf-pipeline-apps/"   # GitHub Pages serves docs/ at this path (a project site)
+SITE_BASE = "/biometrics-ai-portfolio/"  # eCRF docs now live inside the shared toolkit.
+TOOLKIT_ROOT = os.path.dirname(APP_DIR)
 RETIRED = {"deck_a_four_tier_pipeline.html": "case-study.html",                 # retired URL -> where it redirects
            "deck_b_implementation_walkthrough.html": "case-study.html"}
 def _offsite(v): v=(v or "").strip().lower(); return v.startswith(("http:","https:","//")) or "://" in v
@@ -934,9 +943,9 @@ class _Refs(HTMLParser):
         elif self._in=="script": self.js.append(data)
 def _resolve(base_dir, r):
     """A local reference -> its normalized path on disk (query/fragment stripped, %-escapes decoded). A
-    site-absolute one under SITE_BASE resolves against docs/; any other absolute path stays as it is."""
+    site-absolute one under SITE_BASE resolves against the toolkit root; any other absolute path stays as it is."""
     r = unquote(re.split(r"[?#]", r.strip())[0])
-    if r.startswith(SITE_BASE): base_dir, r = DOCS, r[len(SITE_BASE):]
+    if r.startswith(SITE_BASE): base_dir, r = TOOLKIT_ROOT, r[len(SITE_BASE):]
     return os.path.normpath(os.path.join(base_dir, r))
 def _local_missing(base_dir, refs):
     """refs -> the local ones that do not exist (a file, or a folder such as sample_data/)."""

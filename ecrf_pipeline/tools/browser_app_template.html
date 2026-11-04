@@ -8,7 +8,7 @@
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>{{TITLE}}: in-browser demo</title>
+<title>{{TITLE}} · Trial Biostatistics Toolkit</title>
 <meta name="description" content="{{DESCRIPTION}}">
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="{{CDN}}" crossorigin>
@@ -16,11 +16,14 @@
      and (where import-map integrity is supported) the two core modules, if their content changes. -->
 <link rel="stylesheet" id="stlite-css" data-stlite-css href="{{STLITE_CSS}}" integrity="{{STLITE_CSS_SRI}}" crossorigin="anonymous">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="../../../assets/theme/tokens.css">
+<link rel="stylesheet" href="../theme.css">
+<script src="../theme.js"></script>
 <script type="importmap">{{IMPORTMAP}}</script>
 </head>
 <body>
 <header class="bar">
-  <nav class="crumbs" aria-label="Breadcrumb"><a href="../">eCRF pipeline apps</a> <span aria-hidden="true">/</span> <span aria-current="page">{{TITLE}}</span></nav>
+  <div class="toolkit-nav"><nav class="crumbs" aria-label="Breadcrumb"><a href="../../../TOOLKIT_SETUP.html">Toolkit</a> <span aria-hidden="true">/</span> <a href="../">eCRF apps</a> <span aria-hidden="true">/</span> <span aria-current="page">{{TITLE}}</span></nav><button class="theme-toggle" type="button">Light / dark mode</button></div>
   <!-- Open while the app loads. On a small screen launch.js folds it to its one-line summary once the app is up,
        so the app gets the room; one tap opens it again. Its summary line shows on small screens only. -->
   <details id="notes" class="notes" open>
@@ -37,10 +40,10 @@
       <p id="boot-notice" class="notice" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><span id="boot-text">{{LOADING_NOTICE}}</span></p>
       <p id="boot-step" class="step">Loading the page code.</p>
       <p id="boot-error" class="error" role="alert" hidden></p>
-      <noscript><p class="error">This app needs JavaScript to run in your browser. The screenshot below shows its results on the bundled synthetic data; you can also <a href="{{RUN_LOCALLY}}">run it locally</a>.</p></noscript>
+      <noscript><p class="error">Enable JavaScript to run this app. The screenshot below illustrates the earlier synthetic-data workflow.</p></noscript>
       <figure class="preview">
         <img src="../img/{{IMG}}" width="1440" height="960" alt="{{ALT}}">
-        <figcaption>Screenshot of this app's results on the bundled synthetic data. To use your own files, <a href="{{RUN_LOCALLY}}">run it locally</a>.</figcaption>
+        <figcaption>Earlier synthetic example. Once the app starts, upload your CSV files or choose its optional example, map your columns, then run and download the results.</figcaption>
       </figure>
     </div>
   </section>

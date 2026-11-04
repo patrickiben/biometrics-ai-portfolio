@@ -8,14 +8,17 @@
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
-<title>De-identification review assist: in-browser demo</title>
-<meta name="description" content="A de-identification review assist running in your browser on synthetic eCRF text: flagged identifier spans and sanitized copies of each table, for a person to review.">
+<title>De-identification review assist · Trial Biostatistics Toolkit</title>
+<meta name="description" content="Upload CSV text, select fields to screen and redact, and download separate redacted and sensitive review packages.">
 <link rel="icon" href="data:,">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <!-- stlite 1.12.0, an exact pinned release. Subresource Integrity: the browser refuses the stylesheet,
      and (where import-map integrity is supported) the two core modules, if their content changes. -->
 <link rel="stylesheet" id="stlite-css" data-stlite-css href="https://cdn.jsdelivr.net/npm/@stlite/browser@1.12.0/build/stlite.css" integrity="sha384-nMY1QbA8+CIsSUwemJXUxjUlxoaTVytN3oKA4RhBMsdJgRaucGjAuus4FPhQV8Ui" crossorigin="anonymous">
 <link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="../../../assets/theme/tokens.css">
+<link rel="stylesheet" href="../theme.css">
+<script src="../theme.js"></script>
 <script type="importmap">{
   "integrity": {
     "https://cdn.jsdelivr.net/npm/@stlite/browser@1.12.0/build/stlite.js": "sha384-3IQsZ2w/7wJJ4Fxwpnzw+hHGanfH1/gZx90qxuEwmIdnsD1C+mMpZTk5+rMRPNOC",
@@ -25,13 +28,13 @@
 </head>
 <body>
 <header class="bar">
-  <nav class="crumbs" aria-label="Breadcrumb"><a href="../">eCRF pipeline apps</a> <span aria-hidden="true">/</span> <span aria-current="page">De-identification review assist</span></nav>
+  <div class="toolkit-nav"><nav class="crumbs" aria-label="Breadcrumb"><a href="../../../TOOLKIT_SETUP.html">Toolkit</a> <span aria-hidden="true">/</span> <a href="../">eCRF apps</a> <span aria-hidden="true">/</span> <span aria-current="page">De-identification review assist</span></nav><button class="theme-toggle" type="button">Light / dark mode</button></div>
   <!-- Open while the app loads. On a small screen launch.js folds it to its one-line summary once the app is up,
        so the app gets the room; one tap opens it again. Its summary line shows on small screens only. -->
   <details id="notes" class="notes" open>
     <summary>Privacy and limits</summary>
-    <p class="privacy"><strong>Privacy:</strong> Runs in your browser; files are processed on your device and not uploaded by the app; the page is downloaded from GitHub Pages and the CDN, which see your IP address; synthetic data only; not a validated or Part 11 system.</p>
-    <p class="limits"><strong>Limits:</strong> On held-out synthetic text this stand-in left 108 of 308 identifiers readable (the real model path: 91 of 308); every output needs human review. <a href="../evaluation.html#deid">How this was measured</a>.</p>
+    <p class="privacy"><strong>Privacy:</strong> Your selected files are processed in this tab and are not sent to a server. Download results before resetting or closing it. GitHub Pages and the runtime CDN receive ordinary page requests, including your IP address.</p>
+    <p class="limits"><strong>Limits:</strong> Pattern matching can miss identifiers. Review the redacted output and any unselected columns before sharing it; it is not a guarantee of anonymity. <a href="../evaluation.html#deid">Evaluation context</a>.</p>
   </details>
   <p id="style-error" class="style-error" role="alert" hidden></p>
 </header>
@@ -39,13 +42,13 @@
   <div id="root"></div>
   <section id="boot" aria-labelledby="boot-notice">
     <div class="boot-inner">
-      <p id="boot-notice" class="notice" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><span id="boot-text">Starting Python in your browser; first visit downloads about 30 MB.</span></p>
+      <p id="boot-notice" class="notice" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><span id="boot-text">Starting the app in your browser; the first visit downloads about 30 MB.</span></p>
       <p id="boot-step" class="step">Loading the page code.</p>
       <p id="boot-error" class="error" role="alert" hidden></p>
-      <noscript><p class="error">This app needs JavaScript to run in your browser. The screenshot below shows its results on the bundled synthetic data; you can also <a href="https://github.com/patrickiben/ecrf-pipeline-apps#run-locally">run it locally</a>.</p></noscript>
+      <noscript><p class="error">Enable JavaScript to run this app. The screenshot below illustrates the earlier synthetic-data workflow.</p></noscript>
       <figure class="preview">
-        <img src="../img/phi_results.png" width="1440" height="960" alt="De-identification review assist results: a table of flagged spans such as invented phone numbers, names, a ZIP code and initials, each with its entity type, offsets, redaction probability and action, above the sanitized domain rows.">
-        <figcaption>Screenshot of this app's results on the bundled synthetic data. To use your own files, <a href="https://github.com/patrickiben/ecrf-pipeline-apps#run-locally">run it locally</a>.</figcaption>
+        <img src="../img/phi_results.png" width="1440" height="960" alt="Earlier synthetic de-identification example with flagged text spans.">
+        <figcaption>Earlier synthetic example. Once the app starts, upload your CSV files or choose its optional example, map your columns, then run and download the results.</figcaption>
       </figure>
     </div>
   </section>
@@ -63,6 +66,7 @@
     "sample_data/pr.csv",
     "sample_data/vs.csv"
   ],
+  "maxUploadMB": 10,
   "stlite": "https://cdn.jsdelivr.net/npm/@stlite/browser@1.12.0/build/stlite.js",
   "pyodide": "https://cdn.jsdelivr.net/pyodide/v314.0.3/full/pyodide.mjs",
   "requirements": [

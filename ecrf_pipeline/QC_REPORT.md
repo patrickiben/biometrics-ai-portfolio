@@ -1,6 +1,29 @@
 # QC report: the four eCRF pipeline apps
 
-## Current status (2026-10-25)
+## Integrated browser workspaces (2026-11-03)
+
+The maintained apps now accept user CSVs in the toolkit. This pass used fictional uploaded data with nonstandard column names, known numerical answers, malformed inputs and hostile text. No client data were used. The earlier synthetic/native evaluation below remains a historical record; it is not a performance estimate for a new study.
+
+| Check | Result |
+|---|---|
+| Native AppTest harness, pinned browser dependencies and current stand-in dependencies | 265 passed per stack, zero failed; five native trained-model checks explicitly skipped because their artifacts were not supplied |
+| Native AppTest harness with optional SAS/scientific packages | 268 passed, zero failed; the same five explicit trained-model skips |
+| Registered within-sibling evaluation | 45 passed on each of the three stacks; original plan, inputs and scorer fingerprint unchanged |
+| New browser-adapter contracts | 11 coding/redaction tests and 14 screening/monitoring tests passed |
+| Actual stlite/Pyodide browser workflows | Four of four passed; 14 ZIP downloads verified; 20 screenshots captured; zero page exceptions or unexpected console errors |
+| Static documentation | 18 rendered desktop/mobile/theme and redirect checks passed |
+| Publication boundaries | 14 adversarial tests passed, including artifact provenance, source drift, executable/link rejection, unchanged legacy runtime bytes and exact source archives |
+| Toolkit package and generated files | Zero package issues; 74 generated files/regions current; all 12 app/data copies, four launch pages and three pinned wheels consistent |
+
+The browser suite uploads fictional study files through real file controls. It checks custom column and dictionary mappings, inactive-term exclusion, unreviewed coding candidates, leading-zero identifiers, formula-safe CSVs and lossless JSON, separate cleaned/sensitive redaction downloads, overlapping custom redaction phrases, strict QTc boundaries and changed criteria, complete paired visits, known cohort/lab distances, participant denominators, malformed replacement files, reset and stale-result invalidation. Results and exact ZIP bytes survive theme switches; downloads remain reachable at a 390-pixel viewport.
+
+Network observation allowed only the site, pinned runtime CDN and local data/blob URLs; there were no study upload requests or transmitted fixture markers. The pinned stlite release probes its non-routable `stlite.invalid` media placeholder before resolving worker downloads. The policy blocked those probes; 51 specifically classified diagnostics were retained in the evidence, and every tested download succeeded. Other console/network failures fail the suite. Browser execution was tested in Chromium; Safari, Firefox and physical mobile devices were not tested in this pass.
+
+Scientific fixes include one current observation per participant in between-lab comparisons, exclusion of undersized labs from the pooled comparator, and duplicate-event checks across uploaded files. The coding and redaction native scoring prefixes remain byte-identical to the imported source. The browser adapters do not automatically approve codes or establish complete anonymization. Risk indices remain rule summaries, and drift retains its declared quantile approximation and normalization.
+
+Reproduce from the toolkit root with the `ecrf-qc` workflow and `ecrf_pipeline/tests/browser_qc.cjs`; both publication routes require the new native and actual-browser checks before deployment. The source archive is checked member by member. When the existing R release is reused, the build verifies the exact successful release artifact and proves its runtime files remain unchanged. The local browser report is an execution record, not validation for a particular client's study.
+
+## Historical native/demo record (2026-10-25)
 
 All four apps pass the end-to-end harness, the in-browser build in `docs/app/` is in step with the apps, and the
 four in-browser pages run their bundled synthetic data in headless Chrome. Everything below ran on synthetic data

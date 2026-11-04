@@ -1,8 +1,15 @@
 name: Portfolio package checks
-on: [push, pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
+  ecrf-qc:
+    uses: ./.github/workflows/ecrf-qc.yml
+
   toolkit-desktop:
     strategy:
       fail-fast: false
@@ -343,22 +350,43 @@ jobs:
             ${{ runner.temp }}/vaccine-browser-qc
           retention-days: 7
   vaccine-webassembly:
+    needs: ecrf-qc
+    permissions:
+      contents: read
+      actions: read
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+      - name: Classify exact public/eCRF overlay eligibility
+        id: scope
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python .github/pages/refresh_public_pages.py --classify
+      - name: Reuse the exact successful R release with the reviewed overlay
+        if: steps.scope.outputs.reuse == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python .github/pages/refresh_public_pages.py --download "${RUNNER_TEMP}/base-pages.zip"
+          python .github/pages/refresh_public_pages.py --archive "${RUNNER_TEMP}/base-pages.zip" --site "${RUNNER_TEMP}/vaccine-site"
       - uses: r-lib/actions/setup-r@v2
+        if: steps.scope.outputs.reuse != 'true'
         with:
           r-version: '4.6.0'
           use-public-rspm: true
       - name: Install pinned exporter and browser-app dependencies
+        if: steps.scope.outputs.reuse != 'true'
         shell: Rscript {0}
         run: |
           source(".github/pages/install_browser_dependencies.R")
       - name: Check vaccine Shiny state transitions and shared-source publication boundaries
+        if: steps.scope.outputs.reuse != 'true'
         run: |
           Rscript vaccine/tests/test_shiny.R
           Rscript tests/test_analysis_renderer_dependencies.R
@@ -369,6 +397,7 @@ jobs:
           Rscript browser_modules/tests/test-operational.R
           Rscript browser_modules/tests/methods.R
       - name: Export the actual browser vaccine application
+        if: steps.scope.outputs.reuse != 'true'
         run: Rscript .github/pages/build_site.R "${RUNNER_TEMP}/vaccine-site"
       - uses: actions/setup-node@v7
         with:
@@ -380,6 +409,7 @@ jobs:
       - name: Install browser QC driver
         run: npm ci --prefix tools/browser-qc --no-audit --no-fund
       - name: Execute uploaded vaccine data in WebAssembly and verify complete downloads
+        if: steps.scope.outputs.reuse != 'true'
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
@@ -387,13 +417,16 @@ jobs:
           VACCINE_CAPACITY_QC: '1'
         run: node vaccine/tests/browser_app_qc.cjs "${RUNNER_TEMP}/vaccine-site"
       - name: Install operational-app browser driver
+        if: steps.scope.outputs.reuse != 'true'
         run: npm ci --prefix .github/pages/smoke --no-audit --no-fund
       - name: Verify bounded launch watchdog policies
+        if: steps.scope.outputs.reuse != 'true'
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
           QA_OUTPUT_DIR: ${{ runner.temp }}/all-browser-qc/launch-policy
         run: node .github/pages/smoke/launch-policy.test.mjs "${RUNNER_TEMP}/vaccine-site"
       - name: Execute complete browser analysis and operational workflows
+        if: steps.scope.outputs.reuse != 'true'
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
@@ -406,6 +439,16 @@ jobs:
           node browser_modules/tests/operational-browser.mjs "${RUNNER_TEMP}/vaccine-site" "${RUNNER_TEMP}/all-browser-qc/operational"
           node --test browser_modules/register/tests/core.test.mjs
           node browser_modules/tests/reference-browser.cjs "${RUNNER_TEMP}/vaccine-site" "${RUNNER_TEMP}/all-browser-qc" full
+      - name: Verify eCRF workflows, navigation and complete current source archives
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/all-browser-qc/ecrf
+        run: |
+          python ecrf_pipeline/tools/sync_browser_apps.py --check
+          python .github/pages/refresh_public_pages.py --verify-site "${RUNNER_TEMP}/vaccine-site"
+          node ecrf_pipeline/tests/browser_qc.cjs "${RUNNER_TEMP}/vaccine-site"
+          node browser_modules/tests/navigation-browser.cjs "${RUNNER_TEMP}/vaccine-site" "${RUNNER_TEMP}/all-browser-qc/navigation"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

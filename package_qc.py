@@ -143,6 +143,10 @@ def check_target(src_file, url):
 
 # 1. links ----------------------------------------------------------------------------------
 for f in page_files:
+    # This is rendered at docs/app/*.html, where the same links are checked below.
+    # sync_browser_apps.py --check also verifies each rendered page byte for byte.
+    if rel(f) == 'ecrf_pipeline/tools/browser_app_template.html':
+        continue
     for m in HREF.finditer(strip_blocks(read(f))):
         check_target(f, m.group(1))
 for f in md_files:
@@ -219,12 +223,19 @@ for f in page_files + md_files:
             add("Terminology: 'subject' (use participant)", f'{rel(f)}:{i}')
 
 # 7. retired framing ------------------------------------------------------------------------
+HISTORICAL_ECRF_ATTRIBUTION = {
+    'ecrf_pipeline/docs/case-study.html', 'ecrf_pipeline/docs/evaluation.html',
+    'ecrf_pipeline/docs/EVALUATION.md', 'ecrf_pipeline/docs/FEASIBILITY.md',
+}
 for f in page_files + md_files + walk('.qmd'):
     if os.path.basename(f) == 'package_qc.py':
         continue
     t = strip_blocks(read(f)) if f.endswith('.html') else read(f)
     for i, line in enumerate(t.splitlines(), 1):
-        m = RETIRED_FRAMING.search(line)
+        # Preserve authentic historical tool/commit attribution. No employer phrase or
+        # obsolete product claim is exempted, even on these evaluation pages.
+        scanned = re.sub(r'\bClaude(?: Code)?\b', 'historical coding tool', line) if rel(f) in HISTORICAL_ECRF_ATTRIBUTION else line
+        m = RETIRED_FRAMING.search(scanned)
         if m:
             add('Retired framing or employer phrase', f'{rel(f)}:{i}: "{m.group(0)}"')
 

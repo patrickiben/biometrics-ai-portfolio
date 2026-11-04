@@ -2,7 +2,7 @@
 
 This folder is **one synthetic cut** that the Coding QC assist, the De-identification review assist and
 Participant risk screening all read without interfering (Central statistical monitoring can read it too, but has
-its own longitudinal demo in [`../anomaly_data/`](../anomaly_data/)). It starts from the worked examples in the
+its own longitudinal demo in [`../anomaly_data/`](../anomaly_data/README.md)). It starts from the worked examples in the
 [case study](https://patrickiben.github.io/ecrf-pipeline-apps/case-study.html) (protocol PROTO-2026-X89) and then adds a larger set of participants, so you
 can see how the apps behave on more varied data than a few hand-picked rows. Point any app's **Cut folder path**
 at this directory and Execute: `meddra_demo.csv` is found automatically as the coding dictionary, and the other
@@ -66,5 +66,5 @@ alongside its `AEOUTCOME=DIED`; multi-system `SUBJ-9001` is CRITICAL; severe-AE 
 `SUBJ-9013` cites an ALT breach; ECG-driven `SUBJ-9014` cites QTc. See [USER_GUIDE.md](../USER_GUIDE.md) section 5.
 
 > Every domain here carries `AVISIT`/`VISITNUM`, so **Central statistical monitoring** can read this folder
-> directly, or you can mix it with the longitudinal demo in [`../anomaly_data/`](../anomaly_data/) (one row per
+> directly, or you can mix it with the longitudinal demo in [`../anomaly_data/`](../anomaly_data/README.md) (one row per
 > participant per visit, with injected drift) in a single cut.

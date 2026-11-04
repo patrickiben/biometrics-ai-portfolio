@@ -7,11 +7,7 @@
 <meta name="robots" content="noindex">
 <meta name="color-scheme" content="light dark">
 <link rel="icon" href="data:,">
-<!-- GitHub Pages serves this page, with status 404, for any missing address under the site, at any depth
-     (/ecrf-pipeline-apps/app/missing.html as well as /ecrf-pipeline-apps/missing.html). A relative link would then
-     point to the wrong folder, so every link here is site-absolute under /ecrf-pipeline-apps/, the project site's
-     base path. Self-contained like the other pages: inline CSS only, no scripts (QC checks D1 to D3; D3 resolves
-     /ecrf-pipeline-apps/ to docs/). -->
+<!-- Absolute toolkit paths keep this fallback usable at any missing URL depth. -->
 <style>
 :root {
   --bg:#F6F7F8; --surface:#FFFFFF; --text:#18212B; --muted:#4F5B67; --line:#D5DBE1; --accent:#0757BF;
@@ -36,25 +32,30 @@ li { margin:0 0 6px; }
 li:last-child { margin-bottom:0; }
 footer { margin:32px 0 0; padding-top:16px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
 </style>
+<link rel="stylesheet" href="/biometrics-ai-portfolio/assets/theme/tokens.css">
+<link rel="stylesheet" href="/biometrics-ai-portfolio/ecrf_pipeline/docs/theme.css">
+<script src="/biometrics-ai-portfolio/ecrf_pipeline/docs/theme.js"></script>
+
 </head>
 <body>
 <main class="wrap">
+  <nav class="toolkit-nav" aria-label="Toolkit navigation"><a href="/biometrics-ai-portfolio/TOOLKIT_SETUP.html">Trial Biostatistics Toolkit</a><a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/index.html">eCRF workspace</a><button class="theme-toggle" type="button" aria-label="Switch color mode">Light / dark</button></nav>
   <p class="kicker">eCRF pipeline apps</p>
   <h1>Page not found</h1>
   <p>Nothing is published at this address. The link may have a typo, or the page may have moved.</p>
-  <p><a href="/ecrf-pipeline-apps/">Go to the eCRF pipeline apps home page</a></p>
+  <p><a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/">Go to the eCRF pipeline apps home page</a></p>
   <h2>Pages on this site</h2>
   <ul>
-    <li><a href="/ecrf-pipeline-apps/evaluation.html">Evaluation case study</a></li>
-    <li><a href="/ecrf-pipeline-apps/case-study.html">Case study: four-tier coding and de-identification, traced</a></li>
-    <li>In-browser apps, on synthetic data only:
-      <a href="/ecrf-pipeline-apps/app/meddra.html">Coding QC assist</a>,
-      <a href="/ecrf-pipeline-apps/app/phi.html">De-identification review assist</a>,
-      <a href="/ecrf-pipeline-apps/app/risk.html">Participant risk screening</a> and
-      <a href="/ecrf-pipeline-apps/app/anomaly.html">Central statistical monitoring</a></li>
+    <li><a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/evaluation.html">Evaluation case study</a></li>
+    <li><a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/case-study.html">Case study: four-tier coding and de-identification, traced</a></li>
+    <li>Browser tools with guided CSV intake:
+      <a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/app/meddra.html">Coding QC assist</a>,
+      <a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/app/phi.html">De-identification review assist</a>,
+      <a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/app/risk.html">Participant risk screening</a> and
+      <a href="/biometrics-ai-portfolio/ecrf_pipeline/docs/app/anomaly.html">Central statistical monitoring</a></li>
   </ul>
   <footer>
-    <p>Patrick Iben &middot; Apache-2.0 &middot; <a href="https://github.com/patrickiben/ecrf-pipeline-apps">Source on GitHub</a></p>
+    <p>Patrick Iben &middot; Apache-2.0 &middot; <a href="https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/ecrf_pipeline">Source on GitHub</a></p>
   </footer>
 </main>
 </body>

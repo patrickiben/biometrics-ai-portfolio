@@ -7,7 +7,7 @@ can be measured. Everything here is invented for demonstration: no real patient,
 ## Why this is its own folder (not merged into `sample_data/`)
 
 Drift needs repeated measurements of the same columns over time, with known signals to find. The shared
-[`../sample_data/`](../sample_data/) cut is built for the coding, de-identification and risk apps: it carries visit
+[`../sample_data/`](../sample_data/README.md) cut is built for the coding, de-identification and risk apps: it carries visit
 labels, but each participant has only a few lab and vital rows and nothing is injected to drift. This app's demo
 therefore carries its own longitudinal file with an injected drift signal, a lab-specific shift and a few
 per-participant outliers. It adds to the shared cut rather than competing with it: the two folders answer

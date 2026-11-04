@@ -828,14 +828,303 @@ def _contract_error(R):
     return None
 
 # ============================ UI ============================
+# Browser intake/export controls sit below the registered scientific scorer boundary.
+BROWSER_REQUESTED = sys.platform == "emscripten" and os.environ.get("ECRF_BROWSER") == "1"
+
+# ======================== BROWSER WORKSPACE ========================
+# Kept in each independent app: no cross-program coupling or server upload path.
+_BROWSER_MAX_FILE = 10 * 1024 * 1024
+_BROWSER_MAX_TOTAL = 20 * 1024 * 1024
+_BROWSER_MAX_COLUMNS = 200
+_BROWSER_MAX_CELL = 20000
+
+def _browser_csv(name, data, max_rows=50000):
+    """Strict, lossless string intake. No paths, dtype inference or silent row repair."""
+    import csv, io
+    if not isinstance(name, str) or not name.lower().endswith('.csv') or len(name) > 160:
+        raise ValueError('Use a CSV filename of at most 160 characters.')
+    if name in ('.csv', '..csv') or any(c in name for c in '/\\:') or any(ord(c) < 32 for c in name):
+        raise ValueError('CSV filenames must not contain paths or control characters.')
+    if not isinstance(data, bytes) or not data or len(data) > _BROWSER_MAX_FILE:
+        raise ValueError('Each CSV must be nonempty and no larger than 10 MiB.')
+    try: text = data.decode('utf-8-sig', errors='strict')
+    except UnicodeDecodeError as exc: raise ValueError('Save the CSV as UTF-8; another encoding was detected.') from exc
+    if '\x00' in text: raise ValueError('CSV contains a NUL byte.')
+    csv.field_size_limit(_BROWSER_MAX_CELL)
+    try:
+        reader = csv.reader(io.StringIO(text, newline=''), strict=True)
+        header = next(reader)
+        if not header or len(header) > _BROWSER_MAX_COLUMNS or any(not c.strip() for c in header):
+            raise ValueError('CSV needs 1–200 nonempty column names.')
+        if len(set(c.casefold().strip() for c in header)) != len(header):
+            raise ValueError('CSV column names must be unique (ignoring case and surrounding spaces).')
+        if any(any(ord(v) < 32 for v in c) for c in header):
+            raise ValueError('Column names must not contain control characters.')
+        rows = []
+        for row in reader:
+            if not row: continue
+            if len(row) != len(header): raise ValueError('A CSV row has a different number of fields from its header.')
+            rows.append(row)
+            if len(rows) > max_rows: raise ValueError(f'CSV exceeds the {max_rows:,}-row limit for this input.')
+    except (csv.Error, StopIteration) as exc:
+        raise ValueError('Malformed or empty CSV; check quoting and field lengths (maximum 20,000 characters).') from exc
+    if not rows: raise ValueError('CSV needs at least one data row.')
+    return pd.DataFrame(rows, columns=header, dtype=str)
+
+def _browser_uploads(uploads):
+    uploads = list(uploads or [])
+    if len(uploads) > 10: raise ValueError('Use at most 10 study CSV files per workspace.')
+    items = [(f.name, bytes(f.getvalue())) for f in uploads]
+    if sum(len(data) for _, data in items) > _BROWSER_MAX_TOTAL:
+        raise ValueError('The study CSV files together must be no larger than 20 MiB.')
+    if len({name.casefold() for name, _ in items}) != len(items):
+        raise ValueError('Each uploaded study filename must be unique.')
+    return items
+
+def _browser_export_csv(df):
+    """Prevent spreadsheet formula execution; numerical values retain their values."""
+    def safe(value):
+        if not isinstance(value, str): return value
+        probe = value.lstrip(' \t\r\n\ufeff')
+        numeric = re.fullmatch(r'[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?', probe)
+        return "'" + value if probe[:1] in ('=', '+', '-', '@') and not numeric else value
+    escaped = df.map(safe)
+    escaped.columns = [safe(column) for column in df.columns]
+    return escaped.to_csv(index=False).encode('utf-8')
+
+def _browser_zip(files):
+    import io, zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, 'w', zipfile.ZIP_DEFLATED) as z:
+        for name, data in files.items():
+            if name.startswith('/') or '..' in name.split('/') or '\\' in name:
+                raise ValueError('Invalid export path.')
+            z.writestr(name, data)
+    return buf.getvalue()
+
+def _browser_json(value):
+    return (json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False) + '\n').encode('utf-8')
+
+def _browser_clear():
+    import shutil
+    for key in ('bw_result', 'bw_fingerprint'):
+        st.session_state.pop(key, None)
+    tmp = st.session_state.get('bw_tmp')
+    if tmp:
+        for name in os.listdir(tmp.name):
+            p = os.path.join(tmp.name, name)
+            if os.path.isdir(p): shutil.rmtree(p)
+            else: os.remove(p)
+
+def _browser_reset(example=False):
+    epoch = st.session_state.get('bw_epoch', 0) + 1
+    tmp = st.session_state.get('bw_tmp')
+    if tmp: tmp.cleanup()
+    for key in list(st.session_state):
+        if key.startswith('bw_'): del st.session_state[key]
+    st.session_state['bw_epoch'] = epoch
+    st.session_state['bw_example'] = example
+
+def _browser_user_upload():
+    st.session_state['bw_example'] = False
+    _browser_clear()
+
+def _browser_key(name):
+    return f'bw_{st.session_state.get("bw_epoch", 0)}_{name}'
+
+def _browser_select(label, columns, name, synonyms=(), optional=False):
+    options = (['(none)'] if optional else []) + list(columns)
+    norm = {re.sub(r'[^a-z0-9]', '', c.casefold()): c for c in columns}
+    guessed = next((norm[re.sub(r'[^a-z0-9]', '', s.casefold())] for s in synonyms
+                    if re.sub(r'[^a-z0-9]', '', s.casefold()) in norm), None)
+    selected = st.selectbox(label, options, index=options.index(guessed) if guessed else 0,
+                            key=_browser_key(name), on_change=_browser_clear)
+    return None if selected == '(none)' else selected
+
+def _browser_start(title, description):
+    st.title(title)
+    st.caption(description)
+    st.caption('Files are processed in this browser tab. Save downloads before closing or reloading. '
+               'First use downloads app software; your study files are not sent to a server by this app.')
+    a, b = st.columns(2)
+    a.button('Load synthetic example', on_click=_browser_reset, args=(True,), key='bw_example_button')
+    b.button('Reset workspace', on_click=_browser_reset, args=(False,), key='bw_reset_button')
+    if st.session_state.get('bw_example'):
+        st.info('Synthetic example selected. Uploading a file switches to your own study inputs.')
+    return st.file_uploader('Upload study CSV files', type=['csv'], accept_multiple_files=True,
+                            key=_browser_key('data'), on_change=_browser_user_upload,
+                            help='UTF-8 CSV; maximum 10 files, 10 MiB per file, 20 MiB total, 50,000 rows per file.')
+
+def _browser_input_meta(items):
+    return [{'name': name, 'bytes': len(data), 'sha256': hashlib.sha256(data).hexdigest()} for name, data in items]
+
+def _browser_example_bytes(name):
+    p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample_data', name)
+    with open(p, 'rb') as f: return f.read()
+
+def _browser_publish(result, fingerprint):
+    # Only generated, controlled filenames are written; uploads never name a filesystem path.
+    if 'bw_tmp' not in st.session_state:
+        st.session_state['bw_tmp'] = tempfile.TemporaryDirectory(prefix='ecrf_browser_', ignore_cleanup_errors=True)
+    for name, data in result['files'].items():
+        p = os.path.join(st.session_state['bw_tmp'].name, name)
+        os.makedirs(os.path.dirname(p), exist_ok=True)
+        with open(p, 'wb') as f: f.write(data)
+    st.session_state['bw_result'] = result
+    st.session_state['bw_fingerprint'] = fingerprint
+
+
+def _browser_dictionary(df, mapping, active_values='Y'):
+    if not mapping.get('llt_name') or not mapping.get('pt_name'):
+        raise ValueError('Select dictionary term and preferred-term columns.')
+    if any(c not in df.columns for c in mapping.values() if c):
+        raise ValueError('A mapped dictionary column is absent from the uploaded CSV.')
+    out = pd.DataFrame({target: df[col].copy() for target, col in mapping.items() if col and target != 'currency'})
+    if mapping.get('currency'):
+        active = {x.strip().casefold() for x in active_values.split(',') if x.strip()}
+        if not active: raise ValueError('Enter at least one active dictionary value.')
+        out = out.loc[df[mapping['currency']].str.strip().str.casefold().isin(active)]
+    if out.empty: raise ValueError('No active dictionary terms remain.')
+    for name in ('llt_name', 'pt_name'):
+        if out[name].str.strip().eq('').any(): raise ValueError('Every active dictionary row needs a term and preferred-term name.')
+        if out[name].str.len().gt(512).any(): raise ValueError('Dictionary term names must be no longer than 512 characters.')
+    for code, fields in [('pt_code', ['pt_name']), ('llt_code', ['llt_name', 'pt_name'])]:
+        if code in out:
+            nonblank = out[out[code].str.strip().ne('')]
+            if any(nonblank.groupby(code, dropna=False)[c].nunique().gt(1).any() for c in fields):
+                raise ValueError(f'Conflicting names or mappings for the same {code}; review the dictionary.')
+    return out.drop_duplicates().reset_index(drop=True)
+
+def _browser_coding_result(frames, dictionary, mappings, gate, config, input_meta, dictionary_meta):
+    if REAL_T2 or REAL_T3 or REAL_T4: raise ValueError('Browser coding uses the documented lexical algorithm only.')
+    records = []
+    for name, df in frames:
+        m = mappings[name]
+        for i, row in df.iterrows():
+            term = row[m['verbatim']]
+            if not term.strip(): continue
+            if len(term) > 2000: raise ValueError('Coding verbatims must be no longer than 2,000 characters.')
+            records.append(dict(SOURCE_FILE=name, SOURCE_ROW=int(i)+1,
+                                STUDY_ID=row[m['study']] if m['study'] else '',
+                                PARTICIPANT_ID=row[m['participant']] if m['participant'] else '',
+                                EVENT_KEY=row[m['key']] if m['key'] else '', VERBATIM=term))
+    if not records: raise ValueError('No nonblank verbatims exist in the mapped fields.')
+    if len(records) > 10000 or len({r['VERBATIM'] for r in records}) > 1000:
+        raise ValueError('Run at most 10,000 nonblank rows and 1,000 distinct verbatims per browser batch.')
+    V, idx = t2_index(dictionary)
+    memo = {}; rows = []
+    for source in records:
+        term = source['VERBATIM']
+        if term not in memo:
+            candidates = t2_coding(term, dictionary, V, idx)
+            candidates, _, _ = t4_coding(candidates, term, gate, False, None)
+            memo[term] = candidates
+        for _, c in memo[term].iterrows():
+            rows.append(dict(**source, CANDIDATE_RANK=int(c['rank']), TERM=c['LLT'], TERM_CODE=c['llt_code'],
+                             PREFERRED_TERM=c['PT'], PREFERRED_TERM_CODE=c['PT_CODE'], HLT=c['HLT'],
+                             HLGT=c['HLGT'], SOC=c['SOC'], LEXICAL_COSINE=float(c['cosine']),
+                             REVIEW_SCORE=float(c['S']), MEETS_REVIEW_THRESHOLD='Y' if c['S'] >= gate else 'N',
+                             REVIEW_STATUS='UNREVIEWED_CANDIDATE'))
+    candidates = pd.DataFrame(rows)
+    audit = pd.DataFrame([dict(program='coding_qc_browser', runtime='browser', algorithm='lexical hashing + existing weighted score',
+        input_files=json.dumps(input_meta, ensure_ascii=False), dictionary=json.dumps(dictionary_meta, ensure_ascii=False),
+        dictionary_name_version=config['dictionary_name_version'], dictionary_rows=len(dictionary),
+        active_filter=config['active_values'] if config['dictionary_mapping'].get('currency') else 'not supplied',
+        mapping=json.dumps(mappings, ensure_ascii=False), review_threshold=gate, verbatim_rows=len(records),
+        candidate_rows=len(rows), approved_rows=0, timestamp=pd.Timestamp.now().isoformat(),
+        output_policy='Unreviewed suggestions; no SDTM write-back; CSV spreadsheet formulas escaped; JSON is lossless')])
+    files={'coding_candidates.csv':_browser_export_csv(candidates), 'audit_log.csv':_browser_export_csv(audit),
+           'coding_candidates.json':_browser_json(json.loads(candidates.to_json(orient='records', force_ascii=False))),
+           'study_setup.json':_browser_json(config), 'selected_input_rows.json':_browser_json(records),
+           'mapped_dictionary.json':_browser_json(dictionary.to_dict(orient='records')),
+           'README.txt':('Coding suggestions for human review. Every candidate is unreviewed. Lexical similarity and the weighted score '
+                         'are not probabilities or clinical interpretation; negation and semantic equivalence are not resolved. '
+                         'No licensed dictionary is bundled. Uploaded dictionary provenance and selected fields are recorded in the audit. '
+                         'CSV text beginning with spreadsheet formula characters is escaped; JSON retains original text.\n').encode()}
+    return {'files':files, 'table':candidates, 'audit':audit, 'zip':_browser_zip(files)}
+
+def _browser_ui():
+    uploads = _browser_start('Coding QC assist', 'Rank candidate terms from your dictionary using lexical similarity; every suggestion needs human review.')
+    dictionary_upload = st.file_uploader('Upload dictionary CSV', type=['csv'], key=_browser_key('dictionary'),
+        on_change=_browser_user_upload, help='Your terminology export: up to 10 MiB / 100,000 rows. Map its columns below.')
+    try:
+        items = _browser_uploads(uploads)
+        example = st.session_state.get('bw_example', False)
+        if example:
+            items = [('ae.csv', _browser_example_bytes('ae.csv'))]
+            dictionary_item = ('meddra_demo.csv', _browser_example_bytes('meddra_demo.csv'))
+        else:
+            dictionary_item = (dictionary_upload.name, bytes(dictionary_upload.getvalue())) if dictionary_upload else None
+        frames = [(name, _browser_csv(name, data)) for name, data in items]
+        dictionary_raw = _browser_csv(*dictionary_item, max_rows=100000) if dictionary_item else None
+    except (ValueError, OSError) as exc:
+        _browser_clear();st.error(str(exc));return
+    if not frames or dictionary_raw is None:
+        _browser_clear();st.info('Upload study CSVs and a dictionary CSV to start, or explicitly load the synthetic example. No example dictionary is used for your uploads.');return
+    st.subheader('Map study fields')
+    mappings={}
+    for n,(name,df) in enumerate(frames):
+        with st.expander(f'{name} · {len(df):,} rows', expanded=True):
+            mappings[name]={
+                'verbatim':_browser_select('Verbatim column',df.columns,f'verbatim_{n}',AETERM_SYNONYMS),
+                'study':_browser_select('Study identifier (optional)',df.columns,f'study_{n}',('STUDYID','study'),True),
+                'participant':_browser_select('Participant identifier (optional)',df.columns,f'participant_{n}',('USUBJID','participant_id'),True),
+                'key':_browser_select('Event key (optional)',df.columns,f'event_{n}',('AESEQ','ID'),True)}
+            st.caption('Source filename and row number always qualify the selected identifiers. Only these mapped fields enter the results package.')
+    st.subheader('Map your dictionary')
+    dictionary_mapping={}
+    labels=[('llt_name','Dictionary term',('llt_name','llt','term','lowest_level_term'),False),
+            ('pt_name','Preferred-term name',('pt_name','pt','preferred_term'),False),
+            ('llt_code','Term code (optional)',('llt_code','lltcd'),True),
+            ('pt_code','Preferred-term code (optional)',('pt_code','ptcd'),True),
+            ('hlt_name','High-level term (optional)',('hlt_name','hlt'),True),
+            ('hlgt_name','High-level group (optional)',('hlgt_name','hlgt'),True),
+            ('soc_name','System organ class (optional)',('soc_name','soc'),True),
+            ('currency','Active/currency column (optional)',('currency','active','curr'),True)]
+    for key,label,synonyms,optional in labels:
+        dictionary_mapping[key]=_browser_select(label,dictionary_raw.columns,'dict_'+key,synonyms,optional)
+    active_values=st.text_input('Active values (comma-separated)',value='Y',key=_browser_key('active_values'),on_change=_browser_clear,
+        disabled=not bool(dictionary_mapping['currency']))
+    version=st.text_input('Dictionary name/version (optional)',max_chars=200,key=_browser_key('dictionary_version'),on_change=_browser_clear)
+    gate=st.slider('Review-score threshold',0.70,0.98,DEF_CODE_GATE,0.01,key=_browser_key('threshold'),on_change=_browser_clear,
+        help='Highlights candidate scores; never approves or writes a code back to your data.')
+    try: dictionary=_browser_dictionary(dictionary_raw,dictionary_mapping,active_values)
+    except ValueError as exc: _browser_clear();st.error(str(exc));return
+    st.caption(f'{len(dictionary):,} active dictionary rows. Scores use the existing lexical algorithm, not the native learned-model path. '
+               'The synthetic dictionary uses placeholder codes; your uploaded dictionary remains your supplied terminology.')
+    config={'module':'coding','dictionary_name_version':version,'dictionary_mapping':dictionary_mapping,
+            'active_values':active_values,'study_mapping':mappings,'review_threshold':gate,'example':bool(example)}
+    input_meta=_browser_input_meta(items);dictionary_meta=_browser_input_meta([dictionary_item])[0]
+    fingerprint=hashlib.sha256(_browser_json([config,input_meta,dictionary_meta])).hexdigest()
+    if st.session_state.get('bw_fingerprint') not in (None,fingerprint):_browser_clear()
+    if st.button('Run coding suggestions',type='primary',key=_browser_key('run')):
+        _browser_clear()
+        try:
+            with st.spinner('Computing lexical candidates from the mapped inputs…'):
+                result=_browser_coding_result(frames,dictionary,mappings,gate,config,input_meta,dictionary_meta)
+            _browser_publish(result,fingerprint)
+        except (ValueError,MemoryError) as exc:st.error(str(exc) or 'This batch exceeds available browser memory; use a smaller batch.');return
+    result=st.session_state.get('bw_result')
+    if result:
+        st.subheader('Unreviewed coding candidates');st.dataframe(result['table'],width='stretch')
+        st.caption('No candidate is approved. Save the complete package for human review; changing inputs or settings clears these results.')
+        st.download_button('Download coding candidates CSV',result['files']['coding_candidates.csv'],'coding_candidates.csv','text/csv',on_click='ignore')
+        st.download_button('Download audit CSV',result['files']['audit_log.csv'],'audit_log.csv','text/csv',on_click='ignore')
+        st.download_button('Download complete coding package',result['zip'],'coding-review-package.zip','application/zip',on_click='ignore')
+
+
+# ========================= UI EXECUTION =========================
 # Layout order is deliberate: gather WHERE the data is (1), set the operating
 # point + outputs (2), LOAD so the pre-flight panel can show what was actually
 # read, then the verbatim selector (3) populated FROM the load, then the banner,
 # then the pre-flight CONTRACT panel, then Run. The operator confirms the input
 # contract BEFORE any compute, so a mis-pointed folder or a wrong verbatim column
 # is caught on screen, not after a silent wrong answer.
-st.set_page_config(page_title="Coding QC assist" + (": in-browser demo" if IN_BROWSER else ""), layout="wide")
+st.set_page_config(page_title="Coding QC assist" + (": browser workspace" if BROWSER_REQUESTED else ": in-browser demo" if IN_BROWSER else ""), layout="wide")
 HOSTED = _hosted()   # after set_page_config: no Streamlit call may precede it
+if BROWSER_REQUESTED and not HOSTED:
+    _browser_ui()
+    st.stop()
 # Hosted: an uncaught exception shows a generic message, not a traceback with server
 # paths (a crafted widget value can raise one). Process-wide, like the switch itself.
 if HOSTED: st.set_option("client.showErrorDetails", "none")

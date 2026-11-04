@@ -58,7 +58,10 @@
 #   real numeric-outlier path:         pip install scikit-learn     (Isolation Forest)
 #   real drift path (flips banner):    pip install POT scipy
 
-import json, os, re, sys, tempfile, time
+import csv, hashlib, io, json, math, os, re, sys, tempfile, time, zipfile
+from html import escape
+
+BROWSER_ENABLED = sys.platform == "emscripten" and os.environ.get("ECRF_BROWSER") == "1"
 import numpy as np, pandas as pd, streamlit as st
 
 # --------------------------------------------------------------------------- #
@@ -69,7 +72,7 @@ import numpy as np, pandas as pd, streamlit as st
 def _have(m):
     try: __import__(m); return True
     except Exception: return False
-HAVE = {m: _have(m) for m in ("ot","scipy","sklearn","pyreadstat")}
+HAVE = {m: (False if BROWSER_ENABLED else _have(m)) for m in ("ot","scipy","sklearn","pyreadstat")}
 REAL_OT   = HAVE["ot"] and HAVE["scipy"]     # Sinkhorn needs BOTH the library and scipy (for ot.dist)
 REAL_IF   = HAVE["sklearn"]                  # Isolation Forest numeric-outlier corroborator
 # The text tier's REAL path (Needle3/Laya retrieval-isolation) is NOT wired in this build, so it is
@@ -309,12 +312,12 @@ def _change_matrix(view, meta):
             base[c][s]=b[c].iloc[0]; cur[c][s]=cu[c].iloc[0]
     return subjects, base, cur, tflag
 
-def _if_verdict(subjects, base, cur, numcols):
+def _if_verdict(subjects, base, cur, numcols, enabled=None):
     """REAL Isolation Forest corroborator (scikit-learn). Fits IF on the participant x column change matrix
     and returns {participant: 'confirms'|'does not confirm'} using an ADAPTIVE rule -- a participant is confirmed
     when its anomaly score beats the cohort median, so there is no magic cutoff to tune per dataset.
     Returns {} when sklearn is absent (the [SI] path simply has no IF verdict)."""
-    if not REAL_IF: return {}
+    if not (REAL_IF if enabled is None else enabled): return {}
     from sklearn.ensemble import IsolationForest
     X=np.array([[cur[c][s]-base[c][s] for c in numcols] for s in subjects],float)
     X[np.isnan(X)]=0.0   # no-change / unknown -> 0; IF cannot take NaN directly
@@ -323,7 +326,7 @@ def _if_verdict(subjects, base, cur, numcols):
     med=float(np.median(sc))
     return {s:("confirms" if v>med else "does not confirm") for s,v in zip(subjects,sc)}
 
-def tier2_signals(view, meta, thr):
+def tier2_signals(view, meta, thr, use_if=None):
     """Per participant x numeric column: the robust z of each participant's deviation against the cohort's own
     distribution for that column -- CHANGE-FROM-BASELINE when the participants carrying that column have a time
     axis (a uniform population shift moves everyone together -> no one is an outlier in the change
@@ -335,7 +338,7 @@ def tier2_signals(view, meta, thr):
     numcols=meta["numcols"]
     if not numcols or len(view)==0: return pd.DataFrame()
     subjects, base, cur, tflag = _change_matrix(view, meta)
-    verdict=_if_verdict(subjects, base, cur, numcols)   # {} on the [SI] path
+    verdict=_if_verdict(subjects, base, cur, numcols, enabled=use_if)   # {} on the [SI] path
 
     # Per column, pick the signal definition from the data itself: change-from-baseline when enough of the
     # participants carrying this column have a time axis; otherwise static deviation-from-cohort-median. This is
@@ -406,7 +409,7 @@ def _wasserstein_dist(x_ref,x_cur):
     fb=np.interp(q,np.linspace(0,1,len(x_cur)),np.sort(np.asarray(x_cur,float)))
     return float(np.mean(np.abs(fa-fb)))
 
-def _drift_rows(view, meta, thr, labcol=None):
+def _drift_rows(view, meta, thr, labcol=None, use_ot=None):
     """Transport distance + unitless ratio between the reference (earliest) and current (latest) windows,
     for every measurable column -- optionally restricted to one LAB group when `labcol` is given. Returns a
     list of row dicts; callers add their own grouping label."""
@@ -422,18 +425,18 @@ def _drift_rows(view, meta, thr, labcol=None):
         if len(ref)<3 or len(cur)<3: continue   # not enough data in a window to compare honestly
         iqr=float(np.subtract(*np.percentile(ref,[75,25]))) or float(np.std(ref)) or 1.0
         spread=1.349*iqr   # robust reference spread (IQR-based), so a few outliers don't distort the ratio
-        dist=_sinkhorn_dist(ref,cur,spread,thr["SINKHORN_REG_FRAC"]) if REAL_OT else _wasserstein_dist(ref,cur)
+        dist=_sinkhorn_dist(ref,cur,spread,thr["SINKHORN_REG_FRAC"]) if (REAL_OT if use_ot is None else use_ot) else _wasserstein_dist(ref,cur)
         rows.append(dict(column=c, n_ref=int(len(ref)), n_cur=int(len(cur)),
                          transport_distance=round(dist,4), drift_ratio=round(dist/spread,3)))
     return rows
 
-def tier3_drift(view, meta, thr):
+def tier3_drift(view, meta, thr, use_ot=None):
     """Cohort-wide drift: one row per measurable column (reference vs current window)."""
-    rows=_drift_rows(view, meta, thr)
+    rows=_drift_rows(view, meta, thr, use_ot=use_ot)
     for r in rows: r["lab"]="ALL"
     return pd.DataFrame(rows)
 
-def tier3_lab_drift(view, meta, thr):
+def tier3_lab_drift(view, meta, thr, use_ot=None):
     """Per-LAB drift: one row per LAB x measurable column. A site/lab assay change that cohort-wide drift
     dilutes to ~1/k strength shows up here as a single lab's ratio standing out from the others."""
     if not meta.get("labcol"): return pd.DataFrame()
@@ -441,7 +444,7 @@ def tier3_lab_drift(view, meta, thr):
     rows=[]
     for lab in sorted(view[lc].dropna().astype(str).unique()):
         sub=view.loc[view[lc].astype(str)==lab]
-        for r in _drift_rows(sub, meta, thr):
+        for r in _drift_rows(sub, meta, thr, use_ot=use_ot):
             r["lab"]=str(lab); rows.append(r)
     return pd.DataFrame(rows)
 
@@ -451,7 +454,7 @@ def _subject_current_values(view, meta, c):
     latest visit keeps the between-lab comparison on the same footing as per-lab temporal drift."""
     tcol=meta["timecol"]; lc=meta["labcol"]
     out={}
-    for s in view.index:
+    for s in dict.fromkeys(view.index):
         sub=view.loc[s]; sub=pd.DataFrame([sub]) if isinstance(sub,pd.Series) else sub
         lab=str(sub[lc].iloc[0]); v=sub[c]
         val=np.nan
@@ -463,7 +466,7 @@ def _subject_current_values(view, meta, c):
         out.setdefault(lab,[]).append(val)
     return {lab:np.asarray(vals,float) for lab,vals in out.items()}
 
-def tier3_lab_compare(view, meta, thr):
+def tier3_lab_compare(view, meta, thr, use_ot=None):
     """BETWEEN-lab/site comparison (complements per-lab temporal drift): for each numeric column and each LAB,
     the transport distance from that lab's current-window distribution to the POOLED-OTHERS (leave-one-out)
     distribution, normalized by the reference spread. A site/lab that systematically measures differently from
@@ -483,9 +486,9 @@ def tier3_lab_compare(view, meta, thr):
         iqr=float(np.subtract(*np.percentile(allv,[75,25]))) or float(np.std(allv)) or 1.0
         spread=1.349*iqr   # robust reference spread for the unitless ratio
         for lab in by_lab:
-            others=np.concatenate([by_lab[o] for o in labs if o!=lab])
+            others=np.concatenate([by_lab[o] for o in by_lab if o!=lab])
             if len(others)<3: continue
-            dist=_sinkhorn_dist(by_lab[lab],others,spread,thr["SINKHORN_REG_FRAC"]) if REAL_OT else _wasserstein_dist(by_lab[lab],others)
+            dist=_sinkhorn_dist(by_lab[lab],others,spread,thr["SINKHORN_REG_FRAC"]) if (REAL_OT if use_ot is None else use_ot) else _wasserstein_dist(by_lab[lab],others)
             rows.append(dict(column=c, lab=lab, n=int(len(by_lab[lab])), n_others=int(len(others)),
                              transport_distance=round(dist,4), between_lab_ratio=round(dist/spread,3)))
     return pd.DataFrame(rows)
@@ -581,9 +584,374 @@ def _guard_artifacts(models_dir):
         st.error(f"anomaly_model.json found, but this build has no trained-anomaly-model path: the labeled "
                  f"[SI] engine is the only scorer. Remove the file to run."); st.stop()
 
+# Browser adapter: deliberately independent of the sibling programs. Native UI below
+# is unchanged. Only the explicit WebAssembly flag enables these upload workflows.
+BROWSER_FILE_LIMIT = 2 * 1024 * 1024
+BROWSER_TOTAL_LIMIT = 8 * 1024 * 1024
+
+
+def browser_read_csv(name, data):
+    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_. -]{0,95}\.csv", name, re.I):
+        raise ValueError("Use a simple CSV filename, at most 100 characters, without folders or special characters.")
+    if not isinstance(data, bytes) or not data or len(data) > BROWSER_FILE_LIMIT:
+        raise ValueError("Each CSV must contain data and be at most 2 MiB.")
+    try:
+        text = data.decode("utf-8-sig")
+    except UnicodeDecodeError as error:
+        raise ValueError("Save CSV files as UTF-8; this file could not be decoded.") from error
+    if "\x00" in text:
+        raise ValueError("CSV contains a NUL byte.")
+    try:
+        rows = list(csv.reader(io.StringIO(text, newline=""), strict=True))
+    except csv.Error as error:
+        raise ValueError("Malformed CSV: " + str(error)) from error
+    if len(rows) < 2 or len(rows) > 5001 or not rows[0] or len(rows[0]) > 100:
+        raise ValueError("Use a header and 1–5,000 rows, with at most 100 columns per file.")
+    headers = rows[0]
+    if any(not x.strip() or x != x.strip() or any(ord(c) < 32 for c in x) for x in headers):
+        raise ValueError("Column names must be nonempty, trimmed, and free of control characters.")
+    if len({x.casefold() for x in headers}) != len(headers):
+        raise ValueError("Duplicate column names are not allowed, including case-only differences.")
+    if any(len(row) != len(headers) for row in rows[1:]):
+        raise ValueError("Every CSV row must have exactly the same number of fields as its header.")
+    if any(len(cell) > 20000 for row in rows for cell in row):
+        raise ValueError("A CSV cell exceeds 20,000 characters.")
+    return pd.DataFrame(rows[1:], columns=headers, dtype=str)
+
+
+def _browser_sources(sources):
+    if not isinstance(sources, dict) or not 1 <= len(sources) <= 8:
+        raise ValueError("Select 1–8 CSV files.")
+    if any(not isinstance(x, str) or not isinstance(v, bytes) for x, v in sources.items()):
+        raise ValueError("CSV inputs require filenames and byte contents.")
+    if len({x.casefold() for x in sources}) != len(sources):
+        raise ValueError("Use distinct filenames; two files cannot differ only by case.")
+    if sum(len(v) for v in sources.values()) > BROWSER_TOTAL_LIMIT:
+        raise ValueError("The complete input is limited to 8 MiB.")
+    return {name: browser_read_csv(name, raw) for name, raw in sources.items()}
+
+
+def _browser_numeric(series, label, positive=False):
+    if series.astype(str).str.strip().eq("").any():
+        raise ValueError(label + ": blank numeric values are not treated as normal. Resolve them before screening.")
+    try:
+        value = pd.to_numeric(series, errors="raise")
+    except (ValueError, TypeError) as error:
+        raise ValueError(label + ": every selected value must be numeric.") from error
+    if any(abs(float(x)) > 1e100 for x in value):
+        raise ValueError(label + ": numeric magnitude exceeds the browser arithmetic limit of 1e100.")
+    if not all(math.isfinite(float(x)) for x in value) or (positive and (value <= 0).any()):
+        raise ValueError(label + (": values must be finite and positive." if positive else ": NaN and infinite values are not allowed."))
+    return value
+
+
+def _browser_ids(series):
+    ids = series.astype(str)
+    if ids.str.strip().eq("").any() or (ids != ids.str.strip()).any():
+        raise ValueError("Participant IDs cannot be missing or have surrounding whitespace. Leading zeros are preserved.")
+    return ids
+
+
+def _browser_studies(frames, specs):
+    studies = set()
+    for name, frame in frames.items():
+        column = specs[name].get("study") or _col(frame, "studyid", "study_id")
+        if column:
+            if column not in frame or frame[column].str.strip().eq("").any():
+                raise ValueError("Mapped study identifiers must be present on every row.")
+            studies.update(frame[column].str.strip())
+    if len(studies) > 1:
+        raise ValueError("Screen one study at a time. Split different study IDs before aligning participants.")
+    return sorted(studies)
+
+
+def _browser_thresholds(config):
+    given = config.get("thresholds")
+    if not isinstance(given, dict) or set(given) != set(DEFAULT_THR):
+        raise ValueError("Review and supply every threshold shown in the setup form.")
+    thr = {}
+    for key, value in given.items():
+        if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
+            raise ValueError(key + " must be a finite positive number.")
+        thr[key] = float(value)
+    return thr
+
+
+def _browser_cuts(thr, keys, maximum=None):
+    values = [thr[k] for k in keys]
+    if values != sorted(set(values)) or (maximum is not None and values[-1] > maximum):
+        raise ValueError("Category cuts must increase strictly" + (" and be at most " + str(maximum) if maximum else "") + ": " + ", ".join(keys))
+
+
+def _browser_fingerprint(sources, config):
+    return hashlib.sha256(json.dumps({"inputs": {n: hashlib.sha256(b).hexdigest() for n, b in sorted(sources.items())}, "config": config}, sort_keys=True, allow_nan=False).encode()).hexdigest()
+
+
+def _browser_safe_csv(frame):
+    safe = frame.copy()
+    for col in safe:
+        safe[col] = safe[col].map(lambda x: "'" + x if isinstance(x, str) and re.match(r"^\s*[=+@-]", x) else x)
+    safe.columns = ["'" + c if isinstance(c, str) and re.match(r"^\s*[=+@-]", c) else c for c in safe.columns]
+    return safe.to_csv(index=False).encode("utf-8")
+
+
+def browser_package(result, sources):
+    if result["fingerprint"] != _browser_fingerprint(sources, result["config"]):
+        raise ValueError("Inputs or settings changed; compute a fresh result before exporting.")
+    files = {"settings.json": json.dumps(result["config"], indent=2, allow_nan=False).encode(),
+             "audit_log.csv": _browser_safe_csv(result["audit"]),
+             "input_audit.csv": _browser_safe_csv(result["input_audit"])}
+    for name, data in sources.items():
+        files["inputs/" + name] = data
+    for name, frame in result["normalized"].items():
+        files["normalized/" + name] = _browser_safe_csv(frame)
+        files["normalized/" + name + ".json"] = frame.to_json(orient="table", index=False, force_ascii=False).encode()
+    for name, frame in result["tables"].items():
+        files[name + ".csv"] = _browser_safe_csv(frame)
+    title = "Browser screening review package"
+    body = "<h1>" + title + "</h1><p>Computed from the supplied inputs and declared settings. Scores are screening indices, not probabilities or clinical determinations. Review input coverage and audit_log.csv.</p>"
+    for name, frame in result["tables"].items():
+        body += "<h2>" + escape(name) + "</h2><p>" + str(len(frame)) + " rows; <a href='" + name + ".csv'>complete CSV</a>. Preview limited to 500 rows.</p>" + frame.head(500).to_html(index=False, escape=True)
+    files["report.html"] = ("<!doctype html><html lang='en'><meta charset='utf-8'><meta name='viewport' content='width=device-width'><title>" + title + "</title><style>body{font:16px system-ui;margin:2rem;line-height:1.5}table{border-collapse:collapse;font-size:13px;display:block;overflow:auto}td,th{border:1px solid #888;padding:.4rem}button{padding:.5rem}a{color:inherit}:root{color-scheme:light dark}body[data-theme=light]{color-scheme:light;background:#fff;color:#15202b}body[data-theme=dark]{color-scheme:dark;background:#111821;color:#e4edf5}</style><button onclick=\"document.body.dataset.theme=document.body.dataset.theme==='dark'?'light':'dark'\">Light / dark</button>" + body + "</html>").encode()
+    files["START_HERE.txt"] = ("Open report.html after extracting this complete ZIP. Every result table, including empty flagged-only tables, is supplied as CSV.\nInputs retain exact uploaded bytes; import original inputs as data, not spreadsheet formulas. All derived CSVs prefix formula-like text with an apostrophe. Normalized JSON preserves exact mapped string values; original input bytes remain unchanged.\nsettings.json and audit_log.csv record mappings, criteria, method scope and input hashes. Scores are not probabilities or trained model predictions. Review missing domains and units before interpreting a screen. No clinical or regulatory approval is implied.\n").encode()
+    source = globals().get("__file__")
+    if source and os.path.isfile(source):
+        with open(source, "rb") as stream:
+            files["source/" + os.path.basename(source)] = stream.read()
+    files["file_inventory.json"] = json.dumps({n: hashlib.sha256(v).hexdigest() for n, v in files.items()}, indent=2).encode()
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+        for name, data in files.items():
+            archive.writestr(name, data)
+    return buffer.getvalue()
+
+
+def _browser_choice(label, columns, key, guess=None, required=False):
+    choices = [""] + list(columns)
+    return st.selectbox(label + (" (required)" if required else " (optional)"), choices,
+                        index=choices.index(guess) if guess in choices else 0, key=key)
+
+
+def _browser_reset(example=False):
+    generation = st.session_state.get("br_generation", 0) + 1
+    for key in list(st.session_state):
+        if str(key).startswith("br_"):
+            del st.session_state[key]
+    st.session_state["br_generation"] = generation
+    st.session_state["br_example"] = example
+    st.rerun()
+
+
+def _browser_inputs(example):
+    if st.button("Reset workspace", key="br_reset"):
+        _browser_reset()
+    if st.button("Load synthetic example", key="br_example_load"):
+        _browser_reset(example=True)
+    uploads = st.file_uploader("Study CSV files (UTF-8; 2 MiB each, 8 MiB total)", type=["csv"], accept_multiple_files=True, key="br_uploads_" + str(st.session_state.get("br_generation", 0)))
+    if uploads:
+        st.session_state["br_example"] = False
+        names = [u.name for u in uploads]
+        if len(names) != len(set(names)):
+            raise ValueError("Duplicate uploaded filenames are not allowed.")
+        return {u.name: u.getvalue() for u in uploads}
+    return example() if st.session_state.get("br_example") else {}
+
+
+def _browser_controls(sources, config):
+    fingerprint = _browser_fingerprint(sources, config)
+    old = st.session_state.get("br_result")
+    if old and old["fingerprint"] != fingerprint:
+        st.session_state.pop("br_result", None)
+        st.info("Inputs or settings changed. Previous results and downloads were cleared.")
+    confirmed = st.checkbox("I reviewed mappings, units, criteria and screening scope for this single study.", key="br_confirm_" + str(st.session_state.get("br_generation", 0)) + "_" + fingerprint[:16])
+    if st.button("Run screening", disabled=not confirmed, type="primary", key="br_run"):
+        config = dict(config, confirmed=True)
+        with st.spinner("Computing the reviewed screening methods…"):
+            result = browser_compute(sources, config)
+            # Confirmation is a run authorization, not part of the editable settings identity.
+            result["config"] = dict(result["config"], confirmed=False)
+            result["fingerprint"] = _browser_fingerprint(sources, result["config"])
+            st.session_state["br_result"] = result
+    result = st.session_state.get("br_result")
+    if result:
+        st.success("Screening completed. Review all tables and input coverage before reuse.")
+        for name, table in result["tables"].items():
+            st.subheader(name.replace("_", " ").capitalize())
+            st.caption(str(len(table)) + " result rows; downloads retain every row.")
+            st.dataframe(table.head(1000), hide_index=True)
+        st.dataframe(result["input_audit"], hide_index=True)
+        st.download_button("Download complete review package (.zip)", browser_package(result, sources), "screening-review.zip", "application/zip", on_click="ignore")
+
+def _browser_time(values, kind):
+    if kind == "numeric":
+        return _browser_numeric(values, "Time/visit")
+    if kind != "ISO date" or not values.astype(str).str.fullmatch(r"\d{4}-\d{2}-\d{2}").all():
+        raise ValueError("Use finite numeric visits or ISO dates in YYYY-MM-DD format.")
+    try:
+        return pd.to_datetime(values, format="%Y-%m-%d", errors="raise").map(lambda x: float(x.toordinal()))
+    except ValueError as error:
+        raise ValueError("The time column contains an invalid calendar date.") from error
+
+
+def browser_prepare(sources, config):
+    frames = _browser_sources(sources)
+    if len(frames) != 1:
+        raise ValueError("Use one wide CSV per run, with one selected measurement per column; merge domains deliberately before uploading.")
+    name, df = next(iter(frames.items()))
+    if len(df) > 2000:
+        raise ValueError("Browser limit: 2,000 rows per anomaly run.")
+    cols = config.get("columns", {})
+    numeric, texts = cols.get("numeric", []), cols.get("text", [])
+    if not isinstance(numeric, list) or not 1 <= len(numeric) <= 12 or not isinstance(texts, list) or len(texts) > 2:
+        raise ValueError("Select 1–12 numeric measurement columns and at most two text columns.")
+    named = [cols.get(k) for k in ("participant", "time", "lab", "study", "unit") if cols.get(k)] + numeric + texts
+    if not cols.get("participant") or any(x not in df for x in named) or len(set(named)) != len(named):
+        raise ValueError("Map distinct existing columns for participant, time, lab, units and measurements.")
+    if set(named) & {"_BROWSER_TIME", "_BROWSER_LAB"}:
+        raise ValueError("Reserved browser column names are not accepted as input mappings.")
+    _browser_studies(frames, {name: {"study": cols.get("study")}})
+    ids = _browser_ids(df[cols["participant"]])
+    units = config.get("units", {})
+    if set(units) != set(numeric) or any(not isinstance(x, str) or not x.strip() or len(x) > 60 for x in units.values()):
+        raise ValueError("Declare the consistent unit for every selected numeric measurement (use 'unitless' when applicable).")
+    if cols.get("unit"):
+        declared = set(x.strip() for x in units.values())
+        if len(declared) != 1 or set(df[cols["unit"]].str.strip()) != declared:
+            raise ValueError("Mixed or mismatched units detected. Harmonize units before comparing measurements.")
+    thr = _browser_thresholds(config)
+    for keys, maximum in [(["ANOM_CAT_MODERATE", "ANOM_CAT_HIGH", "ANOM_CAT_CRITICAL"], 1),
+                          (["DRIFT_RATIO_MODERATE", "DRIFT_RATIO_HIGH", "DRIFT_RATIO_CRITICAL"], None),
+                          (["TEXT_ISO_MODERATE", "TEXT_ISO_HIGH", "TEXT_ISO_CRITICAL"], 1)]:
+        _browser_cuts(thr, keys, maximum)
+    if thr["ANOM_Z_TOP"] < thr["ANOM_Z"] or thr["TEXT_ISO_FLAG"] > 1 or thr["TEXT_MIN_DOCS"] != int(thr["TEXT_MIN_DOCS"]) or thr["TEXT_MIN_DOCS"] < 3:
+        raise ValueError("Require ANOM_Z_TOP ≥ ANOM_Z, TEXT_ISO_FLAG ≤ 1, and integer TEXT_MIN_DOCS ≥ 3.")
+    out = pd.DataFrame({"USUBJID": ids})
+    for c in numeric:
+        out[c] = _browser_numeric(df[c], c)
+    for c in texts:
+        if len(df) > 500 or df[c].str.len().max() > 2000:
+            raise ValueError("Text screening is limited to 500 rows and 2,000 characters per note.")
+        out[c] = df[c]
+    if texts and len(set(re.findall(r"[a-z0-9]+", " ".join(df[c].str.cat(sep=" ") for c in texts).lower()))) > 5000:
+        raise ValueError("Text screening vocabulary exceeds 5,000 tokens; reduce the selected input.")
+    if cols.get("lab"):
+        if df[cols["lab"]].str.strip().eq("").any():
+            raise ValueError("Lab/site identifiers must be present on every selected row.")
+        out["_BROWSER_LAB"] = df[cols["lab"]]
+    original_rows = len(out)
+    if cols.get("time"):
+        out["_BROWSER_TIME"] = _browser_time(df[cols["time"]], config.get("time_type"))
+        if out.duplicated(["USUBJID", "_BROWSER_TIME"]).any():
+            raise ValueError("Duplicate participant/time records are ambiguous. Resolve them before screening.")
+        pair = _browser_time(pd.Series([str(config.get("reference", "")), str(config.get("current", ""))]), config.get("time_type"))
+        if pair.iloc[0] >= pair.iloc[1]:
+            raise ValueError("Choose a current visit strictly after the reference visit.")
+        out = out[out["_BROWSER_TIME"].isin(pair)].copy()
+        counts = out.groupby("USUBJID")["_BROWSER_TIME"].nunique()
+        if not len(out) or len(counts) != ids.nunique() or not counts.eq(2).all():
+            raise ValueError("Every participant must have one complete reference row and one complete current row. Resolve unmatched visits before screening.")
+    elif out.USUBJID.duplicated().any():
+        raise ValueError("Cross-sectional screening requires one row per participant. Map time for repeated observations.")
+    if out.USUBJID.nunique() < 4:
+        raise ValueError("At least four participants with complete selected measurements are required for the numeric screen.")
+    if cols.get("lab") and (out.groupby("USUBJID")["_BROWSER_LAB"].nunique() != 1).any():
+        raise ValueError("Lab/site must remain constant within each participant's selected pair; split assay changes deliberately before this comparison.")
+    normalized = {name: out.copy()}
+    view = out.sort_values(["USUBJID"] + (["_BROWSER_TIME"] if cols.get("time") else [])).set_index("USUBJID")
+    meta = {"numcols": numeric, "textcols": texts, "timecol": "_BROWSER_TIME" if cols.get("time") else None,
+            "labcol": "_BROWSER_LAB" if cols.get("lab") else None, "n_subjects": int(view.index.nunique())}
+    intake = pd.DataFrame([{"file": name, "input_rows": original_rows, "selected_rows": len(out), "participants": meta["n_subjects"],
+                           "excluded_other_visits": original_rows-len(out), "paired": bool(cols.get("time")),
+                           "sha256": hashlib.sha256(sources[name]).hexdigest()}])
+    return view, meta, thr, normalized, intake
+
+
+def browser_compute(sources, config):
+    if config.get("confirmed") is not True:
+        raise ValueError("Confirm study mappings, units and criteria before running.")
+    view, meta, thr, normalized, intake = browser_prepare(sources, config)
+    sig = tier2_signals(view, meta, thr, use_if=False)
+    drift = tier3_drift(view, meta, thr, use_ot=False)
+    labs = tier3_lab_drift(view, meta, thr, use_ot=False)
+    compare = tier3_lab_compare(view, meta, thr, use_ot=False)
+    text = tier3b_text(view, meta, thr)
+    outputs = tier4_categorize(sig, drift, labs, compare, text, thr)
+    schemas = {"anomalies": ["USUBJID", "anomaly_score", "anomaly_category", "detectors", "extreme_columns"],
+               "drift": ["lab", "column", "n_ref", "n_cur", "transport_distance", "drift_ratio", "drift_category"],
+               "lab_drift": ["lab", "column", "n_ref", "n_cur", "transport_distance", "drift_ratio", "drift_category"],
+               "lab_compare": ["column", "lab", "n", "n_others", "transport_distance", "between_lab_ratio", "drift_category"],
+               "text_anomalies": ["USUBJID", "field", "isolation_score", "text_category", "note"]}
+    tables = {name: frame if len(frame) else pd.DataFrame(columns=schema) for (name, schema), frame in zip(schemas.items(), outputs)}
+    audit = pd.DataFrame([{"program": "anomaly_drift_screening", "execution": "browser" if BROWSER_ENABLED else "native_browser_adapter_QC",
+        "numeric_method": "median/MAD robust z; zero MAD falls back to population SD then1; no Isolation Forest",
+        "drift_method": "existing 200-point interpolated quantile-grid approximation to 1-D Wasserstein; not exact OT or Sinkhorn",
+        "drift_normalizer": "1.349 × reference IQR; if IQR=0 use population SD, then1, before multiplying1.349. Between-lab spread uses pooled eligible labs. This is a defined screening scale, not a standardized-SD effect size.",
+        "text_method": "bag-of-words cosine isolation; no trained language model",
+        "scope": "Screening indices, not probabilities or diagnoses. Anomaly output is flagged-only. Empty output means no flag at these criteria, not proof of data quality.",
+        "units": json.dumps(config["units"], sort_keys=True), "pairing": "complete matched participants at explicit reference/current visits" if meta["timecol"] else "one row per participant",
+        "lab_rule": "one current value per participant; groups with fewer than3 eligible participants excluded from between-lab comparison",
+        "settings": json.dumps(config, sort_keys=True), "pandas_version": pd.__version__, "numpy_version": np.__version__, "python_version": sys.version.split()[0]}])
+    return {"tables": tables, "normalized": normalized, "input_audit": intake, "audit": audit, "config": config, "fingerprint": _browser_fingerprint(sources, config)}
+
+
+def browser_example():
+    rows = ["participant,visit,lab,measurement,unit"]
+    for lab in ("A", "B"):
+        for i, value in enumerate((10, 20, 30), 1):
+            for visit in (0, 1):
+                rows.append(f"{lab}{i},{visit},{lab},{value + (20 if lab == 'B' and visit == 1 else 0)},unitless")
+    return {"measurements.csv": ("\n".join(rows) + "\n").encode()}
+
+
+def browser_main():
+    st.title("Anomaly and drift screening")
+    st.info("Configure one study's wide CSV. These deterministic screening methods run in this browser; there is no trained model. Data and results are temporary until downloaded.")
+    st.caption("Numeric outliers use median/MAD robust z. Drift uses the existing 200-point quantile-grid approximation, normalized by 1.349×IQR (SD/1 fallbacks). This is not an exact optimal-transport calculation or an SD effect size. Text uses bag-of-words isolation.")
+    try:
+        sources = _browser_inputs(browser_example)
+        if not sources:
+            st.info("Upload a study CSV or deliberately load the synthetic example to begin.")
+            st.session_state.pop("br_result", None)
+            return
+        frames = _browser_sources(sources)
+        if len(frames) != 1: raise ValueError("Select one wide CSV per run.")
+        name, df = next(iter(frames.items())); prefix = "br_" + str(st.session_state.get("br_generation", 0)) + "_" + hashlib.sha256(sources[name]).hexdigest()[:12]
+        st.header("Map the study data")
+        cols = {}
+        for key, aliases in [("participant", ["participant"] + SYN["USUBJID"]), ("time", ["visit"] + SYN["TIME"]), ("lab", SYN["LAB"]), ("study", SYN["STUDY"]), ("unit", ["unit", "units"])]:
+            cols[key] = _browser_choice(key.capitalize() + " column", df.columns, prefix + "_" + key, _col(df, *aliases), key == "participant")
+        remaining = [c for c in df if c not in cols.values()]
+        numeric_guess = [c for c in remaining if pd.to_numeric(df[c], errors="coerce").notna().all()]
+        cols["numeric"] = st.multiselect("Numeric measurement columns", remaining, default=numeric_guess[:12], key=prefix + "_numeric")
+        cols["text"] = st.multiselect("Optional text columns", [c for c in remaining if c not in cols["numeric"]], key=prefix + "_text")
+        config = {"columns": cols, "units": {}, "thresholds": {}, "confirmed": False}
+        for c in cols["numeric"]:
+            guess = df[cols["unit"]].iloc[0] if cols["unit"] and df[cols["unit"]].nunique() == 1 else ""
+            config["units"][c] = st.text_input("Unit for " + c + " (or unitless)", value=guess, key=prefix + "_units_" + c)
+        if cols["time"]:
+            config["time_type"] = st.selectbox("Time representation", ["numeric", "ISO date"], key=prefix + "_time_type")
+            levels = list(dict.fromkeys(df[cols["time"]]))
+            parsed = _browser_time(pd.Series(levels), config["time_type"])
+            levels = [levels[i] for i in parsed.sort_values().index]
+            config["reference"] = st.selectbox("Reference visit", levels, index=0, key=prefix + "_ref")
+            config["current"] = st.selectbox("Current visit", levels, index=len(levels)-1, key=prefix + "_cur")
+        with st.expander("Screening thresholds and category cuts"):
+            st.caption("Illustrative starting criteria; confirm suitable settings for the review. Every value is exported.")
+            for key, value in DEFAULT_THR.items():
+                config["thresholds"][key] = st.number_input(key, min_value=0.001, value=float(value), key="br_thr_" + str(st.session_state.get("br_generation", 0)) + "_" + key)
+        st.caption("Complete measurements are required. Paired runs require every participant at both chosen visits, a stable lab assignment, and one row per participant/visit. Between-lab comparisons require at least three participants per included lab.")
+        st.dataframe(df.head(5), hide_index=True)
+        _browser_controls(sources, config)
+    except (ValueError, KeyError, TypeError) as error:
+        st.session_state.pop("br_result", None)
+        st.error(str(error))
+
 # ============================ UI ============================
-st.set_page_config(page_title="Central statistical monitoring" + (": in-browser demo" if IN_BROWSER else ""), layout="wide")
+st.set_page_config(page_title="Central statistical monitoring" + (": browser workspace" if BROWSER_ENABLED else ": in-browser demo" if IN_BROWSER else ""), layout="wide")
 HOSTED = _hosted()   # after set_page_config: no Streamlit call may precede it
+if BROWSER_ENABLED and not HOSTED:
+    browser_main()
+    st.stop()
 # Hosted: an uncaught exception shows a generic message, not a traceback with server
 # paths (a crafted widget value can raise one). Process-wide, like the switch itself.
 if HOSTED: st.set_option("client.showErrorDetails", "none")

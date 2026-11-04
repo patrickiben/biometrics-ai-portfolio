@@ -25,6 +25,9 @@ concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
+  ecrf-qc:
+    uses: ./.github/workflows/ecrf-qc.yml
+
   classify:
     runs-on: ubuntu-latest
     permissions:
@@ -40,16 +43,16 @@ jobs:
         with:
           python-version: '3.12'
       - id: scope
-        name: Check whether only the reviewed public pages changed
+        name: Classify the exact public/eCRF overlay and pinned artifact
         env:
           GH_TOKEN: ${{ github.token }}
         run: python .github/pages/refresh_public_pages.py --classify
 
   public-pages:
-    needs: classify
+    needs: [classify, ecrf-qc]
     if: needs.classify.outputs.reuse == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     permissions:
       contents: read
       actions: read
@@ -71,19 +74,36 @@ jobs:
       - name: Verify and download the exact successful release artifact
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          gh api repos/patrickiben/biometrics-ai-portfolio/actions/runs/41735220609 > "$RUNNER_TEMP/base-run.json"
-          python - "$RUNNER_TEMP/base-run.json" <<'PY'
-          import json,sys
-          r=json.load(open(sys.argv[1]))
-          assert r['repository']['full_name']=='patrickiben/biometrics-ai-portfolio'
-          assert r['head_sha']=='a5f97927ff10fca93877351fb9f33444618aac90'
-          assert r['path']=='.github/workflows/pages.yml'
-          assert r['head_branch']=='main' and r['status']=='completed' and r['conclusion']=='success'
-          PY
-          gh api repos/patrickiben/biometrics-ai-portfolio/actions/artifacts/13289245446/zip > "$RUNNER_TEMP/base-pages.zip"
-      - name: Refresh public copy and prove executable assets are unchanged
+        run: python .github/pages/refresh_public_pages.py --download "$RUNNER_TEMP/base-pages.zip"
+      - name: Refresh public pages and new eCRF files; prove legacy assets unchanged
         run: python .github/pages/refresh_public_pages.py --archive "$RUNNER_TEMP/base-pages.zip" --site _site
+      - name: Check refreshed source archive and browser copies
+        run: |
+          python .github/pages/refresh_public_pages.py --verify-site _site
+          python ecrf_pipeline/tools/sync_browser_apps.py --check
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+      - uses: browser-actions/setup-chrome@v2
+        id: chrome
+        with:
+          chrome-version: stable
+      - name: Install the actual browser test driver
+        run: npm ci --prefix tools/browser-qc --no-audit --no-fund
+      - name: Exercise new eCRF workflows and updated navigation on the produced site
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/ecrf-browser-pages
+        run: |
+          node ecrf_pipeline/tests/browser_qc.cjs _site
+          node browser_modules/tests/navigation-browser.cjs _site "${RUNNER_TEMP}/ecrf-browser-pages/navigation"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ecrf-browser-pages
+          path: ${{ runner.temp }}/ecrf-browser-pages
+          retention-days: 14
       - name: Read the Pages source
         id: source
         env:
@@ -95,10 +115,10 @@ jobs:
           path: _site
 
   build:
-    needs: classify
+    needs: [classify, ecrf-qc]
     if: needs.classify.outputs.reuse != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 180
+    timeout-minutes: 240
     permissions:
       contents: read
       pages: read          # to read the Pages source below
@@ -176,6 +196,14 @@ jobs:
           NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
           QA_OUTPUT_DIR: ${{ runner.temp }}/vaccine-webassembly-qc
         run: node vaccine/tests/browser_app_qc.cjs _site
+      - name: Verify new eCRF browser uploads, methods, exports and source inventory
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+          NODE_PATH: ${{ github.workspace }}/tools/browser-qc/node_modules
+          QA_OUTPUT_DIR: ${{ runner.temp }}/all-browser-qc/ecrf
+        run: |
+          python .github/pages/refresh_public_pages.py --verify-site _site
+          node ecrf_pipeline/tests/browser_qc.cjs _site
       - name: Verify all browser analysis and operational workflows
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
@@ -225,9 +253,9 @@ jobs:
           path: _site
 
   deploy:
-    needs: [build, public-pages]
+    needs: [build, public-pages, ecrf-qc]
     if: >-
-      always() && !cancelled() &&
+      always() && !cancelled() && needs.ecrf-qc.result == 'success' &&
       ((needs.build.result == 'success' && needs.build.outputs.pages_source == 'workflow') ||
        (needs.public-pages.result == 'success' && needs.public-pages.outputs.pages_source == 'workflow'))
     runs-on: ubuntu-latest
