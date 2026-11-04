@@ -21,9 +21,10 @@ programming defects the other gates and the module tests catch; G5 is a manual r
 not compute; G6 checks that every QTc change figure uses one reference-line convention (0, 30 and
 60 ms, the ICH E14 categorical thresholds) and went green on 2026-10-25 after the two figure types that
 drew a +10 ms line were aligned; G7
-reports "not signed" until a named statistician signs for AI use; SAS is never executed (no
-license). No gate has a human sign-off yet. Open [`index.html`](index.html) for the
-ledger view.
+records named human accountability for AI use; SAS is never executed (no
+license). The current evidence records eight automated checks passed, with G5 QC findings
+and G7 AI-use accountability reviewed. See [`index.html`](index.html) for the ledger.
+Study-specific data and adaptations retain their own review requirements.
 
 > Scope note: everything here operates on **100% synthetic** data. There is no PHI. The gates are the
 > *procedure*; the numbers they check are demonstrative.
