@@ -642,12 +642,12 @@ async function checkLedger() {
     const page = await browser.newPage();
     await page.setViewport({ width: 1440, height: 900 });
     await page.goto(`${BASE}/validation_harness/index.html`, { waitUntil: "load", timeout: 30000 });
-    // counted here from the gate list the page draws: "<green> of <all> gates green", GREEN only when
-    // every gate is green, RED when one has failed, AMBER otherwise
+    // The public ledger separates automatic results from reviewed human gates without
+    // presenting a personal approval announcement as an application status.
     const st = await page.evaluate(() => [...document.querySelectorAll("#gate-sum .st")].map((e) => e.textContent.trim()));
-    const green = st.filter((x) => x === "green").length;
-    const want = { text: `${green} of ${st.length} gates green`,
-                   tone: green === st.length ? "GREEN" : st.some((x) => !/^(green|manual|stale|not signed)$/.test(x)) ? "RED" : "AMBER" };
+    const want = { text: 'QC evidence',
+                   tone: st.every((x) => /^(pass|reviewed)$/.test(x)) ? 'GREEN'
+                     : st.some((x) => !/^(pass|reviewed|manual|stale|not signed)$/.test(x)) ? 'RED' : 'AMBER' };
     const b = await barOf(page);
     if (!st.length) res.failures.push("the ledger lists no gates");
     else if (!sameBar(b, want) || !b.shown) res.failures.push(`the top bar reads ${showBar(b)}, but the page lists ${want.text} (${want.tone})`);

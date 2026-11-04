@@ -25,7 +25,78 @@ concurrency:
   group: pages
   cancel-in-progress: false
 jobs:
+  classify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      reuse: ${{ steps.scope.outputs.reuse }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - id: scope
+        name: Check whether only the reviewed public pages changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python .github/pages/refresh_public_pages.py --classify
+
+  public-pages:
+    needs: classify
+    if: needs.classify.outputs.reuse == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      actions: read
+      pages: read
+    outputs:
+      pages_source: ${{ steps.source.outputs.build_type }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Check static source consistency
+        run: |
+          python build_pages.py --check
+          python toolkit_launcher/source_inventory.py --check
+          python package_qc.py
+      - name: Verify and download the exact successful release artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api repos/patrickiben/biometrics-ai-portfolio/actions/runs/41735220609 > "$RUNNER_TEMP/base-run.json"
+          python - "$RUNNER_TEMP/base-run.json" <<'PY'
+          import json,sys
+          r=json.load(open(sys.argv[1]))
+          assert r['repository']['full_name']=='patrickiben/biometrics-ai-portfolio'
+          assert r['head_sha']=='a5f97927ff10fca93877351fb9f33444618aac90'
+          assert r['path']=='.github/workflows/pages.yml'
+          assert r['head_branch']=='main' and r['status']=='completed' and r['conclusion']=='success'
+          PY
+          gh api repos/patrickiben/biometrics-ai-portfolio/actions/artifacts/13289245446/zip > "$RUNNER_TEMP/base-pages.zip"
+      - name: Refresh public copy and prove executable assets are unchanged
+        run: python .github/pages/refresh_public_pages.py --archive "$RUNNER_TEMP/base-pages.zip" --site _site
+      - name: Read the Pages source
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "build_type=$(gh api repos/${GITHUB_REPOSITORY}/pages --jq .build_type)" >> "$GITHUB_OUTPUT"
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
   build:
+    needs: classify
+    if: needs.classify.outputs.reuse != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 180
     permissions:
@@ -154,8 +225,11 @@ jobs:
           path: _site
 
   deploy:
-    needs: build
-    if: needs.build.outputs.pages_source == 'workflow'
+    needs: [build, public-pages]
+    if: >-
+      always() && !cancelled() &&
+      ((needs.build.result == 'success' && needs.build.outputs.pages_source == 'workflow') ||
+       (needs.public-pages.result == 'success' && needs.public-pages.outputs.pages_source == 'workflow'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

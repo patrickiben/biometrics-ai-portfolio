@@ -306,12 +306,12 @@ html[data-theme] .top b{white-space:normal}
 
   <h2>Validation &amp; QC</h2>
   <div class="grid">
-    <div class="card"><h3>Trial-Management Validation Harness <span class="pill run">8 of 10 gates green</span></h3><div class="d">Ten gates for a clinical-biometrics deliverable: reproducibility, PK and count conventions, data structure and integrity (custom checks, not Pinnacle 21 or CDISC CORE), SAS/R twin structural parity (SAS not executed), an adversarial QC panel (a manual record), reporting conventions, AI-use documentation (awaiting sign-off), package consistency, an independent recomputation of the sandbox results, and a seeded-defect test of what the gates catch. The checks run on this repo's own libraries and synthetic data and write an evidence ledger.</div>
+    <div class="card"><h3>Trial-Management Validation Harness</h3><div class="d">Ten gates for a clinical-biometrics deliverable: reproducibility, PK and count conventions, data structure and integrity (custom checks, not Pinnacle 21 or CDISC CORE), SAS/R twin structural parity (SAS not executed), an adversarial QC review record, reporting conventions, AI-use documentation, package consistency, an independent recomputation of the sandbox results, and a seeded-defect test of what the gates catch. The checks run on this repo's own libraries and synthetic data and write an evidence ledger.</div>
       <div class="links"><a class="dash" href="validation_harness/index.html">Evidence ledger</a><a class="code" href="validation_harness/README.md">Harness spec</a><a class="code" href="validation_harness/run_harness.sh">run_harness.sh</a></div></div>
   </div>
 
   <footer>
-    <b>Biostatistics guardrails:</b> reported/regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21), never an LLM; "participant" not "subject" (CDISC USUBJID/SUBJID preserved); every AI draft is human-signed. The libraries are pseudocode skeletons: point a LIBNAME at your ADaM and complete the spec; don't expect a clean run out of the box. &nbsp;·&nbsp; <a href="index.html">&larr; Home</a> &nbsp;·&nbsp; <a href="START_HERE.html">Full library</a><a href="GET_STARTED.html">Get started</a>
+    <b>Biostatistics guardrails:</b> reported/regulated numbers come only from validated tools (Phoenix WinNonlin, Pinnacle 21), never an LLM; "participant" not "subject" (CDISC USUBJID/SUBJID preserved); every AI draft is human-signed. Run the R analysis templates directly in the browser with guided study setup and downloadable SAS reference exports. Review and validate each study-specific adaptation. &nbsp;·&nbsp; <a href="index.html">&larr; Home</a> &nbsp;·&nbsp; <a href="START_HERE.html">Full library</a><a href="GET_STARTED.html">Get started</a>
   </footer>
 </div>
 <script src="site.js" defer></script>

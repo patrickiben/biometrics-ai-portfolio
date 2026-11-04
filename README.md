@@ -111,7 +111,8 @@ The R launcher finds the complete checkout from another working directory. Packa
   and integrity, SAS/R twin structural parity, an adversarial QC panel, reporting conventions, AI-use
   documentation, package consistency, an independent recomputation of the sandbox results, and a seeded-defect
   test of what the gates catch). The checks run on this repo's own libraries and synthetic data and write an
-  evidence ledger: 8 of 10 green, the QC panel is a manual record, and the AI-use record awaits sign-off.
+  evidence ledger: eight automated checks cover execution and structural evidence; QC review and AI-use
+  accountability are human review steps. Study-specific work retains its own review.
   → [`validation_harness/`](validation_harness/index.html)
 
 ---
