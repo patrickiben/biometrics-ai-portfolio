@@ -28,7 +28,7 @@ PUBLIC = {
     'validation_harness/EVIDENCE_LEDGER.md', 'validation_harness/ledger.json',
 }
 INFRA = {'.github/workflows/pages.yml', '.github/pages/refresh_public_pages.py',
-         '.github/pages/smoke/smoke.mjs', 'toolkit_launcher/source_manifest.json',
+         '.github/pages/smoke/smoke.mjs', '.github/pages/smoke/site_qc.cjs', 'toolkit_launcher/source_manifest.json',
          '.github/workflows/ecrf-qc.yml', '.github/workflows/package-check.yml',
          '.github/pages/build_site.R', 'package_qc.py',
          'browser_modules/tests/navigation-browser.cjs', 'tools/tests/test_ecrf_release.py'}

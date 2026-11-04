@@ -802,7 +802,7 @@ def _browser_ui():
     except (ValueError,OSError) as exc:_browser_clear();st.error(str(exc));return
     if not frames:
         _browser_clear();st.info('Upload study CSVs to start, or explicitly load the synthetic example.');return
-    st.subheader('Choose fields to review and export')
+    st.header('Choose fields to review and export')
     st.caption('Every column is available, including numeric-looking identifiers. Exported fields are replaced in place; '
                'original copies are confined to the separate sensitive-review download. Detection is incomplete: review outputs before sharing.')
     selections={};exports={}
@@ -837,9 +837,9 @@ def _browser_ui():
         except (ValueError,MemoryError) as exc:st.error(str(exc) or 'This batch exceeds available browser memory; use a smaller batch.');return
     result=st.session_state.get('bw_result')
     if result:
-        st.subheader('Redacted field copies');st.dataframe(result['summary'],width='stretch')
+        st.header('Redacted field copies');st.dataframe(result['summary'],width='stretch',hide_index=True)
         for alias,df in result['tables'].items():
-            st.write(alias);st.dataframe(df,width='stretch')
+            st.write(alias);st.dataframe(df,width='stretch',hide_index=True)
             st.download_button(f'Download {alias} redacted CSV',result['files'][f'redacted/{alias}.csv'],
                                f'{alias}_redacted.csv','text/csv',key='bw_download_'+alias,on_click='ignore')
         st.caption(f"{len(result['flags']):,} masked spans. Absence of a flag does not establish absence of identifiers. "

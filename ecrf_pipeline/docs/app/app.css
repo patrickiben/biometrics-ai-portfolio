@@ -63,6 +63,9 @@ main#stage { flex: 1 1 auto; position: relative; min-height: 0; }
 /* Streamlit writes a slider's value in the primary color. In dark mode no primary gives both that text and the
    Execute button's white text 4.5:1 (launch.js picks the button), so draw the value in the text color instead. */
 #root [data-testid="stSliderThumbValue"] { color: inherit; }
+/* Streamlit's 60% caption opacity falls just below 4.5:1 on the toolkit light
+   canvas. Use the shared, contrast-checked muted text color in both themes. */
+#root [data-testid="stCaptionContainer"] { color: var(--muted); opacity: 1; }
 /* The toolkit header supplies the theme control; no duplicate Streamlit settings menu. */
 #root #MainMenu { display: none; }
 

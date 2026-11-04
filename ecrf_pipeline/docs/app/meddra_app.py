@@ -1061,7 +1061,7 @@ def _browser_ui():
         _browser_clear();st.error(str(exc));return
     if not frames or dictionary_raw is None:
         _browser_clear();st.info('Upload study CSVs and a dictionary CSV to start, or explicitly load the synthetic example. No example dictionary is used for your uploads.');return
-    st.subheader('Map study fields')
+    st.header('Map study fields')
     mappings={}
     for n,(name,df) in enumerate(frames):
         with st.expander(f'{name} · {len(df):,} rows', expanded=True):
@@ -1071,7 +1071,7 @@ def _browser_ui():
                 'participant':_browser_select('Participant identifier (optional)',df.columns,f'participant_{n}',('USUBJID','participant_id'),True),
                 'key':_browser_select('Event key (optional)',df.columns,f'event_{n}',('AESEQ','ID'),True)}
             st.caption('Source filename and row number always qualify the selected identifiers. Only these mapped fields enter the results package.')
-    st.subheader('Map your dictionary')
+    st.header('Map your dictionary')
     dictionary_mapping={}
     labels=[('llt_name','Dictionary term',('llt_name','llt','term','lowest_level_term'),False),
             ('pt_name','Preferred-term name',('pt_name','pt','preferred_term'),False),
@@ -1106,7 +1106,7 @@ def _browser_ui():
         except (ValueError,MemoryError) as exc:st.error(str(exc) or 'This batch exceeds available browser memory; use a smaller batch.');return
     result=st.session_state.get('bw_result')
     if result:
-        st.subheader('Unreviewed coding candidates');st.dataframe(result['table'],width='stretch')
+        st.header('Unreviewed coding candidates');st.dataframe(result['table'],width='stretch',hide_index=True)
         st.caption('No candidate is approved. Save the complete package for human review; changing inputs or settings clears these results.')
         st.download_button('Download coding candidates CSV',result['files']['coding_candidates.csv'],'coding_candidates.csv','text/csv',on_click='ignore')
         st.download_button('Download audit CSV',result['files']['audit_log.csv'],'audit_log.csv','text/csv',on_click='ignore')

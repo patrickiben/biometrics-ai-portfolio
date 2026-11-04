@@ -12,12 +12,16 @@ The maintained apps now accept user CSVs in the toolkit. This pass used fictiona
 | New browser-adapter contracts | 11 coding/redaction tests and 14 screening/monitoring tests passed |
 | Actual stlite/Pyodide browser workflows | Four of four passed; 14 ZIP downloads verified; 20 screenshots captured; zero page exceptions or unexpected console errors |
 | Static documentation | 18 rendered desktop/mobile/theme and redirect checks passed |
+| Whole-site UI regression | 86 rendered pages and six portable-tool interactions passed; raw generator templates are checked through their rendered pages |
+| Automated accessibility | 16 app/state/theme combinations passed with zero confirmed serious or critical axe violations; caption contrast, heading order and empty index headers corrected |
 | Publication boundaries | 14 adversarial tests passed, including artifact provenance, source drift, executable/link rejection, unchanged legacy runtime bytes and exact source archives |
 | Toolkit package and generated files | Zero package issues; 74 generated files/regions current; all 12 app/data copies, four launch pages and three pinned wheels consistent |
 
 The browser suite uploads fictional study files through real file controls. It checks custom column and dictionary mappings, inactive-term exclusion, unreviewed coding candidates, leading-zero identifiers, formula-safe CSVs and lossless JSON, separate cleaned/sensitive redaction downloads, overlapping custom redaction phrases, strict QTc boundaries and changed criteria, complete paired visits, known cohort/lab distances, participant denominators, malformed replacement files, reset and stale-result invalidation. Results and exact ZIP bytes survive theme switches; downloads remain reachable at a 390-pixel viewport.
 
 Network observation allowed only the site, pinned runtime CDN and local data/blob URLs; there were no study upload requests or transmitted fixture markers. The pinned stlite release probes its non-routable `stlite.invalid` media placeholder before resolving worker downloads. The policy blocked those probes; 51 specifically classified diagnostics were retained in the evidence, and every tested download succeeded. Other console/network failures fail the suite. Browser execution was tested in Chromium; Safari, Firefox and physical mobile devices were not tested in this pass.
+
+The accessibility record retains upstream Streamlit dropzone presentation-role conflicts (minor) and manual-review ARIA findings on uploaded-file chips and multiselect tags. The toolkit does not claim complete accessibility conformance from an automated scan.
 
 Scientific fixes include one current observation per participant in between-lab comparisons, exclusion of undersized labs from the pooled comparator, and duplicate-event checks across uploaded files. The coding and redaction native scoring prefixes remain byte-identical to the imported source. The browser adapters do not automatically approve codes or establish complete anonymization. Risk indices remain rule summaries, and drift retains its declared quantile approximation and normalization.
 
