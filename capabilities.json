@@ -182,7 +182,7 @@
    "on_site_html": "Four eCRF assist apps whose evaluation reports measured failure rates.",
    "strongest": {
     "text": "eCRF assist apps and their evaluation",
-    "href": "https://patrickiben.github.io/ecrf-pipeline-apps/"
+    "href": "ecrf_pipeline/docs/"
    },
    "modules": [
     "ecrf",
@@ -211,7 +211,7 @@
     "modules": [
      "ecrf"
     ],
-    "disclosure_html": "Open an app to run it in your browser on bundled synthetic data (uploads are disabled in the public demo). The page is downloaded from GitHub Pages and jsDelivr, which see your IP address; the first visit downloads about 30 MB and Python starts in a few seconds. Not a validated or Part 11 system."
+    "disclosure_html": "Upload your CSVs and map columns in guided forms. Files are processed in this tab; download results before closing it. GitHub Pages and the runtime CDN receive ordinary page requests. Optional examples use synthetic data."
    },
    {
     "id": "js-browser",
@@ -570,7 +570,7 @@
   {
    "id": "ecrf",
    "title": "eCRF assist apps",
-   "href": "https://patrickiben.github.io/ecrf-pipeline-apps/",
+   "href": "ecrf_pipeline/docs/",
    "section": "apps",
    "stages": [
     "monitoring",
@@ -580,35 +580,35 @@
    "status": [
     {
      "k": "synthetic",
-     "text": "Synthetic data"
+     "text": "Your CSVs or synthetic examples"
     }
    ],
-   "summary": "Four Python apps: coding QC assist, de-identification review assist, participant risk screening (rule-based default thresholds) and central statistical monitoring. The evaluation reports its own failures: on held-out synthetic text, the de-identification stand-in left 108 of 308 identifiers readable (the full model path: 91 of 308).",
-   "fact": "In your browser: GitHub Pages and jsDelivr see your IP address; about 30 MB on first visit; uploads disabled. Not a validated or Part 11 system.",
+   "summary": "Four browser tools for your study CSVs: dictionary-based coding candidates, de-identification review, configurable participant screening and central statistical monitoring. Guided mappings, optional examples, and downloadable results and audit records.",
+   "fact": "Runs in your browser with no installation. Coding needs your dictionary; all candidates and screening results require review. No study data are sent to a server.",
    "shots": [
     {
-     "href": "https://patrickiben.github.io/ecrf-pipeline-apps/app/meddra.html",
+     "href": "ecrf_pipeline/docs/app/meddra.html",
      "img": "assets/ecrf/meddra_results.png",
      "thumb": "ecrf-coding",
      "caption": "Coding QC",
      "alt": "Coding QC assist: synthetic adverse-event verbatims with ranked candidate dictionary terms"
     },
     {
-     "href": "https://patrickiben.github.io/ecrf-pipeline-apps/app/phi.html",
+     "href": "ecrf_pipeline/docs/app/phi.html",
      "img": "assets/ecrf/phi_results.png",
      "thumb": "ecrf-phi",
      "caption": "De-identification",
      "alt": "De-identification review assist: flagged names, phone numbers and ZIP codes in synthetic adverse-event text"
     },
     {
-     "href": "https://patrickiben.github.io/ecrf-pipeline-apps/app/risk.html",
+     "href": "ecrf_pipeline/docs/app/risk.html",
      "img": "assets/ecrf/risk_results.png",
      "thumb": "ecrf-risk",
      "caption": "Risk screening",
      "alt": "Participant risk screening: per-participant scores and contributing factors from rule-based default thresholds, synthetic data"
     },
     {
-     "href": "https://patrickiben.github.io/ecrf-pipeline-apps/app/anomaly.html",
+     "href": "ecrf_pipeline/docs/app/anomaly.html",
      "img": "assets/ecrf/anomaly_results.png",
      "thumb": "ecrf-anomaly",
      "caption": "Central monitoring",
@@ -618,19 +618,19 @@
    "links": [
     {
      "t": "open",
-     "href": "https://patrickiben.github.io/ecrf-pipeline-apps/",
+     "href": "ecrf_pipeline/docs/",
      "text": "Overview"
     },
     {
      "t": "source",
-     "href": "https://github.com/patrickiben/ecrf-pipeline-apps",
+     "href": "https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/ecrf_pipeline",
      "text": "Source and evaluation"
     }
    ],
    "thumb": "ecrf-coding",
    "browser": {
     "runtime": "stlite",
-    "href": "https://patrickiben.github.io/ecrf-pipeline-apps/",
+    "href": "ecrf_pipeline/docs/",
     "verified": null,
     "how": null
    },
@@ -782,7 +782,7 @@
   {
    "id": "sibling",
    "title": "Within-sibling evaluation of the coding assist",
-   "href": "https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination",
+   "href": "ecrf_pipeline/docs/evaluation.html#within-sibling-discrimination",
    "section": "methods",
    "stages": [
     "ai"
@@ -799,12 +799,12 @@
    "links": [
     {
      "t": "open",
-     "href": "https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination",
+     "href": "ecrf_pipeline/docs/evaluation.html#within-sibling-discrimination",
      "text": "Open the evaluation"
     }
    ],
    "thumb": "sibling",
-   "source": "ecrf-pipeline-apps docs/evaluation.html#within-sibling-discrimination (main 82ba2fa)",
+   "source": "ecrf_pipeline/docs/evaluation.html#within-sibling-discrimination (original evaluation at ecrf-pipeline-apps main 82ba2fa)",
    "published": true
   },
   {

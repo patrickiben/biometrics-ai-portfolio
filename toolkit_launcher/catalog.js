@@ -3,7 +3,7 @@ window.TOOLKIT_CATALOG = {
   "updated": "2026-11-03",
   "title": "Trial biostatistics toolkit",
   "project_label": "Create private project from examples",
-  "description": "Open every module from the browser catalog. Core analyses and guided setup require no local R, Python or toolkit installation. Shared accounts, schedules and email are optional service connections; references and external public demos retain their stated scope.",
+  "description": "Open every module from the browser catalog. Core analyses and guided setup require no local R, Python or toolkit installation. Shared accounts, schedules and email are optional service connections; reference pages retain their stated scope.",
   "modules": [
     {
       "id": "open-tracker",
@@ -1458,48 +1458,51 @@ window.TOOLKIT_CATALOG = {
     {
       "id": "ecrf",
       "title": "eCRF assist apps",
-      "summary": "Open four separately hosted Python demos: coding QC, de-identification review, participant risk and central monitoring.",
-      "category": "External browser demos",
-      "kind": "external",
-      "runtime": "External browser project",
+      "summary": "Four guided browser tools for your CSV data: coding candidates, de-identification review, participant screening and central statistical monitoring.",
+      "category": "Data review",
+      "kind": "browser",
+      "runtime": "Python in your browser",
       "docs": [
         {
-          "label": "Apps and setup",
-          "path": "https://patrickiben.github.io/ecrf-pipeline-apps/"
+          "label": "Apps and browser guide",
+          "path": "ecrf_pipeline/docs/index.html"
         },
         {
-          "label": "Separate source repository",
-          "path": "https://github.com/patrickiben/ecrf-pipeline-apps"
+          "label": "Source and optional local setup",
+          "path": "https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/ecrf_pipeline"
         }
       ],
-      "workspace_paths": [],
+      "workspace_paths": [
+        "ecrf_pipeline"
+      ],
       "inputs": [],
       "actions": [
         {
           "id": "ecrf.open",
-          "label": "Open eCRF demos",
+          "label": "Open eCRF apps",
           "type": "open",
-          "path": "https://patrickiben.github.io/ecrf-pipeline-apps/"
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/"
         }
       ],
       "outputs": [],
-      "persistence": "Separate demo site; its code and runtime are not included in this toolkit project ZIP.",
-      "customization": "Use the synthetic public demos. For local adaptation, download that separate repository and follow its own setup guide.",
-      "limits": "Uploads are disabled in the public demos. Placeholder coding is not MedDRA. The host/CDN sees your IP address; this is not a validated or Part 11 system. This link opens a separately maintained public project; upload availability and validation scope are governed by that app.",
-      "demo_url": "https://patrickiben.github.io/ecrf-pipeline-apps/",
-      "browser_label": "Open external browser app"
+      "persistence": "Files and results stay in the current browser tab. Download the result and audit packages before resetting or closing it. Source is included in toolkit project copies under Apache-2.0.",
+      "customization": "Upload CSVs, map your study columns, choose fields or screening criteria, and run. Coding requires your own dictionary. Optional synthetic examples load only when selected.",
+      "limits": "Coding candidates and screening flags require review. Redaction can miss identifiers. Scores are rule summaries, not event probabilities; drift compares the visits and units you select.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/",
+      "browser_label": "Open browser workspace",
+      "browser_path": "ecrf_pipeline/docs/"
     },
     {
       "id": "sibling",
       "title": "Within-sibling coding evaluation",
       "summary": "Read the separate eCRF coding-assist evaluation, including its within-sibling comparison and observed failures.",
-      "category": "External browser demos",
-      "kind": "external",
-      "runtime": "External browser project",
+      "category": "Methods and evidence",
+      "kind": "reference",
+      "runtime": "Browser reference",
       "docs": [
         {
           "label": "Evaluation",
-          "path": "https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination"
+          "path": "ecrf_pipeline/docs/evaluation.html#within-sibling-discrimination"
         }
       ],
       "workspace_paths": [],
@@ -1509,15 +1512,16 @@ window.TOOLKIT_CATALOG = {
           "id": "sibling.open",
           "label": "Open evaluation",
           "type": "open",
-          "path": "https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination"
+          "path": "https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/evaluation.html#within-sibling-discrimination"
         }
       ],
       "outputs": [],
-      "persistence": "Read-only external evidence; reproduction belongs to the separately downloaded eCRF repository.",
+      "persistence": "Read-only evaluation evidence, with source and synthetic reproduction material included in the toolkit eCRF module.",
       "customization": "Read the evaluation before adapting the coding-assist example. Retain its human review and test assumptions in any new work.",
-      "limits": "Synthetic evaluation results do not establish performance on a new study or coding dictionary. This link opens a separately maintained public project; upload availability and validation scope are governed by that app.",
-      "demo_url": "https://patrickiben.github.io/ecrf-pipeline-apps/evaluation.html#within-sibling-discrimination",
-      "browser_label": "Open external browser app"
+      "limits": "Historical synthetic evaluation results do not establish performance on a new study or coding dictionary.",
+      "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/ecrf_pipeline/docs/evaluation.html#within-sibling-discrimination",
+      "browser_label": "Read browser reference",
+      "browser_path": "ecrf_pipeline/docs/evaluation.html#within-sibling-discrimination"
     }
   ]
 };

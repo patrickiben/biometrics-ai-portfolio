@@ -12,8 +12,11 @@ const output = process.env.QA_OUTPUT_DIR || fs.mkdtempSync(path.join(os.tmpdir()
 fs.mkdirSync(output, { recursive: true });
 const prefix = '/biometrics-ai-portfolio/';
 const skip = new Set(['.git', 'node_modules', '.quarto', '_site', 'site_libs', '_partials']);
+// Unrendered source templates are checked through their rendered pages. eCRF's
+// sync check verifies all four generated launch pages before publication.
+const templates = new Set(['ecrf_pipeline/tools/browser_app_template.html']);
 const pages = [];
-function walk(dir) { for (const entry of fs.readdirSync(dir, { withFileTypes: true })) { const file = path.join(dir, entry.name), rel = path.relative(root, file).split(path.sep).join('/'); if (entry.isDirectory() && !skip.has(entry.name)) walk(file); else if (entry.isFile() && entry.name.endsWith('.html') && !entry.name.startsWith('_') && !rel.startsWith('apps/_shared/')) pages.push(rel); } }
+function walk(dir) { for (const entry of fs.readdirSync(dir, { withFileTypes: true })) { const file = path.join(dir, entry.name), rel = path.relative(root, file).split(path.sep).join('/'); if (entry.isDirectory() && !skip.has(entry.name)) walk(file); else if (entry.isFile() && entry.name.endsWith('.html') && !entry.name.startsWith('_') && !rel.startsWith('apps/_shared/') && !templates.has(rel)) pages.push(rel); } }
 walk(root); pages.sort();
 if(process.env.SITE_QC_MODE === "interactions") pages.length = 0;
 if(process.env.SITE_QC_PAGES){const selected=new Set(process.env.SITE_QC_PAGES.split(','));for(let i=pages.length-1;i>=0;i--)if(!selected.has(pages[i]))pages.splice(i,1);}

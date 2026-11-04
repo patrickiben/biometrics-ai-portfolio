@@ -1,0 +1,56 @@
+<!doctype html>
+<!-- RENDERED FILE: edit tools/browser_app_template.html and run `python tools/sync_browser_apps.py`.
+     CI fails if this page differs from the template as rendered (`--check`). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="{{CSP}}">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>{{TITLE}} · Trial Biostatistics Toolkit</title>
+<meta name="description" content="{{DESCRIPTION}}">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="{{CDN}}" crossorigin>
+<!-- stlite {{STLITE_VERSION}}, an exact pinned release. Subresource Integrity: the browser refuses the stylesheet,
+     and (where import-map integrity is supported) the two core modules, if their content changes. -->
+<link rel="stylesheet" id="stlite-css" data-stlite-css href="{{STLITE_CSS}}" integrity="{{STLITE_CSS_SRI}}" crossorigin="anonymous">
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="../../../assets/theme/tokens.css">
+<link rel="stylesheet" href="../theme.css">
+<script src="../theme.js"></script>
+<script type="importmap">{{IMPORTMAP}}</script>
+</head>
+<body>
+<header class="bar">
+  <div class="toolkit-nav"><nav class="crumbs" aria-label="Breadcrumb"><a href="../../../TOOLKIT_SETUP.html">Toolkit</a> <span aria-hidden="true">/</span> <a href="../">eCRF apps</a> <span aria-hidden="true">/</span> <span aria-current="page">{{TITLE}}</span></nav><button class="theme-toggle" type="button">Light / dark mode</button></div>
+  <!-- Open while the app loads. On a small screen launch.js folds it to its one-line summary once the app is up,
+       so the app gets the room; one tap opens it again. Its summary line shows on small screens only. -->
+  <details id="notes" class="notes" open>
+    <summary>Privacy and limits</summary>
+    <p class="privacy"><strong>Privacy:</strong> {{PRIVACY_NOTE}}</p>
+    <p class="limits"><strong>Limits:</strong> {{LIMITS}}</p>
+  </details>
+  <p id="style-error" class="style-error" role="alert" hidden></p>
+</header>
+<main id="stage">
+  <div id="root"></div>
+  <section id="boot" aria-labelledby="boot-notice">
+    <div class="boot-inner">
+      <p id="boot-notice" class="notice" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><span id="boot-text">{{LOADING_NOTICE}}</span></p>
+      <p id="boot-step" class="step">Loading the page code.</p>
+      <p id="boot-error" class="error" role="alert" hidden></p>
+      <noscript><p class="error">Enable JavaScript to run this app. The screenshot below illustrates the earlier synthetic-data workflow.</p></noscript>
+      <figure class="preview">
+        <img src="../img/{{IMG}}" width="1440" height="960" alt="{{ALT}}">
+        <figcaption>Earlier synthetic example. Once the app starts, upload your CSV files or choose its optional example, map your columns, then run and download the results.</figcaption>
+      </figure>
+    </div>
+  </section>
+</main>
+<script type="application/json" id="stlite-config">
+{{CONFIG}}
+</script>
+<script type="module" src="launch.js"></script>
+</body>
+</html>

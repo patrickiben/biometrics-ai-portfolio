@@ -1,0 +1,60 @@
+name: eCRF native and source QC
+on:
+  workflow_call:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  browser-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Check independent browser copies, pinned wheels and generated pages
+        run: python ecrf_pipeline/tools/sync_browser_apps.py --check
+      - name: Check publication reuse boundaries and archive integrity guards
+        run: python -m unittest tools.tests.test_ecrf_release -v
+  native:
+    name: eCRF (${{ matrix.variant }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: stand-in
+            python: '3.12'
+            extras: ''
+          - variant: optional-extras
+            python: '3.12'
+            extras: 'pyreadstat scikit-learn POT scipy'
+          - variant: browser-stack
+            python: '3.14.0'
+            extras: 'streamlit==1.65.0 pandas==3.0.2 numpy==2.4.3 pyarrow==22.0.0'
+    defaults:
+      run:
+        working-directory: ecrf_pipeline
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: ecrf_pipeline/requirements.txt
+      - name: Install the native or exact browser dependency variant
+        run: python -m pip install -r requirements.txt ${{ matrix.extras }}
+      - name: Keep mode guards under the tests' control
+        run: |
+          if [ -n "${ECRF_HOSTED+x}" ] || [ -n "${ECRF_BROWSER+x}" ]; then
+            echo '::error::ECRF mode flags must be unset before QC'; exit 1
+          fi
+      - name: Existing four-app and hosted-mode regressions
+        run: python tests/qc_test.py
+      - name: Independent registered evaluation and known answers
+        run: python tests/test_sibling.py
+      - name: Browser intake, scientific boundaries and complete exports
+        run: |
+          python -m unittest discover -s tests -p 'test_*browser*.py' -v

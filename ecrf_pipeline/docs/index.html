@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eCRF review workspace | Trial Biostatistics Toolkit</title>
+<meta name="description" content="Run coding, de-identification, participant risk and anomaly screening directly in your browser with guided CSV mapping and client-neutral review exports.">
+<meta name="color-scheme" content="light dark">
+<link rel="icon" href="data:,">
+<!-- Static toolkit documentation with shared local theme assets. -->
+<style>
+:root {
+  --bg:#F6F7F8; --surface:#FFFFFF; --text:#18212B; --muted:#4F5B67; --line:#D5DBE1;
+  --accent:#0757BF; --accent-soft:#E7EFFA; --note-bg:#FBF3E9; --note-line:#C66A36; --code-bg:#EAEFF4;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:#12171D; --surface:#1A2129; --text:#E6EAEE; --muted:#A9B3BD; --line:#323C47;
+    --accent:#7DB5FF; --accent-soft:#1E2B3B; --note-bg:#2A2119; --note-line:#E0935F; --code-bg:#24303C;
+  }
+}
+* { box-sizing:border-box; }
+html { -webkit-text-size-adjust:100%; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Helvetica,Arial,sans-serif;
+  font-size:1rem; line-height:1.6; }
+.wrap { max-width:920px; margin:0 auto; padding:0 16px; }
+header.site { padding:48px 0 24px; border-bottom:1px solid var(--line); }
+.kicker { margin:0 0 8px; color:var(--muted); font-size:.85rem; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+h1 { margin:0 0 12px; font-size:clamp(1.8rem, 5vw, 2.4rem); line-height:1.2; }
+h2 { margin:40px 0 12px; font-size:1.35rem; line-height:1.3; }
+h3 { margin:0 0 6px; font-size:1.05rem; }
+p { margin:0 0 12px; }
+.lede { font-size:1.08rem; max-width:44em; }
+a { color:var(--accent); text-underline-offset:2px; }
+a:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:2px; }
+code { font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace; font-size:.9em; background:var(--code-bg);
+  padding:.1em .35em; border-radius:4px; overflow-wrap:anywhere; }
+.links { display:flex; flex-wrap:wrap; gap:8px 20px; margin:16px 0 0; padding:0; list-style:none; }
+.links a { font-weight:600; }
+.note { margin:24px 0 0; padding:12px 16px; background:var(--note-bg); border-left:4px solid var(--note-line); border-radius:4px; }
+.note p:last-child { margin-bottom:0; }
+.grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:16px; }
+@media (max-width:640px) { .grid { grid-template-columns:minmax(0, 1fr); } }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:16px; min-width:0; }
+.card .file { margin:0 0 10px; color:var(--muted); font-size:.9rem; }
+.card dl { margin:0; }
+.card dt { font-weight:600; font-size:.85rem; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; margin-top:8px; }
+.card dd { margin:2px 0 0; }
+ol.tiers { margin:0; padding-left:1.4em; }
+ol.tiers li { margin:0 0 10px; }
+.demolinks { background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:16px; }
+.demolinks ul { margin:0; padding-left:1.2em; }
+.demolinks li { margin:0 0 6px; }
+figure { margin:0 0 28px; }
+figure a { display:block; }
+figure img { display:block; width:100%; height:auto; border:1px solid var(--line); border-radius:6px; background:#FFFFFF; }
+figcaption { margin-top:8px; color:var(--muted); font-size:.92rem; }
+ul.reading { margin:0; padding-left:1.2em; }
+ul.reading li { margin:0 0 8px; }
+.muted { color:var(--muted); }
+footer.site { margin:48px 0 0; padding:20px 0 40px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem; }
+@media (max-width:480px) {
+  header.site { padding-top:32px; }
+  h2 { margin-top:32px; }
+}
+</style>
+<link rel="stylesheet" href="../../assets/theme/tokens.css">
+<link rel="stylesheet" href="theme.css">
+<script src="theme.js"></script>
+
+</head>
+<body>
+<div class="wrap">
+<header class="site">
+  <nav class="toolkit-nav" aria-label="Toolkit navigation"><a href="../../TOOLKIT_SETUP.html">Trial Biostatistics Toolkit</a><a href="index.html">eCRF workspace</a><button class="theme-toggle" type="button" aria-label="Switch color mode">Light / dark</button></nav>
+  <p class="kicker">Trial Biostatistics Toolkit</p>
+  <h1>eCRF review workspace</h1>
+  <p class="lede">Four client-neutral tools for reviewing clinical data extracts. Upload your CSV files, map their fields and run the checks directly in your browser. No installation, account, code editing or command line is required.</p>
+  <ul class="links"><li><a href="#apps">Open a tool</a></li><li><a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/ecrf_pipeline/USER_GUIDE.md">Guided user guide</a></li><li><a href="evaluation.html">Historical evaluation</a></li><li><a href="case-study.html">Worked case study</a></li></ul>
+  <div class="note" role="note"><p>Every tool starts blank. <strong>Load synthetic example</strong> is optional and uses fictional data. No client data or licensed MedDRA dictionary is bundled. Your own coding data requires your own dictionary CSV.</p></div>
+</header>
+<main>
+<section aria-labelledby="apps">
+  <h2 id="apps">Choose a tool</h2>
+  <div class="grid">
+    <article class="card"><h3><a href="app/meddra.html">Coding QC assist</a></h3><p>Upload study CSVs and a dictionary CSV. Select verbatim and identifier fields, map dictionary terms, codes, hierarchy and currency, then set a review threshold.</p><p>Download candidate terms, scores, selected inputs, mapped dictionary and audit. <strong>Every candidate stays unreviewed.</strong> Lexical matching does not resolve clinical meaning or approve SDTM codes.</p></article>
+    <article class="card"><h3><a href="app/phi.html">De-identification review assist</a></h3><p>Select CSV fields, identifier patterns and additional literal terms. Choose which scanned fields belong in the redacted export.</p><p>Download redacted field copies and an audit separately from the optional sensitive-review package containing originals and matched spans. <strong>Review remaining text and headers:</strong> this does not establish complete anonymization.</p></article>
+    <article class="card"><h3><a href="app/risk.html">Participant risk screening</a></h3><p>Upload one study's safety domains. Map fields and categories, confirm units, and set screening thresholds and category cuts.</p><p>Download rule-based safety/discontinuation indices with contributing signals, coverage and settings. Scores are <strong>screening indices, not probabilities</strong>; missing domains are not assessed.</p></article>
+    <article class="card"><h3><a href="app/anomaly.html">Anomaly and drift screening</a></h3><p>Upload a wide CSV. Select participant and measurement fields, declare units, and choose explicit reference/current visits and optional lab/site groups.</p><p>Download numeric outliers, bounded distribution comparisons, text-isolation screens and audit. Paired visits require complete matched participants and stable lab/site assignments. These are <strong>screening methods, not a general longitudinal model</strong>.</p></article>
+  </div>
+</section>
+<section aria-labelledby="start">
+  <h2 id="start">Upload, map, run and save</h2>
+  <ol class="tiers"><li><strong>Open a tool.</strong> Start with your own files, or deliberately load its synthetic example to learn the controls.</li><li><strong>Upload UTF-8 CSV.</strong> Use unique nonblank headers and consistent rows. The form checks size, schema, numeric values where needed and unsupported filenames.</li><li><strong>Complete the guided mappings.</strong> Review the selected fields, units, dictionary and criteria before running. Default thresholds are illustrative, not a client protocol or SAP.</li><li><strong>Run and review.</strong> Changing files or settings clears old results and downloads. Results support human review; they do not make clinical, coding or privacy decisions.</li><li><strong>Download the complete review package.</strong> Save outputs before resetting, reloading or closing the tab. Reset clears the current workspace.</li></ol>
+  <p>The <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/ecrf_pipeline/USER_GUIDE.md">User Guide</a> describes every form and output. <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/ecrf_pipeline/README.md">Optional native operation</a> remains available for filesystem inputs, SAS files and learned-model runtimes.</p>
+</section>
+<section aria-labelledby="privacy">
+  <h2 id="privacy">Processing and exports</h2>
+  <p>The Python apps run in your tab through stlite and Pyodide. The page loads software from the toolkit and declared runtime sources; the app does not send uploaded study files to a server. Asset providers receive ordinary requests, including your IP address. Study files and results are session-only; only your theme preference is saved in browser storage.</p>
+  <p>CSV exports escape spreadsheet formulas, including text headers. Audits record mappings, input hashes, settings and the algorithm used. Complete packages are ordinary review files, not protected audit trails or electronic signatures. PHI's sensitive-review package deliberately contains original data and must be handled separately from redacted exports.</p>
+  <p>The browser uses lexical coding, guarded identifier rules, weighted risk indices and robust screening methods. It does not run the optional native Needle3, Laya, XGBoost, Isolation Forest or Sinkhorn model paths.</p>
+</section>
+<section aria-labelledby="evidence">
+  <h2 id="evidence">Evidence and limitations</h2>
+  <p>The <a href="evaluation.html">evaluation</a> and <a href="case-study.html">worked case study</a> preserve the original synthetic/native evidence. On that held-out synthetic coding set, rank-1 accuracy was 78% for the native learned path and 54% for the lexical path. The de-identification evaluation left 91 versus 108 of 308 identifiers readable. Those measurements do not establish accuracy for your study, dictionary or settings.</p>
+  <p>Risk and anomaly have known-answer QC, not measured clinical accuracy. The historical automatic-commit labels and original-plus-sanitized PHI columns belong to the original/native implementation; today's browser flow keeps coding candidates unreviewed and separates redacted output from sensitive originals.</p>
+</section>
+<section aria-labelledby="shots">
+  <h2 id="shots">Original synthetic demonstration screenshots</h2>
+  <p class="muted">These retained screenshots show the original locked synthetic demonstration, before guided own-data intake and separate PHI exports. They are historical evidence, not instructions for the current forms. Select an image to open it at full size.</p>
+  <figure>
+    <a href="img/meddra_results.png"><img src="img/meddra_results.png" width="1440" height="960" loading="lazy"
+         alt="Coding QC assist results table: each adverse-event verbatim with its top three candidate terms, ranks and 99-prefixed placeholder codes, followed by the success message and download buttons."></a>
+    <figcaption>Coding QC assist: top three candidates per verbatim, with placeholder codes; the ranking comes from the <code>[SI]</code> lexical stand-in.</figcaption>
+  </figure>
+  <figure>
+    <a href="img/phi_results.png"><img src="img/phi_results.png" width="1440" height="960" loading="lazy"
+         alt="De-identification review assist results: a table of flagged spans such as invented phone numbers, names, a ZIP code and initials, each with its entity type, offsets, redaction probability and action, above the sanitized domain rows."></a>
+    <figcaption>De-identification review assist: one row per scrubbed span; every name and number shown is invented.</figcaption>
+  </figure>
+  <figure>
+    <a href="img/risk_results.png"><img src="img/risk_results.png" width="1440" height="960" loading="lazy"
+         alt="Participant risk screening results: per-participant safety and discontinuation scores and categories with contributing factors, the fatal participant pinned to the top, and a category summary."></a>
+    <figcaption>Participant risk screening: per-participant safety and discontinuation scores, sorted highest risk first, with the reasons for each.</figcaption>
+  </figure>
+  <figure>
+    <a href="img/anomaly_results.png"><img src="img/anomaly_results.png" width="1440" height="960" loading="lazy"
+         alt="Central statistical monitoring results: flagged per-participant numeric outliers with their extreme columns, a cohort-wide drift table per column, and the start of the per-lab drift table."></a>
+    <figcaption>Central statistical monitoring: flagged numeric outliers, cohort-wide drift per column and per-lab drift on the longitudinal demo.</figcaption>
+  </figure>
+</section>
+</main>
+<footer class="site"><p>Apache-2.0 &middot; <a href="https://github.com/patrickiben/biometrics-ai-portfolio/tree/main/ecrf_pipeline">Source and notices</a> &middot; <a href="../../TOOLKIT_SETUP.html">Trial Biostatistics Toolkit</a></p></footer>
+</div>
+</body>
+</html>

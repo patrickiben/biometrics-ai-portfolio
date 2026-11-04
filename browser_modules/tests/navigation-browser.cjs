@@ -1,7 +1,7 @@
 /* Catalog, guide, launch-shell and theme QC. Module execution has separate tests.
  * node browser_modules/tests/navigation-browser.cjs SITE [EVIDENCE]
  * TOOLKIT_LIVE_BASE=https://host/biometrics-ai-portfolio enables the same read-only live checks.
- * The two separately maintained external demos are inspected, never given input or run.
+ * Integrated eCRF uploads and downloads have separate execution tests.
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');

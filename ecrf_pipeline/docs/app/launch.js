@@ -1,0 +1,242 @@
+// launch.js: starts one eCRF app entirely in the visitor's browser with stlite (Streamlit on Pyodide).
+//
+// Each page (docs/app/<app>.html, rendered by tools/sync_browser_apps.py) carries its settings as JSON in
+// <script id="stlite-config">: the pinned stlite module, the Pyodide build it is made for, the app's .py file
+// and synthetic data (byte-identical copies under docs/app/, checked in CI), the wheels to preload and the
+// requirements. The files are fetched from this site, written into the in-browser file system and run
+// there; there is no server, and the page's Content-Security-Policy only lets it connect to this site and
+// the CDN.
+//
+// ECRF_BROWSER is accepted only on the actual WebAssembly platform. ECRF_HOSTED remains a separate,
+// fail-closed server-demo setting; it is deliberately not enabled in this browser-only launch.
+
+const $ = (id) => document.getElementById(id);
+const absolute = (path) => new URL(path, document.baseURI).href;
+const RETRY_NOTICE = "Check your connection and reload this page. Uploads and results are held only in this tab, so download results before reloading.";
+let settled = false;
+
+// stlite 1.12.0 exposes Streamlit's host messaging through mount({hostConfig}). The pinned
+// frontend accepts SET_CUSTOM_THEME_CONFIG v1 only from a trusted allowed origin. Update
+// its React theme, including tables/charts, without remounting Python or losing uploaded data.
+// See upstream streamlit 9c524f4, HostCommunicationManager and App.handleThemeMessage.
+function syncAppTheme() {
+  if (!document.body.classList.contains('app-ready')) return;
+  const dark = document.documentElement.dataset.theme === 'dark';
+  const tokens = getComputedStyle(document.documentElement);
+  const color = name => tokens.getPropertyValue(name).trim();
+  window.postMessage({ stCommVersion: 1, type: 'SET_CUSTOM_THEME_CONFIG', themeInfo: {
+    base: dark ? 1 : 0,
+    primaryColor: dark ? '#147d74' : '#0b7268',
+    backgroundColor: color('--bg'), secondaryBackgroundColor: color('--surface'),
+    textColor: color('--ink'), borderColor: color('--control'), linkColor: color('--accent'),
+    yellowTextColor: color('--amber'), redTextColor: color('--red'), greenTextColor: color('--green'), blueTextColor: color('--blue'),
+  } }, location.origin);
+}
+window.addEventListener('ecrf-theme', syncAppTheme);
+
+function setStep(text) {
+  if (!settled && text) $("boot-step").textContent = text;
+}
+
+function ready() {
+  if (settled) return;
+  settled = true;
+  $("boot").hidden = true;
+  document.body.classList.add("app-ready");
+  syncAppTheme();
+  fitNotes();
+  checkStyles();
+}
+
+// The Privacy and Limits box (<details id="notes">, open in the page source) stays open while the app loads. On a
+// small screen it folds to its one-line summary once the app is up, so the app gets the room; one tap opens it
+// again. On a large screen it is always open (its summary line is hidden there, see app.css).
+const SMALL_SCREEN = window.matchMedia("(max-width: 600px), (max-height: 500px)");
+function fitNotes() {
+  const notes = $("notes");
+  if (!notes) return;
+  if (!SMALL_SCREEN.matches) notes.open = true;
+  else if (document.body.classList.contains("app-ready")) notes.open = false;
+}
+SMALL_SCREEN.addEventListener("change", fitNotes);
+
+// stlite's stylesheet comes from the CDN like the runtime, but the app starts without it: if that request fails
+// (a dropped connection, or a changed file refused by Subresource Integrity), the app works unstyled, with icon
+// names showing as text. So the page fetches the stylesheet again, twice at most and after a pause (an immediate
+// retry was seen to hit the same dropped connection), and if that fails too it says so above the app.
+const STYLE_NOTICE = "The app's styles did not load, so it may look broken (icon names show as text). Reloading the page usually fixes this.";
+const STYLE_RETRY_DELAYS_MS = [1000, 4000];
+let styleRetry = null;
+
+function stylesLoaded() {
+  return [...document.querySelectorAll("link[data-stlite-css]")].some((link) => {
+    try { return !!(link.sheet && link.sheet.cssRules.length > 0); } catch { return false; }
+  });
+}
+
+function showStyleNotice(show) {
+  const box = $("style-error");
+  if (!box) return;
+  if (show && box.hidden) {
+    box.textContent = STYLE_NOTICE;
+    const again = document.createElement("button");
+    again.type = "button";
+    again.textContent = "Reload";
+    again.addEventListener("click", () => location.reload());
+    box.append(" ", again);
+  }
+  box.hidden = !show;
+}
+
+// One more copy of the stylesheet link, in the same place in the cascade (ahead of app.css). Resolves true if
+// it loaded; a copy that fails is removed again.
+function addStylesheetCopy(first) {
+  return new Promise((resolve) => {
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.crossOrigin = "anonymous";
+    link.integrity = first.integrity;
+    link.href = first.href;
+    link.dataset.stliteCss = "retry";
+    link.addEventListener("load", () => resolve(stylesLoaded()));
+    link.addEventListener("error", () => { link.remove(); resolve(stylesLoaded()); });
+    first.after(link);
+  });
+}
+
+function retryStyles() {
+  const first = $("stlite-css");
+  if (!first) return Promise.resolve(stylesLoaded());
+  styleRetry = styleRetry || (async () => {
+    for (const ms of STYLE_RETRY_DELAYS_MS) {
+      await new Promise((r) => setTimeout(r, ms));
+      if (stylesLoaded() || (await addStylesheetCopy(first))) return true;
+    }
+    return stylesLoaded();
+  })();
+  return styleRetry;
+}
+
+async function checkStyles() {
+  if (stylesLoaded()) return;
+  if (!(await retryStyles())) showStyleNotice(true);
+}
+
+// A stylesheet that fails after this script starts is retried at once; one that arrives late clears the notice.
+for (const link of document.querySelectorAll("link[data-stlite-css]")) {
+  link.addEventListener("error", () => { retryStyles(); });
+  link.addEventListener("load", () => { if (stylesLoaded()) showStyleNotice(false); });
+}
+
+// One readable line from an error (a Python traceback's last "...Error: ..." line, for example).
+function brief(err) {
+  const text = String((err && err.message) || err || "unknown error").trim();
+  const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+  const pick = [...lines].reverse().find((l) => /\w(Error|Exception)\b|Failed/.test(l)) || lines[0] || text;
+  return pick.length > 200 ? `${pick.slice(0, 197)}...` : pick;
+}
+
+function fail(reason) {
+  if (settled) return;
+  settled = true;
+  document.body.classList.add("app-failed");
+  $("boot-text").textContent = "The app could not start in this browser.";
+  $("boot-step").textContent = "The screenshot below shows its results on the bundled synthetic data.";
+  const box = $("boot-error");
+  box.textContent = `${reason} ${RETRY_NOTICE}`;
+  box.hidden = false;
+}
+
+// Pyodide 314 runs Python in a module worker (Chrome 80+, Safari 15+, Firefox 114+).
+function supportsModuleWorkers() {
+  let asked = false;
+  try {
+    const url = URL.createObjectURL(new Blob([""], { type: "text/javascript" }));
+    const w = new Worker(url, { get type() { asked = true; return "module"; } });
+    w.terminate();
+    URL.revokeObjectURL(url);
+  } catch {
+    return false;
+  }
+  return asked;
+}
+
+// The app is up once its first render reaches the page (its title). The timer is a backstop so the
+// notice never stays over a live app; it starts when Python reports it has loaded.
+function waitForFirstRender(root) {
+  const rendered = () => root.querySelector('[data-testid="stMain"] h1, [data-testid="stHeading"]');
+  const observer = new MutationObserver(() => {
+    if (rendered()) { observer.disconnect(); ready(); }
+  });
+  observer.observe(root, { childList: true, subtree: true });
+  if (rendered()) { observer.disconnect(); ready(); }
+  return (ms) => setTimeout(() => { observer.disconnect(); ready(); }, ms);
+}
+
+async function main() {
+  const cfg = JSON.parse($("stlite-config").textContent);
+  if (typeof WebAssembly !== "object" || !supportsModuleWorkers()) {
+    return fail("It needs WebAssembly and module workers, which this browser does not provide; a current Chrome, Edge, Firefox or Safari does.");
+  }
+  setTimeout(() => setStep("Still starting. On a slow connection or an older device the first visit can take a minute or more."), 45000);
+
+  let stlite;
+  try {
+    stlite = await import(cfg.stlite);
+  } catch (e) {
+    return fail(`The in-browser runtime did not load from the CDN (${brief(e)}).`);
+  }
+
+  const root = $("root");
+  const files = {};
+  for (const path of [cfg.entry, ...cfg.data]) files[path] = { url: absolute(path) };
+  setStep("Loading Python.");
+  const controller = stlite.mount(
+    {
+      entrypoint: cfg.entry,
+      files,
+      requirements: cfg.requirements,
+      // Preloaded before micropip runs, so Streamlit's dependency check finds them installed and nothing
+      // is fetched from PyPI.
+      prebuiltPackageNames: cfg.wheels.map(absolute),
+      pyodideUrl: cfg.pyodide,
+      env: { ECRF_BROWSER: "1" },
+      hostConfig: { allowedOrigins: [location.origin] },
+      disableDocumentStyles: true,
+      streamlitConfig: {
+        "browser.gatherUsageStats": false,
+        "server.maxUploadSize": cfg.maxUploadMB,
+        "client.toolbarMode": "viewer",
+        // The same theme as .streamlit/config.toml (keep the two in step): colors that meet WCAG AA contrast
+        // (4.5:1 for text) where Streamlit's defaults do not. The app still follows the visitor's light or dark
+        // setting. Light: the primary color (white text on the Execute button), captions (drawn at 60% opacity of
+        // the text color), and the warning, error and success text. Dark: the primary color, for the Execute
+        // button's white text. app.css draws a slider's value in the text color, which the theme cannot do.
+        "theme.light.primaryColor": "#0b7268",
+        "theme.light.textColor": "#101218",
+        "theme.light.yellowTextColor": "#7A5A00",
+        "theme.light.redTextColor": "#A3262A",
+        "theme.light.greenTextColor": "#11752F",
+        "theme.dark.primaryColor": "#147d74",
+      },
+      disableProgressToasts: true,   // progress shows in the notice above the app instead
+    },
+    root,
+  );
+
+  // The kernel's load events are not part of stlite's documented API, so each use is guarded; without
+  // them the notice simply stays up until the first render.
+  const backstop = waitForFirstRender(root);
+  const kernel = controller && controller._kernel;
+  if (kernel && typeof kernel.addEventListener === "function") {
+    kernel.addEventListener("loadProgress", (e) => setStep(String((e && e.detail) || "")));
+    kernel.addEventListener("loadError", (e) => {
+      fail(`Python failed to start (${brief(e && e.detail)}).`);
+    });
+    kernel.addEventListener("loadFinished", () => { setStep("Running the app."); backstop(20000); });
+  } else {
+    backstop(180000);
+  }
+}
+
+main().catch((e) => fail(`Unexpected error (${brief(e)}).`));
