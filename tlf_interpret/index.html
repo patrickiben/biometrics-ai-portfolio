@@ -360,7 +360,7 @@ html[data-theme] .top b{white-space:normal}
 <div class="warn"><strong>No GGUF ships with this.</strong> Google publishes MedGemma as safetensors only &mdash; there is <strong>no official GGUF</strong>. Convert/quantize it yourself with recent <code>llama.cpp</code>, or use a trusted community quant (e.g. <code>unsloth</code>/<code>bartowski</code>) &mdash; <strong>verify the publisher and record the SHA</strong>. Pin the file by path + SHA so the frozen weights reproduce. This is <strong>not Ollama</strong>: the model runs <strong>in-process from R</strong> via <code>reticulate</code> &rarr; <code>llama-cpp-python</code> &mdash; no daemon, no port, no admin.</div>
 
 <h2 id="run">Quick-start &amp; how to run</h2>
-<p>Tick each step as you finish it (full detail for the model pieces is in <a href="#runtime">Runtime &amp; hardware</a> and <a href="README.md">the README</a>):</p>
+<p>Tick each step as you finish it (full detail for the model pieces is in <a href="#runtime">Runtime &amp; hardware</a> and <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/tlf_interpret/README.md">the README</a>):</p>
 <ul class="checklist" id="qsc">
   <li><span>Install R packages: <code>install.packages(c("reticulate","digest"))</code></span></li>
   <li><span>Create a user Python venv and <code>pip install llama-cpp-python</code> (no admin, no daemon)</span></li>
@@ -420,7 +420,7 @@ quarto render interpret_tlf.qmd</code></pre>
   <li><strong>Numbers stay deterministic.</strong> The fact extractor is plain R operating on the <em>aggregate</em> TLF result (n's, %'s, geometric means already computed by the validated program). No participant-level data and no PHI ever reach the model. The model cannot compute, only restate.</li>
   <li><strong>Local SLM, on-prem, NO daemon, NO admin (<code>reticulate</code> &rarr; <code>llama-cpp-python</code>, GGUF).</strong> Runs the model <em>in-process from R</em> via a user-space Python wheel &mdash; no Ollama, no system service, no network, no admin rights (the things that get blocked on locked-down laptops). Sovereignty + no data egress + a <em>frozen</em> GGUF file (pinned by name + SHA) so the same facts reproduce the same draft.</li>
   <li><strong>Deterministic decoding.</strong> <code>temperature = 0</code>, fixed <code>seed</code> &rarr; reproducible drafts; logged in the audit record alongside the model digest and a hash of the prompt and facts.</li>
-  <li><strong>Validators are not the model.</strong> The numeric-consistency check (regex-extract every number from the draft; each must match a facts value within tolerance) is the core safety control &mdash; it makes a hallucinated statistic <em>structurally impossible to pass silently</em>. The claim guard flags efficacy/causal/&ldquo;well tolerated&rdquo;-style language for mandatory human judgement.</li>
+  <li><strong>Validators are not the model.</strong> The numeric-consistency check (regex-extract every number from the draft; each must match a facts value within tolerance) is the core safety control &mdash; it makes a hallucinated statistic <em>structurally impossible to pass silently</em>. The claim guard flags efficacy/causal/&ldquo;well tolerated&rdquo;-style language for mandatory human judgment.</li>
   <li><strong>Human gate is mandatory.</strong> Nothing is <code>APPROVED</code> without biostatistician sign-off. The Quarto doc renders drafts as <code>DRAFT &mdash; biostatistician review required</code> and shows exactly which facts the draft was grounded on, so review is fast and auditable.</li>
   <li><strong>Quarto</strong> is the orchestration + rendering + freeze layer: one parameterized <code>.qmd</code> per TLF (or a master doc looping the TLF list), <code>freeze: true</code> + <code>renv</code> lockfile for reproducible reports.</li>
 </ul>
@@ -496,7 +496,7 @@ quarto render interpret_tlf.qmd</code></pre>
 <h3>Tests &amp; docs</h3>
 <div class="files">
   <a href="selftest.R"><code>selftest.R</code><span class="d">runs the validators on a known-good and a hallucinated draft (no model needed)</span></a>
-  <a href="README.md"><code>README.md</code><span class="d">full design write-up, runtime/hardware table, honest limits</span></a>
+  <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/tlf_interpret/README.md"><code>README.md</code><span class="d">full design write-up, runtime/hardware table, honest limits</span></a>
 </div>
 
 <h2 id="trouble">Troubleshooting</h2>

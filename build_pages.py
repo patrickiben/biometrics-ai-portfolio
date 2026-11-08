@@ -366,7 +366,7 @@ def author_block(depth=0):
             '        <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>\n'
             '        <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>\n      </ul>')
 FINE = ('The example studies (CP-101 to CP-108) are synthetic. No output here is a validated or regulatory '
-        'deliverable. Last updated October 2026.')
+        'deliverable. Last updated November 2026.')
 
 
 def site_footer(depth=0):

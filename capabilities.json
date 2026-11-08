@@ -942,7 +942,7 @@
     },
     {
      "t": "report",
-     "href": "validation_harness/EVIDENCE_LEDGER.md",
+     "href": "https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/validation_harness/EVIDENCE_LEDGER.md",
      "text": "EVIDENCE_LEDGER.md"
     },
     {
@@ -1108,12 +1108,12 @@
     },
     {
      "t": "guide",
-     "href": "open_tracker/README.md",
+     "href": "https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/open_tracker/README.md",
      "text": "Setup and file workflow"
     },
     {
      "t": "guide",
-     "href": "open_tracker/SHARED.md",
+     "href": "https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/open_tracker/SHARED.md",
      "text": "Shared accounts and email"
     }
    ],
