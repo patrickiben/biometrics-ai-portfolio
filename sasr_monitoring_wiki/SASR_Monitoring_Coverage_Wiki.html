@@ -590,7 +590,7 @@ html[data-theme] .top b{white-space:normal}
     <h2>Escalation matrix</h2>
     <table class="cat"><thead><tr><th>Color</th><th>Means</th><th>Who acts</th></tr></thead><tbody>
       <tr><td><b style="color:#46d08a">GREEN</b></td><td>Checks ran, fresh data, nothing tripped</td><td>No action &mdash; the digest is the record</td></tr>
-      <tr><td><b style="color:#e6b24c">AMBER</b></td><td>A tier threshold crossed, or a feed is ageing</td><td>Covering biostatistician reviews same day</td></tr>
+      <tr><td><b style="color:#e6b24c">AMBER</b></td><td>A tier threshold crossed, or a feed is aging</td><td>Covering biostatistician reviews same day</td></tr>
       <tr><td><b style="color:#ff6a6a">RED</b></td><td>A safety screen tripped, or a feed is dead/stale</td><td>Page &rarr; covering biostatistician loops in the medical monitor, who makes the call</td></tr>
       <tr><td><b>NO EMAIL</b></td><td>The job didn&rsquo;t run (the worst case)</td><td>The watchdog pages the backup &mdash; treat as RED until proven otherwise</td></tr>
     </tbody></table>
@@ -618,16 +618,16 @@ html[data-theme] .top b{white-space:normal}
       <li><b>Upsert by task ID:</b> stable text IDs update existing tasks or create new ones. Repeated identical imports do not add duplicate rows or change-history entries.</li>
       <li><b>Validate before writing:</b> use a dry run first. Unknown fields, invalid values and duplicate IDs fail before an import is committed.</li>
       <li><b>Local files, no credentials:</b> the Python standard library and SQLite provide storage and change history. The browser edits its own copy; export JSON and import it with the CLI to update SQLite.</li>
-      <li><b>Exceptions stay visible:</b> status, overdue dates and import freshness can be checked locally. The CLI returns an attention exit status; the optional <a href="../open_tracker/SHARED.md">shared server and email worker</a> add individual accounts and queued SMTP alerts.</li>
+      <li><b>Exceptions stay visible:</b> status, overdue dates and import freshness can be checked locally. The CLI returns an attention exit status; the optional <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/open_tracker/SHARED.md">shared server and email worker</a> add individual accounts and queued SMTP alerts.</li>
     </ul>
     <div class="callout honest">Operational status only. A field allowlist validates structure, not the sensitivity of text: do not enter PHI, participant-level data, unblinded assignments or reported clinical numbers. This toolkit is not a validated system of record. The SAS export example has not been executed.</div>
-    <div class="dl"><a class="btn ghost" href="../open_tracker/index.html">Open Study Tracker</a><a class="btn ghost" href="../open_tracker/README.md">Setup and file workflow</a></div>
+    <div class="dl"><a class="btn ghost" href="../open_tracker/index.html">Open Study Tracker</a><a class="btn ghost" href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/open_tracker/README.md">Setup and file workflow</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="language" aria-label="Optional language layer">
     <h1>The optional on-device language layer &mdash; LOCALMIND</h1>
     <div class="callout honest"><strong>Optional, and ops-only.</strong> The monitoring needs <strong>no AI</strong> &mdash; the checks, the digest structure, the tracker, and every number are deterministic SAS/R. The on-device SLM is a <em>convenience</em> for the language tasks code can&rsquo;t do (re-phrasing a digest, triaging a free-text comment), and it runs behind the same guardrails as the rest of the toolkit: an <strong>on-prem frozen model on loopback</strong>, schema-constrained output, an allowlist validator, and a <strong>human-gated parse-guard</strong>. It never produces a number and never decides what the digest includes.</div>
     <p>If you enable it, the <code>%slm_*</code> library (loopback-guard <code>%slm_init</code>, schema-constrained <code>%slm_chat</code>, allowlist <code>%slm_validate</code>, <code>%slm_classify</code>) is the engine, and the standard honesty applies: a small local model hallucinates, so its trustworthiness comes from the discipline around it, not from being local. See the macro library README for the full treatment.</p>
-    <div class="dl"><a class="btn ghost" href="../slm_wiki/macro_library/README.md">LOCALMIND macro library</a></div>
+    <div class="dl"><a class="btn ghost" href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/slm_wiki/macro_library/README.md">LOCALMIND macro library</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="macros" aria-label="The macro libraries">
     <h1>The macro libraries</h1>
@@ -638,7 +638,7 @@ html[data-theme] .top b{white-space:normal}
       <tr><td><b>LOCALMIND</b> <code>%slm_*</code></td><td><code>slm_macros.sas</code> &middot; <code>triage_driver.sas</code> &middot; <code>slm_config.sas</code> &middot; <code>slm_companion.R</code></td><td>(Optional) the on-device language layer: loopback guard, schema-constrained call, allowlist validator, classify.</td></tr>
     </tbody></table>
     <div class="callout key"><b>Config, not code.</b> <code>tm_config.sas</code> holds the per-study constants &mdash; paths, recipients, the medical monitor, feeds, thresholds &mdash; <code>%include</code>d before the driver. A new study, a rotating medical monitor, or a leave-coverage backup is a one-line change, change-controlled like any study program.</div>
-    <div class="dl"><a class="btn ghost" href="../sas_r_automation/macro_library/TRIALMON_Macro_Library_README.pdf">TRIALMON README</a><a class="btn ghost" href="../open_tracker/README.md">Tracker README</a><a class="btn ghost" href="../slm_wiki/macro_library/README.md">LOCALMIND README</a></div>
+    <div class="dl"><a class="btn ghost" href="../sas_r_automation/macro_library/TRIALMON_Macro_Library_README.pdf">TRIALMON README</a><a class="btn ghost" href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/open_tracker/README.md">Tracker README</a><a class="btn ghost" href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/slm_wiki/macro_library/README.md">LOCALMIND README</a></div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="gov" aria-label="Safeguards  governance">
     <h1>Safeguards &amp; governance</h1>
@@ -695,7 +695,7 @@ html[data-theme] .top b{white-space:normal}
         <li>For the tracker: <b>Python 3 and a writable local SQLite file</b>, plus a location for operational CSV/JSON exports and browser snapshots.</li>
       </ul>
     </div>
-    <div class="callout honest"><b>Only if you enable the optional language layer</b> do the heavier asks apply &mdash; an on-prem workstation/VM, a signed runtime + a frozen open-weight model, a license review, and the GAMP-5 qualification of a non-deterministic component (see the <a href="../slm_wiki/macro_library/README.md">macro library README</a>). The monitoring core needs none of it; keep the two requests separate so the low-risk piece isn&rsquo;t held up by the AI one.</div>
+    <div class="callout honest"><b>Only if you enable the optional language layer</b> do the heavier asks apply &mdash; an on-prem workstation/VM, a signed runtime + a frozen open-weight model, a license review, and the GAMP-5 qualification of a non-deterministic component (see the <a href="https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/slm_wiki/macro_library/README.md">macro library README</a>). The monitoring core needs none of it; keep the two requests separate so the low-risk piece isn&rsquo;t held up by the AI one.</div>
   <div class="footer">SAS/R Monitoring &amp; On-Leave Coverage &middot; deterministic, no-AI monitoring &mdash; detect, package, page; humans decide &middot; validated tools &amp; double-programming own every reported number &middot; the optional on-device SLM is ops-only.</div></section>
 <section id="faq" aria-label="Maintenance  FAQ">
     <h1>Maintenance &amp; FAQ</h1>

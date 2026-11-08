@@ -109,7 +109,7 @@ shiny::runApp("risk_monitor/shiny")
 # needs: install.packages(c("shiny","bslib","DT"))
 ```
 
-Select a signal, set its level, and watch the tier and overall risk re-colour. The
+Select a signal, set its level, and watch the tier and overall risk re-color. The
 [run-and-build page](risk-build.html) shows how the console is built from `R/logic.R`.
 
 ::: {.callout-tip appearance="simple"}
