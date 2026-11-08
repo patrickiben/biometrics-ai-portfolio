@@ -334,6 +334,14 @@ for f in walk(*DOC_EXTS):
         if EM_DASH.search(line):
             (add if rel(f).startswith(STYLE_DOCS) else warn)('Style: em dash in a document', f'{rel(f)} (text line {i})')
 
+# 11. page start ----------------------------------------------------------------------------
+# Every page opens with <!doctype html>. Without it browsers render in quirks mode, and anything
+# spliced into the first line shows as stray text above the page.
+for f in page_files:
+    start = read(f)[:80].lstrip('\ufeff \t\r\n')
+    if not start.lower().startswith('<!doctype html>'):
+        add('Page start: missing or broken doctype', f'{rel(f)}: begins {start[:24]!r}')
+
 # optional: external links --------------------------------------------------------------------
 if CHECK_EXTERNAL:
     import urllib.request
