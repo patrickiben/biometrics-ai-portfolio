@@ -11,7 +11,7 @@
     {
       "t": "guide",
       "label": "Module guide",
-      "href": "https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/budget_reconciliation/README.md"
+      "href": "../../budget_reconciliation/quarto/hours-guide.html"
     }
   ],
   "first_load": {
