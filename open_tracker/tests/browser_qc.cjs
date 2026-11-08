@@ -55,8 +55,8 @@ async function login(page, username = 'editor') { await page.locator('#login-use
   browser = await chromium.launch({ headless: true, ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}) });
   const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, acceptDownloads: true });
   const page = await trackPage(context, base + '/open_tracker/index.html');
-  await scenario('Portfolio prototype framing, synthetic initial rows and filters', async () => {
-    assert.match(await page.locator('#evaluation-note').textContent(), /Portfolio evaluation prototype/);
+  await scenario('Evaluation prototype framing, synthetic initial rows and filters', async () => {
+    assert.match(await page.locator('#evaluation-note').textContent(), /Evaluation prototype/);
     assert.equal(await page.locator('#count-all').textContent(), '4');
     await page.locator('#stat-attention').click(); assert.equal(await page.locator('#rows tr').count(), 2);
     await page.locator('#clear-filters').click(); await page.locator('#search').fill('007'); assert.equal(await page.locator('#rows tr').count(), 1); await page.locator('#clear-filters').click();
@@ -123,7 +123,7 @@ async function login(page, username = 'editor') { await page.locator('#login-use
   const reviewer = await trackPage(await browser.newContext(), sharedBase, true);
   await scenario('Shared anonymous state, failed/successful login and no browser storage', async () => {
     assert.equal(await editor.locator('#workspace-shell').isVisible(), false); assert.equal(await editor.locator('#rows').textContent(), '');
-    await editor.locator('#login-username').fill('editor'); await editor.locator('#login-password').fill('incorrect'); await editor.locator('#login-submit').click(); await editor.waitForFunction(() => document.getElementById('login-error').textContent.includes('Invalid')); await login(editor); assert.equal(await editor.locator('#login-password').inputValue(), ''); assert.match(await editor.locator('#evaluation-note').textContent(), /Portfolio evaluation/);
+    await editor.locator('#login-username').fill('editor'); await editor.locator('#login-password').fill('incorrect'); await editor.locator('#login-submit').click(); await editor.waitForFunction(() => document.getElementById('login-error').textContent.includes('Invalid')); await login(editor); assert.equal(await editor.locator('#login-password').inputValue(), ''); assert.match(await editor.locator('#evaluation-note').textContent(), /Evaluation prototype/);
   });
   await scenario('Viewer controls and server-side write rejection', async () => {
     await login(viewer, 'viewer'); assert.equal(await viewer.locator('.edit-btn').count(), 0); assert.equal(await viewer.locator('#add-row').isVisible(), false);

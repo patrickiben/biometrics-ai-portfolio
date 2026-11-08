@@ -540,7 +540,7 @@ html[data-theme] .top b{white-space:normal}
           <div class="field" id="fCover"><label for="sCover" id="lCover">Cover</label><input id="sCover" type="text" list="peopleList" autocomplete="off"><div class="hint" id="hCover"></div></div>
           <div class="field" id="fStart"><label for="sStart" id="lStart">From</label><input id="sStart" type="date"></div>
           <div class="field" id="fEnd"><label for="sEnd" id="lEnd">Until</label><input id="sEnd" type="date"><div class="hint" id="hEnd"></div></div>
-          <div class="field"><label for="sTeam">Team or programme</label><input id="sTeam" type="text" autocomplete="off"></div>
+          <div class="field"><label for="sTeam">Team or program</label><input id="sTeam" type="text" autocomplete="off"></div>
           <div class="field"><label for="sNotes">Notes for the packet</label><textarea id="sNotes"></textarea></div>
         </div>
       </div>
@@ -578,7 +578,7 @@ html[data-theme] .top b{white-space:normal}
         <span style="color:var(--red)">&#9618; out during this scenario</span>
       </div>
       <div class="tscroll"><table class="matrix" id="matrixTable"></table></div>
-      <p class="hint">Rows are coloured by the job&rsquo;s worst risk under the current scenario. &ldquo;People&rdquo; counts the distinct people who can run the job; that number is the job&rsquo;s bus factor.</p>
+      <p class="hint">Rows are colored by the job&rsquo;s worst risk under the current scenario. &ldquo;People&rdquo; counts the distinct people who can run the job; that number is the job&rsquo;s bus factor.</p>
     </section>
 
     <!-- 4. RISKS -->
@@ -744,7 +744,7 @@ function exampleState() {
     J({ id: "XMPL303-CONF", name: "CDISC conformance check run", study: "XMPL-303", owner: "Emery Test", backups: ["Drew Placeholder"],
         cadence: "Monthly", schedule: "1st business day", inputs: ["sdtm.*", "define.xml"], outputs: ["Conformance issue summary"],
         criticality: "Low", ago: 52, lastStatus: "GREEN", runbook: "https://runbooks.example.com/xmpl-303/conformance", runAs: "svc-stats-DEMO", acct: "service", heartbeat: false,
-        notes: "Missed last month. The validator licence was renewed late (fictional)." }),
+        notes: "Missed last month. The validator license was renewed late (fictional)." }),
     J({ id: "TEAM-TRACKER", name: "Programming tracker sync", study: "All demo studies", owner: "Drew Placeholder", backups: ["Alex Example"],
         cadence: "Daily", schedule: "07:30", inputs: ["program headers", "tracker export"], outputs: ["Tracker sheet updated"],
         criticality: "Low", ago: 1, lastStatus: "GREEN", runbook: "https://runbooks.example.com/team/tracker", runAs: "svc-stats-DEMO", acct: "service", heartbeat: true, notes: "" }),
