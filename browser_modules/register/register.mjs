@@ -22,7 +22,7 @@ function edit(row=null){
  if(!row)return;
  for(const key of fields){
   const label=node('label',labels[key]);label.htmlFor='row-'+key;
-  const control=key==='status'?document.createElement('select'):document.createElement(['id','stage','deliverable','type','owner','ai_tier','ai_engine','due_date'].includes(key)?'input':'textarea');
+  const control=key==='status'?document.createElement('select'):document.createElement(['id','stage','deliverable','type','owner','due_date'].includes(key)?'input':'textarea');
   control.id='row-'+key;control.name=key;
   if(key==='status')control.append(...statuses.map(s=>new Option(s,s)));
   if(key==='due_date')control.type='date';

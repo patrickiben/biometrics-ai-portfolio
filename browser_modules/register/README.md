@@ -1,6 +1,6 @@
 # Browser study deliverable register
 
-Open `index.html` through the toolkit website. Start blank, add records or explicitly load all 132 canonical records from `biostat_pipeline/_register.json`. The source starter remains unchanged. Every original reference field remains editable and is retained in complete JSON, CSV and print exports.
+Open `index.html` through the toolkit website. Start blank, add records or explicitly load every canonical record from `biostat_pipeline/_register.json` (the starter generated from the [deliverables pipeline](../../biostat_pipeline/index.html)). The source starter remains unchanged. Every original reference field remains editable and is retained in complete JSON, CSV and print exports.
 
 The page supports study labels, guided record editing, removal, undo, stage/status filters, all-field search and atomic JSON/CSV replacement imports. Filters never limit exports. Unsaved row edits must be saved or discarded before other state-changing actions or exports. JSON is the lossless interchange format; CSV adds a protective apostrophe to spreadsheet formula-like values and retains that apostrophe on import.
 

@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deliverables pipeline | Trial biostatistics toolkit</title>
+<meta name="description" content="Every statistics deliverable of an early-phase clinical-pharmacology study, from protocol development to the CSR, results posting and archiving: owner, inputs, what it feeds, governing standard, QC and pitfalls. Interactive map, handbook, poster and register.">
+<!-- gen:head -->
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#0b0f15" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f4f6f9" media="(prefers-color-scheme: light)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Cpath d=%27M16 0v16H0z%27 fill=%27%233ad7c8%27/%3E%3C/svg%3E">
+<script>(function(d){var t;try{t=localStorage.getItem("bp-theme")}catch(e){}if(t==="light"||t==="dark")d.setAttribute("data-theme",t);d.classList.add("js")})(document.documentElement)</script>
+<link rel="stylesheet" href="../assets/toolkit.css">
+<script src="../assets/ui.js" defer></script>
+<!-- /gen:head -->
+<link rel="stylesheet" href="explorer.css">
+<script src="pipeline_data.js" defer></script>
+<script src="explorer.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- gen:topbar -->
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="../index.html"><span class="mark" aria-hidden="true"></span>Trial biostatistics toolkit</a>
+    <nav class="nav" id="site-nav" aria-label="Site">
+      <a href="../index.html">Home</a>
+      <a href="../Operations.html">Operations</a>
+      <a href="../Biostatistics.html" aria-current="true">Biostatistics</a>
+      <a href="../START_HERE.html">Full library</a>
+    </nav>
+    <button class="theme-toggle" type="button" aria-pressed="true" title="Switch to light theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M20.6 14.2A8.5 8.5 0 0 1 9.8 3.4a8.5 8.5 0 1 0 10.8 10.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg><span class="sr">Dark theme</span></button>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+  </div>
+</header>
+<!-- /gen:topbar -->
+
+<main id="main" class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb"><ol><li><a href="../index.html">Home</a></li><li><a href="../Biostatistics.html">Biostatistics</a></li><li aria-current="page">Deliverables pipeline</li></ol></nav>
+
+  <section class="page-head" aria-labelledby="title">
+    <p class="kicker">Planning reference</p>
+    <h1 id="title">Protocol to CSR: the early-phase biostatistics deliverables pipeline</h1>
+    <p>Every statistics deliverable of an early-phase clinical-pharmacology study, from protocol development to the clinical study report, results posting and archiving. For each one: who owns it, what it needs, what it feeds, which standard governs it, how it is checked, and the mistakes that cost time later.</p>
+    <!-- pipeline:facts -->
+    <p class="meta"><span class="st st-note">180 deliverables</span><span class="st st-note">5 stages, 6 gates</span><span class="st st-note">9 study designs</span><span class="st st-note">62 references checked 2026-11-08</span></p>
+    <!-- /pipeline:facts -->
+    <p class="note"><strong>A planning reference, not a record of client work or an SOP.</strong> Adapt it to the study's protocol, the client's SOPs and the regulations that apply. The worked bioequivalence study it links to uses synthetic data.</p>
+    <ul class="px-get" aria-label="Formats">
+      <li><a href="EarlyPhase_Biostat_Pipeline.pdf">Handbook <span class="fmt">PDF</span></a></li>
+      <li><a href="EarlyPhase_Biostat_Pipeline_Map.pdf">Poster map <span class="fmt">PDF</span></a></li>
+      <li><a href="EarlyPhase_Biostat_Pipeline_Register.xlsx">Register <span class="fmt">Excel</span></a></li>
+      <li><a href="../browser_modules/register/index.html">Plan your study <span class="fmt">Register workspace</span></a></li>
+      <li><a href="pipeline.json">Data <span class="fmt">JSON</span></a></li>
+    </ul>
+  </section>
+
+  <div id="px" class="px" aria-label="Pipeline explorer">
+    <noscript><p class="px-empty">The interactive explorer needs JavaScript. The <a href="EarlyPhase_Biostat_Pipeline.pdf">handbook</a> and the <a href="EarlyPhase_Biostat_Pipeline_Register.xlsx">Excel register</a> hold the same content.</p></noscript>
+    <div class="px-bar-wrap">
+      <div class="px-tabs" role="tablist" aria-label="Views">
+        <button type="button" role="tab" data-view="map" aria-controls="px-p-map" aria-selected="true">Map</button>
+        <button type="button" role="tab" data-view="trace" aria-controls="px-p-trace" aria-selected="false">Trace a change</button>
+        <button type="button" role="tab" data-view="list" aria-controls="px-p-list" aria-selected="false">List by stage</button>
+        <button type="button" role="tab" data-view="standards" aria-controls="px-p-standards" aria-selected="false">Standards</button>
+      </div>
+      <div class="px-filters">
+        <div class="px-designs" id="px-designs" role="group" aria-label="Study design"></div>
+        <label class="sr" for="px-track">Track</label><select id="px-track"></select>
+        <label class="sr" for="px-owner">Owner</label><select id="px-owner"></select>
+        <label class="sr" for="px-stage">Stage</label><select id="px-stage"></select>
+        <label class="sr" for="px-q">Search deliverables</label><input id="px-q" type="search" placeholder="Search: SAP, ADPC, Hy's Law, M13A…" autocomplete="off">
+        <label class="cb"><input type="checkbox" id="px-worked"> Done in the worked study</label>
+      </div>
+      <div class="px-meta-row">
+        <p class="px-count" id="px-count" aria-live="polite"></p>
+        <p class="px-reffilter" id="px-reffilter" hidden>Citing <span></span> <button type="button" id="px-clearref">clear</button></p>
+        <button type="button" class="px-btn ghost" id="px-export-json">Export shown rows for the register workspace</button>
+      </div>
+    </div>
+
+    <section class="px-panel" data-view="map" id="px-p-map" role="tabpanel" aria-label="Map" tabindex="-1">
+      <ul class="px-legend" aria-label="Legend">
+        <li class="s1"><span class="sw"></span>Stage 1 design &amp; protocol</li>
+        <li class="s2"><span class="sw"></span>Stage 2 planning &amp; specifications</li>
+        <li class="s3"><span class="sw"></span>Stage 3 data &amp; CDISC</li>
+        <li class="s4"><span class="sw"></span>Stage 4 analysis &amp; QC</li>
+        <li class="s5"><span class="sw"></span>Stage 5 reporting, disclosure &amp; archiving</li>
+        <li><span class="sw cond"></span>Conditional</li>
+        <li><span class="dot"></span>Done in the worked study</li>
+      </ul>
+      <div class="px-mhead" aria-hidden="true"><div class="px-mhead-in" id="px-mhead-in"></div></div>
+      <div class="px-mapwrap" id="px-map"></div>
+      <p class="px-maphint">Each bar spans the milestones in which the deliverable is produced. Hover or focus one to light up what it needs (blue) and what it feeds (amber); select it for the full card. Shaded columns are gates.</p>
+    </section>
+    <section class="px-panel" data-view="trace" id="px-p-trace" role="tabpanel" aria-label="Trace a change" tabindex="-1" hidden><div id="px-trace"></div></section>
+    <section class="px-panel" data-view="list" id="px-p-list" role="tabpanel" aria-label="List by stage" tabindex="-1" hidden><div id="px-list"></div></section>
+    <section class="px-panel" data-view="standards" id="px-p-standards" role="tabpanel" aria-label="Standards" tabindex="-1" hidden><div id="px-standards"></div></section>
+
+    <aside class="px-drawer" id="px-drawer" role="dialog" aria-modal="false" aria-labelledby="px-dtitle" hidden>
+      <div class="px-dhead"><button type="button" class="px-btn ghost px-drawer-close" id="px-dclose">Close</button></div>
+      <div id="px-dbody" class="px-dbody"></div>
+    </aside>
+  </div>
+</main>
+
+<!-- gen:footer -->
+<footer id="contact" class="site">
+  <div class="wrap foot-grid">
+    <div>
+      <h2>Author</h2>
+      <p class="fine">Built by Patrick Iben.</p>
+      <ul class="contact">
+        <li><span class="k">GitHub</span><a href="https://github.com/patrickiben">github.com/patrickiben</a></li>
+        <li><span class="k">ORCID</span><a href="https://orcid.org/0009-0005-2443-7973">0009-0005-2443-7973</a></li>
+      </ul>
+    </div>
+    <div>
+      <h2>This site</h2>
+      <p class="fine">The example studies (CP-101 to CP-108) are synthetic. No output here is a validated or regulatory deliverable. Last updated October 2026.</p>
+    </div>
+    <div>
+      <h2>More</h2>
+      <ul class="foot-links">
+        <li><a href="../Operations.html">Operations</a></li>
+        <li><a href="../Biostatistics.html">Biostatistics</a></li>
+        <li><a href="../START_HERE.html">Full library</a></li>
+        <li><a href="https://github.com/patrickiben/biometrics-ai-portfolio">Source on GitHub</a></li>
+        <li><button class="linklike" type="button" data-theme-reset>Follow system theme</button></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+<!-- /gen:footer -->
+</body>
+</html>
