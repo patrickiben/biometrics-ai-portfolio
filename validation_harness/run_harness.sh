@@ -71,13 +71,15 @@ add "G2 PK and count convention scans" "PK programs use log-scale geometric stat
 CONF=$(Rscript validation_harness/checks/conformance.R sim_lifecycle/out 2>/dev/null | grep G3_VERDICT | awk '{print $2}')
 SUBJ=$(grep -rniE '\bsubjects?\b' $SAS $R 2>/dev/null | grep -ivE 'subjid|usubjid' | wc -l | tr -d ' ')
 # scan SHIPPED DELIVERABLE surfaces (analysis data + docs) for participant PHI. Excludes the raw
-# public-registry calibration corpus (sim_lifecycle/data/, not a deliverable) and infra dirs.
+# public-registry calibration corpus (sim_lifecycle/data/, not a deliverable), infra dirs, and the eCRF
+# de-identification test fixtures (ecrf_pipeline/eval/data/, ecrf_pipeline/sample_data/ and its browser
+# copy), whose seeded fake names, phone numbers and record numbers are what that assistant must find.
 PII=$(grep -rniE '[0-9]{3}-[0-9]{3}-[0-9]{4}|[a-z]{2,}\.[a-z]{2,}@[a-z]+\.(com|net)' "$REPO" \
       --include='*.csv' --include='*.html' --include='*.md' 2>/dev/null \
-      | grep -vE 'sim_lifecycle/data/|/validation_harness/|noreply|example\.(com|net)|https?://|@author|Copyright \(c\)' | wc -l | tr -d ' ')
+      | grep -vE 'sim_lifecycle/data/|/validation_harness/|ecrf_pipeline/(eval/data|sample_data|docs/app/sample_data)/|noreply|example\.(com|net)|https?://|@author|Copyright \(c\)' | wc -l | tr -d ' ')
 G3=green; { [ "${CONF:-FAIL}" = PASS ] && [ "$SUBJ" = 0 ] && [ "$PII" = 0 ]; } || G3=red
 add "G3 Data structure & integrity" "the analysis data passes the custom structural checks (not Pinnacle 21 or CDISC CORE), is intact, and PHI-free" "$G3" \
-    "custom structural checks ${CONF:-?} (checks/conformance.R; not Pinnacle 21 or CDISC CORE); $SUBJ trial-sense 'subject' in programs; $PII PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)"
+    "custom structural checks ${CONF:-?} (checks/conformance.R; not Pinnacle 21 or CDISC CORE); $SUBJ trial-sense 'subject' in programs; $PII PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus and the eCRF de-identification test fixtures, which carry seeded fake identifiers, excluded)"
 
 # ---- G4 Double-programming parity (SAS <-> R) ------------------------------
 read -r NSAS NR MM COLL MISSING < <(python3 - <<'PYTHON'

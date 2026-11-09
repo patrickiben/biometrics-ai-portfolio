@@ -383,7 +383,7 @@ main .stage > .kicker, main section > .kicker { color: var(--amber); }
       "gate": "G3 Data structure & integrity",
       "guards": "the analysis data passes the custom structural checks (not Pinnacle 21 or CDISC CORE), is intact, and PHI-free",
       "status": "green",
-      "evidence": "custom structural checks PASS (checks/conformance.R; not Pinnacle 21 or CDISC CORE); 0 trial-sense 'subject' in programs; 0 PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)"
+      "evidence": "custom structural checks PASS (checks/conformance.R; not Pinnacle 21 or CDISC CORE); 0 trial-sense 'subject' in programs; 0 PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus and the eCRF de-identification test fixtures, which carry seeded fake identifiers, excluded)"
     },
     {
       "gate": "G4 SAS/R twin structural parity",

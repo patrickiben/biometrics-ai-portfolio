@@ -11,7 +11,7 @@
     {
       "t": "guide",
       "label": "Module guide",
-      "href": "https://github.com/patrickiben/biometrics-ai-portfolio/blob/main/risk_monitor/README.md"
+      "href": "../../risk_monitor/quarto/risk-guide.html"
     }
   ],
   "first_load": {

@@ -195,9 +195,11 @@ def run(root: Path) -> dict:
     subj = sum(matching_lines(root / folder, r"\bsubjects?\b", re.I, reject=lambda p, line: bool(re.search("subjid|usubjid", line, re.I))) for folder in ("sas_tlf_pseudocode", "r_tlf_pseudocode"))
     def reject_pii(path, line):
         rel = path.relative_to(root).as_posix()
-        return rel.startswith(("sim_lifecycle/data/", "validation_harness/")) or bool(re.search(r"noreply|example\.(com|net)|https?://|@author|Copyright \(c\)", line))
+        return rel.startswith(("sim_lifecycle/data/", "validation_harness/",
+                               # eCRF de-identification test fixtures: their seeded fake identifiers are what that assistant must find
+                               "ecrf_pipeline/eval/data/", "ecrf_pipeline/sample_data/", "ecrf_pipeline/docs/app/sample_data/")) or bool(re.search(r"noreply|example\.(com|net)|https?://|@author|Copyright \(c\)", line))
     pii = matching_lines(root, r"[0-9]{3}-[0-9]{3}-[0-9]{4}|[a-z]{2,}\.[a-z]{2,}@[a-z]+\.(com|net)", re.I, reject_pii, {".csv", ".html", ".md"})
-    add("G3 Data structure & integrity", "the analysis data passes the custom structural checks (not Pinnacle 21 or CDISC CORE), is intact, and PHI-free", green(conf.returncode == 0 and verdict == "PASS" and subj == 0 and pii == 0), f"custom structural checks {verdict} (checks/conformance.R; not Pinnacle 21 or CDISC CORE); {subj} trial-sense 'subject' in programs; {pii} PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus excluded)")
+    add("G3 Data structure & integrity", "the analysis data passes the custom structural checks (not Pinnacle 21 or CDISC CORE), is intact, and PHI-free", green(conf.returncode == 0 and verdict == "PASS" and subj == 0 and pii == 0), f"custom structural checks {verdict} (checks/conformance.R; not Pinnacle 21 or CDISC CORE); {subj} trial-sense 'subject' in programs; {pii} PHI/PII hits in deliverable data/docs (raw public-registry calibration corpus and the eCRF de-identification test fixtures, which carry seeded fake identifiers, excluded)")
 
     nsas, nr, mismatch, collisions, missing = twin_checks(root)
     add("G4 SAS/R twin structural parity", "the SAS and R twins line up program for program (structure only)", green(nsas == nr and mismatch == 0 and collisions == 0 and missing == 0 and bad == "0"), f"{nsas} SAS / {nr} R twin programs; {mismatch} twin TLF-number mismatches; {collisions} within-design number collisions; {missing} unmatched stems; all R parse. Structural only: SAS is not executed (no license), so no outputs are compared, and the R twins were written to mirror the SAS")
