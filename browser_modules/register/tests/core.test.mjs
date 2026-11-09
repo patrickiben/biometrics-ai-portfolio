@@ -1,15 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {normalize,documentFor,csvFor,parseCSV,parseFile,fields,safeCell} from '../core.mjs';
+import {normalize,documentFor,csvFor,parseCSV,parseFile,fields,legacy,safeCell} from '../core.mjs';
 const starter=JSON.parse(await readFile(new URL('../../../biostat_pipeline/_register.json',import.meta.url),'utf8'));
 const state=normalize(starter);
-test('all canonical 132 records and every original field survive JSON and CSV',()=>{
- assert.equal(state.rows.length,132);assert.equal(state.study,'');
+test('every canonical record and every original field survive JSON and CSV',()=>{
+ assert.ok(state.rows.length>=132);assert.equal(state.rows.length,starter.length);assert.equal(state.study,'');
  starter.forEach((row,i)=>Object.entries(row).forEach(([key,value])=>assert.equal(state.rows[i][key],value)));
  assert.ok(state.rows.every(r=>r.status==='Not started'));
  assert.deepEqual(normalize(documentFor(state)),state);assert.deepEqual(parseCSV(csvFor(state)),state);
  assert.equal(Object.keys(state.rows[0]).length,fields.length);
+});
+test('earlier AI columns import without losing content: non-empty values move into labeled notes',()=>{
+ const r=normalize([{id:'X',deliverable:'a',notes:'kept',ai_tier:'Green',ai_engine:'',ai_use:'old note'}]).rows[0];
+ assert.ok(!Object.keys(r).some(k=>k in legacy));
+ assert.equal(r.notes,'kept\n[AI assistance category, earlier column] Green\n[AI assistance notes, earlier column] old note');
+ assert.deepEqual(parseCSV('id,deliverable,ai_tier\nX,a,Amber').rows[0].notes,'[AI assistance category, earlier column] Amber');
+ assert.ok(starter.every(row=>!Object.keys(row).some(k=>k in legacy)));
 });
 test('multiline, commas, quotes, Unicode and empty cells survive CSV',()=>{
  const expected=normalize([{id:'X',deliverable:'Δ, "test"\nsecond line',notes:'a\rb\nc\r\nd',owner:''}]);

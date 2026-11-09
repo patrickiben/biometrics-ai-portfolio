@@ -1407,7 +1407,7 @@ window.TOOLKIT_CATALOG = {
     {
       "id": "pipeline",
       "title": "Biostatistics deliverables register",
-      "summary": "Explore 132 early-phase deliverables, their owners, inputs, outputs, standards and QC methods.",
+      "summary": "Explore 180 early-phase deliverables with their owners, inputs, outputs, dependencies, standards, QC methods and pitfalls.",
       "category": "Templates and references",
       "kind": "browser",
       "runtime": "Browser only",
@@ -1417,7 +1417,11 @@ window.TOOLKIT_CATALOG = {
           "path": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/register/"
         },
         {
-          "label": "Pipeline document",
+          "label": "Pipeline explorer",
+          "path": "biostat_pipeline/index.html"
+        },
+        {
+          "label": "Handbook",
           "path": "biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf"
         },
         {
@@ -1425,7 +1429,7 @@ window.TOOLKIT_CATALOG = {
           "path": "biostat_pipeline/EarlyPhase_Biostat_Pipeline_Register.xlsx"
         },
         {
-          "label": "One-page map",
+          "label": "Poster map",
           "path": "biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pdf"
         }
       ],
@@ -1442,14 +1446,14 @@ window.TOOLKIT_CATALOG = {
         },
         {
           "id": "pipeline.map",
-          "label": "Open pipeline map",
+          "label": "Open poster map",
           "type": "open",
           "path": "biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pdf"
         }
       ],
       "outputs": [],
       "persistence": "Browser work is session-only. Download complete outputs and reusable setup profiles before closing or resetting. Optional desktop workflows retain their original project-folder behavior.",
-      "customization": "Start blank or deliberately load the complete 132-deliverable reference. Edit every field, add or remove rows, and retain the full register as JSON, CSV or a printable page.",
+      "customization": "Start blank or deliberately load the complete 180-deliverable reference. Edit every field, add or remove rows, and retain the full register as JSON, CSV or a printable page.",
       "limits": "The starter reference does not establish completed study work. User edits remain a planning record; no source-system synchronization, scientific approval or submission package is generated.",
       "demo_url": "https://patrickiben.github.io/biometrics-ai-portfolio/browser_modules/register/",
       "browser_path": "browser_modules/register/",

@@ -58,7 +58,11 @@ RETIRED_FRAMING = re.compile(
 # CDISC standard names that contain "subject" and must keep it (variables are already exempt
 # through USUBJID/SUBJID): the ADaMIG name and class of ADSL ("Subject-Level Analysis Dataset",
 # "SUBJECT LEVEL ANALYSIS DATASET"), which the study/ specification and XPT labels carry.
-CDISC_NAMES = re.compile(r'Subject[- ]Level Analysis Dataset', re.I)
+CDISC_NAMES = re.compile(r'Subject[- ]Level Analysis Dataset|ADSL \(Subject[- ]Level', re.I)
+# Official titles and organization names keep their published spelling in the pipeline's reference list.
+OFFICIAL_NAMES = re.compile(r'Clinical Electronic Structured Harmonised Protocol|International Council for Harmonisation|'
+                            r'Uppsala Monitoring Centre|Centre \(UMC\)|extension[- ]to[- ]randomised[- ]crossover[- ]trials|'
+                            r'Organisation of the Common Technical Document', re.I)
 TRIAL_SUBJ = re.compile(r'\b(\d+\s+subjects?|per[- ]subject|each subject|subject[- ]level|number of subjects|'
                         r'intra-?subject|inter-?subject|subject (?:data|profiles?)|'
                         r'subjects?\s+(were|was|are|is|enrolled|randomi|received|dosed|discontinued|completed|withdrew|per)|'
@@ -328,7 +332,7 @@ for f in walk(*DOC_EXTS):
             add('Retired framing or employer phrase', f'{rel(f)} (text line {i}): "{m.group(0)}"')
         if TRIAL_SUBJ.search(CDISC_NAMES.sub('', line)) and 'usubjid' not in low and 'subjid' not in low:
             add("Terminology: 'subject' (use participant)", f'{rel(f)} (text line {i})')
-        m = BRITISH.search(line)
+        m = BRITISH.search(OFFICIAL_NAMES.sub(' ', line))
         if m:
             add('Style: British spelling in a document', f'{rel(f)} (text line {i}): "{m.group(0)}"')
         if EM_DASH.search(line):

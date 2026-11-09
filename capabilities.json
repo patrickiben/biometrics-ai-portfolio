@@ -1303,8 +1303,8 @@
   },
   {
    "id": "pipeline-map",
-   "title": "Early-phase biostatistics pipeline map",
-   "href": "biostat_pipeline/EarlyPhase_Biostat_Pipeline.md",
+   "title": "Early-phase biostatistics deliverables pipeline",
+   "href": "biostat_pipeline/index.html",
    "section": "methods",
    "stages": [],
    "eyebrow": "Reference",
@@ -1314,23 +1314,23 @@
      "text": "A reference map, not a track record"
     }
    ],
-   "summary": "132 Phase 1 biostatistics deliverables across five stages, each with its owner, inputs, outputs, governing standard and QC method.",
-   "fact": "An appendix holds a proposal for AI-assisted drafting under controls.",
+   "summary": "180 early-phase biostatistics deliverables across five stages and six gates, each with its owner, inputs, outputs, dependencies, governing standard, QC method and common pitfalls.",
+   "fact": "Design modules cover bioequivalence, food effect, drug interactions, QT, and renal and hepatic impairment; 62 standards were checked against their sources on 2026-11-08.",
    "links": [
     {
-     "t": "guide",
-     "href": "biostat_pipeline/EarlyPhase_Biostat_Pipeline.md",
-     "text": "Read (Markdown)"
+     "t": "open",
+     "href": "biostat_pipeline/index.html",
+     "text": "Open the explorer"
     },
     {
      "t": "download",
      "href": "biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf",
-     "text": "Document (PDF)"
+     "text": "Handbook (PDF)"
     },
     {
      "t": "download",
      "href": "biostat_pipeline/EarlyPhase_Biostat_Pipeline_Map.pdf",
-     "text": "One-page map (PDF)"
+     "text": "Poster map (PDF)"
     },
     {
      "t": "download",
@@ -1338,7 +1338,7 @@
      "text": "Register (XLSX)"
     }
    ],
-   "source": "README.md, biostat_pipeline/ row, and EarlyPhase_Biostat_Pipeline.md",
+   "source": "biostat_pipeline/pipeline.json",
    "published": true
   },
   {

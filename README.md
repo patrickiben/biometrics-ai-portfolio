@@ -56,9 +56,10 @@ The R launcher finds the complete checkout from another working directory. Packa
 - **Operating-characteristics studies:** residual carryover and the ICH M13A 5% pre-dose rule
   ([`sim_lifecycle/carryover_oc/`](sim_lifecycle/carryover_oc/index.html)), and a prespecified C-QTc hysteresis
   check with its size and power ([`cqtc_hysteresis/`](cqtc_hysteresis/index.html)).
-- **Protocol→CSR deliverables pipeline** and a **TLF-interpretation drafter** (a small-model skeleton that
+- **Protocol→CSR deliverables pipeline** (180 deliverables as an interactive explorer, a handbook, a poster map
+  and an Excel register) and a **TLF-interpretation drafter** (a small-model skeleton that
   never sources a number; the model step is a stub and the number validator runs).
-  → [`biostat_pipeline/`](biostat_pipeline/EarlyPhase_Biostat_Pipeline.pdf) · [`tlf_interpret/`](tlf_interpret/index.html)
+  → [`biostat_pipeline/`](biostat_pipeline/index.html) · [`tlf_interpret/`](tlf_interpret/index.html)
 - **eCRF pipeline apps:** four integrated browser tools for your own CSV files: dictionary-based coding
   candidates, de-identification review, configurable participant screening, and anomaly and drift checks.
   Map columns in guided forms, run on your device, and download results and audit records. Optional examples

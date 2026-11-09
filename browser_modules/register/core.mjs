@@ -1,6 +1,8 @@
 // Client-neutral planning records. No network, storage, signatures or approval logic.
-export const fields=['id','stage','deliverable','type','description','owner','inputs','outputs','standard','qc','ai_tier','ai_engine','ai_use','deliverable_note','standard_note','status','due_date','notes'];
-export const labels={id:'Record ID',stage:'Study stage',deliverable:'Deliverable',type:'Deliverable type',description:'Description',owner:'Responsible role or person',inputs:'Required inputs',outputs:'Expected outputs',standard:'Standards and references',qc:'Planned QC and review',ai_tier:'AI assistance category',ai_engine:'AI tool or engine plan',ai_use:'AI assistance notes',deliverable_note:'Deliverable reference note',standard_note:'Standards reference note',status:'Planning status',due_date:'Target date',notes:'Study-specific notes'};
+export const fields=['id','stage','deliverable','type','description','owner','inputs','outputs','standard','qc','deliverable_note','standard_note','status','due_date','notes'];
+// Columns from earlier starters. On import a non-empty value moves into notes, labeled, so nothing is lost silently.
+export const legacy={ai_tier:'AI assistance category',ai_engine:'AI tool or engine plan',ai_use:'AI assistance notes'};
+export const labels={id:'Record ID',stage:'Study stage',deliverable:'Deliverable',type:'Deliverable type',description:'Description',owner:'Responsible role or person',inputs:'Required inputs',outputs:'Expected outputs',standard:'Standards and references',qc:'Planned QC and review',deliverable_note:'Deliverable reference note',standard_note:'Standards reference note',status:'Planning status',due_date:'Target date',notes:'Study-specific notes'};
 export const statuses=['Not started','In progress','Ready for review','Review recorded','Not applicable'];
 export const maxBytes=20*1024*1024,maxRows=2000;
 const text=(x,label)=>{if(typeof x!=='string')throw Error(label+' must be text.');if(x.length>100000||x.includes('\0'))throw Error(label+' is too long or contains a null character.');return x;};
@@ -16,8 +18,10 @@ export function normalize(input){
  const seen=new Set();
  const clean=rows.map((row,i)=>{
   if(!row||typeof row!=='object'||Array.isArray(row))throw Error('Row '+(i+1)+' must be a record.');
-  if(Object.keys(row).some(x=>!fields.includes(x)))throw Error('Unknown column in row '+(i+1)+'. Use the provided register columns.');
+  if(Object.keys(row).some(x=>!fields.includes(x)&&!(x in legacy)))throw Error('Unknown column in row '+(i+1)+'. Use the provided register columns.');
   const result=Object.fromEntries(fields.map(k=>[k,text(row[k]??'',labels[k]) ]));
+  const moved=Object.keys(legacy).filter(k=>row[k]!=null&&text(row[k],legacy[k]).trim()).map(k=>'['+legacy[k]+', earlier column] '+row[k]);
+  if(moved.length)result.notes=[result.notes,...moved].filter(Boolean).join('\n');
   if(!result.id.trim()||!result.deliverable.trim())throw Error('Each row needs a record ID and deliverable.');
   if(seen.has(result.id.trim()))throw Error('Duplicate record ID: '+result.id.trim());
   seen.add(result.id.trim());result.id=result.id.trim();
@@ -54,7 +58,7 @@ export function parseCSV(input){
  if(cell||closed||row.length){row.push(cell);rows.push(row);}
  if(!rows.length)throw Error('The CSV file is empty.');
  const header=rows.shift();
- if(header.length!==new Set(header).size||header.some(k=>k!=='study_label'&&!fields.includes(k)))throw Error('CSV contains duplicate or unknown columns.');
+ if(header.length!==new Set(header).size||header.some(k=>k!=='study_label'&&!fields.includes(k)&&!(k in legacy)))throw Error('CSV contains duplicate or unknown columns.');
  if(!header.includes('id')||!header.includes('deliverable'))throw Error('CSV needs id and deliverable columns.');
  let study='';const studyValues=new Set();
  const records=rows.map((r,i)=>{

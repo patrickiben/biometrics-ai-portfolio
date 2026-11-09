@@ -1179,6 +1179,7 @@ HAND = OrderedDict([
     # the module pages) keep their own markup and look
     ('sim_lifecycle/carryover_oc/index.html', ('site', 'methods', 2)),
     ('sasr_monitoring_wiki/index.html', ('site', 'apps', 1)),
+    ('biostat_pipeline/index.html', ('site', 'methods', 1)),
     ('validation_harness/index.html', ('inline', 'quality', 1)),
 ])
 ROOT_PAGE = set()
